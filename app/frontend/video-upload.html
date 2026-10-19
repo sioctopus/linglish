@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
     // IMPORTANT: This must be the first script to catch extension errors
@@ -137,8 +139,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>上传新视频 - linglish</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <link rel="stylesheet" href="./membership.css" />
-  <script src="./i18n.js"></script>
+  <script src="./i18n.js?v=20261019"></script>
   <style>
     * {
       margin: 0;
@@ -147,158 +153,213 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: var(--lx-font-body);
+      background: var(--lx-grad-hero);
+      color: var(--lx-ink-900);
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 1rem;
+      padding: 12px;
     }
 
     .upload-container {
-      background: white;
+      background: #fff;
+      border: 1px solid var(--lx-line);
       border-radius: 24px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      max-width: 600px;
-      width: 100%;
-      overflow: hidden;
-      animation: slideUp 0.5s ease-out;
-    }
-
-    @keyframes slideUp {
-      from {
-        opacity: 0;
-        transform: translateY(30px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+      width: min(980px, 100%);
+      margin: auto;
+      overflow: visible;
     }
 
     .upload-header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 2rem;
-      text-align: center;
-      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px 18px 12px;
+      border-bottom: 1px solid #f1f5f9;
     }
 
-    .upload-header::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(45deg, rgba(255,255,255,0.1) 0%, transparent 100%);
-      pointer-events: none;
+    .header-main {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
     }
 
     .upload-icon {
-      font-size: 3rem;
-      margin-bottom: 0.5rem;
-      display: inline-block;
-      animation: bounce 2s infinite;
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      background: var(--lx-teal-50);
+      color: var(--lx-primary);
+      display: grid;
+      place-items: center;
+      flex: none;
     }
 
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+    .header-copy {
+      min-width: 0;
     }
 
     .upload-header h1 {
-      font-size: 1.8rem;
-      margin-bottom: 0.5rem;
-      position: relative;
+      font-size: 1.35rem;
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--lx-ink-900);
     }
 
     .upload-header p {
-      font-size: 0.95rem;
-      opacity: 0.9;
-      position: relative;
+      margin-top: 2px;
+      font-size: 0.82rem;
+      line-height: 1.35;
+      color: var(--lx-ink-500);
     }
 
-    .back-btn {
-      position: absolute;
-      top: 1rem;
-      right: 1rem;
-      background: rgba(255, 255, 255, 0.2);
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 20px;
+    .header-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: none;
+    }
+
+    .back-btn,
+    .lang-btn {
+      background: #fff;
+      color: var(--lx-ink-900);
+      border: 1px solid var(--lx-line);
+      padding: 0.4rem 0.8rem;
+      border-radius: 999px;
       cursor: pointer;
-      font-size: 0.85rem;
-      transition: all 0.3s;
+      font-size: 0.82rem;
+      font-weight: 600;
+      font-family: inherit;
       text-decoration: none;
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.35rem;
+      transition: border-color 0.2s, background 0.2s;
     }
 
-    .back-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-      transform: translateX(-3px);
+    .back-btn:hover,
+    .lang-btn:hover {
+      border-color: var(--lx-teal-300);
+      background: var(--lx-teal-50);
+    }
+
+    .lang-selector {
+      position: relative;
+    }
+
+    .lang-dropdown {
+      position: absolute;
+      top: calc(100% + 0.4rem);
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--lx-line);
+      border-radius: 12px;
+      padding: 0.35rem;
+      min-width: 132px;
+      z-index: 20;
+      box-shadow: var(--lx-shadow-lg);
+    }
+
+    .lang-option {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 0.7rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: var(--lx-ink-900);
+    }
+
+    .lang-option:hover {
+      background: var(--lx-teal-50);
     }
 
     .upload-form {
-      padding: 2rem;
+      padding: 12px 18px 14px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+      gap: 4px 22px;
+      align-items: stretch;
+    }
+
+    .form-col {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .file-group {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     .form-group {
-      margin-bottom: 1.5rem;
+      margin-bottom: 10px;
     }
 
-    .form-group label {
+    .form-group label,
+    .tag-selector-title {
       display: block;
-      font-size: 0.95rem;
+      font-size: 0.8rem;
       font-weight: 600;
-      color: #333;
-      margin-bottom: 0.5rem;
+      color: var(--lx-ink-900);
+      margin-bottom: 4px;
     }
 
     .form-group input[type="text"],
     .form-group select {
       width: 100%;
-      padding: 0.75rem;
-      border: 2px solid #e0e0e0;
+      padding: 0.5rem 0.7rem;
+      border: 1px solid var(--lx-line);
       border-radius: 10px;
-      font-size: 1rem;
-      transition: all 0.3s;
-      background: #f8f9fa;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: var(--lx-ink-900);
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+      background: var(--lx-paper);
     }
 
     .form-group input[type="text"]:focus,
     .form-group select:focus {
       outline: none;
-      border-color: #667eea;
-      background: white;
-      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+      border-color: var(--lx-teal-600);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
     }
 
     .file-input-wrapper {
       position: relative;
       display: block;
       width: 100%;
-      min-height: 150px;
-      border: 2px dashed #667eea;
-      border-radius: 10px;
-      background: #f8f9ff;
+      flex: 1;
+      min-height: 92px;
+      border: 1.5px dashed #99f6e4;
+      border-radius: 14px;
+      background: var(--lx-teal-50);
       cursor: pointer;
-      transition: all 0.3s;
+      transition: border-color 0.2s, background 0.2s;
       overflow: hidden;
     }
 
     .file-input-wrapper:hover {
-      border-color: #764ba2;
-      background: #f0f2ff;
-      transform: translateY(-2px);
+      border-color: var(--lx-teal-600);
+      background: #ecfdf5;
     }
 
     .file-input-wrapper.drag-over {
-      border-color: #4caf50;
+      border-color: var(--lx-success);
       background: #e8f5e9;
     }
 
@@ -314,29 +375,50 @@
 
     .file-input-label {
       display: flex;
-      flex-direction: column;
+      flex-direction: row;
       align-items: center;
       justify-content: center;
-      height: 150px;
-      text-align: center;
-      padding: 1rem;
+      gap: 12px;
+      min-height: 92px;
+      height: 100%;
+      text-align: left;
+      padding: 8px 14px;
     }
 
     .file-input-icon {
-      font-size: 2.5rem;
-      margin-bottom: 0.5rem;
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: #fff;
+      color: var(--lx-primary);
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+
+    .file-input-icon svg {
+      display: block;
+    }
+
+    .file-input-copy {
+      min-width: 0;
     }
 
     .file-input-text {
-      font-size: 1rem;
-      color: #667eea;
+      font-size: 0.92rem;
+      color: var(--lx-primary);
       font-weight: 600;
-      margin-bottom: 0.25rem;
+      line-height: 1.3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 360px;
     }
 
     .file-input-hint {
-      font-size: 0.85rem;
-      color: #999;
+      font-size: 0.75rem;
+      color: var(--lx-ink-500);
+      margin-top: 1px;
     }
 
     .file-selected {
@@ -352,46 +434,38 @@
       color: #2e7d32;
     }
 
+    .form-actions {
+      display: flex;
+      justify-content: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid #f1f5f9;
+    }
+
     .submit-btn {
-      width: 100%;
-      padding: 1rem;
+      width: auto;
+      min-width: 168px;
+      margin: 0;
+      padding: 0.68rem 1.6rem;
       border: none;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      font-size: 1.1rem;
+      border-radius: 999px;
+      background: var(--lx-grad-fresh);
+      color: #fff;
+      font-size: 0.95rem;
       font-weight: 700;
+      font-family: inherit;
+      line-height: 1.2;
       cursor: pointer;
-      transition: all 0.3s;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .submit-btn::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 0;
-      height: 0;
-      border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
-      transform: translate(-50%, -50%);
-      transition: width 0.6s, height 0.6s;
-    }
-
-    .submit-btn:hover::before {
-      width: 300px;
-      height: 300px;
+      transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
     }
 
     .submit-btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 25px rgba(14, 165, 233, 0.4);
+      transform: translateY(-1px);
+      box-shadow: var(--lx-shadow-brand);
     }
 
     .submit-btn:active {
-      transform: translateY(-1px);
+      transform: translateY(0);
     }
 
     .submit-btn:disabled {
@@ -406,10 +480,10 @@
     }
 
     .status-message {
-      margin-top: 1rem;
-      padding: 0.75rem;
+      margin-top: 8px;
+      padding: 0.55rem 0.75rem;
       border-radius: 8px;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-align: center;
       display: none;
     }
@@ -460,111 +534,217 @@
 
     /* 标签选择器样式 */
     .tag-selector {
-      margin-bottom: 1.5rem;
-    }
-
-    .tag-selector-title {
-      display: block;
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 0.75rem;
+      margin-bottom: 10px;
     }
 
     .tag-selector-hint {
-      font-size: 0.85rem;
-      color: #666;
-      margin-bottom: 0.5rem;
+      font-size: 0.75rem;
+      line-height: 1.4;
+      color: var(--lx-ink-500);
+      margin-bottom: 6px;
     }
 
     .tag-options {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.5rem;
+      gap: 6px;
     }
 
     .tag-option {
       display: inline-flex;
       align-items: center;
-      gap: 0.3rem;
-      padding: 0.5rem 0.8rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 10px;
-      background: #f8f9fa;
+      gap: 5px;
+      height: 32px;
+      padding: 0 10px 0 8px;
+      border: 1px solid var(--lx-line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--lx-ink-700);
       cursor: pointer;
-      transition: all 0.3s;
-      font-size: 0.9rem;
+      transition: border-color 0.2s, background 0.2s, color 0.2s;
+      font-size: 0.78rem;
+      line-height: 1;
       user-select: none;
     }
 
     .tag-option:hover {
-      border-color: #667eea;
-      background: #f0f2ff;
-      transform: translateY(-2px);
+      border-color: var(--lx-teal-300);
+      background: var(--lx-teal-50);
+      color: var(--lx-primary);
     }
 
     .tag-option.selected {
-      border-color: #667eea;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
+      border-color: var(--lx-primary);
+      background: var(--lx-primary);
+      color: #fff;
     }
 
     .tag-option.default {
-      border-color: #4caf50;
-      background: #e8f5e9;
+      border-color: #99f6e4;
+      background: var(--lx-teal-50);
+      color: var(--lx-primary);
     }
 
-    .tag-option.default.selected {
-      background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
-      border-color: #4caf50;
+    .tag-option.default.selected,
+    .tag-option.selected {
+      background: var(--lx-primary);
+      border-color: var(--lx-primary);
+      color: #fff;
     }
 
     .tag-option .tag-icon {
-      font-size: 1.1rem;
+      width: 16px;
+      height: 16px;
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+
+    .tag-option .tag-icon svg {
+      display: block;
     }
 
     .tag-option .tag-name {
       font-weight: 600;
+      white-space: nowrap;
     }
 
-    @media (max-width: 768px) {
+    .tag-scope {
+      font-size: 0.72em;
+      font-weight: 600;
+      color: var(--lx-teal-600);
+    }
+
+    .tag-option.selected .tag-scope {
+      color: rgba(255, 255, 255, 0.86);
+    }
+
+    .upload-limits {
+      display: grid;
+      gap: 6px;
+      background: var(--lx-teal-50);
+      border: 1px solid var(--lx-teal-100);
+      border-left: 1px solid var(--lx-teal-100);
+      border-radius: 14px;
+      padding: 8px 10px 8px;
+      margin-bottom: 10px;
+    }
+
+    .limit-title {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--lx-primary);
+      margin: 0;
+    }
+
+    .limit-items {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .limit-item {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1px;
+      padding: 6px 8px;
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid var(--lx-teal-100);
+    }
+
+    .limit-label {
+      color: var(--lx-ink-500);
+      font-size: 0.7rem;
+      line-height: 1.3;
+      white-space: nowrap;
+    }
+
+    .limit-value {
+      font-weight: 700;
+      color: var(--lx-ink-900);
+      font-size: 0.84rem;
+    }
+
+    .limit-progress {
+      margin-top: 0;
+    }
+
+    .limit-bar {
+      height: 4px;
+      background: var(--lx-teal-100);
+    }
+
+    @media (max-width: 860px) {
       .upload-container {
-        border-radius: 16px;
+        border-radius: 18px;
       }
 
       .upload-header {
-        padding: 1.5rem;
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        grid-template-areas:
+          "icon title tools"
+          "desc desc desc";
+        align-items: center;
+        column-gap: 8px;
+        row-gap: 4px;
+        padding: 10px 12px;
       }
 
-      .upload-header h1 {
-        font-size: 1.5rem;
+      .header-main,
+      .header-copy {
+        display: contents;
       }
 
       .upload-icon {
-        font-size: 2.5rem;
+        grid-area: icon;
+        width: 36px;
+        height: 36px;
+      }
+
+      .upload-header h1 {
+        grid-area: title;
+        font-size: 1.12rem;
+      }
+
+      .upload-header p {
+        grid-area: desc;
+        font-size: 0.75rem;
+      }
+
+      .header-tools {
+        grid-area: tools;
+        margin-left: 0;
       }
 
       .upload-form {
-        padding: 1.5rem;
+        padding: 8px 12px 10px;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+      }
+
+      .form-group,
+      .tag-selector {
+        margin-bottom: 8px;
       }
 
       .file-input-wrapper,
       .file-input-label {
-        min-height: 120px;
-        height: 120px;
+        min-height: 60px;
+        height: 60px;
       }
 
-      .back-btn {
-        top: 0.75rem;
-        right: 0.75rem;
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
+      .file-input-text {
+        max-width: 220px;
       }
 
-      .tag-option {
-        font-size: 0.85rem;
-        padding: 0.4rem 0.7rem;
+      .limit-item {
+        padding: 4px 6px;
       }
     }
   </style>
@@ -572,107 +752,130 @@
 <body>
   <div class="upload-container">
     <div class="upload-header">
-      <a href="#" class="back-btn" id="back-btn" title="返回">
-        <span>← 返回</span>
-      </a>
-      <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; max-width: 600px;">
-        <div style="flex: 1;">
-          <div class="upload-icon">📤</div>
+      <div class="header-main">
+        <div class="upload-icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 16V6"></path>
+            <path d="M8.5 9.5L12 6l3.5 3.5"></path>
+            <path d="M5 19h14"></path>
+          </svg>
+        </div>
+        <div class="header-copy">
           <h1 data-i18n="upload.title">上传新视频</h1>
           <p data-i18n="upload.description">上传视频文件，系统将自动生成字幕和转录文本</p>
         </div>
-        <div class="lang-selector" style="position: relative; display: inline-block;">
-          <button type="button" id="lang-btn-upload" style="padding: 0.6rem 1rem; background: white; border: 2px solid #e0e0e0; border-radius: 10px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
-            <span>🌐</span>
+      </div>
+      <div class="header-tools">
+        <div class="lang-selector">
+          <button type="button" id="lang-btn-upload" class="lang-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="9"></circle>
+              <path d="M3 12h18"></path>
+              <path d="M12 3c2.6 2.8 2.6 15.2 0 18"></path>
+              <path d="M12 3c-2.6 2.8-2.6 15.2 0 18"></path>
+            </svg>
             <span id="current-lang-upload">中文</span>
           </button>
-          <div id="lang-dropdown-upload" style="position: absolute; top: calc(100% + 0.5rem); right: 0; background: white; border: 2px solid #e0e0e0; border-radius: 10px; padding: 0.5rem; min-width: 130px; display: none; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-            <div class="lang-option active" data-lang="zh" style="padding: 0.7rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+          <div id="lang-dropdown-upload" class="lang-dropdown" style="display: none;">
+            <div class="lang-option active" data-lang="zh">
               <span>🇨🇳</span>
               <span>中文</span>
             </div>
-            <div class="lang-option" data-lang="en" style="padding: 0.7rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease;">
+            <div class="lang-option" data-lang="en">
               <span>🇺🇸</span>
               <span>English</span>
             </div>
           </div>
         </div>
+        <a href="#" class="back-btn" id="back-btn" title="返回">
+          <span>← 返回</span>
+        </a>
       </div>
     </div>
 
     <div class="upload-form">
       <form id="upload-form">
-        <div class="form-group">
-          <label for="video-title" data-i18n="upload.title_label">视频标题</label>
-          <input
-            id="video-title"
-            name="title"
-            type="text"
-            placeholder="例如：My listening video"
-            data-i18n="upload.title_placeholder"
-          />
-        </div>
+        <div class="form-grid">
+          <div class="form-col">
+            <div class="form-group">
+              <label for="video-title" data-i18n="upload.title_label">视频标题</label>
+              <input
+                id="video-title"
+                name="title"
+                type="text"
+                placeholder="例如：My listening video"
+                data-i18n="upload.title_placeholder"
+              />
+            </div>
 
-        <div class="form-group">
-          <label data-i18n="upload.file_label">选择视频文件</label>
-          <div class="file-input-wrapper" id="file-input-wrapper">
-            <input
-              id="video-file"
-              name="video"
-              type="file"
-              accept="video/*"
-              multiple
-              required
-            />
-            <div class="file-input-label" id="file-input-label">
-              <div class="file-input-icon">🎬</div>
-              <div class="file-input-text" data-i18n="upload.select_file">点击或拖拽文件到这里</div>
-              <div class="file-input-hint" data-i18n="upload.file_help">支持 MP4, MOV, AVI 等格式</div>
+            <div class="form-group file-group">
+              <label data-i18n="upload.file_label">选择视频文件</label>
+              <div class="file-input-wrapper" id="file-input-wrapper">
+                <input
+                  id="video-file"
+                  name="video"
+                  type="file"
+                  accept="video/*"
+                  multiple
+                  required
+                />
+                <div class="file-input-label" id="file-input-label">
+                  <div class="file-input-icon">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                      <rect x="3" y="5" width="18" height="14" rx="2"></rect>
+                      <path d="M10 9.2v5.6l4.8-2.8L10 9.2z" fill="currentColor" stroke="none"></path>
+                    </svg>
+                  </div>
+                  <div class="file-input-copy">
+                    <div class="file-input-text" data-i18n="upload.select_file">点击或拖拽文件到这里</div>
+                    <div class="file-input-hint" data-i18n="upload.file_help">支持 MP4, MOV, AVI 等格式</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="video-language">音频语言</label>
+              <select id="video-language" name="language">
+                <option value="en" selected>English (英语)</option>
+                <option value="auto">Auto detect (自动检测)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-col">
+            <div class="tag-selector">
+              <label class="tag-selector-title">选择视频标签 <span style="color: #ef4444;">*</span></label>
+              <div class="tag-selector-hint">请至少选择一个标签，方便分类和查找</div>
+              <div class="tag-options" id="tag-options">
+                <!-- 标签选项将由JavaScript动态生成 -->
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="collection-name">合集（可选）</label>
+              <input
+                id="collection-name"
+                name="collection_name"
+                type="text"
+                maxlength="120"
+                placeholder="例如：小猪佩奇 / Friends S01"
+              />
+              <div class="tag-selector-hint" style="margin-top: 4px; margin-bottom: 0;">同一系列的多集视频可以归到同一个合集里</div>
+            </div>
+
+            <div class="form-group">
+              <label>难度级别</label>
+              <div class="tag-selector-hint" style="margin-bottom: 0;">不用自己选。字幕识别完成后，系统按用词和句子自动标成 A1、A2、B1、B2、C1 或 C2。</div>
             </div>
           </div>
         </div>
 
-        <div class="form-group">
-          <label for="video-language">音频语言</label>
-          <select id="video-language" name="language">
-            <option value="en" selected>English (英语)</option>
-            <option value="auto">Auto detect (自动检测)</option>
-          </select>
+        <div class="form-actions">
+          <button type="submit" class="submit-btn" id="submit-btn">
+            <span id="btn-text" data-i18n="upload.submit">上传并转录</span>
+          </button>
         </div>
-
-        <div class="tag-selector">
-          <label class="tag-selector-title">选择视频标签 <span style="color: #ef4444;">*</span></label>
-          <div class="tag-selector-hint">请至少选择一个标签，方便分类和查找</div>
-          <div class="tag-options" id="tag-options">
-            <!-- 标签选项将由JavaScript动态生成 -->
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="collection-name">合集（可选）</label>
-          <input
-            id="collection-name"
-            name="collection_name"
-            type="text"
-            maxlength="120"
-            placeholder="例如：小猪佩奇 / Friends S01"
-          />
-          <div class="tag-selector-hint" style="margin-top: 6px;">同一系列的多集视频可以归到同一个合集里</div>
-        </div>
-
-        <div class="form-group">
-          <label for="difficulty-level">难度级别 <span style="color: #ef4444;">*</span></label>
-          <select id="difficulty-level" name="difficulty_level" required>
-            <option value="">请选择难度级别</option>
-            <option value="beginner">🌱 Beginner - 初级</option>
-            <option value="intermediate">🌿 Intermediate - 中级</option>
-            <option value="advanced">🌳 Advanced - 高级</option>
-          </select>
-        </div>
-
-        <button type="submit" class="submit-btn" id="submit-btn">
-          <span id="btn-text" data-i18n="upload.submit">上传并转录</span>
-        </button>
 
         <div class="status-message" id="status-message"></div>
       </form>
@@ -758,6 +961,30 @@
     const selectedTags = new Set();
     let serverTagLoadOk = false;
 
+    const FILE_MARK = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M10 9.2v5.6l4.8-2.8L10 9.2z" fill="currentColor" stroke="none"></path></svg>';
+    const CHECK_MARK = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>';
+
+    function tagMark(tag) {
+      const name = String(tag.name || tag.displayName || '').trim();
+      const icons = {
+        '我的': '<path d="M12 4.2l1.7 3.5 3.8.5-2.8 2.7.7 3.8L12 13.1 8.6 14.7l.7-3.8L6.5 8.2l3.8-.5L12 4.2z"/>',
+        '亲子': '<circle cx="9" cy="8" r="2.1"/><circle cx="15.5" cy="9.2" r="1.6"/><path d="M4.5 18.4c.6-2.6 2.4-4 4.5-4s3.9 1.4 4.5 4"/><path d="M13.4 15c.7-.5 1.6-.8 2.5-.8 1.7 0 3 1.1 3.6 3"/>',
+        '故事': '<path d="M5 6h6a2 2 0 0 1 2 2v10H7.2A2.2 2.2 0 0 0 5 15.8V6z"/><path d="M13 8h6v10h-6"/><path d="M8 9.5h3"/>',
+        '影视': '<rect x="3.5" y="7" width="17" height="11" rx="2"/><path d="M8 7V5M12 7V5M16 7V5M8 18v1.5M16 18v1.5"/>',
+        '校园': '<path d="M4 10.5L12 6l8 4.5-8 4.5-8-4.5z"/><path d="M8 12.8V17c1.2 1 2.6 1.5 4 1.5s2.8-.5 4-1.5v-4.2"/><path d="M20 10.5V16"/>',
+        '课程': '<path d="M4 8h16v9.5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8z"/><path d="M4 8l8 4 8-4"/><path d="M12 12v7.5"/>',
+        '购物': '<path d="M6 7h15l-1.6 8.2H8.2L6 7z"/><path d="M6 7L5 4H3"/><circle cx="9" cy="18.5" r="1.3"/><circle cx="17" cy="18.5" r="1.3"/>',
+        '职场': '<rect x="3.5" y="8" width="17" height="11" rx="2"/><path d="M9 8V6.2A1.2 1.2 0 0 1 10.2 5h3.6A1.2 1.2 0 0 1 15 6.2V8"/><path d="M3.5 13h17"/>',
+        '动画': '<rect x="4" y="5" width="16" height="14" rx="3"/><path d="M10.5 9.2v5.6l5-2.8-5-2.8z" fill="currentColor" stroke="none"/>',
+        '演讲': '<rect x="9" y="3.5" width="6" height="9.5" rx="3"/><path d="M6.5 11a5.5 5.5 0 0 0 11 0"/><path d="M12 16.5V20M9 20h6"/>',
+        '生活': '<path d="M4 11.2L12 4.5l8 6.7"/><path d="M7 10.5V19h10v-8.5"/><path d="M11 19v-4h2v4"/>',
+        '动物': '<circle cx="8" cy="7.5" r="2"/><circle cx="16" cy="7.5" r="2"/><circle cx="5.2" cy="12" r="1.7"/><circle cx="18.8" cy="12" r="1.7"/><ellipse cx="12" cy="14.5" rx="3.2" ry="2.6"/>',
+        '儿童': '<circle cx="12" cy="8" r="2.6"/><path d="M6.8 18.8c.7-3 2.6-4.6 5.2-4.6s4.5 1.6 5.2 4.6"/>'
+      };
+      const body = icons[name] || '<circle cx="12" cy="12" r="3"/><path d="M12 5v2M12 17v2M5 12h2M17 12h2"/>';
+      return `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+    }
+
     // 渲染标签选项
     function renderTagOptions() {
       const tagOptionsContainer = document.getElementById('tag-options');
@@ -793,10 +1020,10 @@
 
         // 个人标签添加特殊样式
         const isPersonal = (tag.scope || '').startsWith('user');
-        const scopeLabel = isPersonal ? ' <span style="font-size:0.7em;color:#2dd4bf;">(我的)</span>' : '';
+        const scopeLabel = isPersonal ? ' <span class="tag-scope">(我的)</span>' : '';
 
         tagOption.innerHTML = `
-          <span class="tag-icon">${tag.icon || '🏷️'}</span>
+          <span class="tag-icon">${tagMark(tag)}</span>
           <span class="tag-name">${tag.displayName || tag.name}${scopeLabel}</span>
         `;
 
@@ -948,7 +1175,7 @@
             document.querySelectorAll('#lang-dropdown-upload .lang-option').forEach(opt => {
               const isActive = opt.dataset.lang === lang;
               opt.classList.toggle('active', isActive);
-              opt.style.background = isActive ? '#0ea5e9' : '';
+              opt.style.background = isActive ? '#0f766e' : '';
               opt.style.color = isActive ? 'white' : '';
             });
             if (langDropdown) langDropdown.style.display = 'none';
@@ -959,7 +1186,7 @@
       document.querySelectorAll('#lang-dropdown-upload .lang-option').forEach(opt => {
         const isActive = opt.dataset.lang === i18n.currentLang;
         opt.classList.toggle('active', isActive);
-        opt.style.background = isActive ? '#0ea5e9' : '';
+        opt.style.background = isActive ? '#0f766e' : '';
         opt.style.color = isActive ? 'white' : '';
       });
     }
@@ -1132,9 +1359,11 @@
       if (files.length === 0) {
         fileInputWrapper.classList.remove('file-selected');
         fileInputLabel.innerHTML = `
-          <div class="file-input-icon">🎬</div>
-          <div class="file-input-text">点击或拖拽文件到这里</div>
-          <div class="file-input-hint">支持 MP4, MOV, AVI 等格式</div>
+          <div class="file-input-icon">${FILE_MARK}</div>
+          <div class="file-input-copy">
+            <div class="file-input-text">点击或拖拽文件到这里</div>
+            <div class="file-input-hint">支持 MP4, MOV, AVI 等格式</div>
+          </div>
         `;
         return;
       }
@@ -1154,9 +1383,11 @@
         fileInput.value = '';
         fileInputWrapper.classList.remove('file-selected');
         fileInputLabel.innerHTML = `
-          <div class="file-input-icon">🎬</div>
-          <div class="file-input-text">点击或拖拽文件到这里</div>
-          <div class="file-input-hint">支持 MP4, MOV, AVI 等格式</div>
+          <div class="file-input-icon">${FILE_MARK}</div>
+          <div class="file-input-copy">
+            <div class="file-input-text">点击或拖拽文件到这里</div>
+            <div class="file-input-hint">支持 MP4, MOV, AVI 等格式</div>
+          </div>
         `;
         return;
       }
@@ -1166,16 +1397,20 @@
         const file = files[0];
         const fileSizeMB = file.size / (1024 * 1024);
         fileInputLabel.innerHTML = `
-          <div class="file-input-icon">✓</div>
-          <div class="file-input-text">${file.name}</div>
-          <div class="file-input-hint">${fileSizeMB.toFixed(2)} MB</div>
+          <div class="file-input-icon">${CHECK_MARK}</div>
+          <div class="file-input-copy">
+            <div class="file-input-text">${file.name}</div>
+            <div class="file-input-hint">${fileSizeMB.toFixed(2)} MB</div>
+          </div>
         `;
       } else {
         const totalMB = files.reduce((sum, f) => sum + f.size, 0) / (1024 * 1024);
         fileInputLabel.innerHTML = `
-          <div class="file-input-icon">✓</div>
-          <div class="file-input-text">已选择 ${files.length} 个文件</div>
-          <div class="file-input-hint">合计 ${totalMB.toFixed(2)} MB</div>
+          <div class="file-input-icon">${CHECK_MARK}</div>
+          <div class="file-input-copy">
+            <div class="file-input-text">已选择 ${files.length} 个文件</div>
+            <div class="file-input-hint">合计 ${totalMB.toFixed(2)} MB</div>
+          </div>
         `;
       }
     });
@@ -1278,14 +1513,6 @@
       if (!files.length) { showStatus(t('upload.select_file_error'), 'error'); return; }
 
       const tagNames = getSelectedTagNames();
-      const difficultyLevel = document.getElementById('difficulty-level')?.value;
-
-      // 验证：必须选择难度级别
-      if (!difficultyLevel) {
-        showStatus('请选择视频难度级别', 'error');
-        document.getElementById('difficulty-level')?.focus();
-        return;
-      }
 
       // 验证：必须至少选择一个标签
       if (!tagNames.length) {
@@ -1332,7 +1559,7 @@
             formData.set('title', file.name.replace(/\.[^.]+$/, '') || `视频${idx + 1}`);
           }
           if (tagNames.length > 0) formData.set('tags', JSON.stringify(tagNames));
-          if (difficultyLevel) formData.set('difficulty_level', difficultyLevel);
+          formData.delete('difficulty_level');
 
           // Multi-file batch: show which file. Single file: no prefix.
           const filePrefix = files.length > 1 ? `(${idx + 1}/${files.length}) ` : '';
@@ -1429,9 +1656,11 @@
         uploadForm.reset();
         fileInputWrapper.classList.remove('file-selected');
         fileInputLabel.innerHTML = `
-          <div class="file-input-icon">🎬</div>
-          <div class="file-input-text">点击或拖拽文件到这里</div>
-          <div class="file-input-hint">支持 MP4, MOV, AVI 等格式</div>
+          <div class="file-input-icon">${FILE_MARK}</div>
+          <div class="file-input-copy">
+            <div class="file-input-text">点击或拖拽文件到这里</div>
+            <div class="file-input-hint">支持 MP4, MOV, AVI 等格式</div>
+          </div>
         `;
 
         if (uploadedIds.length === 1) {

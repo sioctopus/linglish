@@ -316,6 +316,7 @@ async function listAllVocabItems(userId, { state = null, limit = 100, offset = 0
        uv.next_review_at,
        uv.ease_factor,
        uv.interval_days,
+       uv.first_seen_video_id AS "firstSeenVideoId",
        uv.created_at,
        uv.updated_at,
        w.frequency_rank AS "frequencyRank",

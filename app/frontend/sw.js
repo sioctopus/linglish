@@ -1,11 +1,21 @@
-const VERSION = 'v1.0.6-20260822001';
+const VERSION = 'v1.0.8-20261019001';
 const CORE_CACHE = `core-${VERSION}`;
 const RUNTIME_CACHE = `rt-${VERSION}`;
 const LEGACY_PROTECTED_MEDIA_CACHES = [
   'rt-v1.0.4-20260224001',
   'rt-v1.0.5-20260822001',
+  'rt-v1.0.6-20260822001',
 ];
-const PROTECTED_PATH_PREFIXES = ['/pdfs/', '/videos/', '/recordings/'];
+const PROTECTED_PATH_PREFIXES = ['/pdfs/', '/videos/', '/recordings/', '/note-images/'];
+const NETWORK_ONLY_PREFIXES = [
+  '/articles',
+  '/media',
+  '/class-notes',
+  '/api',
+  '/auth',
+  '/users',
+  '/documents',
+];
 
 const CORE_ASSETS = [
   './mobile-power.html',
@@ -13,6 +23,12 @@ const CORE_ASSETS = [
   './shared/dictionary-util.js',
   './manifest.json'
 ];
+
+function canCacheResponse(response) {
+  if (!response || response.status !== 200) return false;
+  const control = response.headers?.get?.('cache-control') || '';
+  return !/(?:^|,)\s*(?:private|no-store)(?:\s*(?:=|,|$))/i.test(control);
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -36,7 +52,8 @@ self.addEventListener('fetch', (event) => {
   if (req.method !== 'GET' || url.origin !== location.origin) return;
 
   if (
-    url.searchParams.has('token')
+    req.headers.get('authorization')
+    || url.searchParams.has('token')
     || PROTECTED_PATH_PREFIXES.some(prefix => url.pathname.startsWith(prefix))
   ) {
     event.respondWith(fetch(req));
@@ -56,7 +73,12 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Never cache admin/API routes (they change frequently and must be real-time)
-  if (url.pathname.startsWith('/admin/')) {
+  if (
+    url.pathname.startsWith('/admin/')
+    || NETWORK_ONLY_PREFIXES.some((prefix) => (
+      url.pathname === prefix || url.pathname.startsWith(`${prefix}/`)
+    ))
+  ) {
     event.respondWith(fetch(req));
     return;
   }
@@ -67,7 +89,7 @@ self.addEventListener('fetch', (event) => {
       caches.open(RUNTIME_CACHE).then(async (cache) => {
         try {
           const fresh = await fetch(req);
-          if (fresh && fresh.status === 200) {
+          if (canCacheResponse(fresh)) {
             cache.put(req, fresh.clone());
           }
           return fresh;
@@ -90,7 +112,7 @@ self.addEventListener('fetch', (event) => {
   if (req.headers.get('accept') && req.headers.get('accept').includes('text/html')) {
     event.respondWith(
       fetch(req).then((res) => {
-        if (res && res.status === 200) {
+        if (canCacheResponse(res)) {
           const copy = res.clone(); caches.open(CORE_CACHE).then((c) => c.put(req, copy));
         }
         return res;
@@ -102,7 +124,7 @@ self.addEventListener('fetch', (event) => {
   // Static assets (CSS, images, etc.): cache-first
   event.respondWith(
     caches.match(req).then((cached) => cached || fetch(req).then((res) => {
-      if (res && res.status === 200) {
+      if (canCacheResponse(res)) {
         const copy = res.clone(); caches.open(RUNTIME_CACHE).then((c) => c.put(req, copy));
       }
       return res;

@@ -310,7 +310,7 @@ async function registerVocabularyRoutes(pathname, req, res, url) {
         ? Number(url.searchParams.get('offset'))
         : 0;
 
-      const cacheKey = buildUserCacheKey(user.id, `list:${state || 'all'}:${limit}:${offset}`);
+      const cacheKey = buildUserCacheKey(user.id, `list:${state || 'all'}:${limit}:${offset}:video`);
       const cached = await cacheService.get(cacheKey);
       if (cached) {
         return sendJson(res, 200, cached);

@@ -12,11 +12,19 @@
     href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap"
     rel="stylesheet">
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest-desktop.json">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Linglish">
+  <link rel="stylesheet" href="/css/install-desktop.css?v=3">
+  <script src="/js/install-desktop.js?v=3" defer></script>
   <link rel="preload" href="/env.js?v=1" as="script">
   <link rel="preload" href="./global-ui.js?v=20250108" as="script">
-  <link rel="preload" href="./js/auth-manager.js?v=1" as="script">
+  <link rel="preload" href="./js/auth-manager.js?v=20261019" as="script">
   <link rel="preload" href="./js/storage-helper.js?v=1" as="script">
-  <link rel="stylesheet" href="./styles/tokens.css?v=1">
+  <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <link rel="stylesheet" href="./css/quick-win.css?v=1">
 
   <style>
@@ -703,11 +711,10 @@
       display: grid;
       grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr);
       gap: clamp(2rem, 6vw, 4rem);
-      padding: clamp(4rem, 7vw, 6rem) clamp(1.125rem, 5vw, 4rem) clamp(2.75rem, 5vw, 4rem);
+      padding: clamp(1.35rem, 2.4vw, 2rem) clamp(1.125rem, 5vw, 4rem) clamp(2rem, 4vw, 3rem);
       max-width: 1160px;
       margin: 0 auto;
-      align-items: center;
-      min-height: 70svh;
+      align-items: start;
       position: relative;
     }
 
@@ -773,6 +780,22 @@
       flex-wrap: wrap;
       gap: 0.75rem;
       align-items: center;
+    }
+
+    #hero-user-actions.hero-actions {
+      flex-wrap: nowrap;
+      gap: 0.5rem;
+      width: 100%;
+      overflow-x: auto;
+    }
+
+    #hero-user-actions .btn-hero {
+      flex: 1 1 0;
+      min-width: max-content;
+      min-height: 46px;
+      padding: 0 0.7rem;
+      font-size: 0.92rem;
+      white-space: nowrap;
     }
 
     .hero-metrics {
@@ -1193,13 +1216,13 @@
 
     .mascot-card {
       width: min(460px, 92vw);
-      border-radius: var(--radius);
+      border-radius: 24px;
       background: #ffffff;
       border: 1px solid var(--line);
       box-shadow: 0 18px 46px rgba(15, 23, 42, 0.12);
-      padding: 1rem;
+      padding: 0.9rem;
       display: grid;
-      gap: 1rem;
+      gap: 0.85rem;
       position: relative;
       overflow: hidden;
       transition: transform 0.18s ease, box-shadow 0.18s ease;
@@ -1225,22 +1248,24 @@
 
     .mascot-name {
       font-family: "Manrope", "PingFang SC", "Microsoft YaHei", sans-serif;
-      font-size: 1.1rem;
+      font-size: 1.05rem;
       font-weight: 850;
       color: var(--ink-900);
       letter-spacing: 0;
+      line-height: 1.3;
       position: relative;
       z-index: 1;
     }
 
     .mascot-img {
-      width: 72px;
-      height: auto;
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      object-position: center;
+      border-radius: 12px;
+      background: #f4f7fb;
       display: block;
-      transform-origin: center bottom;
       animation: none;
-      filter: drop-shadow(0 10px 18px rgba(15, 23, 42, 0.16));
-      transition: filter 0.2s ease;
       position: relative;
       z-index: 1;
     }
@@ -1337,47 +1362,537 @@
 
     .hero-demo-video {
       width: 100%;
-      aspect-ratio: 16 / 9;
-      border-radius: var(--radius);
-      background: #071018;
-      object-fit: cover;
+      height: auto;
+      background: transparent;
+      object-fit: contain;
+      object-position: center;
       display: block;
+    }
+
+    .hero-lingbao-link {
+      display: block;
+      width: min(380px, 100%);
+      margin: 0 auto;
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .lingbao-stage {
+      position: relative;
+      display: block;
+      width: min(340px, 92%);
+      margin: 0 auto;
+    }
+
+    .lingbao-shadow {
+      position: absolute;
+      left: 22%;
+      right: 26%;
+      bottom: 1.2%;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.16);
+      filter: blur(8px);
+      pointer-events: none;
+      transform-origin: center;
+      animation: lingbaoShadow 7.5s ease-in-out infinite;
+    }
+
+    .lingbao-actor {
+      position: relative;
+      z-index: 1;
+      display: block;
+      transform-origin: 50% 96%;
+      animation: lingbaoLife 7.5s ease-in-out infinite;
+    }
+
+    .lingbao-giggle {
+      position: absolute;
+      top: -8px;
+      left: -6px;
+      z-index: 3;
+      width: 188px;
+      margin: 0;
+      padding: 0.5rem 0.7rem 0.55rem;
+      border-radius: 16px;
+      background: #ffffff;
+      color: #0f172a;
+      font-weight: 750;
+      font-size: 0.84rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+      transition: opacity 0.45s ease;
+    }
+
+    .lingbao-giggle::after {
+      content: "";
+      position: absolute;
+      right: 28px;
+      bottom: -6px;
+      width: 14px;
+      height: 14px;
+      background: #ffffff;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+
+    .lingbao-stage.is-tickled .lingbao-actor {
+      animation: lingbaoTickle 0.7s ease-in-out infinite;
+    }
+
+    .lingbao-stage.is-talking .lingbao-giggle {
+      opacity: 1;
+      animation: lingbaoGiggle 0.9s ease-in-out infinite;
+    }
+
+    .lingbao-stage.is-tickled .lingbao-lid {
+      animation: none;
+      transform: translateY(-58%);
+      transition: transform 0.2s ease-out;
+    }
+
+    .lingbao-eye {
+      position: absolute;
+      z-index: 2;
+      overflow: hidden;
+      border-radius: 50%;
+      pointer-events: none;
+      -webkit-mask-image: radial-gradient(ellipse closest-side, #000 86%, transparent 100%);
+      mask-image: radial-gradient(ellipse closest-side, #000 86%, transparent 100%);
+    }
+
+    .lingbao-eye-left {
+      left: 10.8%;
+      top: 18%;
+      width: 21.6%;
+      height: 16.7%;
+    }
+
+    .lingbao-eye-right {
+      left: 50%;
+      top: 19.1%;
+      width: 29%;
+      height: 19.7%;
+    }
+
+    .lingbao-lid {
+      position: absolute;
+      left: 0;
+      display: block;
+      width: 100%;
+      height: 125%;
+      top: 0;
+      transform: translateY(-108%);
+      background: none;
+      animation: lingbaoBlink 3.4s linear infinite;
+      pointer-events: none;
+    }
+
+    .lingbao-eye-right .lingbao-lid {
+      animation-delay: 0.04s;
+    }
+
+    @keyframes lingbaoBlink {
+      0%, 6%, 14%, 58%, 66%, 100% {
+        transform: translateY(-108%);
+        animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.2);
+      }
+      7.6%, 8.6%, 59.6%, 60.4% {
+        transform: translateY(0%);
+        animation-timing-function: cubic-bezier(0.15, 0.7, 0.2, 1);
+      }
+      10.4% {
+        transform: translateY(-55%);
+        animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.2);
+      }
+      11.6%, 12.4% {
+        transform: translateY(0%);
+        animation-timing-function: cubic-bezier(0.15, 0.7, 0.2, 1);
+      }
+    }
+
+    @keyframes lingbaoTickle {
+      0%, 100% { transform: translate(-2px, 0) rotate(-2.5deg) scale(1.01, 0.995); }
+      50% { transform: translate(2px, -1px) rotate(2.5deg) scale(0.995, 1.012); }
+    }
+
+    @keyframes lingbaoGiggle {
+      0%, 100% { opacity: 1; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-4px); }
+    }
+
+    @keyframes lingbaoLife {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1, 1); }
+      7% { transform: translateY(-4px) rotate(-2deg) scale(1.02, 0.985); }
+      14% { transform: translateY(0) rotate(0.5deg) scale(0.995, 1.012); }
+      22% { transform: translateY(-3px) rotate(2.5deg) scale(1.018, 0.988); }
+      30% { transform: translateY(1px) rotate(0deg) scale(0.99, 1.02); }
+      40% { transform: translateY(-10px) rotate(-3deg) scale(1.035, 0.97); }
+      46% { transform: translateY(2px) rotate(1.5deg) scale(0.985, 1.03); }
+      54% { transform: translateY(-2px) rotate(0deg) scale(1.01, 0.995); }
+      63% { transform: translateY(-5px) rotate(4deg) scale(1.02, 0.99); }
+      71% { transform: translateY(-7px) rotate(-4deg) scale(1.025, 0.985); }
+      80% { transform: translateY(-1px) rotate(1deg) scale(1, 1.01); }
+      88% { transform: translateY(-4px) rotate(-2deg) scale(1.015, 0.99); }
+    }
+
+    @keyframes lingbaoShadow {
+      0%, 100% { transform: scaleX(1); opacity: 0.85; }
+      40% { transform: scaleX(0.86); opacity: 0.55; }
+      46% { transform: scaleX(1.08); opacity: 1; }
+      71% { transform: scaleX(0.94); opacity: 0.7; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lingbao-stage,
+      .lingbao-actor,
+      .lingbao-shadow,
+      .lingbao-lid,
+      .lingbao-giggle {
+        animation: none;
+      }
+    }
+
+    .hero-lingbao-link:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+    }
+
+    .hero-lingbao-link:not([href]) {
+      cursor: default;
+    }
+
+    .lingbao-home {
+      position: relative;
+      width: min(380px, 100%);
+      margin: 0 auto;
+    }
+
+    .lingbao-entry {
+      width: min(280px, 92%);
+      margin: 8px auto 0;
+      display: grid;
+      gap: 10px;
+      padding: 16px;
+      background: #fff;
+      border-radius: 24px;
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.08);
+    }
+
+    .lingbao-entry[hidden] {
+      display: none !important;
+    }
+
+    .lingbao-entry p {
+      margin: 0;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 20px;
+      text-align: center;
+    }
+
+    .lingbao-entry a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 46px;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      background: #fff;
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .lingbao-entry a:hover {
+      background: #f0fdfa;
+      border-color: #99f6e4;
+      color: #0f766e;
+    }
+
+    .demo-reel-lingbao {
+      width: min(380px, 100%);
+      margin: 0 auto;
+      background: transparent;
+      cursor: default;
+    }
+
+    .enter-video-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10000;
+      display: grid;
+      place-items: center;
+      background: rgba(243, 244, 246, 0.86);
+      backdrop-filter: blur(8px);
+      animation: enterVideoFade 0.22s ease;
+    }
+
+    .enter-video-card {
+      width: min(320px, calc(100% - 32px));
+      padding: 1.4rem 1.3rem 1.2rem;
+      border-radius: 28px;
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+      display: grid;
+      justify-items: center;
+      gap: 0.75rem;
+    }
+
+    .enter-video-evolve {
+      --p: 0;
+      position: relative;
+      width: 168px;
+      height: 214px;
+      transform: scale(calc(0.84 + var(--p) * 0.16));
+      transform-origin: 50% 100%;
+    }
+
+    .enter-video-evolve::before {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 6%;
+      width: 150px;
+      height: 150px;
+      transform: translateX(-50%) scale(calc(0.35 + var(--p) * 0.85));
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(45, 212, 191, calc(0.08 + var(--p) * 0.42)), transparent 68%);
+      filter: blur(8px);
+      pointer-events: none;
+    }
+
+    .enter-video-lingbao {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center bottom;
+      pointer-events: none;
+    }
+
+    .enter-video-lingbao-base {
+      filter: grayscale(1) brightness(1.25);
+      opacity: 0.38;
+    }
+
+    .enter-video-lingbao-fill {
+      clip-path: inset(calc((1 - var(--p)) * 100%) 0 0 0);
+      filter: saturate(calc(0.75 + var(--p) * 0.45)) brightness(calc(0.92 + var(--p) * 0.16));
+    }
+
+    .enter-video-shine {
+      position: absolute;
+      left: 10%;
+      right: 10%;
+      height: 8px;
+      top: calc((1 - var(--p)) * 88%);
+      border-radius: 999px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.95), transparent);
+      box-shadow: 0 0 14px rgba(45, 212, 191, 0.9);
+      opacity: calc(var(--p) * (1 - var(--p)) * 4);
+      pointer-events: none;
+    }
+
+    .enter-video-copy {
+      font-weight: 800;
+      color: #17191f;
+    }
+
+    .enter-video-meter {
+      width: 100%;
+      height: 12px;
+      border-radius: 999px;
+      background: #ecfdf5;
+      border: 1px solid rgba(15, 118, 110, 0.16);
+      overflow: hidden;
+    }
+
+    .enter-video-meter span {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #0f766e, #14b8a6 58%, #99f6e4);
+      box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.45);
+      position: relative;
+    }
+
+    .enter-video-meter span::after {
+      content: "";
+      position: absolute;
+      top: -2px;
+      bottom: -2px;
+      right: -2px;
+      width: 12px;
+      border-radius: 50%;
+      background: #ffffff;
+      box-shadow: 0 0 10px #5eead4;
+    }
+
+    .enter-video-percent {
+      font-size: 0.85rem;
+      font-weight: 750;
+      color: #64748b;
+    }
+
+    @keyframes enterVideoFade {
+      from { opacity: 0; }
+      to { opacity: 1; }
     }
 
     .workbench-coach {
       display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 0.85rem;
+      grid-template-columns: 42px minmax(0, 1fr);
+      grid-template-areas:
+        "avatar name"
+        "copy copy";
+      column-gap: 0.7rem;
+      row-gap: 0.35rem;
       align-items: center;
-      padding: 0.4rem 0;
+      padding: 0.15rem 0.2rem 0;
+    }
+
+    .workbench-coach .mascot-img {
+      grid-area: avatar;
+    }
+
+    .workbench-coach .mascot-name {
+      grid-area: name;
     }
 
     .workbench-coach p {
-      margin: 0.2rem 0 0;
+      grid-area: copy;
+      margin: 0;
       color: var(--ink-500);
-      font-size: 0.9rem;
-      line-height: 1.45;
+      font-size: 0.92rem;
+      line-height: 1.6;
     }
 
     .workbench-loop {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 0.5rem;
+      gap: 0.65rem;
+      margin: 0 0.15rem;
       border-top: 1px solid var(--line);
-      padding-top: 0.9rem;
+      padding: 0.85rem 0.15rem 0.2rem;
     }
 
     .workbench-step {
+      min-width: 0;
       color: var(--ink-500);
-      font-size: 0.8rem;
-      line-height: 1.35;
+      font-size: 0.82rem;
+      line-height: 1.45;
     }
 
     .workbench-step strong {
       display: block;
       color: var(--ink-900);
       font-size: 0.92rem;
-      margin-bottom: 0.15rem;
+      line-height: 1.3;
+      margin-bottom: 0.2rem;
+      white-space: nowrap;
+    }
+
+    /* 首页游戏阅读卡片 */
+    .read-cards {
+      padding: 0 clamp(1.125rem, 5vw, 4rem) clamp(2.4rem, 5vw, 3.5rem);
+      background: #f8fafc;
+    }
+
+    .read-cards-inner {
+      max-width: 1160px;
+      margin: 0 auto;
+    }
+
+    .read-cards-head {
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .read-cards-head h2 {
+      margin: 0;
+      color: #0f172a;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 700;
+      line-height: 1.15;
+    }
+
+    .read-cards-head p {
+      margin: 0;
+      color: #64748b;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    .read-cards-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.9rem;
+    }
+
+    .read-card {
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+      overflow: hidden;
+      text-decoration: none;
+      color: inherit;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 24px;
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+      transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+    }
+
+    .read-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(15, 118, 110, 0.45);
+      box-shadow: 0 16px 36px rgba(15, 118, 110, 0.12);
+    }
+
+    .read-card:focus-visible {
+      outline: 3px solid #0ea5e9;
+      outline-offset: 3px;
+    }
+
+    .read-card-photo {
+      display: block;
+      aspect-ratio: 4 / 3;
+      background: #f0fdfa;
+    }
+
+    .read-card-photo img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .read-card-body {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding: 0.85rem 1rem 1rem;
+    }
+
+    .read-card-body strong {
+      color: #0f172a;
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .read-card-body span {
+      color: #0f766e;
+      font-size: 0.82rem;
+      font-weight: 700;
     }
 
     /* 核心入口区块（第二屏） */
@@ -1399,7 +1914,7 @@
       display: grid;
       grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
       gap: clamp(2rem, 5vw, 3.5rem);
-      align-items: center;
+      align-items: start;
     }
 
     .core-entries-header {
@@ -2065,23 +2580,38 @@
       background: rgba(255, 255, 255, 0.95);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid var(--line-soft);
-      padding: 0 6vw;
+      padding: 0 2vw;
       display: flex;
       justify-content: center;
       gap: 0;
+      overflow-x: auto;
+      flex-wrap: nowrap;
+      scrollbar-width: none;
+    }
+
+    .section-nav::-webkit-scrollbar {
+      display: none;
     }
 
     .section-nav a {
       display: flex;
       align-items: center;
       gap: 8px;
-      padding: 14px 24px;
+      padding: 14px 16px;
       color: var(--ink-500);
       text-decoration: none;
       font-weight: 600;
       font-size: 0.95rem;
       border-bottom: 3px solid transparent;
       transition: all 0.2s ease;
+      white-space: nowrap;
+      flex: 0 0 auto;
+    }
+
+    .section-nav a[data-nav-top] {
+      padding-right: 18px;
+      margin-right: 4px;
+      border-right: 1px solid var(--line-soft);
     }
 
     .section-nav a:hover {
@@ -2304,6 +2834,8 @@
       border: 1px solid transparent;
       transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
       cursor: pointer;
+      color: inherit;
+      text-decoration: none;
     }
 
     .quest-item:hover {
@@ -2499,6 +3031,7 @@
     .community-section,
     .personalized-section {
       padding: 3.2rem 6vw 0;
+      scroll-margin-top: 80px;
     }
 
     .community-header,
@@ -4076,14 +4609,20 @@
       width: 80px;
       height: 80px;
       margin: 0 auto 1.5rem;
-      background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
+      background: linear-gradient(135deg, #0d9488, #2dd4bf);
       border-radius: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 2.5rem;
-      box-shadow: 0 12px 30px rgba(14, 165, 233, 0.3);
+      color: #ffffff;
+      box-shadow: 0 12px 30px rgba(13, 148, 136, 0.28);
       transition: all 0.3s ease;
+    }
+
+    .feature-item-icon svg {
+      width: 36px;
+      height: 36px;
+      display: block;
     }
 
     .feature-item:hover .feature-item-icon {
@@ -4183,6 +4722,7 @@
     .faq-section {
       padding: 5rem 6vw;
       background: #f8fafc;
+      scroll-margin-top: 80px;
     }
 
     .faq-header {
@@ -4417,7 +4957,7 @@
 
       .hero {
         grid-template-columns: 1fr;
-        padding: 3.5rem 2rem 2.5rem;
+        padding: 1.5rem 2rem 2.25rem;
         text-align: left;
         min-height: auto;
       }
@@ -4447,10 +4987,18 @@
       }
 
       .workbench-loop {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
       }
 
       .core-entry-bar {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .read-cards {
+        padding: 0 1.5rem 2.4rem;
+      }
+
+      .read-cards-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
@@ -4819,6 +5367,10 @@
       transform: translateY(0);
     }
 
+    .btn-wechat {
+      margin-top: 0.75rem;
+    }
+
     .btn-social svg {
       flex-shrink: 0;
     }
@@ -4938,11 +5490,12 @@
 </head>
 
 <body>
+  <div id="page-top"></div>
 
   <!-- 顶部公告栏 -->
   <div class="announcement-bar" id="announcement-bar">
     <span class="announcement-text">
-      <span>今日训练建议：真实视频输入 + 逐句跟读反馈 + 词汇复习，15 分钟完成一轮。</span>
+      <span>今天先听懂一句，再跟读这一句，最后复习这句里卡住的词。</span>
     </span>
     <a href="#" class="announcement-cta" onclick="startTodayLearning(event, 'announcement'); return false;">开始训练</a>
   </div>
@@ -4958,6 +5511,8 @@
     <div class="nav-links" id="nav-links">
       <a class="nav-link" href="./video-reader-desktop.html?v=20260102b" id="nav-learn-link"
         data-track="nav_learn">今日训练</a>
+      <a class="nav-link" href="./workbench.html" id="nav-workbench-link"
+        data-track="nav_workbench">工作台</a>
       <a class="nav-link" href="#features" data-track="nav_learn_more">功能</a>
     </div>
 
@@ -5001,7 +5556,7 @@
 
     <!-- 已登录状态 -->
     <div id="user-info" class="user-info" hidden>
-      <a href="./membership.html" id="vip-badge" class="vip-badge" hidden>
+      <a href="./membership.html" id="vip-badge" class="vip-badge" hidden title="会员状态">
         <span class="vip-icon">👑</span>
         <span class="vip-text">VIP</span>
       </a>
@@ -5019,14 +5574,22 @@
 
       <!-- 未登录状态的按钮 -->
       <div id="hero-guest-actions" class="hero-actions" hidden>
-        <button class="btn btn-primary btn-hero btn-cta" onclick="startTodayLearning(event, 'hero_guest')"
-          data-track="hero_start_today" data-role="guest-cta">开始今日训练</button>
+        <a class="btn btn-primary btn-hero btn-cta" href="./game.html"
+          data-track="hero_game_entry" data-role="guest-cta">进入词汇游戏</a>
+        <a class="btn btn-outline btn-hero" id="hero-guest-speaking" href="./daily-speaking.html"
+          data-track="hero_speaking_entry">日常用语</a>
+        <a class="btn btn-outline btn-hero" id="hero-guest-document" href="./document-import.html"
+          data-track="hero_document_entry">导入学习文档</a>
       </div>
 
       <!-- 已登录状态的按钮 -->
       <div id="hero-user-actions" class="hero-actions" hidden>
-        <button class="btn btn-primary btn-hero btn-cta" id="start-learning-btn" type="button"
-          onclick="startTodayLearning(event, 'hero_user')">进入今日训练</button>
+        <a class="btn btn-primary btn-hero btn-cta" id="start-learning-btn" href="./game.html"
+          data-track="hero_game_entry">进入词汇游戏</a>
+        <a class="btn btn-outline btn-hero" id="hero-user-speaking" href="./daily-speaking.html"
+          data-track="hero_speaking_entry">日常用语</a>
+        <a class="btn btn-outline btn-hero" id="hero-user-document" href="./document-import.html"
+          data-track="hero_document_entry">导入学习文档</a>
       </div>
       <div class="hero-metrics" aria-label="Linglish 训练闭环">
         <div class="hero-metric">
@@ -5044,24 +5607,87 @@
       </div>
     </div>
     <div class="hero-visual">
-      <div class="mascot-card">
-        <div class="workbench-top">
-          <div class="lingbao-stamp">TODAY LOOP</div>
-          <div class="workbench-time">15 min</div>
-        </div>
-        <img class="hero-demo-video" src="./assets/lingbao_3d.jpg" alt="Ling宝" style="width:100%;height:100%;object-fit:cover">
-        <div class="workbench-coach">
-          <img src="./assets/lingbao_3d.jpg" alt="Ling宝" class="mascot-img">
-          <div>
-            <div class="mascot-name">Ling宝口语教练</div>
-            <p>从一句真实表达开始，完成听懂、跟读、复盘、复习。</p>
-          </div>
-        </div>
-        <div class="workbench-loop" aria-label="今日训练步骤">
-          <div class="workbench-step"><strong>01 输入</strong>看原声视频</div>
-          <div class="workbench-step"><strong>02 输出</strong>逐句跟读</div>
-          <div class="workbench-step"><strong>03 巩固</strong>复习词句</div>
-        </div>
+      <div class="lingbao-home">
+      <a class="hero-lingbao-link" id="hero-lingbao-link" href="#lingbao-entry" aria-label="点击 Ling宝，进入日常用语或实战场。鼠标移动可以给 Ling宝挠痒痒">
+        <span class="lingbao-stage">
+          <span class="lingbao-shadow" aria-hidden="true"></span>
+          <span class="lingbao-giggle" aria-hidden="true">Hey, let’s learn English together!</span>
+          <span class="lingbao-actor">
+            <img class="hero-demo-video" src="./assets/lingbao_nobg.png" alt="Ling宝">
+            <span class="lingbao-eye lingbao-eye-left" aria-hidden="true"><canvas class="lingbao-lid" data-skin="200,166,52,18"></canvas></span>
+            <span class="lingbao-eye lingbao-eye-right" aria-hidden="true"><canvas class="lingbao-lid" data-skin="176,174,48,18"></canvas></span>
+          </span>
+        </span>
+      </a>
+      <div class="lingbao-entry" id="lingbao-entry" hidden>
+        <p>点 Ling宝，从这里进入</p>
+        <a id="lingbao-coach" href="./daily-speaking.html">日常用语</a>
+        <a id="lingbao-arena" href="./practice-session-desktop.html?mode=dialogue">实战场</a>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="read-cards" id="game-read-cards" aria-labelledby="game-read-cards-title" hidden>
+    <div class="read-cards-inner">
+      <div class="read-cards-head">
+        <div class="lingbao-stamp">WORD CARDS</div>
+        <h2 id="game-read-cards-title">游戏阅读卡片</h2>
+        <p>看图听发音。点一张，直接读这一组单词。</p>
+      </div>
+      <div class="read-cards-grid">
+        <a class="read-card" href="./game.html?deck=fruits" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/apple.jpg?v=4" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>水果</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=animals" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/dog.jpg?v=4" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>动物</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=vehicles" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/car.jpg?v=4" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>汽车</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=colors" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/color-red.jpg?v=4" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>颜色</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=clothes" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/shirt.jpg?v=4" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>衣服</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=scenes" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/park.jpg?v=4" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>场景</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=numbers" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/one.png?v=6" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>数数</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=letters" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/a.png?v=6" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>字母</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=shapes" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/shapes/circle.svg?v=2" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>形状</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=body" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/body/body.svg?v=2" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>人体</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=appliances" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/television.jpg?v=5" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>电器</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=nature" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/forest.jpg?v=5" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>大自然</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=currencies" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/currency-yuan-1.jpg?v=2" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>货币</strong><span>看图听读</span></span>
+        </a>
       </div>
     </div>
   </section>
@@ -5110,35 +5736,17 @@
       <div>
         <div class="daily-task-title">今日训练计划</div>
         <div class="gamify-card quest-card daily-task-highlight">
-          <div class="card-title">15 分钟闭环</div>
+          <div class="card-title">今天的句子</div>
           <div class="quest-list">
-            <div class="quest-item" data-quest="watch">
-              <div class="quest-icon">🎬</div>
-              <div class="quest-text">
-                <h4>精听 1 个视频片段</h4>
-                <p>先建立真实语境和关键词</p>
-                <div class="quest-bar"><span id="home-quest-watch"></span></div>
-              </div>
-              <div class="quest-progress" id="home-quest-watch-text">0/1</div>
-            </div>
-            <div class="quest-item" data-quest="review">
-              <div class="quest-icon">📝</div>
-              <div class="quest-text">
-                <h4>复习 20 个词句</h4>
-                <p>把今天的输入沉淀成长期记忆</p>
-                <div class="quest-bar"><span id="home-quest-review"></span></div>
-              </div>
-              <div class="quest-progress" id="home-quest-review-text">0/20</div>
-            </div>
-            <div class="quest-item" data-quest="shadow">
+            <a class="quest-item" data-quest="sentences" href="./today.html">
               <div class="quest-icon">🎙️</div>
               <div class="quest-text">
-                <h4>跟读 5 句表达</h4>
-                <p>围绕节奏、连读和重音复盘</p>
-                <div class="quest-bar"><span id="home-quest-shadow"></span></div>
+                <h4>说到 5 句可以停</h4>
+                <p id="home-sentence-note">说完这一句，今天就算开始。说到 5 句可以停。</p>
+                <div class="quest-bar"><span id="home-sentence-bar"></span></div>
               </div>
-              <div class="quest-progress" id="home-quest-shadow-text">0/5</div>
-            </div>
+              <div class="quest-progress" id="home-sentence-count">0/5</div>
+            </a>
           </div>
         </div>
       </div>
@@ -5167,14 +5775,10 @@
   </section>
 
   <!-- 锚点导航条 -->
-  <nav class="section-nav" id="section-nav" data-role="secondary-section">
-    <a href="#pathways" class="active">
-      <span class="nav-icon">🎯</span>
-      <span>学习路径</span>
-    </a>
-    <a href="#gamify">
-      <span class="nav-icon">🎮</span>
-      <span>游戏激励</span>
+  <nav class="section-nav" id="section-nav" data-role="secondary-section" aria-label="页面板块">
+    <a href="#page-top" data-nav-top class="active">
+      <span class="nav-icon">⬆️</span>
+      <span>回到顶部</span>
     </a>
     <a href="#community">
       <span class="nav-icon">🎧</span>
@@ -5183,6 +5787,14 @@
     <a href="#personalized">
       <span class="nav-icon">🧭</span>
       <span>专项突破</span>
+    </a>
+    <a href="#pathways">
+      <span class="nav-icon">🎯</span>
+      <span>学习路径</span>
+    </a>
+    <a href="#gamify">
+      <span class="nav-icon">🎮</span>
+      <span>游戏激励</span>
     </a>
     <a href="#quick-start">
       <span class="nav-icon">🚀</span>
@@ -5763,9 +6375,16 @@
           <h2>15 秒看懂 Linglish 怎么用</h2>
           <p>先看真实视频片段，再跟读纠音、生成复习卡，把输入、输出、记忆连成一条顺滑路径。</p>
         </div>
-        <div class="demo-reel-card">
-          <div class="demo-reel-label">训练功能预览</div>
-          <img class="demo-reel-video" src="./assets/lingbao_3d.jpg" alt="Ling宝" style="width:100%;height:100%;object-fit:cover">
+        <div class="demo-reel-lingbao" id="demo-reel-lingbao">
+          <span class="lingbao-stage">
+            <span class="lingbao-shadow" aria-hidden="true"></span>
+            <span class="lingbao-giggle" aria-hidden="true">Hey, let’s learn English together!</span>
+            <span class="lingbao-actor">
+              <img class="hero-demo-video" src="./assets/lingbao_nobg.png" alt="Ling宝">
+              <span class="lingbao-eye lingbao-eye-left" aria-hidden="true"><canvas class="lingbao-lid" data-skin="200,166,52,18"></canvas></span>
+              <span class="lingbao-eye lingbao-eye-right" aria-hidden="true"><canvas class="lingbao-lid" data-skin="176,174,48,18"></canvas></span>
+            </span>
+          </span>
         </div>
       </section>
       <div class="features-header">
@@ -5971,33 +6590,33 @@
       <div class="features-grid">
         <div class="feature-item core">
           <div class="feature-item-tag">核心功能</div>
-          <div class="feature-item-icon">🎥</div>
+          <div class="feature-item-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><rect x="3.5" y="7" width="25" height="18" rx="4" stroke="currentColor" stroke-width="2"/><path d="M13.2 12.2v7.6l7.2-3.8-7.2-3.8z" fill="currentColor"/></svg></div>
           <h3>真实场景视频</h3>
           <p>精选YouTube优质视频，覆盖生活、职场、科技等场景；每天 15 分钟掌握 3-5 个高频表达。</p>
         </div>
         <div class="feature-item core">
           <div class="feature-item-tag">核心功能</div>
-          <div class="feature-item-icon">🗣️</div>
+          <div class="feature-item-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><rect x="12" y="3.5" width="8" height="14" rx="4" stroke="currentColor" stroke-width="2"/><path d="M8 14.5a8 8 0 0016 0M16 22.5V27M12 27h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
           <h3>AI智能陪练</h3>
           <p>跟读评分、发音纠正、实时反馈，帮助你在 2 周内显著提升语音准确度。</p>
         </div>
         <div class="feature-item">
-          <div class="feature-item-icon">🧠</div>
+          <div class="feature-item-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><rect x="6" y="5" width="16" height="12" rx="2.5" stroke="currentColor" stroke-width="2"/><rect x="10" y="15" width="16" height="12" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M14 21h8" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
           <h3>科学记忆法</h3>
           <p>基于遗忘曲线的智能复习，系统自动安排复盘时间，30 天稳固核心词汇。</p>
         </div>
         <div class="feature-item">
-          <div class="feature-item-icon">📊</div>
+          <div class="feature-item-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M5 26h22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M8 26V16M16 26V8M24 26V13" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg></div>
           <h3>学习数据追踪</h3>
           <p>可视化语速、准确率、词汇覆盖率曲线，让你每周看到真实进步。</p>
         </div>
         <div class="feature-item">
-          <div class="feature-item-icon">🎮</div>
+          <div class="feature-item-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M9 12h14a5 5 0 014.8 6.3l-1.2 4.2A3.2 3.2 0 0123.6 25h-.2a3 3 0 01-2.6-1.5L19.5 21h-7l-1.3 2.5A3 3 0 018.6 25h-.2a3.2 3.2 0 01-3-2.5l-1.2-4.2A5 5 0 019 12z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M10 16.5h4M12 14.5v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="20" cy="16" r="1.1" fill="currentColor"/><circle cx="23" cy="18.2" r="1.1" fill="currentColor"/></svg></div>
           <h3>游戏化学习</h3>
           <p>连续打卡 + 任务奖励，帮助你坚持 21 天形成长期学习习惯。</p>
         </div>
         <div class="feature-item">
-          <div class="feature-item-icon">⚡</div>
+          <div class="feature-item-icon" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><rect x="11" y="3" width="10" height="26" rx="2.5" stroke="currentColor" stroke-width="2"/><path d="M14 26.2h4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></div>
           <h3>随时随地学</h3>
           <p>支持PC与移动端无缝切换，通勤碎片时间也能完成一次口语练习。</p>
         </div>
@@ -6257,6 +6876,12 @@
           </svg>
           <span>使用 Google 登录</span>
         </button>
+        <button type="button" class="btn-social btn-wechat" id="wechat-login-btn" onclick="loginWithWechat()">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#07C160" d="M9.5 4C5.9 4 3 6.4 3 9.4c0 1.8 1 3.4 2.6 4.4L5 16l2.3-1.2c.7.2 1.4.3 2.2.3.3 0 .6 0 .9-.1-.2-.5-.3-1.1-.3-1.6 0-3.1 2.9-5.6 6.4-5.6.2 0 .5 0 .7.1C16.4 5.6 13.3 4 9.5 4zm-2 3.2a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6zm4.2 0a.8.8 0 1 1 0 1.6.8.8 0 0 1 0-1.6zM16.6 8.8c-3 0-5.4 2-5.4 4.5s2.4 4.5 5.4 4.5c.6 0 1.1-.1 1.6-.2l2 .9-.5-1.6c1.3-.8 2.2-2.1 2.2-3.6 0-2.5-2.4-4.5-5.3-4.5zm-1.8 2.2a.7.7 0 1 1 0 1.4.7.7 0 0 1 0-1.4zm3.6 0a.7.7 0 1 1 0 1.4.7.7 0 0 1 0-1.4z"/>
+          </svg>
+          <span>微信扫码登录</span>
+        </button>
       </div>
 
       <!-- Divider -->
@@ -6286,7 +6911,8 @@
     </div>
   </div>
 
-  <script src="./js/auth-manager.js?v=1"></script>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <script src="./js/oauth-bootstrap.js?v=1"></script>
   <script src="./js/storage-helper.js?v=1"></script>
   <script src="./gamification.js?v=1"></script>
@@ -6410,11 +7036,168 @@
       currentVideoHref = videoHref;
 
       setHref('#home-link-video, #home-core-link-video', videoHref);
+      const arena = document.getElementById('lingbao-arena');
+      if (arena) arena.href = `./practice-session-desktop.html?mode=dialogue&level=${encodeURIComponent(lv)}&v=${encodeURIComponent(v)}`;
       setHref('#home-link-practice, #home-core-link-practice', practiceHref);
       setHref('#home-link-vocab, #home-core-link-vocab', vocabHref);
       if (navLearnLink) navLearnLink.href = videoHref;
       if (ctaUserBtn) ctaUserBtn.onclick = () => { window.location.href = videoHref; };
     }
+
+    function playEnterVideoTransition(href) {
+      if (document.getElementById('enter-video-overlay')) return;
+      const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if (reduceMotion) {
+        window.location.href = href;
+        return;
+      }
+      const overlay = document.createElement('div');
+      overlay.id = 'enter-video-overlay';
+      overlay.className = 'enter-video-overlay';
+      overlay.setAttribute('role', 'status');
+      overlay.setAttribute('aria-live', 'polite');
+      overlay.innerHTML = `
+        <div class="enter-video-card">
+          <div class="enter-video-evolve">
+            <img class="enter-video-lingbao enter-video-lingbao-base" src="./assets/lingbao_nobg.png" alt="">
+            <img class="enter-video-lingbao enter-video-lingbao-fill" src="./assets/lingbao_nobg.png" alt="">
+            <span class="enter-video-shine" aria-hidden="true"></span>
+          </div>
+          <div class="enter-video-copy">正在进入视频学习</div>
+          <div class="enter-video-meter" aria-hidden="true"><span></span></div>
+          <div class="enter-video-percent">0%</div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+      const meter = overlay.querySelector('.enter-video-meter span');
+      const percent = overlay.querySelector('.enter-video-percent');
+      const evolve = overlay.querySelector('.enter-video-evolve');
+      const start = performance.now();
+      const duration = 1200;
+      const frame = (now) => {
+        const t = Math.min(1, (now - start) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const pct = Math.round(eased * 100);
+        meter.style.width = pct + '%';
+        percent.textContent = pct + '%';
+        evolve.style.setProperty('--p', String(eased));
+        if (t < 1) requestAnimationFrame(frame);
+        else window.location.href = href;
+      };
+      requestAnimationFrame(frame);
+    }
+
+    function canEnterVideoFromLingbao() {
+      const auth = checkAuthStatus();
+      return Boolean(auth.isLoggedIn && !auth.isGuest);
+    }
+
+    document.getElementById('hero-lingbao-link')?.addEventListener('click', (event) => {
+      if (event.defaultPrevented || event.button !== 0) return;
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+      event.preventDefault();
+      const panel = document.getElementById('lingbao-entry');
+      if (!panel) return;
+      panel.hidden = !panel.hidden;
+    });
+    document.addEventListener('click', (event) => {
+      const panel = document.getElementById('lingbao-entry');
+      const home = event.target.closest?.('.lingbao-home');
+      if (!panel || home) return;
+      panel.hidden = true;
+    });
+
+    function bindLingbaoPlay(root) {
+      const stage = root?.querySelector('.lingbao-stage');
+      const img = stage?.querySelector('img');
+      if (!root || !stage || !img) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      let canvas = null;
+      let ctx = null;
+      const prepare = () => {
+        if (!img.naturalWidth || canvas) return;
+        canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0);
+      };
+      if (img.complete) prepare();
+      else img.addEventListener('load', prepare);
+
+      const paintLid = (lid) => {
+        const parts = (lid.dataset.skin || '').split(',').map(Number);
+        if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) return;
+        const [sx, sy, sw, sh] = parts;
+        const width = 240;
+        const height = 300;
+        lid.width = width;
+        lid.height = height;
+        const lidCtx = lid.getContext('2d');
+        lidCtx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
+        const shade = lidCtx.createLinearGradient(0, height * 0.35, 0, height);
+        shade.addColorStop(0, 'rgba(255, 255, 255, 0.16)');
+        shade.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+        shade.addColorStop(1, 'rgba(24, 64, 12, 0.22)');
+        lidCtx.fillStyle = shade;
+        lidCtx.fillRect(0, 0, width, height);
+        lidCtx.lineCap = 'round';
+        lidCtx.beginPath();
+        lidCtx.moveTo(width * 0.08, height * 0.9);
+        lidCtx.quadraticCurveTo(width * 0.5, height * 0.99, width * 0.92, height * 0.9);
+        lidCtx.strokeStyle = 'rgba(32, 74, 20, 0.45)';
+        lidCtx.lineWidth = 8;
+        lidCtx.stroke();
+        lidCtx.beginPath();
+        lidCtx.moveTo(width * 0.14, height * 0.885);
+        lidCtx.quadraticCurveTo(width * 0.5, height * 0.96, width * 0.86, height * 0.885);
+        lidCtx.strokeStyle = 'rgba(236, 255, 220, 0.4)';
+        lidCtx.lineWidth = 2;
+        lidCtx.stroke();
+      };
+      const paintLids = () => {
+        if (!img.naturalWidth) return;
+        stage.querySelectorAll('.lingbao-lid').forEach(paintLid);
+      };
+      if (img.complete) paintLids();
+      else img.addEventListener('load', paintLids);
+
+      let stopTimer = 0;
+      let talkTimer = 0;
+      const stopWiggle = () => stage.classList.remove('is-tickled');
+      const showTalk = () => {
+        stage.classList.add('is-talking');
+        clearTimeout(talkTimer);
+        talkTimer = setTimeout(() => stage.classList.remove('is-talking'), 3200);
+      };
+      const onBody = (event) => {
+        if (!ctx) return false;
+        const rect = img.getBoundingClientRect();
+        if (!rect.width || !rect.height) return false;
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        if (x < 0 || y < 0 || x > 1 || y > 1) return false;
+        const px = Math.min(canvas.width - 1, Math.max(0, Math.floor(x * canvas.width)));
+        const py = Math.min(canvas.height - 1, Math.max(0, Math.floor(y * canvas.height)));
+        return ctx.getImageData(px, py, 1, 1).data[3] > 40;
+      };
+
+      root.addEventListener('pointermove', (event) => {
+        if (!onBody(event)) {
+          stopWiggle();
+          return;
+        }
+        stage.classList.add('is-tickled');
+        showTalk();
+        clearTimeout(stopTimer);
+        stopTimer = setTimeout(stopWiggle, 160);
+      });
+      root.addEventListener('pointerleave', stopWiggle);
+    }
+
+    bindLingbaoPlay(document.getElementById('hero-lingbao-link'));
+    bindLingbaoPlay(document.getElementById('demo-reel-lingbao'));
 
     function updateHomeGamify() {
       const gs = (window.gamificationSystem && window.gamificationSystem.data) ? window.gamificationSystem.data : null;
@@ -6466,27 +7249,16 @@
         });
       }
 
-      const watchCount = Math.min(1, videosWatched);
-      const reviewCount = Math.min(20, wordsLearned);
-      const shadowCount = Math.min(5, sentencesRecorded);
-      const watchItem = document.querySelector('[data-quest="watch"]');
-      const reviewItem = document.querySelector('[data-quest="review"]');
-      const shadowItem = document.querySelector('[data-quest="shadow"]');
-      if (watchItem) watchItem.classList.toggle('done', watchCount >= 1);
-      if (reviewItem) reviewItem.classList.toggle('done', reviewCount >= 20);
-      if (shadowItem) shadowItem.classList.toggle('done', shadowCount >= 5);
-      const questWatch = document.getElementById('home-quest-watch');
-      const questWatchText = document.getElementById('home-quest-watch-text');
-      if (questWatch) questWatch.style.width = `${watchCount * 100}%`;
-      if (questWatchText) questWatchText.textContent = `${watchCount}/1`;
-      const questReview = document.getElementById('home-quest-review');
-      const questReviewText = document.getElementById('home-quest-review-text');
-      if (questReview) questReview.style.width = `${(reviewCount / 20) * 100}%`;
-      if (questReviewText) questReviewText.textContent = `${reviewCount}/20`;
-      const questShadow = document.getElementById('home-quest-shadow');
-      const questShadowText = document.getElementById('home-quest-shadow-text');
-      if (questShadow) questShadow.style.width = `${(shadowCount / 5) * 100}%`;
-      if (questShadowText) questShadowText.textContent = `${shadowCount}/5`;
+      const sentenceTarget = 5;
+      const spoken = Math.min(sentenceTarget, readTodaySpokenLines());
+      const sentenceItem = document.querySelector('[data-quest="sentences"]');
+      if (sentenceItem) sentenceItem.classList.toggle('done', spoken >= sentenceTarget);
+      const sentenceBar = document.getElementById('home-sentence-bar');
+      const sentenceCount = document.getElementById('home-sentence-count');
+      const sentenceNote = document.getElementById('home-sentence-note');
+      if (sentenceBar) sentenceBar.style.width = `${(spoken / sentenceTarget) * 100}%`;
+      if (sentenceCount) sentenceCount.textContent = `${spoken}/${sentenceTarget}`;
+      if (sentenceNote) sentenceNote.textContent = dailySentenceNote(spoken, sentenceTarget);
 
       const rankXp = document.getElementById('home-rank-xp');
       if (rankXp) rankXp.textContent = String(xp);
@@ -6506,6 +7278,29 @@
       if (milestoneVoice) milestoneVoice.textContent = `${Math.min(sentencesRecorded, 50)}/50`;
       if (milestoneVoiceBar) milestoneVoiceBar.style.width = `${Math.min(100, (sentencesRecorded / 50) * 100)}%`;
       maybeShowRecallModal(streak);
+    }
+
+    function readTodaySpokenLines() {
+      const today = getLocalDateKey();
+      let lines = 0;
+      try {
+        const saved = JSON.parse(localStorage.getItem('linglish_first_lesson_completion') || 'null');
+        if (saved && saved.date === today) lines = Math.max(lines, Number(saved.lines) || 0);
+      } catch (_) { }
+      try {
+        const practice = JSON.parse(localStorage.getItem('linglish_today_practice_progress') || 'null');
+        if (practice && practice.date === today) {
+          const done = Array.isArray(practice.done) ? practice.done.length : (Number(practice.doneCount) || 0);
+          lines = Math.max(lines, done);
+        }
+      } catch (_) { }
+      return lines;
+    }
+
+    function dailySentenceNote(spoken, target) {
+      if (spoken >= target) return '今天的 5 句说完了。可以停在这里。';
+      if (spoken > 0) return `已开口 ${spoken} 句。再说一句，或今天到这。`;
+      return '说完这一句，今天就算开始。说到 5 句可以停。';
     }
 
     function getLocalDateKey(ts = Date.now()) {
@@ -6684,10 +7479,8 @@
         variant = 'A';
       }
 
-      const heroGuestBtn = document.querySelector('#hero-guest-actions .btn-primary');
       const ctaGuestBtn = document.getElementById('cta-guest-btn');
       if (variant === 'B') {
-        if (heroGuestBtn) heroGuestBtn.textContent = '开始今日学习 →';
         if (ctaGuestBtn) ctaGuestBtn.textContent = '开始今日学习 →';
       }
       trackEvent('ab_exposure', { test: testKey, variant });
@@ -7680,44 +8473,99 @@
         scrollObserver.observe(featuresHeader);
       }
 
-      // ========== 锚点导航滚动高亮 ==========
+      // ========== 锚点导航：从左到右对应页面从上到下 ==========
       const sectionNav = document.getElementById('section-nav');
       if (sectionNav) {
-        const navLinks = sectionNav.querySelectorAll('a');
-        const sections = ['pathways', 'gamify', 'quick-start', 'social-proof', 'features', 'faq']
-          .map(id => document.getElementById(id))
+        const navLinks = Array.from(sectionNav.querySelectorAll('a'));
+        const topLink = navLinks.find(link => link.hasAttribute('data-nav-top'));
+        const sections = navLinks
+          .filter(link => link !== topLink)
+          .map(link => {
+            const id = (link.getAttribute('href') || '').replace('#', '');
+            const el = id ? document.getElementById(id) : null;
+            return el ? { link, el } : null;
+          })
           .filter(Boolean);
 
-        const updateActiveNav = () => {
-          const scrollPos = window.scrollY + 120;
-          let currentSection = sections[0];
-
-          sections.forEach(section => {
-            if (section.offsetTop <= scrollPos) {
-              currentSection = section;
-            }
-          });
-
-          navLinks.forEach(link => {
-            link.classList.remove('active');
-            if (link.getAttribute('href') === '#' + currentSection.id) {
-              link.classList.add('active');
-            }
-          });
+        const setActiveLink = (link) => {
+          navLinks.forEach(item => item.classList.remove('active'));
+          if (!link) return;
+          link.classList.add('active');
+          const navRect = sectionNav.getBoundingClientRect();
+          const linkRect = link.getBoundingClientRect();
+          if (linkRect.left < navRect.left || linkRect.right > navRect.right) {
+            sectionNav.scrollLeft += linkRect.left - navRect.left - 8;
+          }
         };
 
-        window.addEventListener('scroll', updateActiveNav, { passive: true });
+        const stickyOffset = () => {
+          const stickyTop = parseFloat(getComputedStyle(sectionNav).top) || 0;
+          return stickyTop + sectionNav.getBoundingClientRect().height + 16;
+        };
+
+        const updateActiveNav = () => {
+          const visible = sections.filter(item => !item.el.hidden && item.el.offsetParent !== null);
+          if (!visible.length) {
+            setActiveLink(topLink);
+            return;
+          }
+          const marker = stickyOffset() + 1;
+          const firstTop = visible[0].el.getBoundingClientRect().top;
+          if (firstTop > marker + 8) {
+            setActiveLink(topLink);
+            return;
+          }
+          let current = visible[0];
+          visible.forEach(item => {
+            if (item.el.getBoundingClientRect().top <= marker) current = item;
+          });
+          setActiveLink(current.link);
+        };
+
+        const scrollToSection = (target) => {
+          const top = target.getBoundingClientRect().top + window.scrollY - stickyOffset();
+          window.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+        };
+
+        let pinnedLink = null;
+        let pinTimer = null;
+        const pinLink = (link) => {
+          pinnedLink = link;
+          setActiveLink(link);
+          clearTimeout(pinTimer);
+          pinTimer = setTimeout(() => {
+            pinnedLink = null;
+            updateActiveNav();
+          }, 700);
+        };
+
+        window.addEventListener('scroll', () => {
+          if (pinnedLink) {
+            setActiveLink(pinnedLink);
+            clearTimeout(pinTimer);
+            pinTimer = setTimeout(() => {
+              pinnedLink = null;
+              updateActiveNav();
+            }, 700);
+            return;
+          }
+          updateActiveNav();
+        }, { passive: true });
         updateActiveNav();
 
-        // 平滑滚动
         navLinks.forEach(link => {
           link.addEventListener('click', (e) => {
             e.preventDefault();
-            const targetId = link.getAttribute('href').slice(1);
-            const target = document.getElementById(targetId);
-            if (target) {
-              target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (link === topLink) {
+              pinLink(topLink);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              return;
             }
+            const targetId = (link.getAttribute('href') || '').replace('#', '');
+            const target = targetId ? document.getElementById(targetId) : null;
+            if (!target) return;
+            pinLink(link);
+            scrollToSection(target);
           });
         });
       }
@@ -8081,10 +8929,7 @@
               const lv = selections.level || 'beginner';
               setStoredActiveLevel(lv);
               applyLevelToLinks(lv);
-              window.location.href = `./today.html?level=${encodeURIComponent(lv)}&from=modal_onboarding`;
-            } catch (_) {
-              window.location.href = './today.html?from=modal_onboarding';
-            }
+            } catch (_) {}
             return;
           }
           currentStep = Math.min(totalSteps - 1, currentStep + 1);
@@ -8109,75 +8954,15 @@
       updateSteps();
     }
 
-    // 游客登录处理 - 使用现有的/auth/guest API
     window.guestLogin = async function (event, options = {}) {
       if (event) event.preventDefault();
-
-      // 查找所有游客登录按钮
-      const guestBtns = document.querySelectorAll('[data-role="guest-cta"]');
-      guestBtns.forEach((btn) => {
-        if (!btn.dataset.originalText) btn.dataset.originalText = btn.textContent;
-      });
-
-      try {
-        // 禁用所有游客按钮并显示加载状态
-        guestBtns.forEach(btn => {
-          btn.disabled = true;
-          btn.textContent = '正在创建临时账号...';
-        });
-
-        trackEvent('guest_login_attempt', { source: options.source || 'cta' });
-
-        const response = await fetch('/auth/guest', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || '游客登录失败');
-        }
-
-        // 保存token和游客标记 - Use AuthManager
-        const token = data.access_token || data.token;
-        if (token && window.AuthManager) {
-          window.AuthManager.setToken(token, true);
-        }
-        try {
-          localStorage.setItem('is_guest', 'true');
-          localStorage.setItem('guest_id', data.guest_id || '');
-        } catch (e) {
-          console.warn('[guest-login] Failed to save guest info:', e.message);
-        }
-
-        trackEvent('guest_login_success', { guest_id: data.guest_id || null });
-
-        // 显示成功提示并跳转
-        if (typeof GlobalUI !== 'undefined') {
-          GlobalUI.showToast(`欢迎游客 ${data.guest_id}！`, 'success');
-        }
-
-        // 跳转到视频页面 (使用replace强制刷新，避免缓存)
-        const redirectTo = options.redirectTo || './video-reader-desktop.html?t=' + Date.now();
-        setTimeout(() => {
-          window.location.replace(redirectTo);
-        }, 500);
-      } catch (err) {
-        trackEvent('guest_login_error', { message: err.message || 'unknown' });
-        if (typeof GlobalUI !== 'undefined') {
-          GlobalUI.showToast('游客登录失败：' + (err.message || '未知错误'), 'error');
-        }
-        // 恢复按钮状态
-        guestBtns.forEach(btn => {
-          btn.disabled = false;
-          btn.textContent = btn.dataset.originalText || '开始今日学习 →';
-        });
-        return false;
+      if (typeof window.showRegister === 'function') {
+        window.showRegister({ source: options.source || 'account_required', userInitiated: true });
       }
-      return true;
+      if (typeof GlobalUI !== 'undefined') {
+        GlobalUI.showToast('请先注册或登录账号，学习记录才会保存在你的账号里。', 'info');
+      }
+      return false;
     };
 
   </script>
@@ -8263,20 +9048,16 @@
             }
           }
 
-          // 关闭模态框
           closeModal();
-
-          // 更新UI显示用户信息
           await updateUserUI();
 
-          // 新注册用户跳转到欢迎页选择等级，已有用户进入今日训练工作台
-          setTimeout(() => {
-            if (isLoginMode) {
-              window.location.href = './today.html?from=login';
-            } else {
+          if (isLoginMode) {
+            if (typeof GlobalUI !== 'undefined') GlobalUI.showToast('登录成功', 'success');
+          } else {
+            setTimeout(() => {
               window.location.href = './welcome.html';
-            }
-          }, 1000);
+            }, 1000);
+          }
         } else {
           const errMsg = isLoginMode ? '登录失败，请检查邮箱和密码' : '注册失败，请重试';
           if (typeof GlobalUI !== 'undefined') {
@@ -8322,6 +9103,25 @@
       window.location.href = `/auth/oauth/google?redirect=${redirectParam}&flow=cookie_v1`;
     };
 
+    window.loginWithWechat = function () {
+      const env = window.__LINGLISH_ENV__ || {};
+      if (env.enableWechatOAuth !== true) {
+        if (typeof GlobalUI !== 'undefined') {
+          GlobalUI.showToast('微信扫码还需要微信开放平台的 AppID 和 AppSecret。填好之前，请先用邮箱注册。', 'warn');
+        }
+        return;
+      }
+      const button = document.getElementById('wechat-login-btn');
+      if (button?.disabled) return;
+      if (button) {
+        button.disabled = true;
+        const label = button.querySelector('span');
+        if (label) label.textContent = '正在打开微信扫码…';
+      }
+      const redirectParam = encodeURIComponent(window.location.pathname + window.location.search);
+      window.location.href = `/auth/oauth/wechat?redirect=${redirectParam}&flow=cookie_v1`;
+    };
+
     window.addEventListener('pageshow', () => {
       const button = document.getElementById('google-login-btn');
       if (!button) return;
@@ -8360,10 +9160,11 @@
       if (oauthError) {
         const errorBanner = document.getElementById('oauthErrorBanner');
         const errorMessages = {
-          'oauth_denied': '您取消了 Google 登录授权',
+          'oauth_denied': '您取消了登录授权',
           'oauth_invalid': '登录参数无效，请重试',
           'oauth_expired': '登录会话已过期，请重试',
-          'oauth_failed': 'Google 登录失败，请重试'
+          'oauth_failed': '登录失败，请重试',
+          'wechat_already_linked': '这个微信号已经绑定了另一个账号'
         };
         if (errorBanner) {
           errorBanner.textContent = errorMessages[oauthError] || '登录失败，请重试';
@@ -8374,12 +9175,296 @@
         // Show login modal
         showLogin({ source: 'oauth_error', force: true });
       }
+      if (urlParams.get('auth') === 'register') {
+        history.replaceState(null, '', window.location.pathname);
+        showRegister({ source: 'account_required', userInitiated: true });
+      }
     }
 
     // Call on page load
     document.addEventListener('DOMContentLoaded', handleOAuthCallback);
   </script>
   <script src="./js/page-tracker.js?v=1"></script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+<style>
+  body::before,
+  body::after { display: none; }
+
+  body > .navbar { margin-top: 12px; }
+
+  .hero,
+  .read-cards,
+  .core-entries-section,
+  .daily-task-spotlight,
+  .community-section,
+  .personalized-section,
+  .pathways,
+  .gamify,
+  .quick-start,
+  .social-proof,
+  .features,
+  .faq-section {
+    --home-sticky-clearance: 156px;
+    scroll-margin-top: var(--home-sticky-clearance);
+    width: min(1160px, calc(100% - 32px));
+    max-width: none;
+    margin: 0 auto;
+    padding: 1.5rem 0 2rem;
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .hero {
+    min-height: calc(100svh - 96px);
+    align-items: center;
+    padding: 1rem 0 1.5rem;
+  }
+
+  .hero-content h1 {
+    font-size: clamp(3.05rem, 5.5vw, 4.5rem);
+  }
+
+  .hero-visual .hero-lingbao-link,
+  .hero-visual .lingbao-stage {
+    width: min(440px, 100%);
+  }
+
+  .read-cards { padding-top: 0.5rem; padding-bottom: 1.5rem; }
+  .faq-section { width: min(820px, calc(100% - 32px)); }
+
+  .core-entries-inner {
+    align-items: start !important;
+    gap: 1.5rem !important;
+  }
+
+  .core-entries-header {
+    padding-top: 0.15rem;
+  }
+
+  .fold-section > .fold-head,
+  .fold-next { display: none !important; }
+
+  .section-nav {
+    position: sticky;
+    top: 96px;
+    z-index: 30;
+    width: min(1160px, calc(100% - 32px));
+    margin: 0.75rem auto;
+    padding: 4px;
+    gap: 2px;
+    justify-content: flex-start;
+    background: #ffffff;
+    border: 1px solid rgba(23, 25, 31, 0.06);
+    border-bottom: 1px solid rgba(23, 25, 31, 0.06);
+    border-radius: 999px;
+    box-shadow: 0 10px 28px rgba(23, 25, 31, 0.06);
+  }
+
+  .section-nav a,
+  .section-nav a[data-nav-top] {
+    margin: 0;
+    padding: 8px 12px;
+    border: 0;
+    border-radius: 999px;
+    color: #475569;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .section-nav a:hover { background: #f0fdfa; color: #0f766e; }
+
+  .section-nav a.active {
+    background: #0f766e;
+    color: #ffffff;
+    border-bottom-color: transparent;
+  }
+
+  .section-nav .nav-icon { display: none; }
+
+  .core-entries-header h2,
+  .community-header h2,
+  .personalized-header h2,
+  .pathways-header h2,
+  .gamify-header h2,
+  .quick-start-header h2,
+  .social-proof-header h2,
+  .features-header h2,
+  .faq-header h2,
+  .read-cards-head h2,
+  .demo-reel h2 {
+    font-size: clamp(1.55rem, 2.2vw, 1.95rem);
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .community-header,
+  .personalized-header,
+  .pathways-header,
+  .gamify-header,
+  .quick-start-header,
+  .social-proof-header,
+  .features-header,
+  .faq-header {
+    margin-bottom: 1rem !important;
+    align-items: flex-end;
+  }
+
+  .pathways-inner {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1.25rem;
+    grid-template-columns: none !important;
+  }
+
+  .pathways .entry-grid,
+  .pathways .learning-system,
+  .pathways .system-grid {
+    width: 100%;
+    max-width: none;
+  }
+
+  .pathways .learning-system {
+    margin-top: 0.25rem !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .pathways .entry-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+
+  .pathways .system-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .gamify {
+    padding-top: 1.25rem;
+    padding-bottom: 1.75rem;
+  }
+
+  .gamify::before,
+  .social-proof::before,
+  .cta::before { content: none !important; display: none !important; }
+
+  .gamify-header {
+    padding: 0 !important;
+    margin-bottom: 1rem !important;
+    align-items: flex-end;
+  }
+
+  .gamify-grid {
+    gap: 1rem !important;
+  }
+
+  .quick-start,
+  .social-proof {
+    margin: 0 auto !important;
+    max-width: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    border: 0 !important;
+    background: transparent !important;
+    padding: 1.5rem 0 2rem !important;
+  }
+
+  .demo-reel {
+    max-width: none;
+    margin: 0;
+    padding: 0 0 1.25rem;
+    gap: 1.25rem;
+  }
+
+  .community-grid,
+  .personalized-grid {
+    max-width: none;
+    gap: 0.9rem;
+  }
+
+  .community-card,
+  .personalized-card,
+  .gamify-card,
+  .reminder-card,
+  .read-card,
+  .feature-card,
+  .core-entry-item,
+  .system-card {
+    border: 1px solid #e2e8f0 !important;
+    border-radius: 18px !important;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.04) !important;
+    background: #ffffff;
+  }
+
+  .community-card,
+  .personalized-card {
+    min-height: 0 !important;
+  }
+
+  .cta {
+    width: min(1160px, calc(100% - 32px));
+    margin: 0.5rem auto 1.5rem;
+    padding: 3.25rem 1.5rem;
+    border-radius: 28px;
+    background: #0f766e;
+    animation: none;
+  }
+
+  .cta h2 { font-size: 2rem; text-shadow: none; }
+  .cta p { font-size: 1.05rem; margin-bottom: 1.4rem; }
+
+  .cta .btn {
+    background: #ffffff !important;
+    color: #0f766e !important;
+    border: 0 !important;
+  }
+
+  @media (max-width: 980px) {
+    .pathways .entry-grid,
+    .pathways .system-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+  }
+
+  .announcement-bar {
+    width: 100%;
+    margin: 0;
+    padding: 10px 24px;
+    border: 0;
+    border-radius: 0;
+    background: #071018;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    box-shadow: none;
+  }
+
+  .announcement-bar .announcement-cta {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    padding: 7px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    font-size: 0.85rem;
+    font-weight: 800;
+    box-shadow: none;
+  }
+
+  @media (max-width: 860px) {
+    .section-nav { top: 88px; border-radius: 22px; }
+    .hero { padding-top: 1.25rem; }
+  }
+</style>
 </body>
 
 </html>

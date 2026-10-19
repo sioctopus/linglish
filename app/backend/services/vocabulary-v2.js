@@ -12,6 +12,7 @@
  */
 
 const { pool, init, dbUnavailable, assertDbAvailable } = require('../data-store/core');
+const { classifyTranscript } = require('./video-level');
 const dictionary = require('./dictionary');
 const { analyzeWordQuality } = require('../utils/word-quality');
 const { createCurationService } = require('./dictionary/curation');
@@ -844,21 +845,16 @@ async function updateLearningSettings(userId, settings) {
 }
 
 /**
- * Calculate video difficulty based on vocabulary distribution
- * Uses weighted average scoring: beginner×1 + intermediate×2 + advanced×3
+ * Classify a transcript as a1, a2, b1, b2, or c1.
+ * Frequency ranks are used when the dictionary covers the transcript.
+ * Otherwise sentence length and word length decide the level.
  *
- * Score thresholds:
- * - ≤1.5: beginner
- * - 1.5-2.2: intermediate
- * - >2.2: advanced
- *
- * @param {string} transcript - Full transcript text or array of texts
+ * @param {string|Array} transcript - Full transcript text or segment list
  * @returns {Promise<Object>} {difficulty, score, stats}
  */
 async function calculateVideoDifficulty(transcript) {
   await init();
 
-  // Handle both string and array input
   let fullText = '';
   if (Array.isArray(transcript)) {
     fullText = transcript.map(seg => {
@@ -873,102 +869,39 @@ async function calculateVideoDifficulty(transcript) {
     return {
       difficulty: null,
       score: null,
-      stats: { beginner: 0, intermediate: 0, advanced: 0, unknown: 0, total: 0 }
+      stats: { a1: 0, a2: 0, b1: 0, b2: 0, c1: 0, c2: 0, unknown: 0, total: 0 }
     };
   }
 
-  // Extract words from transcript (basic tokenization)
-  const words = fullText
-    .toLowerCase()
-    .replace(/[^a-z'\-\s]/g, ' ')
-    .split(/\s+/)
-    .filter(w => w.length >= 2 && w.length <= 30)
-    .filter(w => /^[a-z]/.test(w)); // Must start with a letter
+  const uniqueWords = [...new Set(
+    fullText
+      .toLowerCase()
+      .replace(/[^a-z'\-\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length >= 2 && w.length <= 30 && /^[a-z]/.test(w))
+  )];
 
-  const uniqueWords = [...new Set(words)];
-
-  if (uniqueWords.length === 0) {
-    return {
-      difficulty: null,
-      score: null,
-      stats: { beginner: 0, intermediate: 0, advanced: 0, unknown: 0, total: 0 }
-    };
-  }
-
-  // Query frequency ranks for these words
-  const placeholders = uniqueWords.map((_, i) => `$${i + 1}`).join(', ');
-  const result = await pool.query(
-    `SELECT word_lowercase, frequency_rank
-     FROM words
-     WHERE word_lowercase IN (${placeholders})`,
-    uniqueWords
-  );
-
-  // Build a map of word -> frequency_rank
   const rankMap = {};
-  result.rows.forEach(row => {
-    rankMap[row.word_lowercase] = row.frequency_rank;
-  });
-
-  // Count words by level
-  const stats = {
-    beginner: 0,      // frequency_rank 1-3000
-    intermediate: 0,  // frequency_rank 3001-8000
-    advanced: 0,      // frequency_rank 8001+
-    unknown: 0,       // Not in our vocabulary (treat as intermediate by default)
-    total: uniqueWords.length
-  };
-
-  uniqueWords.forEach(word => {
-    const rank = rankMap[word];
-    if (!rank || rank <= 0) {
-      stats.unknown++;
-    } else if (rank <= 3000) {
-      stats.beginner++;
-    } else if (rank <= 8000) {
-      stats.intermediate++;
-    } else {
-      stats.advanced++;
+  if (uniqueWords.length > 0) {
+    try {
+      const placeholders = uniqueWords.map((_, i) => `$${i + 1}`).join(', ');
+      const result = await pool.query(
+        `SELECT word_lowercase, frequency_rank
+         FROM words
+         WHERE word_lowercase IN (${placeholders})`,
+        uniqueWords
+      );
+      result.rows.forEach(row => {
+        rankMap[row.word_lowercase] = row.frequency_rank;
+      });
+    } catch (err) {
+      console.warn('[Vocab V2] Word ranks unavailable, using sentence structure:', err.message);
     }
-  });
-
-  // Calculate weighted average score
-  // unknown words treated as intermediate (×2)
-  const weightedSum =
-    stats.beginner * 1 +
-    stats.intermediate * 2 +
-    stats.advanced * 3 +
-    stats.unknown * 2;  // Unknown words treated as intermediate
-
-  const totalWords = stats.beginner + stats.intermediate + stats.advanced + stats.unknown;
-
-  if (totalWords === 0) {
-    return {
-      difficulty: null,
-      score: null,
-      stats
-    };
   }
 
-  const score = weightedSum / totalWords;
-
-  // Determine difficulty level based on score thresholds
-  let difficulty;
-  if (score <= 1.5) {
-    difficulty = 'beginner';
-  } else if (score <= 2.2) {
-    difficulty = 'intermediate';
-  } else {
-    difficulty = 'advanced';
-  }
-
-  console.log(`[Vocab V2] Video difficulty calculated: ${difficulty} (score: ${score.toFixed(2)}, words: ${totalWords})`);
-
-  return {
-    difficulty,
-    score: parseFloat(score.toFixed(2)),
-    stats
-  };
+  const classified = classifyTranscript(fullText, rankMap);
+  console.log(`[Vocab V2] Video level ${classified.difficulty || 'unknown'} via ${classified.source} (words: ${classified.stats.total})`);
+  return classified;
 }
 
 /**

@@ -1,0 +1,65 @@
+{
+  "id": "/index-desktop.html",
+  "name": "Linglish",
+  "short_name": "Linglish",
+  "description": "把真实视频、逐句跟读和口语反馈装进一个桌面窗口。",
+  "start_url": "/index-desktop.html",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#f8fafc",
+  "theme_color": "#0f766e",
+  "orientation": "any",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "categories": ["education"],
+  "icons": [
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "今日训练",
+      "short_name": "今日",
+      "description": "打开今天的训练",
+      "url": "/today.html",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "视频学习",
+      "short_name": "视频",
+      "description": "进入桌面版视频学习",
+      "url": "/video-reader-desktop.html",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    },
+    {
+      "name": "AI陪练",
+      "short_name": "陪练",
+      "description": "打开跟读和对话练习",
+      "url": "/practice-session-desktop.html?mode=shadowing",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192", "type": "image/png" }]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "launch_handler": {
+    "client_mode": "navigate-existing"
+  },
+  "handle_links": "preferred"
+}

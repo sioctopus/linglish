@@ -150,7 +150,7 @@
     return (phone && !tablet) || Number(environment.innerWidth || 1024) < 768;
   }
 
-  function setTriggerState(trigger, state) {
+  function setTriggerState(trigger, state, options) {
     if (!trigger) return;
     if (!trigger.dataset) trigger.dataset = {};
     if (state === 'loading') {
@@ -165,6 +165,11 @@
     if (trigger.removeAttribute) {
       trigger.removeAttribute('aria-disabled');
       trigger.removeAttribute('aria-busy');
+    }
+    if ((state === 'no-video' || state === 'error') && options && options.quietFailure) {
+      if (trigger.dataset.firstLessonIdleText) trigger.textContent = trigger.dataset.firstLessonIdleText;
+      delete trigger.dataset.firstLessonIdleText;
+      return;
     }
     if (state === 'no-video') trigger.textContent = '暂时没有可用视频，点此重试';
     else if (state === 'error') trigger.textContent = '准备失败，点此重试';
@@ -221,22 +226,23 @@
       return payload;
     }
 
-    async function createGuest(visitorId) {
-      const payload = await requestJson('/auth/guest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ visitor_id: visitorId }),
-      });
-      const token = await saveGuestSession(environment, payload);
-      postEvent('first_lesson_guest_ready', { guest_id: payload.guest_id || null });
-      return token;
+    function loginRequiredError() {
+      const error = new Error('LOGIN_REQUIRED');
+      error.code = 'LOGIN_REQUIRED';
+      error.status = 401;
+      return error;
     }
 
-    async function ensureToken(visitorId) {
+    function anonymousStarterUrl(source) {
+      const params = new URLSearchParams({ from: source, starter: '1' });
+      return `./today.html?${params.toString()}`;
+    }
+
+    async function ensureToken() {
       const existing = readUsableToken(environment);
       if (existing) return existing;
       if (readRawToken(environment)) await clearToken(environment);
-      return createGuest(visitorId);
+      throw loginRequiredError();
     }
 
     function authenticatedHeaders(token) {
@@ -277,15 +283,14 @@
         const source = compact(config.source, 'landing_first_lesson');
         postEvent('first_lesson_entry_click', { source });
         try {
-          let token = await ensureToken(context.visitor_id);
+          let token = await ensureToken();
           let videoId;
           try {
             videoId = await resolveVideoId(token, config.videoId);
           } catch (error) {
             if (!error || error.status !== 401) throw error;
             await clearToken(environment);
-            token = await createGuest(context.visitor_id);
-            videoId = await resolveVideoId(token, config.videoId);
+            throw loginRequiredError();
           }
           if (!videoId) {
             const error = new Error('FIRST_LESSON_VIDEO_UNAVAILABLE');
@@ -302,7 +307,16 @@
           environment.location.assign(destination);
           return destination;
         } catch (error) {
-          setTriggerState(trigger, error && error.code === 'FIRST_LESSON_VIDEO_UNAVAILABLE' ? 'no-video' : 'error');
+          if (error && error.code === 'LOGIN_REQUIRED') {
+            const destination = anonymousStarterUrl(source);
+            postEvent('first_lesson_starter_ready', { source });
+            environment.location.assign(destination);
+            inFlight = null;
+            return destination;
+          }
+          setTriggerState(trigger, error && error.code === 'FIRST_LESSON_VIDEO_UNAVAILABLE' ? 'no-video' : 'error', {
+            quietFailure: config.quietFailure === true,
+          });
           postEvent('first_lesson_entry_error', {
             source,
             status: error && error.status || null,

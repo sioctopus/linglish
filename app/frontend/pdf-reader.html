@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/tts-voice.js?v=1"></script>
     <meta charset="UTF-8" />
     <script>
       // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
@@ -246,6 +249,8 @@
         font-size: 0.9rem;
         background: #e9ecef;
         transition: background 0.2s;
+        text-decoration: none;
+        color: inherit;
       }
 
       .toolbar-btn:hover {
@@ -259,6 +264,13 @@
 
       .toolbar-btn.primary:hover {
         background: #3a4fd7;
+      }
+
+      .toolbar-btn.is-active {
+        background: #f0fdfa;
+        color: #0f766e;
+        font-weight: 700;
+        box-shadow: inset 0 0 0 1px #99f6e4;
       }
 
       .toolbar-btn:disabled {
@@ -280,8 +292,13 @@
         position: relative;
       }
 
+      .pdf-canvas-container.reflow-mode {
+        background: #f8fafc;
+      }
+
       .pdf-canvas-wrapper {
-        max-width: 900px;
+        width: fit-content;
+        max-width: none;
         margin: 0 auto;
         background: white;
         box-shadow: 0 2px 8px rgba(0,0,0,0.2);
@@ -290,8 +307,35 @@
 
       #pdf-canvas {
         display: block;
-        width: 100%;
+        width: auto;
         height: auto;
+      }
+
+      .reflow {
+        max-width: 42rem;
+        margin: 0 auto;
+        background: #fff;
+        border-radius: 16px;
+        padding: 2rem 2.25rem 2.5rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        color: #0f172a;
+        font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+      }
+
+      .reflow p {
+        margin: 0 0 0.95rem;
+        font-size: 1.25rem;
+        line-height: 1.75;
+      }
+
+      .reflow-note {
+        max-width: 42rem;
+        margin: 0 auto 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 12px;
+        background: #fff;
+        color: #334155;
+        line-height: 1.6;
       }
 
       /* Text Layer Overlay */
@@ -302,7 +346,7 @@
         right: 0;
         bottom: 0;
         overflow: hidden;
-        opacity: 0.2;
+        opacity: 1;
         line-height: 1;
         z-index: 10;
         pointer-events: none;
@@ -497,6 +541,12 @@
             <button class="toolbar-btn primary" id="read-page">
               🔊 Read Page
             </button>
+            <button class="toolbar-btn" id="show-reflow" type="button">重排版</button>
+            <button class="toolbar-btn" id="show-page" type="button">原页</button>
+            <button class="toolbar-btn" id="extract-subtitles" type="button">
+              提取朗读字幕
+            </button>
+            <a class="toolbar-btn" id="open-exam" hidden href="./exam-paper.html">网页试卷</a>
             <button class="toolbar-btn" id="stop-reading" disabled>
               ⏹️ Stop
             </button>
@@ -513,12 +563,14 @@
           </div>
 
           <div style="margin-left: auto;">
-            <a href="./index.html" class="toolbar-btn">← Back to App</a>
+            <a href="./index.html" class="toolbar-btn" data-nav="back">返回</a>
           </div>
         </div>
 
         <!-- PDF Canvas -->
-        <div class="pdf-canvas-container">
+        <div class="pdf-canvas-container" id="pdf-stage">
+          <p class="reflow-note" id="reflow-note" hidden>这份原页已按屏幕清晰重绘。扫描页没有文字层，点「提取朗读字幕」后会把英语重排成课文。</p>
+          <article class="reflow" id="reflow" hidden></article>
           <div class="pdf-canvas-wrapper" id="canvas-wrapper">
             <canvas id="pdf-canvas"></canvas>
             <div class="text-layer" id="text-layer"></div>
@@ -550,7 +602,7 @@
         return null;
       }
       // 使用高质量 Neural 语音
-      const neuralVoice = 'en-US-AriaNeural';
+      const neuralVoice = window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural';
       try {
         const res = await fetch(`${API_BASE}/tts/generate`, {
           method: 'POST',
@@ -622,12 +674,22 @@
 
       async function buildProtectedDocumentUrl(documentPath) {
         const mediaSession = window.LinglishMediaSession;
-        if (!token || !mediaSession) throw new Error('MEDIA_SESSION_UNAVAILABLE');
-        const mediaState = await mediaSession.ensure({ token });
-        return mediaSession.buildMediaUrl(documentPath, {
-          mode: mediaState.mode,
-          legacyToken: token,
-        });
+        if (token && mediaSession) {
+          try {
+            const mediaState = await mediaSession.ensure({ token });
+            return mediaSession.buildMediaUrl(documentPath, {
+              mode: mediaState.mode,
+              legacyToken: token,
+            });
+          } catch (err) {
+            console.warn('Media session unavailable, loading the document with the account credential');
+          }
+        }
+        return documentPath;
+      }
+
+      function documentRequestHeaders() {
+        return token ? { Authorization: `Bearer ${token}` } : {};
       }
 
       window.LinglishMediaSession?.bindLifecycle({ getToken: () => token });
@@ -635,7 +697,11 @@
       let pdfDoc = null;
       let currentPage = 1;
       let currentScale = 1;
+      let reflowLines = [];
       let currentPdfPath = null;
+      let currentArticleId = null;
+      const pdfArticleIds = {};
+      const examArticleIds = new Set();
       let pdfFingerprint = null;
       let isReading = false;
       let ocrCache = new Map(); // Cache OCR results client-side
@@ -661,6 +727,12 @@
             return;
           }
 
+          pdfs.forEach(pdf => {
+            pdfArticleIds[pdf.pdf_path] = pdf.id;
+            const tags = Array.isArray(pdf.tags) ? pdf.tags : String(pdf.tags || '').split(/[,{}]/);
+            if (tags.some(tag => String(tag).trim() === 'exam')) examArticleIds.add(Number(pdf.id));
+          });
+          syncExamLink();
           pdfList.innerHTML = pdfs.map(pdf => `
             <li class="pdf-item" onclick="event.target.classList.contains('delete-pdf-btn') ? null : loadPdf('${pdf.pdf_path}', ${pdf.id})">
               <div class="pdf-item-header">
@@ -675,6 +747,15 @@
           console.error('Error loading PDF list:', error);
           pdfList.innerHTML = '<li style="padding: 1rem; color: #d32f2f;">Error loading PDFs</li>';
         }
+      }
+
+      function documentFingerprint(value) {
+        const bytes = new TextEncoder().encode(String(value || ''));
+        let hex = '';
+        for (let i = 0; i < bytes.length; i += 1) {
+          hex += bytes[i].toString(16).padStart(2, '0');
+        }
+        return hex.slice(0, 32) || 'document';
       }
 
       // Helper function to escape HTML
@@ -730,9 +811,19 @@
         }
       }
 
+      function syncExamLink() {
+        const examLink = document.getElementById('open-exam');
+        if (!examLink) return;
+        const showExam = examArticleIds.has(Number(currentArticleId));
+        examLink.hidden = !showExam;
+        if (showExam) examLink.href = `./exam-paper.html?id=${encodeURIComponent(currentArticleId)}`;
+      }
+
       // Load PDF
-      async function loadPdf(pdfPath) {
+      async function loadPdf(pdfPath, articleId) {
         currentPdfPath = pdfPath;
+        currentArticleId = articleId || pdfArticleIds[pdfPath] || currentArticleId;
+        syncExamLink();
         document.getElementById('loading-overlay').classList.remove('hidden');
 
         try {
@@ -741,7 +832,8 @@
 
           const loadingTask = pdfjsLib.getDocument({
             url: pdfUrl,
-            withCredentials: true
+            withCredentials: true,
+            httpHeaders: documentRequestHeaders(),
           });
 
           // Monitor loading progress
@@ -752,16 +844,20 @@
           pdfDoc = await loadingTask.promise;
           console.log('PDF loaded successfully, pages:', pdfDoc.numPages);
 
-          // Generate PDF fingerprint from filename (simple approach)
-          pdfFingerprint = btoa(pdfPath).substring(0, 32);
-          console.log('PDF fingerprint:', pdfFingerprint);
+          pdfFingerprint = documentFingerprint(pdfPath);
 
           document.getElementById('page-info').textContent = `Page 1 / ${pdfDoc.numPages}`;
           document.getElementById('prev-page').disabled = true;
-          document.getElementById('next-page').disabled = false;
+          document.getElementById('next-page').disabled = pdfDoc.numPages <= 1;
 
           currentPage = 1;
-          renderPage(currentPage);
+          try {
+            reflowLines = await collectReflow(pdfDoc);
+          } catch (_) {
+            reflowLines = [];
+          }
+          showReadingView(reflowLines.length ? 'reflow' : 'page');
+          await renderPage(currentPage);
 
         } catch (error) {
           console.error('Error loading PDF:', error);
@@ -772,22 +868,89 @@
       }
 
       // Render page
+      function pageLines(textContent) {
+        const lines = [];
+        let line = '';
+        textContent.items.forEach(item => {
+          const chunk = String(item.str || '');
+          if (!chunk) return;
+          line += line && !/\s$/.test(line) && !/^\s/.test(chunk) ? ` ${chunk}` : chunk;
+          if (item.hasEOL) {
+            const trimmed = line.replace(/\s+/g, ' ').trim();
+            if (trimmed) lines.push(trimmed);
+            line = '';
+          }
+        });
+        const tail = line.replace(/\s+/g, ' ').trim();
+        if (tail) lines.push(tail);
+        return lines;
+      }
+
+      function reflowSentences(lines) {
+        const cues = [];
+        String(lines.join('\n')).split(/\n+/).forEach(block => {
+          const parts = block.match(/[^.!?]+[.!?]+(?:["']+)?|[^.!?]+$/g) || [block];
+          parts.forEach(part => {
+            const sentence = part.replace(/\s+/g, ' ').trim();
+            if ((sentence.match(/[A-Za-z]/g) || []).length >= 6) cues.push(sentence);
+          });
+        });
+        return cues;
+      }
+
+      async function collectReflow(doc) {
+        const lines = [];
+        for (let pageNumber = 1; pageNumber <= doc.numPages; pageNumber += 1) {
+          const page = await doc.getPage(pageNumber);
+          const textContent = await page.getTextContent();
+          lines.push(...pageLines(textContent));
+        }
+        const cues = reflowSentences(lines);
+        return cues.length >= 3 ? cues : [];
+      }
+
+      function showReadingView(mode) {
+        const stage = document.getElementById('pdf-stage');
+        const reflow = document.getElementById('reflow');
+        const note = document.getElementById('reflow-note');
+        const pageWrap = document.getElementById('canvas-wrapper');
+        const useReflow = mode === 'reflow' && reflowLines.length > 0;
+        stage.classList.toggle('reflow-mode', useReflow);
+        reflow.hidden = !useReflow;
+        pageWrap.hidden = useReflow;
+        note.hidden = useReflow || !pdfDoc;
+        if (useReflow) {
+          reflow.innerHTML = reflowLines.map(line => `<p>${line.replace(/[&<>]/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[ch]))}</p>`).join('');
+        }
+        document.getElementById('show-reflow').classList.toggle('is-active', useReflow);
+        document.getElementById('show-page').classList.toggle('is-active', !useReflow);
+        document.getElementById('show-reflow').disabled = reflowLines.length === 0;
+      }
+
       async function renderPage(pageNum) {
         document.getElementById('loading-overlay').classList.remove('hidden');
 
         try {
           const page = await pdfDoc.getPage(pageNum);
-          const viewport = page.getViewport({ scale: currentScale });
+          const container = document.querySelector('.pdf-canvas-container');
+          const maxWidth = Math.max(320, (container.clientWidth || 960) - 48);
+          const baseViewport = page.getViewport({ scale: 1 });
+          const fitScale = maxWidth / baseViewport.width;
+          const viewport = page.getViewport({ scale: fitScale * currentScale });
+          const outputScale = Math.min(window.devicePixelRatio || 1, 2);
 
           const canvas = document.getElementById('pdf-canvas');
-          const context = canvas.getContext('2d');
+          const context = canvas.getContext('2d', { alpha: false });
 
-          canvas.height = viewport.height;
-          canvas.width = viewport.width;
+          canvas.width = Math.floor(viewport.width * outputScale);
+          canvas.height = Math.floor(viewport.height * outputScale);
+          canvas.style.width = `${Math.floor(viewport.width)}px`;
+          canvas.style.height = `${Math.floor(viewport.height)}px`;
 
           const renderContext = {
             canvasContext: context,
-            viewport: viewport
+            viewport,
+            transform: outputScale === 1 ? null : [outputScale, 0, 0, outputScale, 0, 0],
           };
 
           await page.render(renderContext).promise;
@@ -1005,6 +1168,42 @@
         document.getElementById('prev-page').disabled = currentPage <= 1;
         document.getElementById('next-page').disabled = currentPage >= pdfDoc.numPages;
       }
+
+      document.getElementById('show-reflow').addEventListener('click', () => {
+        if (!reflowLines.length) {
+          alert('这一页是扫描图，没有可重排的文字层。请点「提取朗读字幕」。');
+          return;
+        }
+        showReadingView('reflow');
+      });
+      document.getElementById('show-page').addEventListener('click', () => showReadingView('page'));
+
+      document.getElementById('extract-subtitles').addEventListener('click', async () => {
+        const button = document.getElementById('extract-subtitles');
+        if (!currentArticleId) {
+          alert('请先打开一份文档');
+          return;
+        }
+        button.disabled = true;
+        const previous = button.textContent;
+        button.textContent = '正在提取英语…';
+        try {
+          const authToken = ['linglish_token', 'authToken']
+            .map(key => localStorage.getItem(key) || sessionStorage.getItem(key))
+            .find(value => value && value !== 'null' && value !== 'undefined') || token;
+          const response = await fetch(`${API_BASE}/documents/${currentArticleId}/subtitles`, {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${authToken}` },
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.message || '提取失败');
+          window.location.href = result.document.openUrl;
+        } catch (err) {
+          alert(err.message || '提取失败');
+          button.disabled = false;
+          button.textContent = previous;
+        }
+      });
 
       // Zoom
       document.getElementById('zoom-select').addEventListener('change', (e) => {
@@ -1228,8 +1427,7 @@
 
           try {
             // Use selected voice across site
-            let selectedVoice = 'en-US-AriaNeural';
-            try { selectedVoice = localStorage.getItem('linglish_tts_voice') || selectedVoice; } catch(_) {}
+            const selectedVoice = window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural';
             const voiceLang = selectedVoice.startsWith('en-') ? 'en' : (selectedVoice.startsWith('zh-') ? 'zh-CN' : 'en');
             const response = await fetch(`${API_BASE}/tts/generate`, {
               method: 'POST',
@@ -1237,7 +1435,7 @@
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
               },
-              body: JSON.stringify({ text: chunk, lang: voiceLang, provider: 'edge', voice: 'en-US-AriaNeural' })
+              body: JSON.stringify({ text: chunk, lang: voiceLang, provider: 'edge', voice: selectedVoice })
             });
 
             const { audioUrl } = await response.json();
@@ -1268,7 +1466,13 @@
       });
 
       // Initialize
-      loadPdfList();
+      loadPdfList().then(() => {
+        const requestedPath = new URLSearchParams(window.location.search).get('path');
+        if (requestedPath && requestedPath.startsWith('/pdfs/') && !requestedPath.includes('..')) {
+          loadPdf(requestedPath);
+        }
+      });
     </script>
-  </body>
+  <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+</body>
 </html>

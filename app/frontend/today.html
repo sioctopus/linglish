@@ -6,15 +6,27 @@
   <title>今日训练 - Linglish</title>
   <meta name="description" content="Linglish 今日训练工作台：按你的等级安排真实视频、跟读、AI反馈和词汇复习。">
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml" sizes="any">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest-desktop.json">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Linglish">
+  <link rel="stylesheet" href="/css/install-desktop.css?v=3">
+  <script src="/js/install-desktop.js?v=3" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap">
-  <link rel="stylesheet" href="./styles/tokens.css?v=1">
-  <script src="./js/auth-manager.js?v=1"></script>
+  <link rel="stylesheet" href="./styles/tokens.css?v=3">
+  <script src="/env.js"></script>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <script src="./js/visitor-context.js?v=1"></script>
-  <script src="./js/first-lesson-entry.js?v=1"></script>
+  <script src="./js/first-lesson-entry.js?v=20261019"></script>
+  <script src="./js/video-reader/missed-words.js?v=20261015"></script>
+  <script src="./js/starter-sentence.js?v=20261015"></script>
   <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-  <script src="./js/video-reader/first-lesson-goal.js?v=20260922"></script>
+  <script src="./js/video-reader/first-lesson-goal.js?v=20261015"></script>
   <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=20260922">
   <script src="./js/page-tracker.js?v=1"></script>
   <script src="./js/video-recommendation-client.js?v=20260925"></script>
@@ -237,8 +249,18 @@
     .learning-choice strong { font-size: 20px; }
     .learning-choice small { font-size: 13px; font-weight: 500; }
     .learning-choice:focus-visible { outline: 3px solid var(--teal); outline-offset: 3px; }
-    .learning-entry-more { margin: 16px 0 0; font-size: 14px; color: var(--muted); }
-    .learning-entry-more a { color: var(--teal-strong); text-decoration: underline; text-underline-offset: 3px; }
+    .next-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 22px; }
+    .starter-sentence { margin-top: 18px; padding: 16px; border: 1px solid rgba(15, 118, 110, 0.28); border-radius: 16px; background: #fff; }
+    .starter-sentence[hidden] { display: none; }
+    .starter-line { margin: 0 0 8px; font-size: 1.35rem; line-height: 1.5; font-weight: 700; }
+    .starter-note { margin: 0 0 8px; color: #8a4b00; }
+    .starter-note:empty { display: none; }
+    .starter-word.starter-missing { background: #fff4e5; color: #8a4b00; border-radius: 4px; box-shadow: inset 0 -2px 0 #e6a23c; }
+    .day-end { margin-top: 28px; }
+    .day-end > summary { cursor: pointer; font-size: 18px; font-weight: 750; }
+    .day-end-links { margin: 8px 0 18px; color: var(--muted); font-size: 14px; }
+    .day-end-links a { color: var(--teal-strong); margin-right: 14px; }
+    .day-end .streak-box { margin-bottom: 18px; }
 
     .first-lesson {
       margin-top: 26px;
@@ -1316,9 +1338,8 @@
       <span>Linglish</span>
     </a>
     <nav class="nav-actions">
+      <a class="nav-link" data-nav="back" href="./index-desktop.html">返回</a>
       <a class="nav-link" href="./video-reader-desktop.html" data-track="nav_video" data-section="topbar">精选视频库</a>
-      <a class="nav-link" href="./video-vocabulary-desktop.html" data-track="nav_vocab" data-section="topbar">词汇复习</a>
-      <a class="nav-link" href="./pricing.html" data-track="nav_pricing" data-section="topbar">会员方案</a>
       <a class="btn btn-secondary" id="auth-action" href="./desktop-auth.html?next=./today.html" data-track="auth_action" data-section="topbar">登录</a>
     </nav>
   </header>
@@ -1326,36 +1347,26 @@
   <main class="page">
     <section class="hero">
       <div class="hero-main">
-        <div class="eyebrow" id="hero-eyebrow">今日学习</div>
-        <h1 id="hero-title">今天想怎么学？</h1>
-        <p class="hero-copy" id="hero-copy">先选学习方式，点一下就进入。</p>
-        <nav class="learning-choices" aria-label="选择学习方式">
-          <a class="btn btn-primary learning-choice" id="learning-entry-shadowing" href="./practice-session-desktop.html?mode=shadowing&from=today" data-track="learning_choice_shadowing" data-section="hero"><span class="learning-choice-copy"><strong>跟读</strong><small>听一句，跟着开口说一句</small></span><span aria-hidden="true">›</span></a>
-          <a class="btn btn-secondary learning-choice" id="learning-entry-listening" href="./video-reader-desktop.html?from=today" data-track="learning_choice_listening" data-section="hero"><span class="learning-choice-copy"><strong>听原声</strong><small>看视频、读字幕，按自己的节奏听</small></span><span aria-hidden="true">›</span></a>
-          <a class="btn btn-secondary learning-choice" id="learning-entry-game" href="./game.html" data-track="learning_choice_game" data-section="hero"><span class="learning-choice-copy"><strong>游戏</strong><small>闯关练单词，边玩边记</small></span><span aria-hidden="true">›</span></a>
-        </nav>
-        <p class="learning-entry-more">已有精选视频可直接学习。<a href="./youtube-import.html" data-track="import_content" data-section="hero">导入自己的内容</a></p>
+        <div class="eyebrow" id="hero-eyebrow">下一句</div>
+        <h1 id="hero-title">先听，再开口说这一句。</h1>
+        <p class="hero-copy" id="hero-copy">听原声，跟着说出来。说完这一句，再决定要不要下一句。</p>
         <section id="first-lesson-resume" hidden aria-label="继续上次跟读"></section>
-        <div class="first-lesson" id="first-lesson">
-          <span class="lx-badge-ai">✨ AI 定制</span>
-          <div class="first-lesson-head">
-            <div>
-              <p class="first-lesson-title" id="first-lesson-title">3 分钟首课：先跟读一句真实表达</p>
-              <p class="first-lesson-copy" id="first-lesson-copy">不用先配置课程，完成一句听懂、跟读、复听，就算今天已经开始。</p>
-            </div>
-            <span class="first-lesson-time" id="first-lesson-time">3 min</span>
-          </div>
-          <div class="first-lesson-steps">
-            <div class="first-lesson-step"><strong>1. 听一句</strong><span id="first-lesson-step-1">选一段匹配你等级的真实内容。</span></div>
-            <div class="first-lesson-step"><strong>2. 跟读</strong><span id="first-lesson-step-2">录下自己的声音，对齐节奏和重音。</span></div>
-            <div class="first-lesson-step"><strong>3. 得到反馈</strong><span id="first-lesson-step-3">完成后进入今日复盘和下一步建议。</span></div>
-          </div>
-          <div class="first-lesson-action">
-            <a class="btn btn-primary" id="first-lesson-start" href="./video-reader-desktop.html?from=today_first_lesson&focus=first_lesson" data-track="first_lesson_start" data-section="first_lesson">开始 3 分钟首课</a>
+        <div class="next-actions">
+          <a class="btn btn-primary" id="first-lesson-start" href="./video-reader-desktop.html?from=today_first_lesson&focus=first_lesson" data-track="first_lesson_start" data-section="first_lesson">开始说这一句</a>
+          <a class="btn btn-secondary" id="done-for-today" href="#day-end" hidden data-track="done_for_today" data-section="hero">今天到这</a>
+        </div>
+        <div id="starter-sentence" class="starter-sentence" hidden>
+          <p id="starter-line" class="starter-line"></p>
+          <p id="starter-note" class="starter-note"></p>
+          <div class="next-actions">
+            <button type="button" class="btn btn-secondary" id="starter-listen">听原声</button>
+            <button type="button" class="btn btn-primary" id="starter-record">跟读这句</button>
+            <button type="button" class="btn btn-primary" id="starter-again" hidden>再来一句</button>
+            <a class="btn btn-secondary" id="starter-stop" href="#day-end" hidden>今天到这</a>
           </div>
         </div>
         <div class="status-strip" id="status-strip">
-          <span class="pill">未加载学习计划</span>
+          <span class="pill">正在准备下一句</span>
         </div>
       </div>
 
@@ -1363,48 +1374,20 @@
         <div class="level-box">
           <div class="level-label">AI 评估 · 当前训练等级</div>
           <div class="level-name" id="level-name">准备中</div>
-          <div class="level-desc" id="level-desc">登录后会按你的词汇与练习记录生成今日计划。</div>
-        </div>
-        <div class="metrics">
-          <div class="metric">
-            <strong id="metric-minutes">15</strong>
-            <span>预计分钟</span>
-          </div>
-          <div class="metric">
-            <strong id="metric-new-words">0</strong>
-            <span>新词</span>
-          </div>
-          <div class="metric">
-            <strong id="metric-review-words">0</strong>
-            <span>复习</span>
-          </div>
+          <div class="level-desc" id="level-desc">先说这一句。等级会按你说过的句子慢慢看出来。</div>
         </div>
         <div class="today-progress" id="today-progress">
           <div class="today-progress-label">
-            <span>今日完成</span>
-            <strong id="today-progress-count">0 / 3</strong>
+            <span>今天的句子</span>
+            <strong id="today-progress-count">0 / 5</strong>
           </div>
           <div class="today-progress-bar"><span id="today-progress-bar"></span></div>
-          <div class="today-progress-note" id="today-progress-note">登录后同步今日任务进度。</div>
-        </div>
-        <div class="streak-box" id="streak-box">
-          <div class="streak-value"><strong id="streak-count">0</strong><span>天</span></div>
-          <div>
-            <div class="streak-title" id="streak-title">连续训练</div>
-            <div class="streak-copy" id="streak-copy">登录后记录你的连续训练天数。</div>
-          </div>
+          <div class="today-progress-note" id="today-progress-note">说完这一句，今天就算开始。说到 5 句可以停。</div>
         </div>
       </aside>
     </section>
 
     <section class="section" id="guest-section" hidden>
-      <div class="section-head">
-        <div>
-          <h2 class="section-title">先体验一轮，再决定是否升级。</h2>
-          <p class="section-subtitle">游客也可以进入训练；登录后会保留进度、AI 反馈和复习记录。</p>
-        </div>
-        <a class="btn btn-primary" href="./desktop-auth.html?next=./today.html" data-track="guest_auth_cta" data-section="guest">登录 / 注册</a>
-      </div>
       <div class="save-plan-band" id="save-plan-band">
         <div>
           <strong id="save-plan-title">保存这份个性化训练计划</strong>
@@ -1412,51 +1395,45 @@
         </div>
         <div class="save-plan-actions">
           <a class="btn btn-primary" id="save-plan-register" href="./desktop-auth.html?mode=register&next=./today.html?from=save_plan" data-track="save_plan_register" data-section="guest">注册保存</a>
+          <button type="button" class="btn btn-secondary" id="save-plan-google" hidden data-track="save_plan_google" data-section="guest">使用 Google 保存</button>
           <a class="btn btn-secondary" id="save-plan-login" href="./desktop-auth.html?next=./today.html?from=save_plan_login" data-track="save_plan_login" data-section="guest">已有账号</a>
-        </div>
-      </div>
-      <div class="task-grid">
-        <div class="task-card">
-          <span class="task-index">01</span>
-          <h3>看 1 段真实视频</h3>
-          <p>从完整语境理解一句表达，而不是孤立背句子。</p>
-          <a class="btn btn-secondary" href="./video-reader-desktop.html?from=today" data-track="guest_video_action" data-section="guest">打开视频训练</a>
-        </div>
-        <div class="task-card">
-          <span class="task-index">02</span>
-          <h3>跟读 5 句</h3>
-          <p>录音、听回放、对照原句，先把节奏和连读练起来。</p>
-          <a class="btn btn-secondary" href="./practice-session-desktop.html?from=today&mode=shadowing" data-track="guest_shadowing_action" data-section="guest">开始跟读</a>
-        </div>
-        <div class="task-card">
-          <span class="task-index">03</span>
-          <h3>复习 3 个高频词</h3>
-          <p>把今天遇到的词放回真实句子里复现，降低遗忘。</p>
-          <a class="btn btn-secondary" href="./video-vocabulary-desktop.html?from=today" data-track="guest_vocab_action" data-section="guest">打开词汇</a>
         </div>
       </div>
     </section>
 
-    <section class="section" id="plan-section">
+    <section class="section" id="plan-section" hidden>
       <div class="section-head">
         <div>
           <h2 class="section-title">今日任务</h2>
           <p class="section-subtitle" id="plan-summary">正在加载你的个性化训练计划。</p>
         </div>
-        <a class="btn btn-blue" id="practice-action" href="./practice-session-desktop.html?from=today&mode=shadowing" data-track="practice_action" data-section="plan">进入跟读</a>
+        <a class="btn btn-blue" id="practice-action" href="./video-reader-desktop.html?from=today_first_lesson&focus=first_lesson" data-track="practice_action" data-section="plan">进入跟读</a>
       </div>
       <div class="task-grid" id="task-grid">
         <div class="empty loading">正在生成今日任务...</div>
       </div>
     </section>
 
+    <details class="day-end" id="day-end">
+      <summary>练完以后</summary>
+      <p class="day-end-links">
+        <a href="./game.html" data-track="review_game" data-section="day_end">闯关复习</a>
+        <a href="./youtube-import.html" data-track="import_content" data-section="day_end">导入自己的内容</a>
+        <a href="./video-vocabulary-desktop.html?from=today" data-track="vocab_later" data-section="day_end">词汇本</a>
+      </p>
+      <div class="streak-box" id="streak-box">
+        <div class="streak-value"><strong id="streak-count">0</strong><span>天</span></div>
+        <div>
+          <div class="streak-title" id="streak-title">今天开口</div>
+          <div class="streak-copy" id="streak-copy">说完今天的句子就够了，不必为连续天数赶进度。</div>
+        </div>
+      </div>
     <section class="section" id="review-section" hidden>
       <div class="section-head">
         <div>
-          <h2 class="section-title">今日复盘</h2>
-          <p class="section-subtitle" id="review-subtitle">完成任意一步后，这里会给出下一步建议。</p>
+          <h2 class="section-title">上一句</h2>
+          <p class="section-subtitle" id="review-subtitle">说完以后，这里只留下一句反馈。</p>
         </div>
-        <a class="btn btn-secondary" href="./pricing.html#plans" data-track="review_pricing" data-section="review">提升训练强度</a>
       </div>
       <div class="review-panel">
         <div class="review-summary">
@@ -1501,7 +1478,7 @@
       <div class="weekly-grid">
         <div class="weekly-score">
           <div class="weekly-score-value" id="weekly-active-days">0<span>/7</span></div>
-          <div class="weekly-score-copy" id="weekly-score-copy">登录后显示最近 7 天训练报告。</div>
+          <div class="weekly-score-copy" id="weekly-score-copy">最近 7 天说了多少句，练完再看。</div>
           <div class="status-strip" id="weekly-stats">
             <span class="pill">0 分钟</span>
             <span class="pill">0 次跟读</span>
@@ -1516,7 +1493,7 @@
         <div class="section-head">
           <div>
             <h2 class="section-title">推荐内容</h2>
-            <p class="section-subtitle">已有精选视频可直接学习，无需导入。也可以导入自己的内容。</p>
+            <p class="section-subtitle">今天这句说完，可以再换一段。</p>
           </div>
           <a class="btn btn-secondary" href="./video-reader-desktop.html" data-track="view_all_videos" data-section="recommendations">浏览精选视频库</a>
         </div>
@@ -1529,7 +1506,7 @@
         <div class="section-head">
           <div>
             <h2 class="section-title">AI 与复习额度</h2>
-            <p class="section-subtitle" id="quota-subtitle">登录后显示今日额度。</p>
+            <p class="section-subtitle" id="quota-subtitle">额度用完时再看会员。</p>
           </div>
           <a class="btn btn-secondary" href="./membership.html" data-track="membership_center" data-section="quota">会员中心</a>
         </div>
@@ -1558,6 +1535,7 @@
         <div class="empty loading">正在加载词汇...</div>
       </div>
     </section>
+    </details>
   </main>
 
   <script>
@@ -1786,33 +1764,7 @@
       });
 
       try {
-        const res = await fetch(`${API_BASE}/auth/guest`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ visitor_id: window.LinglishVisitor?.getId() || null }),
-        });
-        const payload = await res.json().catch(() => ({}));
-        if (!res.ok) {
-          const err = new Error(payload.message || `HTTP ${res.status}`);
-          err.status = res.status;
-          throw err;
-        }
-        const token = saveGuestSession(payload);
-        if (!token) throw new Error('GUEST_TOKEN_MISSING');
-
-        const video = await loadFirstLessonVideoForGuest().catch((err) => {
-          console.warn('[Today] Failed to preload guest first lesson video:', err?.message || err);
-          return null;
-        });
-        const href = isContinue ? practiceHref(video || state.firstVideo) : firstLessonHref();
-        postEvent('today_guest_first_lesson_ready', {
-          href,
-          guest_id: payload.guest_id || null,
-          has_video: Boolean(video),
-          video_resource_id: video?.id || null,
-          destination: isContinue ? 'full_practice' : 'quick_first_lesson',
-        });
-        window.location.assign(href);
+        window.location.assign(buildAuthHref({ mode: 'register', source: 'account_required' }));
       } catch (err) {
         console.warn('[Today] Guest first lesson start failed:', err?.message || err);
         postEvent('today_guest_first_lesson_error', {
@@ -2028,7 +1980,139 @@
       }, true);
     }
 
+    function starterState() {
+      return window.LinglishStarterSentence ? window.LinglishStarterSentence.current(localStorage, new Date()) : null;
+    }
+
+    function renderStarterSentence() {
+      const panel = document.getElementById('starter-sentence');
+      const line = document.getElementById('starter-line');
+      const note = document.getElementById('starter-note');
+      const item = starterState();
+      if (!panel || !line || !item) return;
+      line.innerHTML = window.LinglishStarterSentence.lineHTML(item.sentence, []);
+      if (note) note.textContent = '';
+      panel.dataset.index = String(item.index);
+      const listen = document.getElementById('starter-listen');
+      const record = document.getElementById('starter-record');
+      const again = document.getElementById('starter-again');
+      const stop = document.getElementById('starter-stop');
+      const finished = item.finished;
+      if (listen) listen.hidden = finished;
+      if (record) record.hidden = finished;
+      if (again) again.hidden = true;
+      if (stop) stop.hidden = !finished;
+      if (finished && note) note.textContent = '今天的 5 句说完了。可以停在这里。';
+    }
+
+    function rememberStarterCompletion(spoken) {
+      const payload = {
+        date: getLocalDateKey(),
+        completed_at: new Date().toISOString(),
+        lines: spoken,
+        target_lines: 5,
+        source: 'starter-sentence',
+      };
+      try { localStorage.setItem(FIRST_LESSON_COMPLETION_KEY, JSON.stringify(payload)); } catch (_) { }
+      renderProgress();
+      renderSavePlanBand();
+    }
+
+    function settleStarterSentence(recognized) {
+      const item = starterState();
+      const line = document.getElementById('starter-line');
+      const note = document.getElementById('starter-note');
+      if (!item || !line) return;
+      const missed = window.LinglishMissedWords
+        ? window.LinglishMissedWords.missingWords(item.sentence, recognized)
+        : [];
+      if (window.LinglishMissedWords) {
+        window.LinglishMissedWords.remember(localStorage, 'starter', item.index, item.sentence, recognized);
+      }
+      line.innerHTML = window.LinglishStarterSentence.lineHTML(item.sentence, missed);
+      const result = window.LinglishFirstLessonGoal && window.LinglishFirstLessonGoal.sentenceResult
+        ? window.LinglishFirstLessonGoal.sentenceResult(!missed.length, missed)
+        : (missed.length ? `这句漏了 ${missed.slice(0, 4).join('、')}。` : '这句说出来了。');
+      if (note) note.textContent = result;
+      const record = window.LinglishStarterSentence.markSpoken(localStorage, new Date());
+      rememberStarterCompletion(record.spoken);
+      const listen = document.getElementById('starter-listen');
+      const recordBtn = document.getElementById('starter-record');
+      const again = document.getElementById('starter-again');
+      const stop = document.getElementById('starter-stop');
+      if (listen) listen.hidden = true;
+      if (recordBtn) recordBtn.hidden = true;
+      if (again) again.hidden = record.spoken >= 5;
+      if (stop) stop.hidden = false;
+    }
+
+    function recognizeStarterSentence() {
+      const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const record = document.getElementById('starter-record');
+      if (!Recognition) {
+        const note = document.getElementById('starter-note');
+        if (note) note.textContent = '这个浏览器听不到跟读。先听原声，再说一次。';
+        return;
+      }
+      const recognition = new Recognition();
+      recognition.lang = 'en-US';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+      if (record) record.textContent = '正在听你说…';
+      recognition.onresult = (event) => {
+        const said = event.results && event.results[0] && event.results[0][0] ? event.results[0][0].transcript : '';
+        if (record) record.textContent = '跟读这句';
+        settleStarterSentence(said);
+      };
+      recognition.onerror = () => {
+        if (record) record.textContent = '跟读这句';
+        const note = document.getElementById('starter-note');
+        if (note) note.textContent = '没听清。再听一次，然后跟着说。';
+      };
+      try { recognition.start(); } catch (_) {
+        if (record) record.textContent = '跟读这句';
+      }
+    }
+
+    function openStarterSentence() {
+      const panel = document.getElementById('starter-sentence');
+      const start = document.getElementById('first-lesson-start');
+      if (!panel || !window.LinglishStarterSentence) return;
+      if (start) start.hidden = true;
+      panel.hidden = false;
+      panel.dataset.open = '1';
+      renderStarterSentence();
+    }
+
+    function bindStarterSentence() {
+      const listen = document.getElementById('starter-listen');
+      const record = document.getElementById('starter-record');
+      const again = document.getElementById('starter-again');
+      const stop = document.getElementById('starter-stop');
+      if (listen) listen.addEventListener('click', () => {
+        const item = starterState();
+        if (!item) return;
+        window.LinglishStarterSentence.speak(item.sentence, window.speechSynthesis, window.SpeechSynthesisUtterance);
+      });
+      if (record) record.addEventListener('click', recognizeStarterSentence);
+      if (again) again.addEventListener('click', () => renderStarterSentence());
+      if (stop && document.getElementById('day-end')) {
+        stop.addEventListener('click', (event) => {
+          event.preventDefault();
+          const dayEnd = document.getElementById('day-end');
+          dayEnd.open = true;
+          dayEnd.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
+    }
+
     function handleFirstLessonStart(event, trigger) {
+      const completion = readFirstLessonCompletion();
+      if (completion && completion.source === 'starter-sentence') {
+        event.preventDefault();
+        openStarterSentence();
+        return;
+      }
       if (trigger?.dataset?.track === 'first_lesson_continue') return;
       event.preventDefault();
       if (!window.LinglishFirstLessonEntry) {
@@ -2041,17 +2125,28 @@
         level: normalizeLevel(state.plan?.currentLevel?.level),
         videoId: state.firstVideo?.id,
       }).catch((error) => {
-        console.warn('[Today] First lesson entry failed:', error);
+        if (error && error.code === 'FIRST_LESSON_VIDEO_UNAVAILABLE') openStarterSentence();
+        else console.warn('[Today] First lesson entry failed:', error);
       });
     }
 
     function bindFirstLessonStart() {
       const start = document.getElementById('first-lesson-start');
-      if (!start) return;
-      start.addEventListener('click', (event) => {
-        const trigger = event.currentTarget;
-        handleFirstLessonStart(event, trigger);
-      });
+      if (start) {
+        start.addEventListener('click', (event) => {
+          const trigger = event.currentTarget;
+          handleFirstLessonStart(event, trigger);
+        });
+      }
+      const done = document.getElementById('done-for-today');
+      const dayEnd = document.getElementById('day-end');
+      if (done && dayEnd) {
+        done.addEventListener('click', (event) => {
+          event.preventDefault();
+          dayEnd.open = true;
+          dayEnd.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+      }
     }
 
     function videoHref(video) {
@@ -2060,9 +2155,9 @@
     }
 
     function practiceHref(video) {
-      const query = new URLSearchParams({ from: 'today', mode: 'shadowing' });
+      const query = new URLSearchParams({ from: 'today_first_lesson', focus: 'first_lesson' });
       if (video && video.id) query.set('videoId', video.id);
-      return `./practice-session-desktop.html?${query.toString()}`;
+      return `./video-reader-desktop.html?${query.toString()}`;
     }
 
     function firstLessonHref() {
@@ -2175,23 +2270,23 @@
         const levelLabel = state.plan?.currentLevel?.name || '初级';
         const matchedVideos = Number(state.plan?.personalization?.matchedVideos || 0);
         strip.innerHTML = `
-          <span class="pill warn">${state.token ? '游客体验中' : '游客模式'}</span>
-          <span class="pill">注册后保存进度</span>
+          <span class="pill">先说一句</span>
           <span class="pill">等级 ${escapeHtml(levelLabel)}</span>
-          ${matchedVideos > 0 ? `<span class="pill good">匹配内容 ${matchedVideos} 条</span>` : '<span class="pill">可先体验训练闭环</span>'}
+          ${matchedVideos > 0 ? `<span class="pill good">匹配内容 ${matchedVideos} 条</span>` : ''}
           ${commitmentLabel ? `<span class="pill good">下次 ${escapeHtml(commitmentLabel)}</span>` : ''}
         `;
         return;
       }
       const entitlement = state.user.entitlement || {};
       const tier = entitlement.effective_tier || entitlement.tier || 'free';
-      const isPremium = tier !== 'free';
+      const isPremium = tier !== 'free' || Boolean(state.user?.is_admin);
+      const membershipLabel = `${membershipLevelName(state.user)} 会员${state.user?.is_admin ? ' · 管理员' : ''}`;
       const profile = state.plan?.profile || {};
       const primaryGoal = Array.isArray(profile.interests) && profile.interests.length ? profile.interests[0] : null;
       const streak = Number(state.streak?.currentStreak || 0);
       const matchedVideos = Number(state.plan?.personalization?.matchedVideos || 0);
       strip.innerHTML = `
-        <span class="pill good">${isPremium ? '会员权益已生效' : '免费计划'}</span>
+        <span class="pill good">${isPremium ? escapeHtml(membershipLabel) : '免费计划'}</span>
         <span class="pill">等级 ${escapeHtml(state.plan?.currentLevel?.name || '初级')}</span>
         <span class="pill">目标 ${profile.dailyGoal || state.plan?.estimatedMinutes || 15} 分钟</span>
         ${streak > 0 ? `<span class="pill good">连续 ${streak} 天</span>` : ''}
@@ -2208,17 +2303,29 @@
       return `./desktop-auth.html?${params.toString()}`;
     }
 
+    function membershipLevelName(user) {
+      const type = String(user?.membership_type || 'free').toLowerCase();
+      const names = { svip: 'SVIP', vip: 'VIP', family: '家庭版', free: '免费' };
+      return names[type] || '会员';
+    }
+
     function renderTopbarAuthAction() {
       const authAction = document.getElementById('auth-action');
       if (!authAction) return;
 
       const hasAccountToken = Boolean(state.token && !isTemporaryGuestUser());
       if (hasRegisteredAccount() || hasAccountToken) {
-        authAction.textContent = '会员中心';
+        const level = state.user ? membershipLevelName(state.user) : '';
+        authAction.hidden = false;
+        authAction.textContent = level
+          ? `${level} 会员${state.user?.is_admin ? ' · 管理员' : ''}`
+          : '会员中心';
         authAction.href = './membership.html';
+        authAction.title = '进入会员中心，查看会员等级';
         authAction.dataset.track = 'topbar_membership';
         return;
       }
+      authAction.hidden = false;
 
       if (state.token) {
         authAction.textContent = '注册保存';
@@ -2234,18 +2341,21 @@
 
     function renderSavePlanBand() {
       const band = document.getElementById('save-plan-band');
+      const section = document.getElementById('guest-section');
       if (!band) return;
-      if (hasRegisteredAccount()) {
+      const localCompletion = readFirstLessonCompletion();
+      if (hasRegisteredAccount() || !localCompletion) {
         band.hidden = true;
+        if (section) section.hidden = true;
         return;
       }
+      if (section) section.hidden = false;
 
       band.hidden = false;
       const profile = state.plan?.profile || {};
       const levelName = state.plan?.currentLevel?.name || '初级';
       const dailyGoal = profile.dailyGoal || state.plan?.estimatedMinutes || 15;
       const primaryGoal = Array.isArray(profile.interests) && profile.interests.length ? profile.interests[0] : null;
-      const localCompletion = readFirstLessonCompletion();
       setText('save-plan-title', localCompletion
         ? '保存今天的首课记录'
         : (primaryGoal ? `保存「${primaryGoal}」训练计划` : '保存这份个性化训练计划'));
@@ -2254,6 +2364,18 @@
         : `等级 ${levelName} · 每天 ${dailyGoal} 分钟。注册后会同步目标、进度、AI 反馈和复习记录。`);
       setHref('save-plan-register', buildAuthHref({ mode: 'register', source: localCompletion ? 'first_lesson_save' : 'save_plan' }));
       setHref('save-plan-login', buildAuthHref({ source: localCompletion ? 'first_lesson_login' : 'save_plan_login' }));
+      const googleBtn = document.getElementById('save-plan-google');
+      if (googleBtn) {
+        const googleEnabled = window.__LINGLISH_ENV__?.enableGoogleOAuth !== false;
+        googleBtn.hidden = !googleEnabled;
+        googleBtn.onclick = () => {
+          const params = new URLSearchParams({
+            flow: 'cookie_v1',
+            redirect: './today.html?from=google_save',
+          });
+          location.href = `/auth/oauth/google?${params.toString()}`;
+        };
+      }
       const guestAuth = document.querySelector('[data-track="guest_auth_cta"]');
       if (guestAuth) {
         guestAuth.setAttribute('href', buildAuthHref({ mode: 'register', source: 'guest_auth_cta' }));
@@ -2273,12 +2395,13 @@
       const minutes = plan?.estimatedMinutes || 15;
 
       setText('level-name', levelName);
-      setText('level-desc', desc);
+      setText('level-desc', hasRegisteredAccount()
+        ? desc
+        : '先说这一句。等级会按你说过的句子慢慢看出来。');
       setText('metric-minutes', minutes);
       setText('metric-new-words', newCount);
       setText('metric-review-words', reviewCount);
       setText('plan-summary', plan?.summary || `今日计划：${newCount} 个新词 + ${reviewCount} 个复习 + ${videoCount} 个视频`);
-      renderLearningEntryLinks();
       const shadowingAction = (plan?.actions || []).find((action) => action.key === 'shadowing');
       setHref('practice-action', shadowingAction?.href || practiceHref(state.firstVideo));
       renderStatusPills();
@@ -2290,37 +2413,32 @@
     }
 
     function renderFirstLesson() {
-      const lesson = document.getElementById('first-lesson');
       const start = document.getElementById('first-lesson-start');
-      if (!lesson || !start) return;
+      const doneBtn = document.getElementById('done-for-today');
+      if (!start) return;
 
       const progress = state.progress || {};
-      const completed = Number(progress.completed || 0);
-      const isComplete = Boolean(progress.isComplete || completed >= Number(progress.total || 3));
-      const plan = state.plan || {};
-      const profile = plan.profile || {};
-      const levelName = plan.currentLevel?.name || LEVEL_META[normalizeLevel(plan.currentLevel?.level)]?.name || '初级';
-      const primaryGoal = Array.isArray(profile.interests) && profile.interests.length ? profile.interests[0] : null;
+      const completedSteps = Number(progress.completed || 0);
+      const isComplete = Boolean(progress.isComplete || completedSteps >= Number(progress.total || 3));
       const videoTitle = state.firstVideo?.title || state.firstVideo?.original_filename || '';
       const href = firstLessonHref();
       const localCompletion = syncFirstLessonCompletionFromUrl();
+      const sentenceCopy = videoTitle
+        ? `下一句来自「${videoTitle.slice(0, 42)}」。听原声，跟着说出来。`
+        : '听原声，跟着说出来。说完这一句，再决定要不要下一句。';
 
-      if (localCompletion) {
-        const lines = Number(localCompletion.lines || localCompletion.target_lines || 3);
-        lesson.hidden = false;
-        lesson.classList.add('completed');
-        setText('first-lesson-title', '首课已完成：今天已经开口了');
-        setText('first-lesson-copy', `已完成 ${lines} 句真实跟读。下一步进入完整训练，把刚才的节奏延长到 5-8 句。`);
-        setText('first-lesson-time', 'Done');
-        setText('first-lesson-step-1', '首课跟读已完成。');
-        setText('first-lesson-step-2', '继续完整训练，巩固节奏、重音和连读。');
-        setText('first-lesson-step-3', hasRegisteredAccount() ? '进度会同步到今日训练闭环。' : '注册后可保存首课记录和后续反馈。');
+      if (localCompletion || isComplete) {
+        const lines = Number(localCompletion?.lines || localCompletion?.target_lines || Math.max(completedSteps, 1));
+        setText('hero-eyebrow', '今天');
+        setText('hero-title', '这句已经说完。');
+        setText('hero-copy', `已开口 ${lines} 句。可以再来一句，也可以今天到这。`);
         start.setAttribute('href', practiceHref(state.firstVideo));
         start.dataset.track = 'first_lesson_continue';
         start.dataset.section = 'first_lesson_complete';
-        start.textContent = '继续完整训练';
+        start.textContent = '再来一句';
+        if (doneBtn) doneBtn.hidden = false;
 
-        if (!state.firstLessonCompletionTracked) {
+        if (localCompletion && !state.firstLessonCompletionTracked) {
           state.firstLessonCompletionTracked = true;
           postEvent('today_first_lesson_complete_view', {
             has_video: Boolean(state.firstVideo),
@@ -2332,22 +2450,14 @@
         return;
       }
 
-      lesson.classList.remove('completed');
+      setText('hero-eyebrow', '下一句');
+      setText('hero-title', '先听，再开口说这一句。');
+      setText('hero-copy', sentenceCopy);
       start.dataset.track = 'first_lesson_start';
       start.dataset.section = 'first_lesson';
-      start.textContent = '开始 3 分钟首课';
-
-      lesson.hidden = isComplete;
-      if (isComplete) return;
-
-      setText('first-lesson-title', primaryGoal ? `3 分钟首课：围绕「${primaryGoal}」开口` : '3 分钟首课：先跟读一句真实表达');
-      setText('first-lesson-copy', hasRegisteredAccount()
-        ? `${levelName}计划已就绪。先完成一句听懂、跟读、复听，系统会把今天记为已开始。`
-        : '不用先配置课程，完成一句听懂、跟读、复听，就能判断 Linglish 是否适合你。');
-      setText('first-lesson-step-1', videoTitle ? `从「${videoTitle.slice(0, 28)}」开始。` : '选一段匹配你等级的真实内容。');
-      setText('first-lesson-step-2', '录下自己的声音，对齐节奏和重音。');
-      setText('first-lesson-step-3', hasRegisteredAccount() ? '完成后进入今日复盘和下一步建议。' : '注册后可保存录音、反馈和复习记录。');
+      start.textContent = '开始说这一句';
       start.setAttribute('href', href);
+      if (doneBtn) doneBtn.hidden = true;
 
       if (!state.firstLessonTracked) {
         state.firstLessonTracked = true;
@@ -2355,7 +2465,7 @@
           href,
           has_video: Boolean(state.firstVideo),
           video_resource_id: state.firstVideo?.id || null,
-          is_complete: isComplete,
+          is_complete: false,
         });
       }
     }
@@ -2374,26 +2484,26 @@
       const progress = state.progress;
       const localCompletion = readFirstLessonCompletion();
       const registered = hasRegisteredAccount();
-      if (!state.user || !progress) {
-        const completed = localCompletion ? 1 : 0;
-        countEl.textContent = `${completed} / 3`;
-        barEl.style.width = localCompletion ? '33%' : '0%';
-        noteEl.textContent = localCompletion
-          ? '首课已完成；注册后可同步后续训练进度。'
-          : '注册后同步今日任务进度。';
+      const sentenceTotal = 5;
+      if (!progress) {
+        const completed = localCompletion ? Math.max(1, Number(localCompletion.lines || 1)) : 0;
+        countEl.textContent = `${Math.min(completed, sentenceTotal)} / ${sentenceTotal}`;
+        barEl.style.width = `${Math.round((Math.min(completed, sentenceTotal) / sentenceTotal) * 100)}%`;
+        noteEl.textContent = completed
+          ? (registered ? '这句已经说完。可以再来一句，也可以今天到这。' : '这句已经说完。注册后可以留到明天。')
+          : '说完这一句，今天就算开始。说到 5 句可以停。';
         return;
       }
 
       const completed = Math.max(Number(progress.completed || 0), localCompletion ? 1 : 0);
-      const total = Number(progress.total || 3);
-      const percent = Math.max(0, Math.min(100, Math.max(Number(progress.percent || 0), total ? (completed / total) * 100 : 0)));
-      countEl.textContent = `${completed} / ${total}`;
-      barEl.style.width = `${percent}%`;
-      noteEl.textContent = progress.isComplete
-        ? (registered ? '今日闭环已完成，可以继续复习或明天回来。' : '今日闭环已完成；注册后明天可以直接继续。')
-        : (localCompletion
-          ? `首课已完成，还差 ${Math.max(0, total - completed)} 步完成今日闭环。${registered ? '' : '注册后长期保存。'}`
-          : `还差 ${Math.max(0, total - completed)} 步完成今日闭环。${registered ? '' : '注册后长期保存。'}`);
+      const spoken = Math.min(sentenceTotal, completed > 0 ? Math.max(completed, Number(localCompletion?.lines || 0)) : 0);
+      countEl.textContent = `${spoken} / ${sentenceTotal}`;
+      barEl.style.width = `${Math.round((spoken / sentenceTotal) * 100)}%`;
+      noteEl.textContent = spoken >= sentenceTotal
+        ? '今天的 5 句说完了。可以停在这里。'
+        : (spoken
+          ? `已开口 ${spoken} 句。再说一句，或今天到这。`
+          : '说完这一句，今天就算开始。说到 5 句可以停。');
     }
 
     function renderStreak() {
@@ -2405,23 +2515,18 @@
 
       if (!state.user || isTemporaryGuestUser()) {
         countEl.textContent = '0';
-        titleEl.textContent = '连续训练';
-        copyEl.textContent = '注册后记录 streak，完成任一步即可点亮今天。';
+        titleEl.textContent = '今天开口';
+        copyEl.textContent = '说完今天的句子就够了，不必为连续天数赶进度。';
         return;
       }
 
       const streak = state.streak || {};
       const current = Number(streak.currentStreak || 0);
-      const longest = Number(streak.longestStreak || 0);
       countEl.textContent = String(current);
-      titleEl.textContent = streak.hasTrainedToday ? '今日已点亮' : (streak.canExtendToday ? '今天待点亮' : '连续训练');
-      if (streak.hasTrainedToday) {
-        copyEl.textContent = `已连续 ${current} 天训练；历史最长 ${longest || current} 天。`;
-      } else if (streak.canExtendToday) {
-        copyEl.textContent = `完成任一步即可延续 ${current} 天连续训练。`;
-      } else {
-        copyEl.textContent = '今天完成第一步，开始建立连续训练记录。';
-      }
+      titleEl.textContent = streak.hasTrainedToday ? '今天已经开口' : '今天开口';
+      copyEl.textContent = streak.hasTrainedToday
+        ? `今天已经算上。连续 ${current} 天只是记录，断了也不用补。`
+        : '今天再说一句就会记上一笔。没说也不扣之前的天数。';
     }
 
     function renderTasks() {
@@ -2517,11 +2622,8 @@
           }
           : step);
       }
-      const nextStep = steps.find((step) => !step.done) || steps[steps.length - 1] || { key: 'watch', label: '看一段真实视频' };
+      const nextStep = steps.find((step) => !step.done) || steps[steps.length - 1] || { key: 'shadowing', label: '再说一句' };
       const isComplete = Boolean(progress.isComplete || completed >= total);
-      const tier = getEffectiveTier();
-      const isFree = tier === 'free';
-      const registered = hasRegisteredAccount();
       const countEl = document.getElementById('review-count');
       const subtitleEl = document.getElementById('review-subtitle');
       const nextTitleEl = document.getElementById('review-next-title');
@@ -2532,32 +2634,21 @@
       if (countEl) countEl.innerHTML = `${completed}<span>/${total}</span>`;
       if (subtitleEl) {
         subtitleEl.textContent = isComplete
-          ? '今天的输入、输出和复习已经闭环，下一步是保持节奏。'
-          : `还差 ${Math.max(0, total - completed)} 步完成今日闭环。`;
+          ? '今天的句子说完了。'
+          : '说完以后，这里只留下一句反馈。';
       }
       if (nextTitleEl) {
-        nextTitleEl.textContent = isComplete ? '今天已经完成，继续加深记忆' : `下一步：${nextStep.label || '继续训练'}`;
+        nextTitleEl.textContent = isComplete ? '可以停在这里' : '再听一句，再说一句';
       }
       if (nextCopyEl) {
         nextCopyEl.textContent = isComplete
-          ? (registered
-            ? `今日 streak ${state.streak?.hasTrainedToday ? '已点亮' : '待点亮'}。可以继续复习今天的词句，或升级到更高频 AI 打分。`
-            : '今天已经完成一次真实训练。注册后会保存首课记录、复习队列和后续 AI 反馈。')
-          : (registered
-            ? '按顺序完成输入、跟读和复习，系统会把今日完成状态写入训练进度。'
-            : '按顺序完成输入、跟读和复习；注册后会长期保存训练进度。');
+          ? '漏掉的词会留在原来的句子里。明天打开，还是从下一句开始。'
+          : '听原声，跟着说。反馈只针对这一句。';
       }
       if (actionsEl) {
-        const primaryHref = isComplete ? './video-vocabulary-desktop.html?from=today&review=extra' : actionHref(nextStep.key);
-        const secondaryHref = registered
-          ? (isFree ? './pricing.html#plans' : './membership.html')
-          : buildAuthHref({ mode: 'register', source: 'review_save_progress' });
-        const secondaryTrack = registered
-          ? (isFree ? 'review_upgrade_action' : 'review_membership_action')
-          : 'review_register_save';
+        const primaryHref = isComplete ? practiceHref(state.firstVideo) : firstLessonHref();
         actionsEl.innerHTML = `
-          <a class="btn btn-primary" href="${escapeHtml(primaryHref)}" data-track="review_next_action" data-action-key="${escapeHtml(nextStep.key || 'review')}" data-section="review">${isComplete ? '继续复习' : '继续下一步'}</a>
-          <a class="btn btn-secondary" href="${escapeHtml(secondaryHref)}" data-track="${secondaryTrack}" data-section="review">${registered ? (isFree ? '升级高频训练' : '查看会员权益') : '注册保存进度'}</a>
+          <a class="btn btn-primary" href="${escapeHtml(primaryHref)}" data-track="review_next_action" data-action-key="${escapeHtml(nextStep.key || 'shadowing')}" data-section="review">${isComplete ? '再来一句' : '开始说这一句'}</a>
         `;
       }
       if (stepsEl) {
@@ -2844,10 +2935,10 @@
       if (!wrap) return;
       const entitlement = state.user?.entitlement;
       if (!entitlement || isTemporaryGuestUser()) {
-        wrap.innerHTML = `<div class="empty">${state.token ? '注册后显示并保留 AI 打分、发音评测和单词解析额度。' : '登录后显示 AI 打分、发音评测和单词解析额度。'}</div>`;
+        wrap.innerHTML = '<div class="empty">先把这一句说完。额度用完时，再从这里看会员。</div>';
         const upgradeBand = document.getElementById('upgrade-band');
-        if (upgradeBand) upgradeBand.hidden = false;
-        setText('quota-subtitle', state.token ? '游客体验可先试练；注册后保留额度和反馈。' : '登录后显示今日额度。');
+        if (upgradeBand) upgradeBand.hidden = true;
+        setText('quota-subtitle', '额度用完时再看会员。');
         return;
       }
       const items = [
@@ -2869,8 +2960,12 @@
 
       const tier = entitlement.effective_tier || 'free';
       const upgradeBand = document.getElementById('upgrade-band');
-      if (upgradeBand) upgradeBand.hidden = tier !== 'free' ? true : false;
-      setText('quota-subtitle', tier === 'free' ? '免费额度适合体验；升级后可高频训练。' : `当前权益：${tier}`);
+      const paid = tier !== 'free' || Boolean(state.user?.is_admin);
+      if (upgradeBand) upgradeBand.hidden = paid;
+      const level = membershipLevelName(state.user);
+      setText('quota-subtitle', paid
+        ? `当前会员：${level}${state.user?.is_admin ? ' · 管理员' : ''}`
+        : '免费额度适合体验；升级后可高频训练。');
     }
 
     function buildFallbackPlan() {
@@ -2927,11 +3022,19 @@
       state.streak = null;
       state.weeklyReport = null;
       state.firstVideo = null;
-      const guestSection = document.getElementById('guest-section');
-      if (guestSection) guestSection.hidden = false;
       renderAll();
       trackPlanLoaded('guest');
       loadGuestRecommendations();
+      resumeStarterIfNeeded();
+    }
+
+    function resumeStarterIfNeeded() {
+      let requested = false;
+      try {
+        requested = new URLSearchParams(window.location.search).get('starter') === '1';
+      } catch (_) { }
+      const saved = readFirstLessonCompletion();
+      if (requested || (saved && saved.source === 'starter-sentence')) openStarterSentence();
     }
 
     function renderFirstLessonResume() {
@@ -2972,6 +3075,7 @@
       bindTracking();
       bindRecoInteractions();
       bindFirstLessonStart();
+      bindStarterSentence();
       bindCommitmentControls();
       state.token = getToken();
       renderTopbarAuthAction();
@@ -2983,9 +3087,8 @@
       try {
         await loadAuthenticatedPlan();
         const registered = hasRegisteredAccount();
-        const guestSection = document.getElementById('guest-section');
-        if (guestSection) guestSection.hidden = registered;
         renderAll();
+        resumeStarterIfNeeded();
         trackPlanLoaded(registered ? 'personalized' : 'guest_token');
       } catch (err) {
         if (err.status === 401 || err.status === 403) {
@@ -2999,6 +3102,7 @@
         state.plan = buildFallbackPlan();
         state.firstVideo = null;
         renderAll();
+        resumeStarterIfNeeded();
         setText('plan-summary', '个性化计划暂时不可用，已提供默认训练闭环。');
         trackPlanLoaded('fallback_error');
       }
@@ -3027,5 +3131,6 @@
       });
     })();
   </script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
 </body>
 </html>

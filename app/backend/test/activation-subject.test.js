@@ -167,20 +167,18 @@ test('optional JSON parsing times out stalled metadata without failing the guest
   }
 });
 
-test('guest route returns a slow successful response after oversized metadata without waiting for its tail', async () => {
+test('guest route refuses account creation even when the request body is still arriving', async () => {
   const originals = {
     register: authService.register,
     login: authService.login,
     recordLoginSession: dataStore.recordLoginSession,
     createEvent: dataStore.createEvent,
   };
-  let resolveAuthStarted;
+  let registerCalls = 0;
   let resolveRouteDone;
-  const authStarted = new Promise((resolve) => { resolveAuthStarted = resolve; });
   const routeDone = new Promise((resolve) => { resolveRouteDone = resolve; });
   authService.register = async () => {
-    resolveAuthStarted(Date.now());
-    await delay(650);
+    registerCalls += 1;
     return { id: 42 };
   };
   authService.login = async () => ({ user_id: 42, access_token: 'guest-token' });
@@ -225,14 +223,11 @@ test('guest route returns a slow successful response after oversized metadata wi
       clientRequest.write(Buffer.alloc(9 * 1024, 'x'));
     });
 
-    const authStartedAt = await within(authStarted, 100);
-    assert.ok(authStartedAt - startedAt < 100, 'guest creation must start before the request tail ends');
-
     const response = await within(responsePromise, 1500);
-    assert.equal(response.statusCode, 200);
-    assert.equal(response.headers.connection, 'close');
-    assert.equal(response.body.access_token, 'guest-token');
-    assert.equal(response.body.is_guest, true);
+    assert.ok(Date.now() - startedAt < 1000);
+    assert.equal(response.statusCode, 403);
+    assert.equal(response.body.message, 'GUEST_LOGIN_DISABLED');
+    assert.equal(registerCalls, 0);
   } finally {
     if (clientRequest) clientRequest.destroy();
     await within(routeDone, 1500).catch(() => {});
@@ -269,7 +264,8 @@ test('guest login accepts an empty body and omits invalid visitor ids without fa
   try {
     const emptyResponse = guestResponse();
     assert.equal(await registerAuthRoutes('/auth/guest', guestRequest(), emptyResponse), true);
-    assert.equal(emptyResponse.statusCode, 200);
+    assert.equal(emptyResponse.statusCode, 403);
+    assert.equal(emptyResponse.payload.message, 'GUEST_LOGIN_DISABLED');
 
     const validResponse = guestResponse();
     assert.equal(await registerAuthRoutes(
@@ -277,8 +273,7 @@ test('guest login accepts an empty body and omits invalid visitor ids without fa
       guestRequest(JSON.stringify({ visitor_id: 'llv_abcdefghijkl' })),
       validResponse,
     ), true);
-    assert.equal(validResponse.statusCode, 200);
-    assert.equal(events[1].properties.visitor_id, 'llv_abcdefghijkl');
+    assert.equal(validResponse.statusCode, 403);
 
     const invalidResponse = guestResponse();
     assert.equal(await registerAuthRoutes(
@@ -286,8 +281,8 @@ test('guest login accepts an empty body and omits invalid visitor ids without fa
       guestRequest(JSON.stringify({ properties: { visitor_id: 'invalid' } })),
       invalidResponse,
     ), true);
-    assert.equal(invalidResponse.statusCode, 200);
-    assert.equal(events[2].properties.visitor_id, undefined);
+    assert.equal(invalidResponse.statusCode, 403);
+    assert.equal(events.length, 0);
   } finally {
     authService.register = originals.register;
     authService.login = originals.login;
@@ -312,8 +307,8 @@ test('guest login treats malformed optional metadata as absent', async () => {
   try {
     const response = guestResponse();
     assert.equal(await registerAuthRoutes('/auth/guest', guestRequest('{visitor_id:'), response), true);
-    assert.equal(response.statusCode, 200);
-    assert.equal(events[0].properties.visitor_id, undefined);
+    assert.equal(response.statusCode, 403);
+    assert.equal(events.length, 0);
   } finally {
     authService.register = originals.register;
     authService.login = originals.login;
@@ -338,8 +333,8 @@ test('guest login treats whitespace-only optional metadata as absent', async () 
   try {
     const response = guestResponse();
     assert.equal(await registerAuthRoutes('/auth/guest', guestRequest(' \n\t '), response), true);
-    assert.equal(response.statusCode, 200);
-    assert.equal(events[0].properties.visitor_id, undefined);
+    assert.equal(response.statusCode, 403);
+    assert.equal(events.length, 0);
   } finally {
     authService.register = originals.register;
     authService.login = originals.login;
@@ -365,8 +360,8 @@ test('guest login drains oversized optional metadata and omits its visitor id', 
     const body = JSON.stringify({ visitor_id: 'llv_abcdefghijkl', padding: 'x'.repeat(9 * 1024) });
     const response = guestResponse();
     assert.equal(await registerAuthRoutes('/auth/guest', guestRequest(body), response), true);
-    assert.equal(response.statusCode, 200);
-    assert.equal(events[0].properties.visitor_id, undefined);
+    assert.equal(response.statusCode, 403);
+    assert.equal(events.length, 0);
   } finally {
     authService.register = originals.register;
     authService.login = originals.login;

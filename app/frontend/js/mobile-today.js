@@ -30,9 +30,10 @@
     visitorId: 'linglish_visitor_id',
   };
 
+  const DAILY_SENTENCE_TARGET = 5;
   const MODE = {
     student: { key: 'student', goalMin: 10, watchTargetSec: 120, reviewTargetDelta: 3, practiceHint: '跟读5句' },
-    advanced: { key: 'advanced', goalMin: 15, watchTargetSec: 300, reviewTargetDelta: 5, practiceHint: '跟读8句' },
+    advanced: { key: 'advanced', goalMin: 15, watchTargetSec: 300, reviewTargetDelta: 5, practiceHint: '跟读5句' },
   };
 
   let serverGamify = { today: null, weeklyXp: null, leaderboard: [], achievements: [], selfUserId: null, dueCount: null };
@@ -101,9 +102,7 @@
   }
 
   const QUEST_FEEDBACK_MAP = {
-    'quest-watch': 'watch',
-    'quest-shadow': 'shadowing',
-    'quest-review': 'review',
+    'quest-sentences': 'shadowing',
   };
   const LONG_PRESS_MS = 550;
 
@@ -207,6 +206,29 @@
         dueCount,
       };
     } catch (_) { /* 静默降级:保持空值,面板走原有本地逻辑 */ }
+  }
+
+  function readTodaySpokenLines() {
+    const today = getTodayStr();
+    let lines = 0;
+    try {
+      const saved = safeJsonParse(localStorage.getItem('linglish_first_lesson_completion'), null);
+      if (saved && saved.date === today) lines = Math.max(lines, Number(saved.lines) || 0);
+    } catch (_) { }
+    try {
+      const practice = safeJsonParse(localStorage.getItem(STORAGE.practiceProgress), null);
+      if (practice && practice.date === today) {
+        const done = Array.isArray(practice.done) ? practice.done.length : (Number(practice.doneCount) || 0);
+        lines = Math.max(lines, done);
+      }
+    } catch (_) { }
+    return lines;
+  }
+
+  function dailySentenceNote(spoken) {
+    if (spoken >= DAILY_SENTENCE_TARGET) return '今天的 5 句说完了。可以停在这里。';
+    if (spoken > 0) return `已开口 ${spoken} 句。再说一句，或今天到这。`;
+    return '说完这一句，今天就算开始。说到 5 句可以停。';
   }
 
   function getTodayStr() {
@@ -448,7 +470,6 @@
 
   function updateModeUI(modeKey) {
     const isStudent = modeKey === MODE.student.key;
-    const mode = isStudent ? MODE.student : MODE.advanced;
 
     // Updated IDs: mode-student, mode-advanced (buttons)
     const studentBtn = document.getElementById('mode-student');
@@ -459,7 +480,7 @@
     // Update hero goal text
     const heroGoal = document.querySelector('.hero-goal');
     if (heroGoal) {
-      heroGoal.textContent = `今日目标：${mode.goalMin}分钟`;
+      heroGoal.textContent = '说到 5 句可以停';
     }
   }
 
@@ -548,13 +569,13 @@
     const rxGoal = document.getElementById('rx-goal');
     const heroGoal = document.querySelector('.hero-goal');
 
-    if (title) title.textContent = `${dailyGoal} 分钟 ${goal} 训练`;
-    if (copy) copy.textContent = `今天先完成 1 段真实输入、${modeKey === MODE.advanced.key ? '8' : '5'} 句跟读和一轮复习。`;
+    if (title) title.textContent = '今天的句子';
+    if (copy) copy.textContent = '说完这一句，今天就算开始。说到 5 句可以停。';
     if (badge) badge.textContent = modeKey === MODE.advanced.key ? '进阶' : '轻量';
     if (rxLevel) rxLevel.textContent = levelLabel;
     if (rxMinutes) rxMinutes.textContent = `${dailyGoal} 分钟`;
     if (rxGoal) rxGoal.textContent = goal;
-    if (heroGoal) heroGoal.textContent = `今日目标：${dailyGoal}分钟`;
+    if (heroGoal) heroGoal.textContent = '说到 5 句可以停';
   }
 
   function bindPrescriptionActions(token) {
@@ -966,9 +987,8 @@
     if (label) el.textContent = label;
   }
 
-  function renderCoachBrief(modeKey, video, statsState, progress = {}) {
-    const mode = modeKey === MODE.advanced.key ? MODE.advanced : MODE.student;
-    const targetLines = modeKey === MODE.advanced.key ? 8 : 5;
+  function renderCoachBrief(modeKey, video, statsState) {
+    const targetLines = DAILY_SENTENCE_TARGET;
     const profileInterests = Array.isArray(todayUserInfo?.interests) ? todayUserInfo.interests : [];
     const localGoal = getLocalOnboardingProfile().goal;
     const theme = boundedRouteValue(
@@ -976,13 +996,9 @@
       48,
       /^[\p{L}\p{N}\s_-]+$/u,
     ) || (modeKey === MODE.advanced.key ? '职场表达' : '日常表达');
-    const videoUrl = video && video.id
-      ? `./video-reader.html?videoId=${encodeURIComponent(String(video.id))}&from=today_coach`
-      : './mobile-explore.html?from=today_coach';
     const practiceUrl = video && video.id
-      ? `./practice-session.html?videoId=${encodeURIComponent(String(video.id))}&from=today_coach&mode=shadowing&lines=${encodeURIComponent(String(targetLines))}`
-      : './mobile-explore.html?from=today_coach';
-    const reviewUrl = `./mobile-power.html?from=today_coach&startReview=1&target=${encodeURIComponent(String(mode.reviewTargetDelta))}`;
+      ? `./video-reader.html?videoId=${encodeURIComponent(String(video.id))}&from=today_first_lesson&focus=first_lesson&mode=shadowing`
+      : './video-reader.html?mode=shadowing&from=today_first_lesson&focus=first_lesson';
     const roleplayParams = new URLSearchParams({
       scenario: roleplayScenarioForTheme(theme, modeKey),
       from: 'mobile_today_coach',
@@ -990,63 +1006,36 @@
     roleplayParams.set('theme', theme);
     const roleplayUrl = `./ai-roleplay.html?${roleplayParams.toString()}`;
 
-    const watchDone = (statsState?.watchSecondsVideo || 0) >= mode.watchTargetSec;
-    const practiceDone = Number(statsState?.practiceDone) || 0;
-    const practiceDoneEnough = practiceDone >= targetLines;
-    const baselineDue = Number.isFinite(statsState?.baselineDue) ? statsState.baselineDue : null;
-    const dueNow = Number.isFinite(statsState?.due) ? statsState.due : null;
-    const reviewDone = Number.isFinite(progress?.reviewDone)
-      ? Number(progress.reviewDone)
-      : ((baselineDue != null && dueNow != null) ? Math.max(0, baselineDue - dueNow) : 0);
+    const spoken = Math.min(targetLines, Math.max(Number(statsState?.practiceDone) || 0, readTodaySpokenLines()));
+    const practiceDoneEnough = spoken >= targetLines;
 
-    let title = '今天先完成一次开口输出';
-    let summary = `主题：${theme}。完成输入、跟读和复习后，再进入实战场做一轮应答。`;
-    let chip = modeKey === MODE.advanced.key ? '进阶路径' : '轻量路径';
+    let title = '先听，再开口说这一句。';
+    let summary = '说完这一句，今天就算开始。说到 5 句可以停。';
+    let chip = `${spoken}/${targetLines}`;
     let primaryHref = practiceUrl;
-    let primaryLabel = '按简报开始';
+    let primaryLabel = spoken > 0 ? '再来一句' : '开始说这一句';
 
-    if (!video || !video.id) {
-      title = '先挑一段适合今天的真实输入';
-      summary = '还没有可用的今日视频。先去探索页选择素材，再回来完成跟读和复习。';
-      chip = '选素材';
-      primaryHref = './mobile-explore.html?from=today_coach_empty';
-      primaryLabel = '去探索素材';
-    } else if (!watchDone) {
-      title = modeKey === MODE.advanced.key ? '先看懂 5 分钟真实输入' : '先看懂 2 分钟真实输入';
-      summary = `今日主题是 ${theme}。先看字幕和重点表达，再进入跟读。`;
-      chip = '输入优先';
-      primaryHref = videoUrl;
-      primaryLabel = '看今日视频';
-    } else if (!practiceDoneEnough) {
-      title = `把刚看懂的内容说出来：跟读 ${targetLines} 句`;
-      summary = `已经完成输入，下一步用录音把 ${theme} 的关键句练清楚。`;
-      chip = '输出优先';
-      primaryHref = practiceUrl;
-      primaryLabel = '开始跟读';
-    } else if (reviewDone < mode.reviewTargetDelta) {
-      title = `最后复习 ${mode.reviewTargetDelta} 个词句`;
-      summary = '把今日错句和高频表达推进复习队列，明天才不会重新开始。';
-      chip = '复习优先';
-      primaryHref = reviewUrl;
-      primaryLabel = '复习词句';
-    } else {
-      title = '今日闭环已完成，进入实战场加练一轮';
-      summary = `用 ${theme} 场景做一轮 AI 对话，把今天的词句用在真实应答里。`;
-      chip = '已完成';
-      primaryHref = roleplayUrl;
-      primaryLabel = '去实战场';
+    if (practiceDoneEnough) {
+      title = '今天的 5 句说完了。';
+      summary = '可以停在这里。想再练，就再来一句。';
+      chip = `${targetLines}/${targetLines}`;
+      primaryLabel = '再来一句';
+    } else if (spoken > 0) {
+      title = `已开口 ${spoken} 句。`;
+      summary = '再说一句，或今天到这。';
+      primaryLabel = '再来一句';
+    } else if (!video || !video.id) {
+      summary = '先选一段真实内容，听一句，跟着说出来。';
+      chip = '下一句';
+      primaryHref = './video-reader.html?mode=shadowing&from=today_first_lesson&focus=first_lesson';
     }
 
-    const speechFocus = modeKey === MODE.advanced.key
-      ? `跟读 ${targetLines} 句，再做 30 秒复述`
-      : `跟读 ${targetLines} 句，先追求完整清楚`;
+    const speechFocus = '说到 5 句可以停';
     const personalizedSpeechFocus = window.LinglishPronunciationProfile?.buildCoachSpeechFocus
       ? window.LinglishPronunciationProfile.buildCoachSpeechFocus(pronunciationProfile, speechFocus)
       : speechFocus;
-    const roleplayFocus = modeKey === MODE.advanced.key
-      ? `${theme} 场景：回答 3 个追问`
-      : `${theme} 场景：说出 3 句完整回答`;
-    const vocabFocus = `复习 ${mode.reviewTargetDelta} 个今日词句`;
+    const roleplayFocus = '说完再决定要不要再练一轮';
+    const vocabFocus = '说完再决定要不要看词句';
 
     setText('coach-next-action', title);
     setText('coach-summary', summary);
@@ -1076,16 +1065,10 @@
   function updateLearningEntryLinks(video) {
     const videoQuery = video && video.id ? `&videoId=${encodeURIComponent(String(video.id))}` : '';
     const shadowingLink = document.getElementById('learning-entry-shadowing');
-    const listeningLink = document.getElementById('learning-entry-listening');
     if (shadowingLink) {
-      shadowingLink.setAttribute('href', `./practice-session.html?mode=shadowing&from=mobile_today_choice${videoQuery}`);
+      shadowingLink.setAttribute('href', `./video-reader.html?mode=shadowing&from=today_first_lesson&focus=first_lesson${videoQuery}`);
     }
-    if (listeningLink) {
-      listeningLink.setAttribute('href', videoQuery
-        ? `./video-reader.html?from=mobile_today_choice${videoQuery}`
-        : './mobile-explore.html?from=mobile_today_choice');
-    }
-    bindRecoClick(video, [shadowingLink, listeningLink]);
+    bindRecoClick(video, [shadowingLink]);
   }
 
   function wireActions(modeKey, video, statsState) {
@@ -1097,44 +1080,27 @@
     const exploreBtn = document.getElementById('btn-explore');
     const thumbnailLink = document.getElementById('mission-thumbnail-link');
 
-    const watchDone = (statsState?.watchSecondsVideo || 0) >= mode.watchTargetSec;
-    const targetLines = (modeKey === MODE.advanced.key) ? 8 : 5;
-    const practiceDone = Number(statsState?.practiceDone) || 0;
+    const targetLines = DAILY_SENTENCE_TARGET;
+    const practiceDone = Math.max(Number(statsState?.practiceDone) || 0, readTodaySpokenLines());
     const practiceDoneEnough = practiceDone >= targetLines;
 
-    // Video URL for thumbnail link (always goes to video)
-    const videoUrl = video && video.id
-      ? `./video-reader.html?videoId=${encodeURIComponent(String(video.id))}&from=today`
-      : './mobile-explore.html';
+    const speakUrl = video && video.id
+      ? `./video-reader.html?videoId=${encodeURIComponent(String(video.id))}&from=today_first_lesson&focus=first_lesson&mode=shadowing`
+      : './video-reader.html?mode=shadowing&from=today_first_lesson&focus=first_lesson';
 
-    // Set thumbnail link to video
     if (thumbnailLink) {
-      thumbnailLink.setAttribute('href', videoUrl);
+      thumbnailLink.setAttribute('href', speakUrl);
     }
     bindRecoClick(video, [thumbnailLink, startBtn]);
 
     if (startBtn) {
-      if (video && video.id) {
-        if (!watchDone) {
-          startBtn.setAttribute('href', videoUrl);
-          startBtn.textContent = '开始今日视频';
-        } else if (!practiceDoneEnough) {
-          const url = `./practice-session.html?videoId=${encodeURIComponent(String(video.id))}&from=today&mode=shadowing&lines=${encodeURIComponent(String(targetLines))}`;
-          startBtn.setAttribute('href', url);
-          startBtn.textContent = '开始跟读练习';
-        } else {
-          const url = `./mobile-power.html?from=today&startReview=1&target=${encodeURIComponent(String(mode.reviewTargetDelta))}`;
-          startBtn.setAttribute('href', url);
-          startBtn.textContent = '复习单词';
-        }
-      } else {
-        startBtn.setAttribute('href', './mobile-explore.html');
-        startBtn.textContent = '去探索找视频';
-      }
+      startBtn.setAttribute('href', speakUrl);
+      startBtn.textContent = practiceDone > 0 ? '再来一句' : '开始说这一句';
     }
 
     if (secondaryBtn) {
-      secondaryBtn.setAttribute('href', `./mobile-power.html?from=today&startReview=1&target=${mode.reviewTargetDelta}`);
+      secondaryBtn.setAttribute('href', '#learning-details');
+      secondaryBtn.textContent = '今天到这';
     }
     if (exploreBtn) exploreBtn.setAttribute('href', './mobile-explore.html');
 
@@ -1187,22 +1153,16 @@
       const dueNow = Number.isFinite(statsState?.due) ? statsState.due : null;
       const reviewDone = (baselineDue != null && dueNow != null) ? Math.max(0, baselineDue - dueNow) : 0;
       const reviewPct = Math.max(0, Math.min(1, reviewDone / mode.reviewTargetDelta));
-      const practicePct = Math.max(0, Math.min(1, (Number(statsState?.practiceDone) || 0) / targetLines));
+      const practicePct = Math.max(0, Math.min(1, practiceDone / targetLines));
 
       let pct = 0;
-      let stepText = '第1步：先看视频';
-      if (watchPct < 1) {
-        pct = watchPct * 0.4;
-        stepText = mode.key === MODE.student.key ? '第1步：先看2分钟' : '第1步：先看5分钟';
-      } else if (practicePct < 1) {
-        pct = 0.4 + practicePct * 0.3;
-        stepText = `第2步：跟读${targetLines}句`;
-      } else if (reviewPct < 1) {
-        pct = 0.7 + reviewPct * 0.3;
-        stepText = `第3步：复习${mode.reviewTargetDelta}个词`;
+      let stepText = '先说这一句';
+      if (practicePct < 1) {
+        pct = practicePct;
+        stepText = practiceDone > 0 ? `已说 ${practiceDone} / ${targetLines} 句` : '先说这一句';
       } else {
         pct = 1;
-        stepText = '完成！去开成长中心领奖';
+        stepText = '今天的句子说完了';
         // Show celebration when 100% complete
         showCelebration();
       }
@@ -1219,15 +1179,6 @@
       const progressText = document.getElementById('progress-text');
       if (progressBarFill) progressBarFill.style.width = `${Math.round(pct * 100)}%`;
       if (progressText) progressText.textContent = stepText;
-
-      // If plan is done (all 3 steps complete), promote Treasure
-      if (pct >= 1) {
-        const startBtn = document.getElementById('btn-primary');
-        if (startBtn) {
-          startBtn.setAttribute('href', './mobile-treasure.html?from=today');
-          startBtn.textContent = '去开成长中心领奖 🪴';
-        }
-      }
 
       updateGamifyPanels(modeKey, statsState, {
         reviewDone,
@@ -1254,43 +1205,25 @@
     const localReviewDone = Number(progress?.reviewDone) || 0;
     const localPracticeDone = Number(progress?.practiceDone) || 0;
     const reviewDone = serverGamify.today?.words_reviewed ?? localReviewDone;
-    const practiceDone = serverGamify.today?.training_sessions_completed ?? localPracticeDone;
-    const targetLines = Number(progress?.targetLines) || 5;
+    const practiceDone = Math.max(localPracticeDone, readTodaySpokenLines());
+    const spoken = Math.min(DAILY_SENTENCE_TARGET, practiceDone);
+    const watchDone = (statsState?.watchSecondsVideo || 0) >= mode.watchTargetSec;
 
     const setBar = (id, pct) => {
       const el = document.getElementById(id);
       if (el) el.style.width = `${Math.round(Math.min(100, Math.max(0, pct)))}%`;
     };
 
-    const setQuest = (rootId, textId, barId, value, target) => {
-      const row = document.getElementById(rootId);
-      const text = document.getElementById(textId);
-      if (text) text.textContent = `${Math.min(value, target)}/${target}`;
-      setBar(barId, (target ? (value / target) * 100 : 0));
-      if (row) row.classList.toggle('done', value >= target);
-      return value >= target;
-    };
-
-    // 目标数优先用服务端 review-queue 的真实到期数(Task 9);拿不到时退回原默认值
-    const reviewTarget = serverGamify.dueCount ?? 20;
-    const watchDone = setQuest('quest-watch', 'quest-watch-text', 'quest-watch-bar', (statsState?.watchSecondsVideo || 0) >= mode.watchTargetSec ? 1 : 0, 1);
-    let reviewDoneFlag;
-    if (reviewTarget === 0) {
-      // 今日无到期复习:直接置完成态,避免 0/0 的除零与误导文案
-      const row = document.getElementById('quest-review');
-      const text = document.getElementById('quest-review-text');
-      if (text) text.textContent = '今日无复习';
-      setBar('quest-review-bar', 100);
-      if (row) row.classList.add('done');
-      reviewDoneFlag = true;
-    } else {
-      reviewDoneFlag = setQuest('quest-review', 'quest-review-text', 'quest-review-bar', reviewDone, reviewTarget);
-    }
-    const shadowDone = setQuest('quest-shadow', 'quest-shadow-text', 'quest-shadow-bar', practiceDone, targetLines);
+    const sentenceRow = document.getElementById('quest-sentences');
+    const sentenceText = document.getElementById('quest-sentence-text');
+    const sentenceNote = document.getElementById('daily-sentence-note');
+    if (sentenceText) sentenceText.textContent = `${spoken}/${DAILY_SENTENCE_TARGET}`;
+    if (sentenceNote) sentenceNote.textContent = dailySentenceNote(spoken);
+    setBar('quest-sentence-bar', (spoken / DAILY_SENTENCE_TARGET) * 100);
+    if (sentenceRow) sentenceRow.classList.toggle('done', spoken >= DAILY_SENTENCE_TARGET);
 
     const summary = document.getElementById('daily-quest-summary');
-    const doneCount = [watchDone, reviewDoneFlag, shadowDone].filter(Boolean).length;
-    if (summary) summary.textContent = `${doneCount}/3 完成`;
+    if (summary) summary.textContent = `${spoken}/${DAILY_SENTENCE_TARGET}`;
 
     const gs = window.gamificationSystem && window.gamificationSystem.data ? window.gamificationSystem.data : null;
     const stats = gs?.stats || {};

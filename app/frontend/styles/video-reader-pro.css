@@ -1,5 +1,5 @@
 /* =====================================================================
-   Linglish · Video Reader Pro Controls
+   Linglish ? Video Reader Pro Controls
    - Visible playback bar (speed / loop / sentence nav / auto-pause)
    - Keyboard shortcut help overlay (trigger: ? or H)
    - Polished empty/loading skeleton states
@@ -13,8 +13,8 @@
   --vrp-border:        var(--border, rgba(148,163,184,0.18));
   --vrp-text:          var(--text, #e2e8f0);
   --vrp-text-muted:    var(--text-muted, rgba(226,232,240,0.62));
-  --vrp-accent:        var(--brand, #6366f1);
-  --vrp-accent-strong: var(--brand-strong, #4f46e5);
+  --vrp-accent:        var(--brand, #0d9488);
+  --vrp-accent-strong: var(--brand-strong, #0f766e);
   --vrp-success:       #10b981;
   --vrp-warn:          #f59e0b;
   --vrp-shadow:        0 18px 38px rgba(15,23,42,0.32), 0 1px 0 rgba(255,255,255,0.04) inset;
@@ -33,40 +33,41 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  padding: 0.15rem 0.2rem 0.25rem;
-  border-radius: 16px;
-  background: rgba(255,255,255,0.94);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
-  box-shadow: 0 10px 28px -20px rgba(15,23,42,0.7);
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   container-type: inline-size;
 }
 
 .vrp-bar {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
-  gap: 0.5rem 0.75rem;
-  padding: 0.55rem 0.75rem;
+  gap: 0.4rem;
+  min-height: 0;
+  padding: 0.1rem 1.15rem 0.1rem 0;
   margin-top: 0;
-  background: linear-gradient(180deg, rgba(99,102,241,0.06), rgba(15,23,42,0.04));
-  border: 1px solid var(--vrp-border);
-  border-radius: var(--vrp-radius);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  box-shadow: var(--vrp-shadow);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
   font-size: 0.82rem;
   color: var(--vrp-text);
 }
 
+.vrp-bar > * { flex: 0 0 auto; }
+.vrp-bar > .vrp-bar__spacer { flex: 1 1 auto; min-width: 0.4rem; }
+
 .vrp-bar__group {
   display: inline-flex;
   align-items: center;
-  gap: 0.3rem;
-  padding: 0.15rem 0.35rem;
-  background: rgba(15,23,42,0.18);
-  border: 1px solid rgba(148,163,184,0.10);
-  border-radius: 999px;
+  gap: 0.35rem;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
 }
 
 @container (max-width: 720px) {
@@ -76,8 +77,6 @@
     padding: 0.4rem 0.5rem;
   }
 
-  .vrp-bar > .vrp-bar__group:nth-of-type(2),
-  .vrp-bar > #vrp-loop,
   .vrp-bar > #vrp-autopause,
   .vrp-bar > #vrp-pip,
   .vrp-bar > #vrp-ab-pill,
@@ -96,20 +95,77 @@
   }
 }
 
-body.focus-mode .vrp-bar > .vrp-bar__group:nth-of-type(2),
-body.focus-mode .vrp-bar > #vrp-loop,
 body.focus-mode .vrp-bar > #vrp-autopause,
 body.focus-mode .vrp-bar > #vrp-pip,
 body.focus-mode .vrp-bar > #vrp-ab-pill,
 body.focus-mode .vrp-bar > #vrp-bookmark,
 body.focus-mode .vrp-bar > #vrp-studied,
-body.focus-mode .vrp-bar > #vrp-segpos {
+body.focus-mode .vrp-bar > #vrp-segpos,
+body.focus-mode .vrp-bar > .vrp-bar__spacer,
+body.focus-mode .vrp-bar > .vrp-time,
+body.focus-mode .vrp-bar > .vrp-help-btn {
   display: none !important;
 }
 
+body.focus-mode .vrp-control-dock {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  margin-inline: auto;
+}
+
+body.focus-mode .vrp-bar > .vrp-bar__group:nth-of-type(2) {
+  display: inline-flex !important;
+}
+
 body.focus-mode .vrp-bar {
+  display: flex;
   flex-wrap: nowrap;
-  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  width: 100%;
+  padding: 0.1rem 0;
+  gap: 0.35rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body.focus-mode .vrp-bar__group,
+body.focus-mode .vrp-speed {
+  border: 0;
+  background: transparent;
+  padding: 0;
+}
+
+body.focus-mode .vrp-btn,
+body.focus-mode .vrp-speed__btn,
+body.focus-mode #vrp-loop {
+  padding: 0.16rem 0.34rem;
+  gap: 0.15rem;
+}
+
+.vrp-bar__label,
+.vrp-speed__full,
+#vrp-loop .vrp-toggle__dot,
+#vrp-loop .vrp-toggle__label,
+.vrp-segpos__track {
+  display: none !important;
+}
+
+.vrp-speed__short,
+#vrp-loop .vrp-toggle__short {
+  display: inline;
+}
+
+body.focus-mode #vrp-loop {
+  display: inline-flex !important;
 }
 
 @container (max-width: 460px) {
@@ -140,35 +196,43 @@ body.focus-mode .vrp-bar {
 .vrp-speed {
   display: inline-flex;
   align-items: center;
-  gap: 2px;
-  background: rgba(15,23,42,0.22);
-  border: 1px solid rgba(148,163,184,0.12);
-  border-radius: 999px;
-  padding: 2px;
+  gap: 0.35rem;
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  padding: 0;
 }
 .vrp-speed__btn {
   appearance: none;
-  border: none;
-  background: transparent;
-  color: var(--vrp-text-muted);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 30px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f172a;
   font: inherit;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   font-size: 0.78rem;
-  padding: 0.25rem 0.55rem;
+  padding: 0 0.62rem;
   border-radius: 999px;
   cursor: pointer;
   line-height: 1;
-  transition: background 0.18s var(--vrp-ease), color 0.18s var(--vrp-ease), transform 0.18s var(--vrp-ease);
+  white-space: nowrap;
+  box-shadow: none;
+  transition: background 0.18s var(--vrp-ease), color 0.18s var(--vrp-ease), border-color 0.18s var(--vrp-ease);
 }
 .vrp-speed__btn:hover {
-  color: var(--vrp-text);
-  background: rgba(99,102,241,0.12);
+  color: #0f766e;
+  background: #f0fdfa;
+  border-color: #5eead4;
 }
 .vrp-speed__btn[aria-pressed="true"] {
-  background: linear-gradient(135deg, var(--vrp-accent), var(--vrp-accent-strong));
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
   color: #fff;
-  box-shadow: 0 4px 12px rgba(99,102,241,0.35);
+  border-color: transparent;
+  box-shadow: none;
 }
 
 /* Sentence navigation buttons --------------------------------------- */
@@ -176,20 +240,23 @@ body.focus-mode .vrp-bar {
   appearance: none;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.35rem;
-  background: rgba(255,255,255,0.04);
-  color: var(--vrp-text);
-  border: 1px solid rgba(148,163,184,0.16);
+  height: 30px;
+  background: #fff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
   border-radius: 999px;
-  padding: 0.32rem 0.7rem;
+  padding: 0 0.7rem;
   font: inherit;
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   transition: transform 0.15s var(--vrp-ease), background 0.18s var(--vrp-ease), border-color 0.18s var(--vrp-ease);
 }
-.vrp-btn:hover { background: rgba(99,102,241,0.14); border-color: rgba(99,102,241,0.45); }
+.vrp-btn:hover { background: #f0fdfa; border-color: #5eead4; color: #0f766e; }
 .vrp-btn:active { transform: translateY(1px); }
 .vrp-btn[disabled] { opacity: 0.45; cursor: not-allowed; }
 
@@ -200,25 +267,27 @@ body.focus-mode .vrp-bar {
   appearance: none;
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.32rem 0.7rem;
-  background: rgba(255,255,255,0.04);
-  color: var(--vrp-text-muted);
-  border: 1px solid rgba(148,163,184,0.16);
+  gap: 0.35rem;
+  height: 30px;
+  padding: 0 0.72rem;
+  background: #fff;
+  color: #0f172a;
+  border: 1px solid #e2e8f0;
   border-radius: 999px;
   font: inherit;
   font-size: 0.78rem;
   font-weight: 600;
   line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   transition: all 0.18s var(--vrp-ease);
 }
-.vrp-toggle:hover { color: var(--vrp-text); border-color: rgba(99,102,241,0.45); }
+.vrp-toggle:hover { color: #0f766e; background: #f0fdfa; border-color: #5eead4; }
 .vrp-toggle[aria-pressed="true"] {
   color: #fff;
-  background: linear-gradient(135deg, var(--vrp-accent), var(--vrp-accent-strong));
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
   border-color: transparent;
-  box-shadow: 0 4px 14px rgba(99,102,241,0.35);
+  box-shadow: none;
 }
 .vrp-toggle[aria-pressed="true"] .vrp-toggle__dot { background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.6); }
 .vrp-toggle__dot {
@@ -232,22 +301,22 @@ body.focus-mode .vrp-bar {
 /* "?" help button -------------------------------------------------- */
 .vrp-help-btn {
   appearance: none;
-  width: 28px; height: 28px;
+  width: 30px; height: 30px;
   display: inline-flex;
   align-items: center; justify-content: center;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.06);
+  border-radius: 999px;
+  background: transparent;
   color: var(--vrp-text);
-  border: 1px solid rgba(148,163,184,0.18);
+  border: 1px solid rgba(148,163,184,0.35);
   font: 600 0.85rem/1 ui-sans-serif, system-ui;
   cursor: pointer;
-  transition: all 0.18s var(--vrp-ease);
+  box-shadow: none;
+  transition: background 0.18s var(--vrp-ease), border-color 0.18s var(--vrp-ease), color 0.18s var(--vrp-ease);
 }
 .vrp-help-btn:hover {
-  background: var(--vrp-accent);
-  color: #fff;
-  border-color: transparent;
-  transform: rotate(8deg) scale(1.05);
+  background: #f0fdfa;
+  color: #0f766e;
+  border-color: #5eead4;
 }
 
 /* =====================================================================
@@ -440,7 +509,7 @@ body.focus-mode .vrp-bar {
   width: 64px; height: 64px;
   display: grid; place-items: center;
   border-radius: 50%;
-  background: radial-gradient(closest-side, rgba(99,102,241,0.32), rgba(99,102,241,0));
+  background: radial-gradient(closest-side, rgba(13,148,136,0.32), rgba(13,148,136,0));
   color: #fff;
   font-size: 1.6rem;
   position: relative;
@@ -450,7 +519,7 @@ body.focus-mode .vrp-bar {
   content: '';
   position: absolute; inset: -6px;
   border-radius: 50%;
-  border: 1px dashed rgba(99,102,241,0.45);
+  border: 1px dashed rgba(13,148,136,0.45);
   animation: vrpSpin 14s linear infinite;
 }
 @keyframes vrpFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
@@ -470,8 +539,8 @@ body.focus-mode .vrp-bar {
    5) "Sentence highlight pulse" when navigating via keyboard
    ===================================================================== */
 @keyframes vrpSegPulse {
-  0%   { box-shadow: 0 0 0 0 rgba(99,102,241,0.55); }
-  100% { box-shadow: 0 0 0 10px rgba(99,102,241,0); }
+  0%   { box-shadow: 0 0 0 0 rgba(13,148,136,0.55); }
+  100% { box-shadow: 0 0 0 10px rgba(13,148,136,0); }
 }
 .seg.vrp-pulse {
   animation: vrpSegPulse 0.8s var(--vrp-ease) 1;
@@ -488,14 +557,59 @@ body.focus-mode .vrp-bar {
     --vrp-border: rgba(15,23,42,0.10);
     --vrp-shadow: 0 18px 38px rgba(15,23,42,0.10), 0 1px 0 rgba(255,255,255,0.65) inset;
   }
-  .vrp-bar { background: linear-gradient(180deg, rgba(99,102,241,0.07), rgba(255,255,255,0.6)); }
-  .vrp-bar__group, .vrp-speed { background: rgba(15,23,42,0.04); }
+  .vrp-bar { background: transparent; box-shadow: none; }
+  .vrp-bar__group, .vrp-speed { background: transparent; border: 0; }
   .vrp-help-card { background: #fff; }
   .vrp-toast { background: rgba(15,23,42,0.92); }
 }
 
+/* Desktop reader forces light surfaces via data-theme; keep controls readable. */
+[data-theme="light"],
+:root:not([data-theme="dark"]) {
+  --vrp-text: #0f172a;
+  --vrp-text-muted: #64748b;
+  --vrp-border: rgba(15,23,42,0.10);
+  --vrp-shadow: 0 10px 28px rgba(15,23,42,0.08), 0 1px 0 rgba(255,255,255,0.65) inset;
+  --vrp-accent: var(--brand, #0d9488);
+  --vrp-accent-strong: var(--brand-strong, #0f766e);
+}
+
+[data-theme="light"] .vrp-bar,
+:root:not([data-theme="dark"]) .vrp-bar {
+  background: transparent;
+  color: #0f172a;
+  box-shadow: none;
+}
+
+[data-theme="light"] .vrp-bar__group,
+[data-theme="light"] .vrp-speed,
+:root:not([data-theme="dark"]) .vrp-bar__group,
+:root:not([data-theme="dark"]) .vrp-speed {
+  background: transparent;
+  border: 0;
+}
+
+[data-theme="light"] .vrp-btn,
+:root:not([data-theme="dark"]) .vrp-btn {
+  color: #0f172a;
+  background: #fff;
+  border-color: #e2e8f0;
+}
+
+[data-theme="light"] .vrp-btn:hover,
+:root:not([data-theme="dark"]) .vrp-btn:hover {
+  background: #f0fdfa;
+  border-color: #5eead4;
+  color: #0f766e;
+}
+
+[data-theme="light"] .vrp-btn__icon,
+:root:not([data-theme="dark"]) .vrp-btn__icon {
+  stroke-width: 2.25;
+}
+
 /* =====================================================================
-   7) Responsive — stack the bar nicely on narrow widths
+   7) Responsive ??stack the bar nicely on narrow widths
    ===================================================================== */
 @media (max-width: 900px) {
   .vrp-bar { gap: 0.4rem; padding: 0.45rem 0.55rem; }
@@ -512,12 +626,12 @@ body.focus-mode .vrp-bar {
 .vrp-studied {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(15,23,42,0.18);
-  border: 1px solid rgba(148,163,184,0.10);
-  color: var(--vrp-text-muted);
+  gap: 0.35rem;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  color: #64748b;
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -526,25 +640,25 @@ body.focus-mode .vrp-bar {
 }
 .vrp-studied__icon {
   display: inline-grid; place-items: center;
-  width: 14px; height: 14px;
-  border-radius: 50%;
-  background: rgba(16,185,129,0.18);
-  color: var(--vrp-success);
-  font-size: 9px; font-weight: 800;
+  width: auto; height: auto;
+  border-radius: 0;
+  background: transparent;
+  color: #0d9488;
+  font-size: 12px; font-weight: 700;
   line-height: 1;
-  border: 1px solid rgba(16,185,129,0.35);
+  border: 0;
 }
 .vrp-studied__num { color: var(--vrp-text); }
 .vrp-studied__num span:first-child { color: var(--vrp-success); }
 .vrp-studied--done {
-  color: #ecfdf5;
-  background: linear-gradient(135deg, rgba(16,185,129,0.45), rgba(4,120,87,0.55));
-  border-color: rgba(16,185,129,0.55);
-  box-shadow: 0 4px 12px rgba(16,185,129,0.25);
+  color: #0f766e;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
-.vrp-studied--done .vrp-studied__icon { background: rgba(255,255,255,0.18); color: #ecfdf5; border-color: rgba(255,255,255,0.45); }
+.vrp-studied--done .vrp-studied__icon { background: transparent; color: #0d9488; border: 0; }
 .vrp-studied--done .vrp-studied__num,
-.vrp-studied--done .vrp-studied__num span:first-child { color: #ecfdf5; }
+.vrp-studied--done .vrp-studied__num span:first-child { color: #0f766e; }
 
 /* =====================================================================
    8a-pop) Studied-badge mini popover (reset confirm)
@@ -582,7 +696,7 @@ body.focus-mode .vrp-bar {
   cursor: pointer;
   transition: all 0.18s var(--vrp-ease);
 }
-.vrp-studied-pop__btn--ghost:hover { background: rgba(99,102,241,0.10); border-color: rgba(99,102,241,0.45); }
+.vrp-studied-pop__btn--ghost:hover { background: rgba(13,148,136,0.10); border-color: rgba(13,148,136,0.45); }
 .vrp-studied-pop__btn--danger {
   color: #fee2e2;
   background: linear-gradient(135deg, #ef4444, #b91c1c);
@@ -619,12 +733,12 @@ body.focus-mode .vrp-bar {
 .vrp-segpos {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
-  background: rgba(15,23,42,0.18);
-  border: 1px solid rgba(148,163,184,0.10);
-  color: var(--vrp-text-muted);
+  gap: 0.35rem;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  border: 0;
+  color: #64748b;
   font-size: 0.72rem;
   font-variant-numeric: tabular-nums;
   font-weight: 600;
@@ -645,7 +759,7 @@ body.focus-mode .vrp-bar {
   width: 0%;
   background: linear-gradient(90deg, var(--vrp-accent), var(--vrp-accent-strong));
   border-radius: 999px;
-  box-shadow: 0 0 8px rgba(99,102,241,0.55);
+  box-shadow: 0 0 8px rgba(13,148,136,0.55);
   transition: width 0.18s linear;
 }
 
@@ -689,7 +803,7 @@ body.focus-mode .vrp-bar {
   width: 0%;
   border-radius: 999px;
   background: linear-gradient(90deg, var(--vrp-accent), var(--vrp-accent-strong));
-  box-shadow: 0 0 12px rgba(99,102,241,0.45);
+  box-shadow: 0 0 12px rgba(13,148,136,0.45);
   transition: width 0.18s linear;
 }
 .vrp-scrub__ticks { position: absolute; inset: 0; pointer-events: none; }
@@ -707,7 +821,7 @@ body.focus-mode .vrp-bar {
   width: 3px;
   top: -5px; bottom: -5px;
   margin-left: -1.5px;
-  box-shadow: 0 0 8px rgba(99,102,241,0.7);
+  box-shadow: 0 0 8px rgba(13,148,136,0.7);
 }
 .vrp-scrub__bookmarks { position: absolute; inset: 0; pointer-events: none; }
 .vrp-scrub__bm {
@@ -727,7 +841,7 @@ body.focus-mode .vrp-bar {
   margin: -7px 0 0 -7px;
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 2px 8px rgba(99,102,241,0.55), 0 0 0 4px rgba(99,102,241,0.18);
+  box-shadow: 0 2px 8px rgba(13,148,136,0.55), 0 0 0 4px rgba(13,148,136,0.18);
   pointer-events: none;
   transition: left 0.18s linear, transform 0.16s ease;
   transform: scale(0.7);
@@ -758,7 +872,7 @@ body.focus-mode .vrp-bar {
 }
 
 /* =====================================================================
-   7c) Subtitle text scale (xs/sm/md/lg/xl) — affects dock + transcript
+   7c) Subtitle text scale (xs/sm/md/lg/xl) ??affects dock + transcript
    ===================================================================== */
 body[data-vrp-sub="xs"] #active-subtitle { font-size: 0.85em !important; }
 body[data-vrp-sub="sm"] #active-subtitle { font-size: 1em !important; }
@@ -771,7 +885,7 @@ body[data-vrp-sub="xl"] #transcript-list .seg .text { font-size: 1.22em !importa
 body[data-vrp-sub="xs"] #transcript-list .seg .text { font-size: 0.9em !important; }
 
 /* =====================================================================
-   7d) Dictation mode — blur EN until reveal
+   7d) Dictation mode ??blur EN until reveal
    ===================================================================== */
 body.vrp-dictation #active-subtitle .text,
 body.vrp-dictation #active-subtitle:not(.vrp-revealed) {
@@ -788,7 +902,7 @@ body.vrp-dictation #transcript-list .seg .translation,
 body.vrp-dictation #active-subtitle .translation { filter: none !important; }
 
 body.vrp-dictation #active-subtitle::before {
-  content: "🎧 听写模式 · 点击字幕显示英文 · D 退出";
+  content: "?? ???? ? ???????? ? D ???;
   display: block;
   font: 600 11.5px/1.4 ui-sans-serif, system-ui;
   color: #facc15;
@@ -813,14 +927,15 @@ body.vrp-dictation #active-subtitle::before {
   display: inline-flex;
   align-items: baseline;
   gap: 4px;
-  padding: 0 4px;
+  padding: 0;
   font: 500 12.5px/1 ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
-  color: rgba(226,232,240,0.78);
+  color: #64748b;
   letter-spacing: 0.3px;
   user-select: none;
   white-space: nowrap;
+  background: transparent;
 }
-.vrp-time__cur { color: rgba(241,245,249,0.96); font-weight: 600; }
+.vrp-time__cur { color: #0f172a; font-weight: 600; }
 .vrp-time__sep { opacity: 0.45; padding: 0 2px; }
 .vrp-time__tot { opacity: 0.7; }
 
@@ -834,26 +949,26 @@ body.vrp-dictation #active-subtitle::before {
 .vrp-bookmark__icon {
   font-size: 16px;
   line-height: 1;
-  color: rgba(226,232,240,0.55);
+  color: #64748b;
   transition: color 0.18s ease, transform 0.18s ease;
 }
 .vrp-bookmark__count {
   font: 600 11.5px/1 ui-sans-serif, system-ui;
-  min-width: 14px;
+  min-width: 0;
   text-align: center;
-  padding: 2px 5px;
-  border-radius: 999px;
-  background: rgba(148,163,184,0.18);
-  color: rgba(226,232,240,0.85);
-  transition: background 0.18s ease, color 0.18s ease;
+  padding: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #64748b;
+  transition: color 0.18s ease;
 }
 .vrp-btn--star.vrp-btn--star--active .vrp-bookmark__icon {
   color: #fbbf24;
   text-shadow: 0 0 10px rgba(251,191,36,0.55);
 }
 .vrp-btn--star.vrp-btn--star--active .vrp-bookmark__count {
-  background: linear-gradient(135deg, rgba(251,191,36,0.28), rgba(245,158,11,0.28));
-  color: #fef3c7;
+  background: transparent;
+  color: #0f766e;
 }
 .vrp-btn--star.vrp-btn--star--current .vrp-bookmark__icon {
   color: #fde047;
@@ -869,7 +984,7 @@ body.vrp-dictation #active-subtitle::before {
   position: relative;
 }
 .seg.vrp-bookmarked::before {
-  content: "★";
+  content: "??;
   position: absolute;
   left: -16px;
   top: 0.65em;
@@ -946,7 +1061,7 @@ body.vrp-dictation #active-subtitle::before {
   cursor: pointer;
   transition: background 0.12s ease;
 }
-.vrp-bm-row:hover { background: rgba(99,102,241,0.16); }
+.vrp-bm-row:hover { background: rgba(13,148,136,0.16); }
 .vrp-bm-row__t {
   font: 600 11.5px/1 ui-monospace, "SF Mono", Menlo, monospace;
   color: #fde047;
@@ -980,7 +1095,7 @@ body.vrp-dictation #active-subtitle::before {
 }
 
 /* =====================================================================
-   8b) A↔B Repeat pill (live indicator, click to clear)
+   8b) A?B Repeat pill (live indicator, click to clear)
    ===================================================================== */
 .vrp-ab-pill {
   display: inline-flex;
@@ -1047,11 +1162,11 @@ body.vrp-dictation #active-subtitle::before {
 .vrp-bm-pop__close:focus-visible {
   outline: 2px solid var(--vrp-accent);
   outline-offset: 2px;
-  box-shadow: 0 0 0 4px rgba(99,102,241,0.25);
+  box-shadow: 0 0 0 4px rgba(13,148,136,0.25);
 }
 
 /* =====================================================================
-   10) Reduced motion — respect prefers-reduced-motion
+   10) Reduced motion ??respect prefers-reduced-motion
    ===================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .vrp-skeleton,
@@ -1160,7 +1275,7 @@ body.vrp-bookmarks-only #transcript-list .seg:not(.vrp-bookmarked) {
   .vrp-rep--bump { animation: none; }
 }
 
-/* ----- Cinema mode (Z) — dim everything except the player ------------- */
+/* ----- Cinema mode (Z) ??dim everything except the player ------------- */
 body.vrp-cinema {
   background: #000 !important;
 }

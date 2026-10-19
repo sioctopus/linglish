@@ -27,7 +27,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap">
-  <link rel="stylesheet" href="./styles/tokens.css?v=1">
+  <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -137,18 +137,18 @@
   </script>
   <style>
     :root {
-      --ink: var(--lx-ink-900, #0f172a);
-      --muted: var(--lx-ink-500, #64748b);
-      --line: var(--lx-line, #e2e8f0);
-      --paper: var(--lx-paper, #f8fafc);
-      --surface: var(--lx-surface, #ffffff);
-      --green: var(--lx-primary, #0f766e);
-      --green-strong: var(--lx-primary-strong, #0b5f59);
-      --blue: var(--lx-sky-strong, #0284c7);
-      --amber: var(--lx-amber, #b45309);
-      --rose: var(--lx-rose, #be123c);
-      --shadow: var(--lx-shadow-lg, 0 16px 40px rgba(15, 23, 42, 0.13));
-      --radius: var(--lx-radius-md, 12px);
+      --ink: #0f172a;
+      --muted: #64748b;
+      --line: #e2e8f0;
+      --paper: #f8fafc;
+      --surface: #ffffff;
+      --green: #0d9488;
+      --green-strong: #0f766e;
+      --blue: #0d9488;
+      --amber: #b45309;
+      --rose: #be123c;
+      --shadow: 0 18px 48px rgba(23, 25, 31, 0.08);
+      --radius: 22px;
     }
 
     * {
@@ -162,8 +162,8 @@
     body {
       margin: 0;
       color: var(--ink);
-      background: var(--paper);
-      font-family: var(--lx-font-body, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif);
+      background: #f8fafc;
+      font-family: Manrope, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
       line-height: 1.5;
     }
 
@@ -178,138 +178,386 @@
 
     .topbar {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
+      top: 16px;
+      left: 50%;
       z-index: 30;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
-      padding: 0 clamp(18px, 5vw, 64px);
-      color: #ffffff;
-      background: rgba(8, 20, 29, 0.54);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.16);
-      backdrop-filter: blur(16px);
+      width: min(1120px, calc(100% - 28px));
+      height: 68px;
+      padding: 0 10px 0 18px;
+      color: var(--ink);
+      background: #ffffff;
+      border: 1px solid rgba(23, 25, 31, 0.05);
+      border-radius: 999px;
+      box-shadow: 0 10px 30px rgba(23, 25, 31, 0.08);
+      transform: translateX(-50%);
     }
 
     .brand {
       display: inline-flex;
       align-items: center;
       gap: 10px;
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 800;
+      letter-spacing: -0.03em;
     }
 
     .brand-mark {
       display: grid;
-      width: 30px;
-      height: 30px;
+      width: 34px;
+      height: 34px;
       place-items: center;
-      border-radius: 8px;
-      background: #ffffff;
-      color: var(--green);
-      font-weight: 900;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.18);
+      border-radius: 11px;
+      background: var(--blue);
+      color: #ffffff;
+      font-weight: 800;
     }
 
     .nav-actions {
       display: flex;
       align-items: center;
+      gap: 4px;
+    }
+
+    #btn-login[hidden],
+    .account-chip[hidden],
+    .account-badge[hidden] {
+      display: none !important;
+    }
+
+    .account-chip {
+      display: flex;
+      align-items: center;
       gap: 10px;
+      margin-left: 8px;
+    }
+
+    .account-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 36px;
+      padding: 0 14px;
+      border-radius: 999px;
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+      text-decoration: none;
+    }
+
+    .account-badge.svip {
+      background: linear-gradient(135deg, #2dd4bf, #0d9488);
+    }
+
+    .account-badge.vip {
+      background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    }
+
+    .account-badge.family {
+      background: linear-gradient(135deg, #ec4899, #db2777);
+    }
+
+    .account-name {
+      color: #64748b;
+      font-size: 14px;
+      font-weight: 650;
+    }
+
+    .account-logout {
+      min-height: 40px;
+      padding: 0 16px;
+      color: var(--ink);
+      background: #ffffff;
+      border-color: #d9dde6;
+    }
+
+    .topbar .account-logout,
+    .topbar .account-logout:hover {
+      color: var(--ink);
+      background: #ffffff;
+      box-shadow: none;
     }
 
     .nav-link {
-      padding: 8px 10px;
-      border-radius: var(--lx-radius-pill, 999px);
-      color: rgba(255, 255, 255, 0.82);
+      padding: 8px 12px;
+      border-radius: 999px;
+      color: #3f4450;
       font-size: 14px;
-      font-weight: 650;
+      font-weight: 700;
       transition: color var(--lx-dur-fast, 150ms) var(--lx-ease, ease), background var(--lx-dur-fast, 150ms) var(--lx-ease, ease);
     }
 
     .nav-link:hover {
-      color: #ffffff;
-      background: rgba(255, 255, 255, 0.12);
+      color: var(--ink);
+      background: #f8fafc;
     }
 
     .hero {
       position: relative;
-      min-height: 88svh;
-      display: flex;
+      display: block;
+      min-height: 0;
+      overflow: visible;
+      color: var(--ink);
+      background: #f8fafc;
+      padding: 128px 20px 28px;
+    }
+
+    .hero-shell {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.82fr);
+      gap: 36px;
       align-items: center;
-      overflow: hidden;
-      color: #ffffff;
-      background: #071018;
+      width: min(1120px, 100%);
+      margin: 0 auto;
     }
 
     .hero-media {
+      position: relative;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      min-height: 460px;
+      overflow: visible;
+      background: transparent;
+    }
+
+    .hero-lingbao {
+      width: min(380px, 100%);
+      margin: 0 auto;
+      background: transparent;
+      cursor: default;
+    }
+
+    .lingbao-stage {
+      position: relative;
+      display: block;
+      width: min(340px, 92%);
+      margin: 0 auto;
+    }
+
+    .lingbao-shadow {
       position: absolute;
-      inset: 0;
-      z-index: 0;
-      background: #071018;
+      left: 22%;
+      right: 26%;
+      bottom: 1.2%;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.16);
+      filter: blur(8px);
+      pointer-events: none;
+      transform-origin: center;
+      animation: lingbaoShadow 7.5s ease-in-out infinite;
     }
 
-    .hero-media video {
+    .lingbao-actor {
+      position: relative;
+      z-index: 1;
+      display: block;
+      transform-origin: 50% 96%;
+      animation: lingbaoLife 7.5s ease-in-out infinite;
+    }
+
+    .hero-lingbao img {
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0.62;
-      filter: saturate(1.08) contrast(1.04);
+      height: auto;
+      background: transparent;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      pointer-events: none;
     }
 
-    .hero-media::after {
+    .lingbao-giggle {
+      position: absolute;
+      top: -8px;
+      left: -6px;
+      z-index: 3;
+      width: 188px;
+      margin: 0;
+      padding: 0.5rem 0.7rem 0.55rem;
+      border-radius: 16px;
+      background: #ffffff;
+      color: #0f172a;
+      font-weight: 750;
+      font-size: 0.84rem;
+      line-height: 1.35;
+      letter-spacing: 0;
+      opacity: 0;
+      pointer-events: none;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+      transition: opacity 0.45s ease;
+    }
+
+    .lingbao-giggle::after {
       content: "";
       position: absolute;
-      inset: 0;
-      background:
-        linear-gradient(90deg, rgba(4, 13, 20, 0.94) 0%, rgba(6, 28, 32, 0.74) 43%, rgba(15, 118, 110, 0.18) 100%),
-        linear-gradient(180deg, rgba(4, 13, 20, 0.2) 0%, rgba(4, 13, 20, 0.56) 100%);
+      right: 28px;
+      bottom: -6px;
+      width: 14px;
+      height: 14px;
+      background: #ffffff;
+      transform: rotate(45deg);
+      border-radius: 2px;
+    }
+
+    .lingbao-stage.is-tickled .lingbao-actor {
+      animation: lingbaoTickle 0.7s ease-in-out infinite;
+    }
+
+    .lingbao-stage.is-talking .lingbao-giggle {
+      opacity: 1;
+      animation: lingbaoGiggle 0.9s ease-in-out infinite;
+    }
+
+    .lingbao-stage.is-tickled .lingbao-lid {
+      animation: none;
+      transform: translateY(-58%);
+      transition: transform 0.2s ease-out;
+    }
+
+    .lingbao-eye {
+      position: absolute;
+      z-index: 2;
+      overflow: hidden;
+      border-radius: 50%;
+      pointer-events: none;
+      -webkit-mask-image: radial-gradient(ellipse closest-side, #000 86%, transparent 100%);
+      mask-image: radial-gradient(ellipse closest-side, #000 86%, transparent 100%);
+    }
+
+    .lingbao-eye-left {
+      left: 10.8%;
+      top: 18%;
+      width: 21.6%;
+      height: 16.7%;
+    }
+
+    .lingbao-eye-right {
+      left: 50%;
+      top: 19.1%;
+      width: 29%;
+      height: 19.7%;
+    }
+
+    .lingbao-lid {
+      position: absolute;
+      left: 0;
+      display: block;
+      width: 100%;
+      height: 125%;
+      top: 0;
+      transform: translateY(-108%);
+      background: none;
+      animation: lingbaoBlink 3.4s linear infinite;
+      pointer-events: none;
+    }
+
+    .lingbao-eye-right .lingbao-lid {
+      animation-delay: 0.04s;
+    }
+
+    @keyframes lingbaoBlink {
+      0%, 6%, 14%, 58%, 66%, 100% {
+        transform: translateY(-108%);
+        animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.2);
+      }
+      7.6%, 8.6%, 59.6%, 60.4% {
+        transform: translateY(0%);
+        animation-timing-function: cubic-bezier(0.15, 0.7, 0.2, 1);
+      }
+      10.4% {
+        transform: translateY(-55%);
+        animation-timing-function: cubic-bezier(0.4, 0, 0.9, 0.2);
+      }
+      11.6%, 12.4% {
+        transform: translateY(0%);
+        animation-timing-function: cubic-bezier(0.15, 0.7, 0.2, 1);
+      }
+    }
+
+    @keyframes lingbaoTickle {
+      0%, 100% { transform: translate(-2px, 0) rotate(-2.5deg) scale(1.01, 0.995); }
+      50% { transform: translate(2px, -1px) rotate(2.5deg) scale(0.995, 1.012); }
+    }
+
+    @keyframes lingbaoGiggle {
+      0%, 100% { opacity: 1; transform: translateY(0); }
+      50% { opacity: 1; transform: translateY(-4px); }
+    }
+
+    @keyframes lingbaoLife {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1, 1); }
+      7% { transform: translateY(-4px) rotate(-2deg) scale(1.02, 0.985); }
+      14% { transform: translateY(0) rotate(0.5deg) scale(0.995, 1.012); }
+      22% { transform: translateY(-3px) rotate(2.5deg) scale(1.018, 0.988); }
+      30% { transform: translateY(1px) rotate(0deg) scale(0.99, 1.02); }
+      40% { transform: translateY(-10px) rotate(-3deg) scale(1.035, 0.97); }
+      46% { transform: translateY(2px) rotate(1.5deg) scale(0.985, 1.03); }
+      54% { transform: translateY(-2px) rotate(0deg) scale(1.01, 0.995); }
+      63% { transform: translateY(-5px) rotate(4deg) scale(1.02, 0.99); }
+      71% { transform: translateY(-7px) rotate(-4deg) scale(1.025, 0.985); }
+      80% { transform: translateY(-1px) rotate(1deg) scale(1, 1.01); }
+      88% { transform: translateY(-4px) rotate(-2deg) scale(1.015, 0.99); }
+    }
+
+    @keyframes lingbaoShadow {
+      0%, 100% { transform: scaleX(1); opacity: 0.85; }
+      40% { transform: scaleX(0.86); opacity: 0.55; }
+      46% { transform: scaleX(1.08); opacity: 1; }
+      71% { transform: scaleX(0.94); opacity: 0.7; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .lingbao-stage,
+      .lingbao-actor,
+      .lingbao-shadow,
+      .lingbao-lid,
+      .lingbao-giggle {
+        animation: none;
+      }
     }
 
     .hero-content {
       position: relative;
       z-index: 1;
-      width: min(1160px, calc(100% - 36px));
-      margin: 0 auto;
-      padding: 104px 0 62px;
+      width: auto;
+      margin: 0;
+      padding: 12px 8px 12px 12px;
     }
 
     .eyebrow {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      margin-bottom: 18px;
-      color: #b6f3df;
-      font-size: 13px;
+      margin-bottom: 14px;
+      color: #8b909c;
+      font-size: 14px;
       font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0;
+      letter-spacing: 0.22em;
     }
 
     .eyebrow::before {
-      content: "";
-      width: 26px;
-      height: 2px;
-      background: #34d399;
+      content: none;
     }
 
     h1 {
       max-width: 780px;
       margin: 0;
-      font-family: var(--lx-font-display, Georgia, serif);
-      font-size: clamp(42px, 7.5vw, 82px);
-      line-height: 1.04;
-      font-weight: 700;
-      letter-spacing: 0;
+      color: #111318;
+      font-family: Manrope, "PingFang SC", "Noto Sans SC", sans-serif;
+      font-size: clamp(56px, 7vw, 88px);
+      line-height: 0.96;
+      font-weight: 800;
+      letter-spacing: -0.045em;
     }
 
     .hero-copy {
-      max-width: 680px;
-      margin: 24px 0 0;
-      color: rgba(255, 255, 255, 0.82);
-      font-size: clamp(17px, 2.4vw, 22px);
-      line-height: 1.58;
+      max-width: 540px;
+      margin: 22px 0 0;
+      color: #4b5160;
+      font-size: 18px;
+      line-height: 1.7;
     }
 
     .hero-actions {
@@ -321,14 +569,16 @@
 
     .btn-game {
       position: relative;
-      background: linear-gradient(120deg, #f7b733 0%, #fb923c 100%);
-      color: #241303;
-      box-shadow: 0 16px 36px rgba(247, 183, 51, 0.32);
+      color: var(--ink);
+      background: #ffffff;
+      border-color: #d9dde6;
+      box-shadow: none;
     }
 
     .btn-game:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 20px 42px rgba(247, 183, 51, 0.4);
+      transform: translateY(-1px);
+      border-color: #c5cad6;
+      box-shadow: 0 8px 20px rgba(23, 25, 31, 0.06);
     }
 
     .btn-game .btn-game-badge {
@@ -345,22 +595,22 @@
     .hero-route {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       margin-top: 22px;
-      color: rgba(255, 255, 255, 0.78);
+      color: #4b5160;
       font-size: 14px;
-      font-weight: 650;
+      font-weight: 700;
     }
 
     .hero-route span {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      min-height: 34px;
-      padding: 0 12px;
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.06);
+      min-height: 36px;
+      padding: 0 14px;
+      border: 1px solid #e4e7ee;
+      border-radius: 999px;
+      background: #ffffff;
     }
 
     .hero-route span::before {
@@ -368,7 +618,7 @@
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #34d399;
+      background: var(--blue);
     }
 
     .btn {
@@ -376,8 +626,8 @@
       align-items: center;
       justify-content: center;
       min-height: 48px;
-      padding: 0 26px;
-      border-radius: var(--lx-radius-pill, 999px);
+      padding: 0 22px;
+      border-radius: 999px;
       border: 1px solid transparent;
       cursor: pointer;
       font-weight: 800;
@@ -385,53 +635,65 @@
     }
 
     .btn:hover {
-      transform: translateY(-2px);
+      transform: translateY(-1px);
     }
 
     .btn:active {
       transform: translateY(0);
     }
 
-    .btn-primary {
-      background: #ffffff;
-      color: #06121a;
-      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.24);
+    .btn-primary,
+    .topbar .btn {
+      background: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%);
+      color: #ffffff;
+      box-shadow: none;
     }
 
-    .btn-primary:hover {
-      box-shadow: 0 18px 40px rgba(45, 212, 191, 0.32);
+    .btn-primary:hover,
+    .topbar .btn:hover {
+      background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%);
+      box-shadow: 0 10px 24px rgba(15, 118, 110, 0.22);
+    }
+
+    .topbar #account-logout,
+    .topbar #account-logout:hover {
+      color: var(--ink);
+      background: #ffffff;
+      border: 1px solid #d9dde6;
+      box-shadow: none;
     }
 
     .btn-secondary {
-      color: #ffffff;
-      border-color: rgba(255, 255, 255, 0.36);
-      background: rgba(255, 255, 255, 0.08);
+      color: var(--ink);
+      border-color: #d9dde6;
+      background: #ffffff;
     }
 
     .btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.16);
-      border-color: rgba(255, 255, 255, 0.55);
+      background: #f8f9fb;
+      border-color: #c5cad6;
     }
 
     .hero-metrics {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 14px;
-      max-width: 760px;
-      margin-top: 42px;
+      width: min(1120px, 100%);
+      margin: 28px auto 0;
     }
 
     .metric {
-      padding: 16px;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.08);
-      backdrop-filter: blur(10px);
+      padding: 20px 22px;
+      border: 1px solid rgba(23, 25, 31, 0.04);
+      border-radius: 24px;
+      background: #ffffff;
+      box-shadow: 0 10px 30px rgba(23, 25, 31, 0.04);
     }
 
     .metric strong {
       display: block;
-      font-family: var(--lx-font-display, Georgia, serif);
+      color: #111318;
+      font-family: Manrope, "PingFang SC", sans-serif;
       font-size: 26px;
       line-height: 1;
     }
@@ -439,19 +701,39 @@
     .metric span {
       display: block;
       margin-top: 8px;
-      color: rgba(255, 255, 255, 0.74);
+      color: var(--muted);
       font-size: 13px;
     }
 
     .hero-proof {
-      max-width: 780px;
-      margin-top: 22px;
-      color: rgba(255, 255, 255, 0.68);
+      max-width: 540px;
+      margin-top: 18px;
+      color: #8b909c;
       font-size: 13px;
+    }
+
+    .display-line {
+      padding: 18px 20px 8px;
+      background: #f8fafc;
+      text-align: center;
+    }
+
+    .display-line p {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      color: #d5d8e0;
+      font-size: clamp(34px, 5.6vw, 76px);
+      font-weight: 800;
+      line-height: 1.25;
+      letter-spacing: 0.04em;
     }
 
     section {
       padding: clamp(56px, 8vw, 92px) clamp(18px, 5vw, 64px);
+    }
+
+    section[id] {
+      scroll-margin-top: 108px;
     }
 
     .section-inner {
@@ -460,23 +742,23 @@
     }
 
     .section-kicker {
-      margin: 0 0 10px;
-      color: var(--green);
-      font-weight: 850;
-      font-size: 14px;
+      margin: 0 0 12px;
+      color: var(--blue);
+      font-weight: 800;
+      font-size: 13px;
+      letter-spacing: 0.16em;
       text-transform: uppercase;
-      letter-spacing: 0;
     }
 
     h2 {
-      max-width: 820px;
+      max-width: 760px;
       margin: 0;
-      color: var(--ink);
-      font-family: var(--lx-font-display, Georgia, serif);
-      font-weight: 700;
-      font-size: clamp(30px, 5vw, 48px);
-      line-height: 1.12;
-      letter-spacing: 0;
+      color: #111318;
+      font-family: Manrope, "PingFang SC", "Noto Sans SC", sans-serif;
+      font-weight: 800;
+      font-size: clamp(32px, 4.4vw, 52px);
+      line-height: 1.18;
+      letter-spacing: -0.03em;
     }
 
     .section-lead {
@@ -487,26 +769,28 @@
     }
 
     .proof-band {
-      padding-top: 28px;
-      padding-bottom: 28px;
-      background: #ffffff;
-      border-bottom: 1px solid var(--line);
+      padding-top: 36px;
+      padding-bottom: 20px;
+      background: #f8fafc;
+      border-bottom: 0;
     }
 
     .proof-list {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 1px;
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--lx-radius-lg, 16px);
-      background: var(--line);
-      box-shadow: var(--lx-shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.06));
+      gap: 14px;
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
     }
 
     .proof-item {
-      padding: 20px;
-      background: var(--lx-grad-card, #ffffff);
+      padding: 22px;
+      border-radius: 24px;
+      background: #ffffff;
+      box-shadow: 0 10px 28px rgba(23, 25, 31, 0.04);
     }
 
     .proof-item strong {
@@ -521,8 +805,17 @@
       font-size: 14px;
     }
 
-    .system-lab {
+    .system-lab,
+    .workflow,
+    .focus,
+    .benchmark,
+    .faq,
+    .conversion {
       background: #f8fafc;
+    }
+
+    .product-preview {
+      background: #ffffff;
     }
 
     .system-grid {
@@ -541,11 +834,11 @@
 
     .system-card {
       min-height: 168px;
-      padding: 20px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
+      padding: 22px;
+      border: 0;
+      border-radius: 24px;
       background: #ffffff;
-      box-shadow: var(--lx-shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.06));
+      box-shadow: 0 10px 28px rgba(23, 25, 31, 0.05);
     }
 
     .system-card small {
@@ -578,13 +871,11 @@
       flex-direction: column;
       justify-content: space-between;
       gap: 24px;
-      padding: 24px;
-      border-radius: var(--lx-radius-lg, 16px);
-      color: #ffffff;
-      background:
-        linear-gradient(135deg, rgba(15, 118, 110, 0.95), rgba(2, 132, 199, 0.9)),
-        #0f172a;
-      box-shadow: var(--shadow);
+      padding: 28px;
+      border-radius: 32px;
+      color: #0f172a;
+      background: linear-gradient(180deg, #ccfbf1 0%, #f0fdfa 100%);
+      box-shadow: none;
     }
 
     .board-header {
@@ -597,19 +888,21 @@
     .board-header strong {
       display: block;
       max-width: 430px;
-      font-family: var(--lx-font-display, Georgia, serif);
-      font-size: clamp(25px, 4vw, 36px);
-      line-height: 1.12;
+      font-family: Manrope, "PingFang SC", sans-serif;
+      font-size: clamp(25px, 4vw, 34px);
+      line-height: 1.2;
+      letter-spacing: -0.03em;
     }
 
     .board-chip {
       flex: 0 0 auto;
-      padding: 7px 10px;
-      border: 1px solid rgba(255, 255, 255, 0.28);
-      border-radius: var(--radius);
-      color: rgba(255, 255, 255, 0.86);
+      padding: 7px 12px;
+      border: 0;
+      border-radius: 999px;
+      color: var(--blue);
+      background: #ffffff;
       font-size: 12px;
-      font-weight: 850;
+      font-weight: 800;
     }
 
     .board-path {
@@ -620,18 +913,18 @@
 
     .path-step {
       min-height: 92px;
-      padding: 13px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.1);
+      padding: 14px;
+      border: 0;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.78);
     }
 
     .path-step span {
       display: block;
       margin-bottom: 6px;
-      color: #b6f3df;
+      color: var(--blue);
       font-size: 12px;
-      font-weight: 900;
+      font-weight: 800;
     }
 
     .path-step strong {
@@ -653,22 +946,14 @@
       grid-template-columns: 96px 1fr;
       gap: 12px;
       padding-top: 10px;
-      border-top: 1px solid rgba(255, 255, 255, 0.16);
-      color: rgba(255, 255, 255, 0.82);
+      border-top: 1px solid rgba(23, 25, 31, 0.08);
+      color: #4b5160;
       font-size: 14px;
     }
 
     .intelligence-list strong {
-      color: #ffffff;
+      color: #0f172a;
       font-size: 13px;
-    }
-
-    .workflow {
-      background: linear-gradient(160deg, #f0fdfa 0%, #f0f9ff 60%, #f4f7fb 100%);
-    }
-
-    .product-preview {
-      background: #ffffff;
     }
 
     .preview-grid {
@@ -680,11 +965,11 @@
     }
 
     .preview-screen {
-      border: 1px solid var(--line);
-      border-radius: var(--lx-radius-lg, 16px);
-      background: #0f172a;
-      color: #e5edf7;
-      box-shadow: var(--shadow);
+      border: 0;
+      border-radius: 28px;
+      background: #f8fafc;
+      color: #0f172a;
+      box-shadow: 0 18px 40px rgba(23, 25, 31, 0.06);
       overflow: hidden;
     }
 
@@ -692,10 +977,11 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      min-height: 52px;
+      min-height: 56px;
       padding: 0 18px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      color: #cbd5e1;
+      border-bottom: 1px solid #e7e9ef;
+      color: #6d7280;
+      background: #ffffff;
       font-size: 13px;
       font-weight: 750;
     }
@@ -711,14 +997,14 @@
       grid-template-columns: 110px 1fr auto;
       gap: 14px;
       align-items: center;
-      padding: 14px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.06);
+      padding: 16px;
+      border: 0;
+      border-radius: 18px;
+      background: #ffffff;
     }
 
     .preview-tag {
-      color: #7dd3fc;
+      color: var(--blue);
       font-size: 13px;
       font-weight: 800;
     }
@@ -726,24 +1012,24 @@
     .preview-row strong {
       display: block;
       margin-bottom: 4px;
-      color: #ffffff;
+      color: #0f172a;
       font-size: 16px;
     }
 
     .preview-row span {
-      color: #cbd5e1;
+      color: #6d7280;
       font-size: 13px;
     }
 
     .preview-status {
       min-width: 72px;
       padding: 7px 10px;
-      border-radius: var(--radius);
-      background: rgba(20, 184, 166, 0.16);
-      color: #99f6e4;
+      border-radius: 999px;
+      background: #f0fdfa;
+      color: var(--blue);
       text-align: center;
       font-size: 12px;
-      font-weight: 850;
+      font-weight: 800;
     }
 
     .preview-feedback {
@@ -753,16 +1039,16 @@
     }
 
     .feedback-tile {
-      padding: 14px;
-      border-radius: var(--radius);
+      padding: 16px;
+      border-radius: 20px;
       background: #f8fafc;
-      border: 1px solid var(--line);
+      border: 0;
     }
 
     .feedback-tile strong {
       display: block;
       color: var(--ink);
-      font-family: var(--lx-font-display, Georgia, serif);
+      font-family: Manrope, "PingFang SC", sans-serif;
       font-size: 22px;
       line-height: 1;
       margin-bottom: 8px;
@@ -775,11 +1061,11 @@
 
     .coach-note {
       margin-top: 14px;
-      padding: 18px;
-      border-left: 3px solid var(--green);
-      border-radius: var(--radius);
-      background: #ecfdf5;
-      color: #14532d;
+      padding: 18px 20px;
+      border-left: 0;
+      border-radius: 20px;
+      background: #f0fdfa;
+      color: #0f766e;
       font-weight: 650;
     }
 
@@ -792,11 +1078,11 @@
 
     .step {
       min-height: 228px;
-      padding: 22px;
-      border: 1px solid var(--line);
-      border-radius: var(--lx-radius-lg, 16px);
-      background: var(--lx-grad-card, var(--surface));
-      box-shadow: var(--lx-shadow-sm, 0 8px 24px rgba(15, 23, 42, 0.06));
+      padding: 24px;
+      border: 0;
+      border-radius: 28px;
+      background: #ffffff;
+      box-shadow: 0 10px 28px rgba(23, 25, 31, 0.05);
       transition: transform var(--lx-dur, 250ms) var(--lx-ease, ease), box-shadow var(--lx-dur, 250ms) var(--lx-ease, ease);
     }
 
@@ -810,23 +1096,17 @@
       width: 36px;
       height: 36px;
       place-items: center;
-      border-radius: var(--lx-radius-md, 12px);
+      border-radius: 50%;
       color: #ffffff;
-      background: var(--lx-grad-brand, var(--green));
-      font-weight: 900;
-      box-shadow: var(--lx-shadow-brand, 0 8px 24px rgba(15, 118, 110, 0.18));
-    }
-
-    .step:nth-child(2) .step-number {
       background: var(--blue);
+      font-weight: 800;
+      box-shadow: none;
     }
 
-    .step:nth-child(3) .step-number {
-      background: var(--amber);
-    }
-
+    .step:nth-child(2) .step-number,
+    .step:nth-child(3) .step-number,
     .step:nth-child(4) .step-number {
-      background: var(--rose);
+      background: var(--blue);
     }
 
     .step h3 {
@@ -862,10 +1142,11 @@
       display: grid;
       grid-template-columns: 136px 1fr;
       gap: 18px;
-      padding: 18px;
-      border: 1px solid var(--line);
-      border-radius: var(--lx-radius-lg, 16px);
-      background: var(--lx-grad-card, #ffffff);
+      padding: 20px 22px;
+      border: 0;
+      border-radius: 24px;
+      background: #ffffff;
+      box-shadow: 0 10px 28px rgba(23, 25, 31, 0.04);
       transition: transform var(--lx-dur, 250ms) var(--lx-ease, ease), box-shadow var(--lx-dur, 250ms) var(--lx-ease, ease);
     }
 
@@ -875,7 +1156,7 @@
     }
 
     .scenario strong {
-      color: var(--green-strong);
+      color: #0f172a;
     }
 
     .scenario p {
@@ -885,12 +1166,12 @@
 
     .coach-panel {
       position: sticky;
-      top: 88px;
+      top: 104px;
       padding: 24px;
-      border: 1px solid var(--lx-teal-100, #ccfbf1);
-      border-radius: var(--lx-radius-xl, 24px);
-      background: linear-gradient(160deg, #f0fdfa 0%, #ecfeff 100%);
-      box-shadow: var(--shadow);
+      border: 0;
+      border-radius: 32px;
+      background: #ffffff;
+      box-shadow: 0 16px 40px rgba(23, 25, 31, 0.06);
     }
 
     .coach-panel h3 {
@@ -907,25 +1188,29 @@
     }
 
     .coach-panel li {
-      padding: 12px;
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.72);
-      color: #14532d;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: #f0fdfa;
+      color: #0f766e;
       font-weight: 650;
     }
 
     .benchmark {
-      background: #101827;
-      color: #ffffff;
+      background: #f8fafc;
+      color: var(--ink);
     }
 
     .benchmark h2,
     .benchmark .section-kicker {
-      color: #ffffff;
+      color: inherit;
+    }
+
+    .benchmark .section-kicker {
+      color: var(--blue);
     }
 
     .benchmark .section-lead {
-      color: rgba(255, 255, 255, 0.72);
+      color: var(--muted);
     }
 
     .compare {
@@ -936,20 +1221,21 @@
     }
 
     .compare-item {
-      padding: 18px;
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, 0.06);
+      padding: 22px;
+      border: 0;
+      border-radius: 24px;
+      background: #ffffff;
+      box-shadow: 0 10px 28px rgba(23, 25, 31, 0.04);
     }
 
     .compare-item strong {
       display: block;
       margin-bottom: 8px;
-      color: #ffffff;
+      color: #0f172a;
     }
 
     .compare-item span {
-      color: rgba(255, 255, 255, 0.7);
+      color: var(--muted);
       font-size: 14px;
     }
 
@@ -962,23 +1248,23 @@
       grid-template-columns: 1fr auto;
       gap: 28px;
       align-items: center;
-      padding: clamp(28px, 5vw, 46px);
-      border: none;
-      border-radius: var(--lx-radius-xl, 24px);
-      background: var(--lx-grad-brand, #0f766e);
-      color: #ffffff;
-      box-shadow: var(--lx-shadow-brand, 0 8px 24px rgba(15, 118, 110, 0.18));
+      padding: clamp(32px, 5vw, 56px);
+      border: 0;
+      border-radius: 36px;
+      background: #ffffff;
+      color: var(--ink);
+      box-shadow: 0 18px 48px rgba(23, 25, 31, 0.06);
     }
 
     .conversion h2 {
-      color: #ffffff;
-      font-size: clamp(28px, 4vw, 44px);
+      color: #111318;
+      font-size: clamp(32px, 4vw, 52px);
     }
 
     .conversion p {
       max-width: 720px;
       margin: 14px 0 0;
-      color: rgba(255, 255, 255, 0.85);
+      color: var(--muted);
       font-size: 17px;
     }
 
@@ -991,14 +1277,14 @@
 
     .conversion-actions .btn-secondary {
       color: var(--ink);
-      border-color: var(--line);
+      border-color: #d9dde6;
       background: #ffffff;
     }
 
     .footer {
-      padding: 26px clamp(18px, 5vw, 64px);
-      color: #94a3b8;
-      background: #0b1220;
+      padding: 28px clamp(18px, 5vw, 64px) 36px;
+      color: #8b909c;
+      background: #f8fafc;
       font-size: 14px;
     }
 
@@ -1018,17 +1304,19 @@
     }
 
     .footer a {
-      color: #cbd5e1;
+      color: #4b5160;
       text-decoration: none;
     }
 
     .footer a:hover {
-      color: #ffffff;
+      color: var(--blue);
     }
 
     @media (max-width: 880px) {
       .topbar {
-        height: 58px;
+        top: 10px;
+        height: 60px;
+        width: calc(100% - 16px);
       }
 
       .nav-link {
@@ -1036,15 +1324,24 @@
       }
 
       .hero {
-        min-height: 88svh;
+        padding-top: 96px;
+      }
+
+      .hero-shell {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-media {
+        min-height: 320px;
+        order: -1;
+      }
+
+      .lingbao-stage {
+        width: min(260px, 72%);
       }
 
       .hero-content {
-        padding-top: 88px;
-      }
-
-      .hero-media::after {
-        background: linear-gradient(180deg, rgba(4, 13, 20, 0.78) 0%, rgba(4, 13, 20, 0.9) 100%);
+        padding-top: 0;
       }
 
       .hero-metrics,
@@ -1119,134 +1416,13 @@
       }
     }
 
-    /* ============================================================
-       V2 visual upgrade — Duolingo-style tactile layer + AI showcase
-       ============================================================ */
-
-    /* 3D 按压主按钮 */
-    .btn-primary {
-      border-radius: var(--lx-radius-lg, 16px);
-      background: var(--lx-grad-fresh, #0d9488);
-      color: #ffffff;
-      box-shadow: var(--lx-btn-shadow-3d, 0 4px 0 #0b5f59);
-    }
-
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--lx-btn-shadow-3d, 0 4px 0 #0b5f59), 0 10px 24px rgba(45, 212, 191, 0.35);
-    }
-
-    .btn-primary:active {
-      transform: translateY(4px);
-      box-shadow: none;
-    }
-
-    /* Hero 遮罩:teal 深色渐变 */
-    .hero-media::after {
-      background:
-        linear-gradient(160deg, rgba(6, 50, 46, 0.86) 0%, rgba(4, 34, 46, 0.7) 48%, rgba(2, 58, 83, 0.42) 100%),
-        linear-gradient(180deg, rgba(4, 13, 20, 0.2) 0%, rgba(4, 13, 20, 0.56) 100%);
-    }
-
-    /* Hero 三步路径:胶囊步骤条 + 连接线 */
-    .hero-route {
-      gap: 18px;
-    }
-
-    .hero-route span {
-      position: relative;
-      border-radius: var(--lx-radius-pill, 999px);
-      border-color: rgba(45, 212, 191, 0.45);
-      background: rgba(20, 184, 166, 0.16);
-    }
-
-    .hero-route span + span::after {
-      content: "";
-      position: absolute;
-      left: -15px;
-      top: 50%;
-      width: 12px;
-      border-top: 2px dashed rgba(45, 212, 191, 0.6);
-    }
-
-    /* Hero 三卡:粗边彩色 + 依次弹入 */
-    .hero-metrics .metric {
-      border: 2px solid rgba(255, 255, 255, 0.28);
-      border-bottom-width: 4px;
-      border-radius: var(--lx-radius-lg, 16px);
-      animation: lx-pop var(--lx-dur-slow, 400ms) var(--lx-ease-spring, ease) backwards;
-    }
-
-    .hero-metrics .metric:nth-child(1) { animation-delay: 0.05s; }
-    .hero-metrics .metric:nth-child(2) { animation-delay: 0.15s; }
-    .hero-metrics .metric:nth-child(3) { animation-delay: 0.25s; }
-
-    .hero-metrics .metric:nth-child(1) strong { color: #99f6e4; }
-    .hero-metrics .metric:nth-child(2) strong { color: #7dd3fc; }
-    .hero-metrics .metric:nth-child(3) strong { color: #fde68a; }
-
-    /* AI-system 区块:AI 渐变氛围 */
-    .system-lab {
-      background: linear-gradient(180deg, var(--lx-soft-sky, #f0f9ff) 0%, #f8fafc 70%);
-    }
-
-    .system-lab .section-kicker {
-      background: var(--lx-grad-ai, #0f766e);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-    }
-
-    /* AI 能力卡:渐变描边 + 悬浮发光 */
     .system-card {
-      border: 2px solid transparent;
-      border-radius: var(--lx-radius-lg, 16px);
-      background:
-        linear-gradient(#ffffff, #ffffff) padding-box,
-        var(--lx-grad-ai, #0f766e) border-box;
       transition: transform var(--lx-dur, 250ms) var(--lx-ease, ease), box-shadow var(--lx-dur, 250ms) var(--lx-ease, ease);
     }
 
     .system-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--lx-ai-glow, 0 8px 24px rgba(14, 165, 233, 0.18));
-    }
-
-    .system-card small {
-      background: var(--lx-grad-ai, #0284c7);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      font-weight: 900;
-    }
-
-    .system-card small::before {
-      content: "✨ ";
-      -webkit-text-fill-color: initial;
-    }
-
-    /* 闭环看板:玻璃拟态 + 步骤连线 */
-    .system-board {
-      backdrop-filter: var(--lx-glass-blur, blur(12px));
-      border: 1px solid rgba(255, 255, 255, 0.32);
-    }
-
-    .board-path {
-      gap: 16px;
-    }
-
-    .path-step {
-      position: relative;
-      border-radius: var(--lx-radius-md, 12px);
-    }
-
-    .path-step + .path-step::after {
-      content: "";
-      position: absolute;
-      left: -14px;
-      top: 50%;
-      width: 12px;
-      border-top: 2px dashed rgba(182, 243, 223, 0.7);
+      transform: translateY(-3px);
+      box-shadow: 0 16px 36px rgba(23, 25, 31, 0.08);
     }
 
     /* 预览屏:窗口镜框三圆点 */
@@ -1281,7 +1457,7 @@
 
     .preview-row:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+      box-shadow: 0 8px 20px rgba(23, 25, 31, 0.06);
     }
 
     /* 跟读清晰度环形进度 */
@@ -1293,7 +1469,7 @@
       height: 56px;
       margin-bottom: 8px;
       border-radius: 50%;
-      background: conic-gradient(var(--lx-sky, #0ea5e9) calc(82 * 3.6deg), var(--lx-line, #e2e8f0) 0);
+      background: conic-gradient(#0d9488 calc(82 * 3.6deg), #e7e9ef 0);
     }
 
     .score-ring::before {
@@ -1309,28 +1485,8 @@
       margin-bottom: 0 !important;
     }
 
-    /* 步骤卡:粗边 + 底厚边 */
-    .step {
-      border: var(--lx-border-bold, 2px solid #e2e8f0);
-      border-bottom-width: 4px;
-    }
-
-    .step:nth-child(1) { background: var(--lx-soft-teal, #f0fdfa); }
-    .step:nth-child(2) { background: var(--lx-soft-sky, #f0f9ff); }
-    .step:nth-child(3) { background: var(--lx-soft-gold, #fffbeb); }
-    .step:nth-child(4) { background: var(--lx-soft-rose, #fff1f2); }
-
     .step-number {
       border-radius: 50%;
-    }
-
-    /* AI 教练面板:聊天气泡 */
-    .coach-panel {
-      border: 2px solid transparent;
-      background:
-        linear-gradient(160deg, #f0fdfa 0%, #ecfeff 100%) padding-box,
-        var(--lx-grad-ai, #0f766e) border-box;
-      box-shadow: var(--lx-ai-glow, 0 8px 24px rgba(14, 165, 233, 0.18));
     }
 
     .coach-head {
@@ -1346,35 +1502,34 @@
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      background: var(--lx-grad-ai, #0f766e);
+      background: #f0fdfa;
       font-size: 20px;
-      box-shadow: var(--lx-ai-glow, 0 8px 24px rgba(14, 165, 233, 0.18));
+    }
+
+    .lx-badge-ai {
+      background: #f0fdfa;
+      color: var(--blue);
+      box-shadow: none;
+    }
+
+    .hero-actions .btn-primary,
+    .topbar .btn {
+      min-height: 46px;
+    }
+
+    .hero-actions .btn-primary {
+      min-width: 196px;
+      padding: 0 26px;
     }
 
     .coach-panel li {
-      border-radius: 4px 16px 16px 16px;
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: var(--lx-shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.05));
-    }
-
-    /* 转化区:AI 渐变大卡 */
-    .conversion-box {
-      background: var(--lx-grad-ai, #0f766e);
-    }
-
-    .conversion-actions .btn-primary {
-      background: #ffffff;
-      color: var(--green-strong, #0b5f59);
-      box-shadow: 0 4px 0 rgba(6, 50, 46, 0.45);
-    }
-
-    .conversion-actions .btn-primary:active {
-      box-shadow: none;
+      border-radius: 16px;
+      background: #f0fdfa;
     }
 
     .faq {
       padding: 88px 0;
-      background: var(--surface);
+      background: #f8fafc;
     }
 
     .faq-grid {
@@ -1405,10 +1560,10 @@
 
     .faq-item {
       overflow: hidden;
-      border: var(--lx-border-bold, 2px solid var(--line));
-      border-bottom-width: 4px;
-      border-radius: 18px;
+      border: 0;
+      border-radius: 22px;
       background: #ffffff;
+      box-shadow: 0 8px 24px rgba(23, 25, 31, 0.04);
     }
 
     .faq-item summary {
@@ -1435,8 +1590,8 @@
       flex: 0 0 30px;
       place-items: center;
       border-radius: 50%;
-      color: #ffffff;
-      background: var(--lx-grad-ai, var(--green));
+      color: var(--blue);
+      background: #f0fdfa;
       font-size: 21px;
       line-height: 1;
       transition: transform var(--lx-dur-fast, 150ms) var(--lx-ease, ease);
@@ -1484,16 +1639,19 @@
       <a class="nav-link" href="./pricing.html?from=landing_nav&intent=plans#plans" data-track="nav_pricing">定价</a>
       <a class="nav-link" href="./pricing.html?from=landing_nav&intent=team#team-demo" data-track="nav_team">团队</a>
       <button class="btn btn-secondary" id="btn-login" type="button" data-track="login_cta">登录</button>
+      <div id="account-chip" class="account-chip" hidden>
+        <a id="account-badge" class="account-badge" href="./membership.html" hidden>会员</a>
+        <span id="account-name" class="account-name"></span>
+        <button id="account-logout" class="btn account-logout" type="button">退出登录</button>
+      </div>
     </nav>
   </header>
 
   <main>
     <section class="hero" aria-labelledby="hero-title">
-      <div class="hero-media" aria-hidden="true">
-        <img src="./assets/lingbao_3d.jpg" alt="" style="width:100%;height:100%;object-fit:cover">
-      </div>
+      <div class="hero-shell">
       <div class="hero-content">
-        <div class="eyebrow">AI English Coach for Chinese Speakers</div>
+        <div class="eyebrow">AI 英语口说</div>
         <h1 id="hero-title">Linglish</h1>
         <p class="hero-copy">
           面向中文母语者的沉浸式英语训练系统：先免注册练 3 句真实英语，体验「听原声 → 跟读输出 → AI 反馈」。
@@ -1510,22 +1668,39 @@
           <a class="btn btn-secondary" href="#daily-preview" data-track="hero_preview">查看一天怎么练</a>
           <a class="btn btn-secondary" href="./pricing.html?from=landing_hero&intent=team#team-demo" data-track="hero_team_demo">团队/学校试用</a>
         </div>
-        <div class="hero-metrics" aria-label="Linglish 核心能力">
-          <div class="metric">
-            <strong>15分钟</strong>
-            <span>每天一条清楚练习路径，适合长期坚持</span>
-          </div>
-          <div class="metric">
-            <strong>AI反馈</strong>
-            <span>逐句跟读评分、漏词提示和表达改写</span>
-          </div>
-          <div class="metric">
-            <strong>真实素材</strong>
-            <span>视频、YouTube、字幕词汇沉淀成个人训练库</span>
-          </div>
-        </div>
         <div class="hero-proof">适合已经学过多年英语、能看懂但开口卡住的学习者；也适合老师、训练营和企业团队统一布置输出训练。</div>
       </div>
+      <div class="hero-media">
+        <div class="hero-lingbao" id="landing-lingbao">
+          <div class="lingbao-stage">
+            <span class="lingbao-shadow" aria-hidden="true"></span>
+            <span class="lingbao-giggle" aria-hidden="true">Hey, let’s learn English together!</span>
+            <span class="lingbao-actor">
+              <img src="./assets/lingbao_nobg.png" alt="Ling宝">
+              <span class="lingbao-eye lingbao-eye-left" aria-hidden="true"><canvas class="lingbao-lid" data-skin="200,166,52,18"></canvas></span>
+              <span class="lingbao-eye lingbao-eye-right" aria-hidden="true"><canvas class="lingbao-lid" data-skin="176,174,48,18"></canvas></span>
+            </span>
+          </div>
+        </div>
+      </div>
+      </div>
+      <div class="hero-metrics" aria-label="Linglish 核心能力">
+        <div class="metric">
+          <strong>15分钟</strong>
+          <span>每天一条清楚练习路径，适合长期坚持</span>
+        </div>
+        <div class="metric">
+          <strong>AI反馈</strong>
+          <span>逐句跟读评分、漏词提示和表达改写</span>
+        </div>
+        <div class="metric">
+          <strong>真实素材</strong>
+          <span>视频、YouTube、字幕词汇沉淀成个人训练库</span>
+        </div>
+      </div>
+    </section>
+    <section class="display-line" aria-label="学习主张">
+      <p>把看得懂，练成说得出。</p>
     </section>
 
     <section class="proof-band" aria-label="关键卖点">
@@ -1850,8 +2025,9 @@
   </footer>
 
   <script src="./js/visitor-context.js?v=1"></script>
-  <script src="./js/auth-manager.js?v=1"></script>
-  <script src="./js/first-lesson-entry.js?v=1"></script>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/first-lesson-entry.js?v=20261019"></script>
   <script>
     const VISITOR_ID_KEY = 'linglish_visitor_id';
     const landingParams = new URLSearchParams(window.location.search || '');
@@ -1969,21 +2145,38 @@
         return;
       }
       if (forceLogin) {
-        window.location.href = 'desktop-auth.html?next=./today.html?from=login_cta';
+        const next = isMobile() ? 'mobile-today.html?from=landing_login' : 'index-desktop.html?from=landing_login';
+        if (token) {
+          window.location.href = next;
+          return;
+        }
+        window.location.href = 'desktop-auth.html?next=' + encodeURIComponent('./' + next);
         return;
       }
-      window.location.href = token ? 'today.html?from=landing' : 'index-desktop.html?from=landing';
+      window.location.href = token
+        ? (isMobile() ? 'mobile-today.html?from=landing' : 'index-desktop.html?from=landing')
+        : 'index-desktop.html?from=landing';
+    }
+
+    function landingStarterHref(source) {
+      return `today.html?from=${encodeURIComponent(source)}&starter=1`;
     }
 
     function startLandingFirstLesson(event, source) {
       event.preventDefault();
-      if (!window.LinglishFirstLessonEntry) return;
+      const trigger = event.currentTarget;
+      if (!window.LinglishFirstLessonEntry) {
+        window.location.assign(landingStarterHref(source));
+        return;
+      }
       window.LinglishFirstLessonEntry.start({
-        trigger: event.currentTarget,
+        trigger,
         source,
         level: 'A1',
+        quietFailure: true,
       }).catch((error) => {
         console.warn('[Landing] First lesson entry failed:', error);
+        window.location.assign(landingStarterHref(source));
       });
     }
 
@@ -1999,9 +2192,181 @@
     });
 
     document.getElementById('btn-start').addEventListener('click', (event) => startLandingFirstLesson(event, 'landing_first_lesson'));
-    document.getElementById('btn-login').addEventListener('click', () => redirect(true));
+    const loginBtn = document.getElementById('btn-login');
+    const accountChip = document.getElementById('account-chip');
+    const accountBadge = document.getElementById('account-badge');
+    const accountName = document.getElementById('account-name');
+
+    function tokenPayload(token) {
+      try {
+        const part = String(token || '').split('.')[1];
+        if (!part) return null;
+        return JSON.parse(atob(part.replace(/-/g, '+').replace(/_/g, '/')));
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function isGuestSession(token) {
+      try {
+        if (localStorage.getItem('is_guest') === 'true' || sessionStorage.getItem('is_guest') === 'true') return true;
+      } catch (_) {}
+      const payload = tokenPayload(token);
+      if (payload?.is_guest === true || payload?.isGuest === true) return true;
+      return /^guest_[a-z0-9]+@temp\.linglish\.local$/i.test(String(payload?.email || ''));
+    }
+
+    function showAccount(user) {
+      const type = String(user?.membership_type || '').toLowerCase();
+      const labels = { svip: 'SVIP', vip: 'VIP', family: '家庭版' };
+      if (accountBadge) {
+        if (labels[type]) {
+          accountBadge.hidden = false;
+          accountBadge.className = 'account-badge ' + type;
+          accountBadge.textContent = (type === 'svip' ? '👑 ' : '') + labels[type];
+        } else {
+          accountBadge.hidden = true;
+        }
+      }
+      if (accountName) accountName.textContent = user?.username || user?.email || '用户';
+      if (loginBtn) loginBtn.hidden = true;
+      if (accountChip) accountChip.hidden = false;
+    }
+
+    async function renderLoggedInAccount() {
+      const token = readToken();
+      if (!token || isGuestSession(token) || !accountChip) return;
+      let user = null;
+      try {
+        const response = await fetch('/users/me', { headers: { Authorization: 'Bearer ' + token } });
+        if (response.ok) user = await response.json();
+      } catch (_) {}
+      if (!user) {
+        let email = '';
+        let membershipType = '';
+        try {
+          email = localStorage.getItem('userEmail') || sessionStorage.getItem('userEmail') || '';
+          membershipType = localStorage.getItem('membership_type') || '';
+        } catch (_) {}
+        const payload = tokenPayload(token);
+        user = { email: email || payload?.email || '', username: payload?.username || '', membership_type: membershipType };
+      }
+      if (user.is_guest === true || /^guest_[a-z0-9]+@temp\.linglish\.local$/i.test(String(user.email || ''))) return;
+      showAccount(user);
+    }
+
+    loginBtn.addEventListener('click', () => {
+      redirect(true);
+    });
+    if (readToken() && !isGuestSession(readToken())) {
+      window.location.replace(isMobile() ? 'mobile-today.html?from=landing' : 'index-desktop.html?from=landing');
+    } else {
+      renderLoggedInAccount();
+    }
+    document.getElementById('account-logout')?.addEventListener('click', () => {
+      if (!window.confirm('确定要退出登录吗？')) return;
+      if (window.AuthManager && typeof window.AuthManager.clearToken === 'function') {
+        window.AuthManager.clearToken();
+      }
+      ['linglish_token', 'authToken', 'is_guest', 'guest_id', 'userEmail', 'membership_type'].forEach((key) => {
+        try { localStorage.removeItem(key); } catch (_) {}
+        try { sessionStorage.removeItem(key); } catch (_) {}
+      });
+      window.location.reload();
+    });
     document.getElementById('btn-final').addEventListener('click', (event) => startLandingFirstLesson(event, 'landing_final_first_lesson'));
     trackPageVisit();
+  </script>
+  <script>
+    (function () {
+      const root = document.getElementById('landing-lingbao');
+      const stage = root && root.querySelector('.lingbao-stage');
+      const img = stage && stage.querySelector('img');
+      if (!root || !stage || !img) return;
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+      let canvas = null;
+      let ctx = null;
+      const prepare = () => {
+        if (!img.naturalWidth || canvas) return;
+        canvas = document.createElement('canvas');
+        canvas.width = img.naturalWidth;
+        canvas.height = img.naturalHeight;
+        ctx = canvas.getContext('2d', { willReadFrequently: true });
+        ctx.drawImage(img, 0, 0);
+      };
+      if (img.complete) prepare();
+      else img.addEventListener('load', prepare);
+
+      const paintLid = (lid) => {
+        const parts = (lid.dataset.skin || '').split(',').map(Number);
+        if (parts.length !== 4 || parts.some((n) => !Number.isFinite(n))) return;
+        const [sx, sy, sw, sh] = parts;
+        const width = 240;
+        const height = 300;
+        lid.width = width;
+        lid.height = height;
+        const lidCtx = lid.getContext('2d');
+        lidCtx.drawImage(img, sx, sy, sw, sh, 0, 0, width, height);
+        const shade = lidCtx.createLinearGradient(0, height * 0.35, 0, height);
+        shade.addColorStop(0, 'rgba(255, 255, 255, 0.16)');
+        shade.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+        shade.addColorStop(1, 'rgba(24, 64, 12, 0.22)');
+        lidCtx.fillStyle = shade;
+        lidCtx.fillRect(0, 0, width, height);
+        lidCtx.lineCap = 'round';
+        lidCtx.beginPath();
+        lidCtx.moveTo(width * 0.08, height * 0.9);
+        lidCtx.quadraticCurveTo(width * 0.5, height * 0.99, width * 0.92, height * 0.9);
+        lidCtx.strokeStyle = 'rgba(32, 74, 20, 0.45)';
+        lidCtx.lineWidth = 8;
+        lidCtx.stroke();
+        lidCtx.beginPath();
+        lidCtx.moveTo(width * 0.14, height * 0.885);
+        lidCtx.quadraticCurveTo(width * 0.5, height * 0.96, width * 0.86, height * 0.885);
+        lidCtx.strokeStyle = 'rgba(236, 255, 220, 0.4)';
+        lidCtx.lineWidth = 2;
+        lidCtx.stroke();
+      };
+      const paintLids = () => {
+        if (!img.naturalWidth) return;
+        stage.querySelectorAll('.lingbao-lid').forEach(paintLid);
+      };
+      if (img.complete) paintLids();
+      else img.addEventListener('load', paintLids);
+
+      let stopTimer = 0;
+      let talkTimer = 0;
+      const stopWiggle = () => stage.classList.remove('is-tickled');
+      const showTalk = () => {
+        stage.classList.add('is-talking');
+        clearTimeout(talkTimer);
+        talkTimer = setTimeout(() => stage.classList.remove('is-talking'), 3200);
+      };
+      const onBody = (event) => {
+        if (!ctx) return false;
+        const rect = img.getBoundingClientRect();
+        if (!rect.width || !rect.height) return false;
+        const x = (event.clientX - rect.left) / rect.width;
+        const y = (event.clientY - rect.top) / rect.height;
+        if (x < 0 || y < 0 || x > 1 || y > 1) return false;
+        const px = Math.min(canvas.width - 1, Math.max(0, Math.floor(x * canvas.width)));
+        const py = Math.min(canvas.height - 1, Math.max(0, Math.floor(y * canvas.height)));
+        return ctx.getImageData(px, py, 1, 1).data[3] > 40;
+      };
+
+      root.addEventListener('pointermove', (event) => {
+        if (!onBody(event)) {
+          stopWiggle();
+          return;
+        }
+        stage.classList.add('is-tickled');
+        showTalk();
+        clearTimeout(stopTimer);
+        stopTimer = setTimeout(stopWiggle, 160);
+      });
+      root.addEventListener('pointerleave', stopWiggle);
+    })();
   </script>
   <script>
     (function () {

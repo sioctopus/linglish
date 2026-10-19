@@ -39,7 +39,7 @@
 
 .nav-item.active .nav-icon {
   transform: translateY(-2px);
-  filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.3));
+  filter: drop-shadow(0 4px 8px rgba(15, 118, 110, 0.28));
 }
 
 .nav-icon {

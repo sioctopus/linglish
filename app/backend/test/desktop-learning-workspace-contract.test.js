@@ -27,10 +27,20 @@ test('desktop video reader keeps transcript and sticky core controls in focus mo
 
   assert.match(html, /js\/video-reader\/sentence-segments\.js/);
   assert.match(html, /body\.focus-mode \.transcript\s*\{[^}]*opacity:\s*1/s);
-  assert.match(html, /body\.focus-mode \.shell\s*\{[^}]*minmax\(360px/s);
+  assert.match(html, /body\.focus-mode \.shell\s*\{[^}]*minmax\(520px/s);
+  assert.match(html, /body\.focus-mode \.transcript\s*\{[^}]*min-width:\s*520px/s);
   assert.match(html, /body\.focus-mode #video-meta\s*\{[^}]*display:\s*none/s);
+  assert.match(html, /id="focus-toggle"[^>]*>[\s\S]*focus-toggle__icon--off[\s\S]*focus-toggle__label/);
   assert.match(css, /\.vrp-control-dock\s*\{[^}]*position:\s*sticky/s);
+  assert.match(css, /--vrp-accent:\s*var\(--brand,\s*#0d9488\)/);
+  assert.match(css, /body\.focus-mode \.vrp-bar\s*\{[^}]*justify-content:\s*center/s);
+  assert.match(css, /body\.focus-mode \.vrp-bar > \.vrp-bar__spacer/);
   assert.match(controls, /className = 'vrp-control-dock'/);
+  assert.match(html, /body\.focus-mode \.player-wrap\s*\{[^}]*align-items:\s*center/s);
+  // Absolute-positioned media collapses if focus mode drops aspect-ratio without a height chain.
+  assert.doesNotMatch(html, /body\.focus-mode \.player\s*\{[^}]*aspect-ratio:\s*auto/s);
+  assert.match(html, /body\.focus-mode \.panel\.main\s*\{[^}]*align-self:\s*stretch/s);
+  assert.match(html, /body\.focus-mode \.player\s*\{[^}]*aspect-ratio:\s*16\s*\/\s*9/s);
 });
 
 test('desktop player preserves 16:9 when viewport height limits its size', () => {
@@ -52,13 +62,28 @@ test('desktop player preserves 16:9 when viewport height limits its size', () =>
   );
   assert.match(
     desktopMedia,
-    /\.player\s*\{[^}]*width:\s*min\(100%,\s*calc\(min\(60vh,\s*620px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*width:\s*min\(100%,\s*calc\(min\(60dvh,\s*620px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*max-height:\s*none[^}]*margin-inline:\s*auto/s
+    /\.player\s*\{[^}]*width:\s*min\(100%,\s*calc\(min\(60vh,\s*620px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*width:\s*min\(100%,\s*calc\(min\(60dvh,\s*620px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*aspect-ratio:\s*16\s*\/\s*9/s
+  );
+  assert.doesNotMatch(
+    html,
+    /body:not\(\.focus-mode\) \.main \.player\s*\{[^}]*aspect-ratio:\s*auto/s
   );
   assert.match(
     desktopMedia,
-    /body\.focus-mode \.player\s*\{[^}]*width:\s*min\(100%,\s*calc\(min\(62vh,\s*700px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*width:\s*min\(100%,\s*calc\(min\(62dvh,\s*700px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*max-height:\s*none/s
+    /body\.focus-mode \.player\s*\{[^}]*--lx-focus-player-width[^}]*--lx-focus-player-max-h/s
+  );
+  assert.match(
+    desktopMedia,
+    /min\(68dvh,\s*680px,\s*calc\(100dvh\s*-\s*210px\)\)/
   );
   assert.doesNotMatch(workspaceCss[0], /\.player\s*\{[^}]*max-height:\s*min\(38dvh/s);
+
+  const tokens = fs.readFileSync(path.join(frontend, 'styles/tokens.css'), 'utf8');
+  assert.match(tokens, /--lx-focus-player-max-h:\s*min\(68dvh,\s*680px,\s*calc\(100dvh\s*-\s*210px\)\)/);
+  assert.match(tokens, /--lx-focus-player-width:\s*min\(100%,\s*calc\(min\(68dvh,\s*680px,\s*calc\(100dvh\s*-\s*210px\)\)\s*\*\s*16\s*\/\s*9\)\)/);
+  const practiceCss = fs.readFileSync(path.join(frontend, 'styles/practice-session-desktop.css'), 'utf8');
+  assert.match(practiceCss, /body\.practice-focus-active[\s\S]*--lx-focus-player-max-h/);
+  assert.match(practiceCss, /body\.practice-focus-active[\s\S]*--lx-focus-player-width/);
 
   const expectedPlayer = ({ viewportHeight, availableWidth, heightRatio, heightCap }) => {
     const heightLimitedWidth = Math.min(viewportHeight * heightRatio, heightCap) * 16 / 9;
@@ -70,7 +95,7 @@ test('desktop player preserves 16:9 when viewport height limits its size', () =>
     { viewportHeight: 787, availableWidth: 1432, heightRatio: 0.60, heightCap: 620 },
     { viewportHeight: 900, availableWidth: 680, heightRatio: 0.60, heightCap: 620 },
     { viewportHeight: 1080, availableWidth: 1152, heightRatio: 0.60, heightCap: 620 },
-    { viewportHeight: 900, availableWidth: 1000, heightRatio: 0.62, heightCap: 700 }
+    { viewportHeight: 900, availableWidth: 1000, heightRatio: 0.68, heightCap: 680 }
   ]) {
     const size = expectedPlayer(scenario);
     assert.ok(Math.abs(size.width / size.height - 16 / 9) < 0.02);
@@ -84,9 +109,35 @@ test('desktop practice keeps a compact top mode bar and shared replay controller
 
   assert.match(html, /js\/practice\/original-audio-replay\.js/);
   assert.match(html, /class="mode-top-bar"[^>]*data-workspace-position="top"/);
-  assert.match(css, /body\.dialogue-focus-layout \.mode-top-bar\s*\{[^}]*display:\s*flex/s);
+  assert.match(html, /id="practice-focus-badge"/);
+  assert.match(html, /id="practice-focus-exit"/);
+  assert.match(html, /id="practice-focus-toggle"/);
+  assert.match(html, /practice-focus-toggle__label">专注</);
+  assert.doesNotMatch(html, /<header class="script-head">\s*<h2>台词<\/h2>/);
+  assert.match(html, /function enterPracticeFocus\(/);
+  assert.match(html, /function togglePracticeFocus\(/);
+  assert.match(html, /function exitPracticeFocus\(/);
+  assert.match(html, /function handlePracticeFocusEscape\(/);
+  assert.match(html, /function requestPracticeFullscreen\(/);
+  assert.match(html, /function exitPracticeFullscreen\(/);
+  assert.match(html, /addEventListener\('fullscreenchange'/);
+  assert.match(css, /body\.practice-focus-active > \.topbar\s*\{[^}]*display:\s*none/s);
+  assert.match(css, /body\.practice-focus-active\s*\{[^}]*--lx-focus-inset:\s*24px/s);
+  assert.match(css, /padding:\s*var\(--lx-focus-inset,\s*24px\)/);
+  assert.match(css, /body\.practice-focus-active \.practice-stage-spacer\s*\{[^}]*display:\s*none/s);
+  assert.match(css, /body\.practice-focus-active \.practice-grid\s*\{[^}]*grid-template-columns:\s*minmax\(0,\s*1fr\)\s*minmax\(360px/s);
+  assert.doesNotMatch(css, /100dvh - \(var\(--lx-focus-inset,\s*24px\) \* 2\) - 52px/);
+  const tokens = fs.readFileSync(path.join(frontend, 'styles/tokens.css'), 'utf8');
+  assert.match(tokens, /--lx-focus-inset:\s*24px/);
+  assert.match(tokens, /--lx-focus-gap:\s*16px/);
+  const readerHtml = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  assert.match(readerHtml, /body\.focus-mode \.layout\s*\{[^}]*padding:\s*var\(--lx-focus-inset,\s*24px\)/s);
+  assert.match(css, /body\.practice-focus-active \.mode-top-bar/);
+  assert.match(css, /\.practice-focus-badge\s*\{[^}]*#0f766e/s);
+  assert.match(css, /body\.dialogue-focus-layout \.mode-top-bar/);
   assert.match(css, /body\.dialogue-focus-layout #desktop-controls-container\s*\{[^}]*display:\s*block/s);
   assert.doesNotMatch(css, /body\.dialogue-focus-layout #desktop-controls-container\s*\{\s*display:\s*none\s*!important/s);
+  assert.doesNotMatch(css, /body\.dialogue-focus-layout \.mode-top-bar::before/);
 });
 
 test('desktop video reader exposes one canonical playback progress rail', () => {
@@ -103,4 +154,30 @@ test('desktop video reader exposes one canonical playback progress rail', () => 
     html,
     /function updateVideoProgress\(currentTime, duration\)[\s\S]*videoProgressLabelEl\.textContent = `已完成 \$\{percent\}%`[\s\S]*recordVideoProgress/
   );
+});
+
+test('video learning and AI practice share one workspace switch', () => {
+  const reader = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const practice = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
+  const markup = /id="study-switch"[\s\S]*data-study="video"[\s\S]*data-study="coach"[\s\S]*data-study="arena"/;
+
+  assert.match(reader, markup);
+  assert.match(practice, markup);
+  assert.match(practice, /data-library="videos"[\s\S]*data-library="channels"[\s\S]*data-library="podcasts"/);
+  assert.match(reader, /returnTo'\) === 'coach'/);
+  assert.match(practice, /source'\) === 'external'/);
+});
+
+test('study menu switches without a loader delay', () => {
+  const reader = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const practice = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
+  const study = fs.readFileSync(path.join(frontend, 'js/study-switch.js'), 'utf8');
+
+  assert.match(reader, /getElementById\('pageLoader'\)\?\.remove\(\)/);
+  assert.match(practice, /getElementById\('pageLoader'\)\?\.remove\(\)/);
+  assert.doesNotMatch(reader, /setTimeout\(hidePageLoader/);
+  assert.doesNotMatch(practice, /setTimeout\(hidePageLoader/);
+  assert.match(study, /switchPracticeMode/);
+  assert.match(study, /prefetchDocument/);
+  assert.match(reader, /openCoachLibraryIfRequested\(\)/);
 });

@@ -225,46 +225,8 @@ function wireAuthForms() {
 
   const guestBtn = document.getElementById('desktop-guest-btn') || document.getElementById('guest-btn');
   if (guestBtn) {
-    guestBtn.addEventListener('click', async () => {
-      try {
-        await clearMediaSession();
-        clearAuthSession();
-
-        const resp = await fetch('/auth/guest', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-        });
-        const payload = await resp.json().catch(() => ({}));
-        if (!resp.ok) {
-          throw new Error(payload?.message || payload?.error || 'GUEST_LOGIN_FAILED');
-        }
-
-        const token = payload?.access_token;
-        if (!token || typeof token !== 'string') {
-          throw new Error('GUEST_LOGIN_FAILED');
-        }
-
-        if (window.AuthManager && typeof window.AuthManager.setToken === 'function') {
-          await window.AuthManager.setToken(token, false);
-        } else {
-          sessionStorage.setItem('authToken', token);
-          sessionStorage.setItem('linglish_token', token);
-        }
-
-        sessionStorage.setItem('userEmail', payload?.email || 'guest@example.com');
-        sessionStorage.setItem('isGuest', 'true');
-        if (payload?.guest_id) sessionStorage.setItem('guestId', payload.guest_id);
-
-        state.token = token;
-        state.userEmail = payload?.email || 'guest@example.com';
-
-        showToast('以游客模式进入');
-        setTimeout(() => {
-          window.location.href = './video-reader.html';
-        }, 500);
-      } catch (err) {
-        showToast(`游客登录失败: ${err.message}`);
-      }
+    guestBtn.addEventListener('click', () => {
+      showToast('请先注册或登录账号');
     });
   }
 }

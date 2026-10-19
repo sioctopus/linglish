@@ -1,0 +1,134 @@
+.lx-install-desktop-slot {
+  position: relative;
+  display: inline-flex;
+  flex: 0 0 auto;
+  margin-left: 0.4rem;
+}
+
+.lx-install-desktop-slot[hidden] {
+  display: none !important;
+}
+
+.lx-install-desktop {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 40px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f766e;
+  font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.lx-install-desktop svg {
+  width: 16px;
+  height: 16px;
+  flex: 0 0 auto;
+}
+
+.lx-install-desktop:hover {
+  background: #f0fdfa;
+  border-color: #0f766e;
+}
+
+.lx-install-desktop-slot--bar .lx-install-desktop {
+  height: 36px;
+  padding: 0 0.72rem;
+  font-size: 0.8rem;
+}
+
+.lx-install-desktop-slot--focus {
+  margin-left: 0.15rem;
+  flex: 0 0 auto;
+}
+
+.lx-install-desktop-slot--focus .lx-install-desktop {
+  height: 32px;
+  padding: 0 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #0f766e;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+}
+
+.lx-install-desktop-slot--focus .lx-install-desktop:hover {
+  background: #ccfbf1;
+  border-color: #5eead4;
+  color: #0f766e;
+}
+
+.lx-install-desktop-slot--float {
+  position: fixed;
+  right: 20px;
+  bottom: 20px;
+  z-index: 80;
+  margin-left: 0;
+}
+
+.lx-install-desktop-slot--float .lx-install-desktop {
+  box-shadow: 0 10px 30px rgba(15, 118, 110, 0.18);
+}
+
+.lx-install-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 200;
+  width: min(320px, calc(100vw - 32px));
+  padding: 0.9rem 1rem 1rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.12);
+  text-align: left;
+}
+
+.lx-install-panel[hidden] {
+  display: none !important;
+}
+
+.lx-install-desktop-slot--float .lx-install-panel {
+  top: auto;
+  bottom: calc(100% + 8px);
+}
+
+.lx-install-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.lx-install-panel-head strong {
+  font-size: 0.95rem;
+}
+
+.lx-install-panel-head button {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.lx-install-panel p {
+  margin: 0.55rem 0 0;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 500;
+  line-height: 1.5;
+}

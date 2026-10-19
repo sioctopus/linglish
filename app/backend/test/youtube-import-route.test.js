@@ -79,7 +79,7 @@ test('duplicate import returns alreadyExists=true with unified video.id', async 
   assert.equal(res.body.videoId, undefined, 'legacy videoId field must be gone');
 });
 
-test('new import persists difficulty and valid global tags, drops invalid ones', async () => {
+test('new import ignores a hand-picked level and persists valid global tags', async () => {
   const recorder = [];
   stubPool({ existingRows: [], validTagRows: [{ id: 5 }, { id: 9 }], recorder });
 
@@ -93,7 +93,7 @@ test('new import persists difficulty and valid global tags, drops invalid ones',
   const res = makeRes();
   await importVideo(makeReq({
     url: 'https://youtube.com/watch?v=abc',
-    difficulty_level: 'Beginner', // 大小写应归一化
+    difficulty_level: 'Beginner', // 学习者手填的等级不采用
     tags: ['5', 9, '9', 'oops', -1], // 去重 + 非法丢弃
     collection_name: 'BBC 六分钟',
   }), res);
@@ -103,7 +103,7 @@ test('new import persists difficulty and valid global tags, drops invalid ones',
   assert.equal(res.body.alreadyExists, false);
   assert.equal(res.body.video.id, 900);
 
-  assert.equal(createdPayload.difficulty_level, 'beginner');
+  assert.equal(createdPayload.difficulty_level, null);
   assert.equal(createdPayload.collection_name, 'BBC 六分钟');
 
   // 标签校验查询仅收到规范化后的正整数

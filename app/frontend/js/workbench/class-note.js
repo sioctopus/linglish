@@ -1,0 +1,425 @@
+/**
+ * Workbench · 课后微信笔记
+ * Reuses POST /class-notes and owner-authorized /articles/:id links.
+ */
+(function (global) {
+  'use strict';
+
+  let linesDirty = false;
+  let lastNote = null;
+  let noteId = null;
+  let currentAudio = null;
+  let speakToken = 0;
+  let audioUnlocked = false;
+  let bound = false;
+
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, (ch) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[ch]));
+  }
+
+  function readToken() {
+    return window.AuthManager ? window.AuthManager.getToken() || '' : '';
+  }
+
+  async function privateNoteFetch(url, options = {}) {
+    if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') {
+      await window.AuthManager.ensureSession();
+    }
+    const token = readToken();
+    if (!token) throw new Error('请先登录后再查看笔记。');
+    const headers = new Headers(options.headers || {});
+    headers.set('Authorization', 'Bearer ' + token);
+    return fetch(url, { ...options, headers, cache: 'no-store' });
+  }
+
+  let noteImageGeneration = 0;
+  let noteImageUrl = '';
+
+  function releaseNoteImage() {
+    noteImageGeneration += 1;
+    if (noteImageUrl) {
+      URL.revokeObjectURL(noteImageUrl);
+      noteImageUrl = '';
+    }
+  }
+
+  async function loadPrivateNoteImage(source, host, generation) {
+    if (!source) return;
+    try {
+      const url = new URL(source, location.origin);
+      if (url.origin !== location.origin || !url.pathname.startsWith('/note-images/')) {
+        throw new Error('图片地址无效');
+      }
+      const response = await privateNoteFetch(url.pathname + url.search);
+      if (!response.ok) throw new Error('图片加载失败');
+      const blob = await response.blob();
+      if (generation !== noteImageGeneration) return;
+      if (!/^image\/(png|jpeg|webp)$/i.test(blob.type)) throw new Error('图片格式无效');
+      const image = host.querySelector('img[data-note-image]');
+      if (!image) return;
+      noteImageUrl = URL.createObjectURL(blob);
+      image.src = noteImageUrl;
+      image.hidden = false;
+    } catch (_) {
+      if (generation === noteImageGeneration) setViewStatus('图片暂时无法加载，请确认已登录后重试。');
+    }
+  }
+
+  window.addEventListener('pagehide', releaseNoteImage);
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted && lastNote && !$('wb-cn-viewer').hidden) showNote(lastNote, false);
+  });
+
+  function defaultLines(word) {
+    const spoken = String(word || '').trim().replace(/\s+/g, ' ');
+    const lower = spoken.toLowerCase();
+    const titleWord = lower ? lower.charAt(0).toUpperCase() + lower.slice(1) : 'Cola';
+    const say = lower || 'cola';
+    return [say, `${titleWord} please`, `May I have ${say} please?`, 'Here you are', 'Thank you'];
+  }
+
+  function $(id) {
+    return document.getElementById(id);
+  }
+
+  function renderLineFields(lines) {
+    const host = $('wb-cn-line-fields');
+    if (!host) return;
+    host.innerHTML = lines.map((line, index) => (
+      `<label class="wb-cn-line">
+        <span>${index + 1}</span>
+        <input data-line="${index}" type="text" value="${escapeHtml(line)}">
+      </label>`
+    )).join('');
+  }
+
+  function currentLines() {
+    return [...document.querySelectorAll('#wb-cn-line-fields [data-line]')]
+      .map((field) => field.value.trim())
+      .filter(Boolean);
+  }
+
+  function setComposerStatus(message, isError) {
+    const status = $('wb-cn-status');
+    if (!status) return;
+    status.hidden = !message;
+    status.className = 'wb-status' + (isError ? ' error' : message ? ' ok' : '');
+    status.textContent = message || '';
+  }
+
+  function setViewStatus(message) {
+    const status = $('wb-cn-view-status');
+    if (status) status.textContent = message || '';
+  }
+
+  function showShare(enabled) {
+    const actions = $('wb-cn-share-actions');
+    const link = $('wb-cn-share-link');
+    if (actions) actions.hidden = !enabled;
+    if (link) link.hidden = !enabled;
+  }
+
+  function stopSpeaking() {
+    speakToken += 1;
+    if (currentAudio) {
+      try {
+        currentAudio.onended = null;
+        currentAudio.onerror = null;
+        currentAudio.pause();
+        currentAudio.removeAttribute('src');
+        currentAudio.load();
+      } catch (_) {}
+      currentAudio = null;
+    }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    document.querySelectorAll('#wb-cn-note .horn').forEach((item) => item.classList.remove('playing'));
+  }
+
+  function unlockAudio() {
+    if (audioUnlocked) return;
+    audioUnlocked = true;
+    try {
+      const Ctx = window.AudioContext || window.webkitAudioContext;
+      if (Ctx) {
+        const ctx = new Ctx();
+        if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+      }
+    } catch (_) {}
+  }
+
+  function speakBrowser(text, token) {
+    return new Promise((resolve) => {
+      if (!window.speechSynthesis) {
+        resolve(false);
+        return;
+      }
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 0.9;
+      utterance.onend = () => resolve(token === speakToken);
+      utterance.onerror = () => resolve(false);
+      setTimeout(() => {
+        if (token !== speakToken) {
+          resolve(false);
+          return;
+        }
+        window.speechSynthesis.speak(utterance);
+      }, 40);
+    });
+  }
+
+  function playUrl(url, token) {
+    return new Promise((resolve) => {
+      if (token !== speakToken) {
+        resolve(false);
+        return;
+      }
+      const audio = new Audio();
+      currentAudio = audio;
+      const finish = (ok) => {
+        if (currentAudio === audio) currentAudio = null;
+        resolve(ok && token === speakToken);
+      };
+      audio.onended = () => finish(true);
+      audio.onerror = () => finish(false);
+      audio.src = url;
+      const start = audio.play();
+      if (start && typeof start.then === 'function') start.catch(() => finish(false));
+    });
+  }
+
+  async function fetchLineAudio(text) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    try {
+      const response = await fetch('/tts/practice', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text, voice: 'en-US-AvaMultilingualNeural' }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (response.ok && data.audioUrl) return data.audioUrl;
+    } catch (_) {
+    } finally {
+      clearTimeout(timer);
+    }
+    return '';
+  }
+
+  async function speak(text, button) {
+    const value = String(text || '').trim();
+    if (!value || !button) return;
+    unlockAudio();
+    stopSpeaking();
+    const token = speakToken;
+    button.classList.add('playing');
+    const previous = $('wb-cn-view-status')?.textContent || '';
+    setViewStatus('正在朗读…');
+    let played = false;
+    try {
+      const audioUrl = await fetchLineAudio(value);
+      if (token !== speakToken) return;
+      if (audioUrl) played = await playUrl(audioUrl, token);
+      if (!played && token === speakToken) played = await speakBrowser(value, token);
+    } finally {
+      if (token === speakToken) {
+        button.classList.remove('playing');
+        setViewStatus(played
+          ? (previous || '点每一句前面的按钮听一听。')
+          : '这句暂时读不出来，请再点一次。');
+      }
+    }
+  }
+
+  function showNote(note, share) {
+    stopSpeaking();
+    releaseNoteImage();
+    const imageGeneration = noteImageGeneration;
+    lastNote = {
+      id: note.id || noteId || '',
+      word: note.word || '',
+      title: note.title || '',
+      lines: Array.isArray(note.lines) ? note.lines.slice() : [],
+      image: note.image || '',
+    };
+    $('wb-cn-composer').hidden = true;
+    $('wb-cn-viewer').hidden = false;
+    const image = note.image
+      ? `<img data-note-image hidden alt="${escapeHtml(note.word)}">`
+      : '';
+    const lines = (note.lines || []).map((line) => (
+      `<div class="line"><button class="horn" type="button" data-speak="${escapeHtml(line)}" aria-label="朗读">${(window.LxIcon && window.LxIcon.html) ? window.LxIcon.html('play', { className: 'lx-icon--sm' }) : '▶'}</button><div>${escapeHtml(line)}</div></div>`
+    )).join('');
+    $('wb-cn-note').innerHTML = `${image}<p class="word">${escapeHtml(note.word || '')}</p>${lines}`;
+    loadPrivateNoteImage(note.image, $('wb-cn-note'), imageGeneration);
+    const id = note.id || noteId;
+    if (id) noteId = String(id);
+    // Keep the private note URL stable when reopening an existing note.
+    const link = `${location.origin}/class-note.html?id=${encodeURIComponent(noteId || '')}`;
+    $('wb-cn-share-link').textContent = link;
+    showShare(true);
+    setViewStatus(share
+      ? '私有链接已准备好，仅本人或管理员登录后可查看。'
+      : '点每一句前面的按钮听一听。笔记仅本人或管理员登录后可查看。');
+  }
+
+  function showComposer(note) {
+    stopSpeaking();
+    releaseNoteImage();
+    $('wb-cn-viewer').hidden = true;
+    $('wb-cn-composer').hidden = false;
+    const word = String(note?.word || '').trim();
+    const lines = Array.isArray(note?.lines) && note.lines.length
+      ? note.lines
+      : defaultLines(word || 'cola');
+    $('wb-cn-word').value = word;
+    linesDirty = Boolean(note?.lines?.length);
+    renderLineFields(lines);
+    $('wb-cn-photo').value = '';
+    const fileName = $('wb-cn-file-name');
+    if (fileName) fileName.textContent = '未选择照片';
+    const button = $('wb-cn-save-btn');
+    button.disabled = false;
+    button.textContent = note?.word ? '重新生成笔记' : '生成笔记';
+    setComposerStatus(note?.word
+      ? '已带回单词和句子。请重新选择单词卡片照片，再生成。'
+      : '');
+    noteId = null;
+    try {
+      history.replaceState({}, '', './workbench.html?mode=class-note');
+    } catch (_) {}
+  }
+
+  function bindEvents() {
+    if (bound) return;
+    bound = true;
+
+    $('wb-cn-photo').addEventListener('change', () => {
+      const file = $('wb-cn-photo').files[0];
+      const name = $('wb-cn-file-name');
+      if (name) name.textContent = file ? file.name : '未选择照片';
+    });
+    $('wb-cn-word').addEventListener('input', () => {
+      if (linesDirty) return;
+      renderLineFields(defaultLines($('wb-cn-word').value));
+    });
+    $('wb-cn-line-fields').addEventListener('input', () => { linesDirty = true; });
+
+    $('wb-cn-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const token = readToken();
+      if (!token) {
+        setComposerStatus('请先登录，再生成笔记。', true);
+        const banner = $('wb-auth-banner');
+        if (banner) banner.hidden = false;
+        return;
+      }
+      const word = $('wb-cn-word').value.trim();
+      const file = $('wb-cn-photo').files[0];
+      if (!word || !file) {
+        setComposerStatus(file ? '请填写单词。' : '请选择单词卡片照片，再生成。', true);
+        return;
+      }
+      const button = $('wb-cn-save-btn');
+      button.disabled = true;
+      setComposerStatus('正在生成笔记…');
+      try {
+        const body = new FormData();
+        body.append('word', word);
+        body.append('lines', JSON.stringify(currentLines()));
+        body.append('file', file);
+        const response = await fetch('/class-notes', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+          body,
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.message || '笔记没有生成');
+        let note = { ...result.note, lines: currentLines() };
+        try {
+          const articleRes = await privateNoteFetch(`/articles/${encodeURIComponent(result.note.id)}`);
+          if (articleRes.ok) {
+            const article = await articleRes.json();
+            note = JSON.parse(article.content || '{}');
+          }
+        } catch (_) {}
+        note.id = result.note.id;
+        try {
+          history.replaceState({}, '', `./workbench.html?mode=class-note&note=${encodeURIComponent(note.id)}`);
+        } catch (_) {}
+        showNote(note, true);
+      } catch (err) {
+        setComposerStatus(err.message || '笔记没有生成', true);
+        button.disabled = false;
+      }
+    });
+
+    $('wb-cn-note').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-speak]');
+      if (!button) return;
+      speak(button.getAttribute('data-speak') || '', button);
+    });
+
+    $('wb-cn-copy-btn').addEventListener('click', async () => {
+      const link = $('wb-cn-share-link').textContent;
+      try {
+        await navigator.clipboard.writeText(link);
+        setViewStatus('私有链接已复制，仅本人或管理员登录后可查看。');
+      } catch (_) {
+        setViewStatus('请长按下面的私有链接复制，仅本人或管理员登录后可查看。');
+        showShare(true);
+      }
+    });
+
+    $('wb-cn-edit-btn').addEventListener('click', () => {
+      showComposer(lastNote || { word: '', lines: defaultLines('cola') });
+    });
+
+    $('wb-cn-another-btn').addEventListener('click', () => {
+      linesDirty = false;
+      showComposer({ word: '', lines: defaultLines('cola') });
+      $('wb-cn-save-btn').textContent = '生成笔记';
+      setComposerStatus('');
+    });
+  }
+
+  async function loadNote(id) {
+    const response = await privateNoteFetch(`/articles/${encodeURIComponent(id)}`);
+    if (!response.ok) throw new Error('找不到这条笔记');
+    const article = await response.json();
+    const note = JSON.parse(article.content || '{}');
+    if (note.kind !== 'class-note') throw new Error('这不是课后笔记');
+    note.id = article.id;
+    noteId = String(article.id);
+    showNote(note, false);
+  }
+
+  function activate(options = {}) {
+    bindEvents();
+    const id = options.noteId || null;
+    if (id) {
+      loadNote(id).catch((err) => {
+        showComposer({ word: '', lines: defaultLines('cola') });
+        setComposerStatus(err.message || '笔记打开失败', true);
+      });
+    } else if (!lastNote) {
+      showComposer({ word: '', lines: defaultLines('cola') });
+    } else if (!$('wb-cn-viewer').hidden) {
+      showNote(lastNote, false);
+    }
+  }
+
+  function deactivate() {
+    stopSpeaking();
+    releaseNoteImage();
+  }
+
+  global.WorkbenchClassNote = {
+    activate,
+    deactivate,
+    defaultLines,
+  };
+})(window);

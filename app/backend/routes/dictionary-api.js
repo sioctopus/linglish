@@ -18,7 +18,69 @@ const ASYNC_TRANSLATION_COOLDOWN_MS = 60000; // 60 seconds
  * - GET /dictionary/:word -> returns { entry }
  * - GET /translate/:word  -> returns { translation }
  */
+function displayPhonetic(value) {
+  const text = String(value || '').trim().replace(/^\/+|\/+$/g, '');
+  return text ? `/${text}/` : '';
+}
+
+function firstChineseGloss(definitions) {
+  const meanings = definitions?.meanings || (Array.isArray(definitions) ? definitions : []);
+  for (const meaning of meanings) {
+    const items = meaning?.definitions || [];
+    for (const item of items) {
+      const zh = String(item?.zh || '').trim();
+      if (/[\u4e00-\u9fa5]/.test(zh)) return zh;
+    }
+  }
+  return '';
+}
+
+function extractGloss(record) {
+  return {
+    word: String(record?.word_lowercase || record?.word || '').toLowerCase(),
+    phonetic: displayPhonetic(record?.phonetic),
+    pos: String(record?.part_of_speech || '').trim(),
+    zh: firstChineseGloss(record?.definitions),
+  };
+}
+
+function glossWords(raw) {
+  return [...new Set(String(raw || '').split(',').map((word) => word.trim().toLowerCase()).filter((word) => /^[a-z][a-z'-]{0,30}$/.test(word)))].slice(0, 24);
+}
+
+function mergeGlossItems(words, dbItems, lexicon) {
+  const found = new Map((dbItems || []).map((item) => [item.word, item]));
+  const book = lexicon && typeof lexicon === 'object' ? lexicon : {};
+  return words.map((word) => {
+    const db = found.get(word);
+    const local = book[word] || {};
+    const phonetic = db?.phonetic || local.ipa || '';
+    const pos = db?.pos || local.pos || '';
+    const zh = db?.zh || local.zh || '';
+    if (!phonetic && !pos && !zh) return null;
+    return { word, phonetic, pos, zh };
+  }).filter(Boolean);
+}
+
 async function registerDictionaryRoutes(pathname, req, res, url) {
+  // GET /dictionary/gloss?words=hi,time
+  if (pathname === '/dictionary/gloss' && req.method === 'GET') {
+    const words = glossWords(url.searchParams.get('words'));
+    if (!words.length) return sendJson(res, 200, { items: [] });
+    try {
+      const dataStore = require('../data-store');
+      const { rows } = await dataStore.pool.query(
+        `SELECT word_lowercase, phonetic, part_of_speech, definitions
+         FROM words WHERE word_lowercase = ANY($1::text[])`,
+        [words]
+      );
+      return sendJson(res, 200, { items: mergeGlossItems(words, rows.map(extractGloss), readGlossLexicon()) });
+    } catch (err) {
+      console.warn('[Dictionary gloss]', err?.message || err);
+      return sendJson(res, 200, { items: mergeGlossItems(words, [], readGlossLexicon()) });
+    }
+  }
+
   // GET /dictionary/:word
   if (pathname.startsWith('/dictionary/') && req.method === 'GET') {
     try {
@@ -635,4 +697,15 @@ async function registerDictionaryRoutes(pathname, req, res, url) {
     return false;
   }
 
-  module.exports = { registerDictionaryRoutes };
+  function readGlossLexicon() {
+    if (readGlossLexicon.cache) return readGlossLexicon.cache;
+    try {
+      const file = require('path').join(__dirname, '../../frontend/data/gloss-lexicon.json');
+      readGlossLexicon.cache = JSON.parse(require('fs').readFileSync(file, 'utf8'));
+    } catch (_) {
+      readGlossLexicon.cache = {};
+    }
+    return readGlossLexicon.cache;
+  }
+
+  module.exports = { registerDictionaryRoutes, extractGloss, glossWords, mergeGlossItems };

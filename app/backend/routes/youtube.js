@@ -254,6 +254,28 @@ async function getTranscript(req, res) {
 }
 
 /**
+ * Score a transcript as A1–C2. Persists the level when videoId is set.
+ * A missing dictionary still leaves a structure-based level.
+ */
+async function applyAutoDifficulty(videoId, transcriptData) {
+  try {
+    const vocabularyV2 = require('../services/vocabulary-v2');
+    const payload = Array.isArray(transcriptData?.segments) && transcriptData.segments.length
+      ? transcriptData.segments
+      : transcriptData?.transcript;
+    const result = await vocabularyV2.calculateVideoDifficulty(payload);
+    if (result?.difficulty && videoId != null) {
+      await dataStore.updateVideoResource(videoId, { difficulty_level: result.difficulty });
+      console.log(`[YouTube] Auto level ${result.difficulty} for video ${videoId} via ${result.source}`);
+    }
+    return result;
+  } catch (err) {
+    console.warn('[YouTube] Auto level failed:', err.message);
+    return null;
+  }
+}
+
+/**
  * POST /youtube/import - Import YouTube video (save to database)
  * This creates a permanent video resource with YouTube source
  */
@@ -303,11 +325,7 @@ async function importVideo(req, res) {
       }
     })();
 
-    // 难度级别：仅接受白名单值，其他视为未设置
-    const ALLOWED_DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
-    const difficultyLevel = ALLOWED_DIFFICULTIES.includes(String(body.difficulty_level || '').toLowerCase())
-      ? String(body.difficulty_level).toLowerCase()
-      : null;
+    // 难度不接受导入时手填。字幕拿到后由 applyAutoDifficulty 写入 A1–C2。
 
     // 全局标签 ID：规范化为正整数，校验存在且 scope = 'global'；非法 ID 静默丢弃并记录日志
     let globalTagIds = [];
@@ -345,7 +363,7 @@ async function importVideo(req, res) {
       subtitle_language: language,
       is_public: mode === 'permanent', // Temporary videos are private
       collection_name: collectionName,
-      difficulty_level: difficultyLevel,
+      difficulty_level: null,
       transcript: null,
       transcript_segments: null,
       has_subtitles: false,
@@ -403,6 +421,8 @@ async function importVideo(req, res) {
           status: 'completed',
           failure_reason: null,
         });
+
+        await applyAutoDifficulty(resource.id, transcriptData);
 
         const duration = ((Date.now() - startTime) / 1000).toFixed(2);
         console.log('[YouTube] (BG) Transcript job completed for video:', resource.id, 'in', duration, 'seconds');
@@ -473,6 +493,7 @@ async function createTempSession(req, res) {
     const words = youtubeService.extractWords(transcriptData.transcript);
     const wordCount = words.length;
     const uniqueWordCount = new Set(words).size;
+    const classified = await applyAutoDifficulty(null, transcriptData);
 
     return sendJson(res, 200, {
       success: true,
@@ -488,6 +509,7 @@ async function createTempSession(req, res) {
         language: transcriptData.language,
         wordCount,
         uniqueWordCount,
+        difficulty_level: classified?.difficulty || null,
         mode: 'temporary',
       },
     });

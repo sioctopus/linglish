@@ -1,0 +1,215 @@
+.subtitle-study {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 12px 14px 14px;
+  box-sizing: border-box;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.subtitle-study[hidden] {
+  display: none !important;
+}
+
+.subtitle-study-methods {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.subtitle-study-methods button,
+.subtitle-study-reveal,
+#subtitle-study-toggle,
+#practice-study-toggle {
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #0f766e;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.subtitle-study-methods button {
+  min-height: 36px;
+  padding: 0 10px;
+}
+
+.subtitle-study-methods button.is-on,
+#subtitle-study-toggle.is-on,
+#practice-study-toggle.is-on {
+  border-color: transparent;
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
+  color: #fff;
+}
+
+#subtitle-study-toggle,
+#practice-study-toggle {
+  height: 32px;
+  padding: 0 12px;
+}
+
+.subtitle-study-hint,
+.subtitle-study-en,
+.subtitle-study-zh {
+  margin: 0;
+  text-align: center;
+}
+
+.subtitle-study-hint {
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.subtitle-study-en {
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.subtitle-study-zh {
+  color: #334155;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.subtitle-study-gloss {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 10px;
+}
+
+.subtitle-study-chunk {
+  display: inline-flex;
+  align-items: flex-end;
+  max-width: 100%;
+}
+
+.subtitle-study-word {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: default;
+}
+
+.subtitle-study-ipa {
+  min-height: 16px;
+  color: #64748b;
+  font-size: 11px;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.subtitle-study-token {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 8px;
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.subtitle-study-word.is-only .subtitle-study-token { border-radius: 12px; }
+.subtitle-study-word.is-start .subtitle-study-token { border-radius: 12px 0 0 12px; }
+.subtitle-study-word.is-end .subtitle-study-token { border-radius: 0 12px 12px 0; }
+.subtitle-study-word.is-mid .subtitle-study-token { border-radius: 0; }
+
+.subtitle-study-chunk.is-c0 .subtitle-study-token { background: #fde68a; }
+.subtitle-study-chunk.is-c1 .subtitle-study-token { background: #fecaca; }
+.subtitle-study-chunk.is-c2 .subtitle-study-token { background: #bfdbfe; }
+.subtitle-study-chunk.is-c3 .subtitle-study-token { background: #99f6e4; }
+
+.subtitle-study-pos {
+  min-height: 16px;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.subtitle-study-gloss-zh {
+  min-height: 18px;
+  color: #475569;
+  font-size: 13px;
+  line-height: 18px;
+  white-space: nowrap;
+}
+
+.subtitle-study-reveal,
+.subtitle-study-mic {
+  align-self: center;
+}
+
+.subtitle-study-reveal {
+  min-height: 32px;
+  padding: 0 14px;
+}
+
+.subtitle-study-mic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border: 0;
+  border-radius: 50%;
+  background: #0f766e;
+  color: #fff;
+  font-size: 22px;
+  cursor: pointer;
+}
+
+body.subtitle-study-live #lyric-stage {
+  display: none !important;
+}
+
+body.focus-mode.subtitle-study-on .shell {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 26vw) !important;
+}
+
+body.focus-mode.subtitle-study-on .transcript {
+  min-width: 280px !important;
+}
+
+body.focus-mode.subtitle-study-on .main .player-wrap > .caption-bar,
+body.focus-mode.subtitle-study-on .main .player-wrap > .vrp-control-dock,
+body.focus-mode.subtitle-study-on #subtitle-study-host,
+body.focus-mode.subtitle-study-on .subtitle-study {
+  width: 100% !important;
+  max-width: none !important;
+}
+
+body.practice-focus-active.subtitle-study-on .practice-grid,
+body.practice-focus-active.subtitle-study-on.mode-dialogue .practice-grid,
+body.practice-focus-active.subtitle-study-on.mode-shadowing .practice-grid {
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 24vw) !important;
+}
+
+.practice-left > #subtitle-study-host,
+.subtitle-study {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  flex: 0 0 auto;
+}

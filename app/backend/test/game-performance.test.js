@@ -73,6 +73,9 @@ async function bootGameApp(options = {}) {
       dataset: {},
       disabled: false,
       appendChild(child) { this.children.push(child); },
+      setAttribute() {},
+      setAttributeNS() {},
+      addEventListener() {},
     };
   }
 
@@ -137,20 +140,38 @@ async function bootGameApp(options = {}) {
     GameProgressStore: {
       createProgressStore: () => ({ load: () => progress }),
     },
+    GameDailyChallenge: {
+      DAILY_WORD_COUNT: 4,
+      isDailyDone: () => false,
+      pickDailyWords: () => [],
+      todayKey: () => '2026-10-16',
+    },
+    GameWordDex: {
+      buildDex: () => ({
+        buckets: { mastered: [], learning: [], weak: [], unseen: [] },
+        counts: { mastered: 0, learning: 0, weak: 0, unseen: 0, total: 0 },
+      }),
+    },
     GameViews: {
       h: node,
       button,
       show: (_container, nodes) => { rendered.push(nodes); },
       renderLearn: async () => {},
+      renderSpeak: async () => {},
       renderLianliankan: async () => {},
       renderSpelling: async () => {},
       renderQuiz: async () => {},
       renderBoss: async () => {},
+      renderCardDeck: async () => {},
       ...(options.views || {}),
     },
-    fetch: async () => ({
+    fetch: async (url) => ({
       ok: true,
-      json: async () => ({ chapters: [{ chapter: 1, words: [] }] }),
+      json: async () => (
+        String(url).includes('card-decks')
+          ? { decks: [{ id: 'fruits', label: '水果', emoji: '🍎', words: [] }] }
+          : { chapters: [{ chapter: 1, words: [] }] }
+      ),
     }),
     localStorage: {},
     location: { replace() {} },
@@ -191,23 +212,49 @@ test('game shell asks the browser to preload the word pack', async () => {
 
   assert.match(
     response.body(),
-    /<link\s+rel="preload"\s+href="\/js\/game\/word-packs\/pack-max\.json\?v=7"\s+as="fetch"\s+crossorigin="anonymous">/,
+    /<link\s+rel="preload"\s+href="\/js\/game\/word-packs\/pack-max\.json\?v=11"\s+as="fetch"\s+crossorigin="anonymous">/,
   );
 });
 
 test('game shell invalidates the immutable pre-tracking API client cache', async () => {
   const response = await serveFrontend('game.html', '/game.html');
 
-  assert.match(response.body(), /<script src="\/js\/game\/api-client\.js\?v=3"><\/script>/);
-  assert.doesNotMatch(response.body(), /<script src="\/js\/game\/api-client\.js\?v=2"><\/script>/);
+  assert.match(response.body(), /<script src="\/js\/game\/api-client\.js\?v=6"><\/script>/);
+  assert.doesNotMatch(response.body(), /<script src="\/js\/game\/api-client\.js\?v=5"><\/script>/);
 });
 
 test('game shell publishes interaction fixes under fresh immutable cache keys', async () => {
   const response = await serveFrontend('game.html', '/game.html');
+  const html = response.body();
+  const references = [...html.matchAll(/<(script|link)\b[^>]*\b(src|href)="([^"]+)"[^>]*>/g)].map(match => ({
+    tag: match[1], url: new URL(match[3], 'https://app.example.test'), index: match.index,
+  }));
+  function asset(pathname, minimum, tag) {
+    const reference = references.find(item => item.url.pathname === pathname && item.tag === tag);
+    assert.ok(reference, `${pathname} must remain included as a ${tag}`);
+    const version = reference.url.searchParams.get('v');
+    assert.match(version || '', /^\d+$/, `${pathname} must have an immutable version key`);
+    assert.ok(Number(version) >= minimum, `${pathname} must invalidate cache versions before ${minimum}`);
+    return reference;
+  }
+  asset('/styles/mobile/pages/game.css', 46, 'link');
+  const numberWords = asset('/js/game/number-words.js', 1, 'script');
+  const views = asset('/js/game/game-views.js', 25, 'script');
+  assert.ok(numberWords.index < views.index, 'number-word support must load before the views that use it');
+  asset('/js/game/games/quiz.js', 2, 'script');
+  asset('/js/game/games/speaking.js', 1, 'script');
+  asset('/js/game/daily-challenge.js', 1, 'script');
+  asset('/js/game/word-dex.js', 1, 'script');
+  asset('/js/game/game-app.js', 33, 'script');
+  asset('/js/game/word-packs/card-decks.json', 20, 'link');
+});
 
-  assert.match(response.body(), /href="\/styles\/mobile\/pages\/game\.css\?v=10"/);
-  assert.match(response.body(), /src="\/js\/game\/games\/quiz\.js\?v=2"/);
-  assert.match(response.body(), /src="\/js\/game\/game-app\.js\?v=8"/);
+test('installed app home link is not the bare start url', () => {
+  const appPath = path.resolve(__dirname, '../../frontend/js/game/game-app.js');
+  const source = fs.readFileSync(appPath, 'utf8');
+  assert.match(source, /\/index-desktop\.html\?from=game/);
+  assert.match(source, /launchQueue\.setConsumer/);
+  assert.match(source, /location\.assign\(HOME_URL\)/);
 });
 
 test('current level and quiz hover effects keep button geometry stable', () => {
@@ -239,7 +286,7 @@ test('game map renders without waiting for retry queue flush', async () => {
   let flushStarted = false;
 
   function node() {
-    return { appendChild() {}, dataset: {}, disabled: false };
+    return { appendChild() {}, dataset: {}, disabled: false, setAttribute() {}, addEventListener() {} };
   }
 
   const window = {
@@ -264,14 +311,32 @@ test('game map renders without waiting for retry queue flush', async () => {
         load: () => ({ currentChapter: 1, currentLevel: 1, stars: {}, unlockedParts: [] }),
       }),
     },
+    GameDailyChallenge: {
+      DAILY_WORD_COUNT: 4,
+      isDailyDone: () => false,
+      pickDailyWords: () => [],
+      todayKey: () => '2026-10-16',
+    },
+    GameWordDex: {
+      buildDex: () => ({
+        buckets: { mastered: [], learning: [], weak: [], unseen: [] },
+        counts: { mastered: 0, learning: 0, weak: 0, unseen: 0, total: 0 },
+      }),
+    },
     GameViews: {
       h: node,
       button: node,
       show: () => { rendered = true; },
+      renderSpeak: async () => {},
+      renderCardDeck: async () => {},
     },
-    fetch: async () => ({
+    fetch: async (url) => ({
       ok: true,
-      json: async () => ({ chapters: [{ chapter: 1 }] }),
+      json: async () => (
+        String(url).includes('card-decks')
+          ? { decks: [] }
+          : { chapters: [{ chapter: 1 }] }
+      ),
     }),
     localStorage: {},
     location: { replace() {} },
@@ -289,9 +354,17 @@ test('game map renders without waiting for retry queue flush', async () => {
   assert.equal(rendered, true, 'the map must not be blocked by background retries');
 });
 
+function flattenRendered(nodes, found = []) {
+  (nodes || []).forEach((item) => {
+    found.push(item);
+    if (Array.isArray(item.children)) flattenRendered(item.children, found);
+  });
+  return found;
+}
+
 test('game map exposes a stable continue button for the current level', async () => {
   const { rendered } = await bootGameApp();
-  const map = rendered[0] || [];
+  const map = flattenRendered(rendered[0] || []);
   const continueButton = map.find((item) => item.className.includes('game-map-continue'));
 
   assert.ok(continueButton, 'expected a dedicated continue button above the level path');
@@ -303,7 +376,7 @@ test('continue button cannot bypass the boss star gate', async () => {
     progress: { currentLevel: 6 },
     chapterStars: () => 7,
   });
-  const map = rendered[0] || [];
+  const map = flattenRendered(rendered[0] || []);
   const continueButton = map.find((item) => item.className.includes('game-map-continue'));
 
   assert.ok(continueButton);
@@ -318,7 +391,7 @@ test('continue button opens the boss once the star gate is met', async () => {
     progress: { currentLevel: 6 },
     chapterStars: () => 8,
   });
-  const map = rendered[0] || [];
+  const map = flattenRendered(rendered[0] || []);
   const continueButton = map.find((item) => item.className.includes('game-map-continue'));
 
   assert.equal(continueButton.textContent, '挑战 BOSS');
@@ -335,7 +408,7 @@ test('finishing each regular level phase records where players progressed', asyn
   const { rendered, tracked } = await bootGameApp({
     views: { renderLearn: () => learnFinished },
   });
-  const map = rendered[0] || [];
+  const map = flattenRendered(rendered[0] || []);
   const currentLevel = map.find((item) => item.className === 'game-node' && item.dataset.current === 'true');
 
   assert.ok(currentLevel, 'expected the current level node');
@@ -355,6 +428,6 @@ test('finishing each regular level phase records where players progressed', asyn
     tracked
       .filter((event) => event.eventName === 'game_phase_complete')
       .map((event) => event.properties.phase),
-    ['learn', 'matching', 'quiz'],
+    ['learn', 'speaking', 'matching', 'quiz'],
   );
 });

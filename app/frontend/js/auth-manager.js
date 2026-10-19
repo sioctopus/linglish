@@ -1,10 +1,10 @@
 /**
  * AuthManager - Centralized Authentication Handling
- * Handles token storage with robust fallback to Cookies/Memory when localStorage is blocked.
+ * Keeps a 30-day sliding login (90-day ceiling) and a 1-hour data credential.
+ * A credential that cannot be decoded locally is left in place; only a real
+ * expiry with no refresh session is cleared.
  */
 (function (window) {
-    // --- Storage Polyfill Logic (Internal) ---
-
     function isStorageAvailable(type) {
         try {
             const storage = window[type];
@@ -59,18 +59,25 @@
         removeItem: function (k) { delete this._data[k]; }
     };
 
-    // Determine best storage mechanism
     let useLocalStorage = isStorageAvailable('localStorage');
     let useSessionStorage = isStorageAvailable('sessionStorage');
     let useCookies = navigator.cookieEnabled;
-
     let mediaClearPromise = null;
+    let refreshInFlight = null;
+    let refreshPersistent = true;
+    const originalFetch = window.fetch ? window.fetch.bind(window) : null;
+
+    const REFRESH_KEY = 'linglish_refresh_token';
+    const DEVICE_KEY = 'linglish_device_id';
+    const SESSION_MAX_AGE = 60 * 60 * 24 * 90;
 
     function clearMediaSession() {
         if (mediaClearPromise) return mediaClearPromise;
         const request = window.LinglishMediaSession
             ? window.LinglishMediaSession.clear()
-            : fetch('/auth/media-session', { method: 'DELETE', credentials: 'include' });
+            : originalFetch
+                ? originalFetch('/auth/media-session', { method: 'DELETE', credentials: 'include' })
+                : Promise.resolve();
         const serialized = Promise.resolve(request).catch(function () { });
         const tracked = serialized.finally(function () {
             if (mediaClearPromise === tracked) mediaClearPromise = null;
@@ -94,37 +101,178 @@
         MemoryStore.removeItem('linglish_token');
     }
 
+    function storageGet(type, key) {
+        try { return window[type].getItem(key); } catch (e) { return null; }
+    }
+
+    function storageSet(type, key, value) {
+        try { window[type].setItem(key, value); return true; } catch (e) { return false; }
+    }
+
+    function storageRemove(type, key) {
+        try { window[type].removeItem(key); } catch (e) { }
+    }
+
+    function usable(value) {
+        return value && value !== 'null' && value !== 'undefined';
+    }
+
+    function decodeJwtPayload(token) {
+        if (!token || typeof token !== 'string') return null;
+        const parts = token.split('.');
+        if (parts.length < 2 || !parts[1]) return null;
+        try {
+            let b64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+            while (b64.length % 4) b64 += '=';
+            return JSON.parse(atob(b64));
+        } catch (err) {
+            return null;
+        }
+    }
+
+    function tokenSubject(token) {
+        const payload = decodeJwtPayload(token);
+        return payload && payload.sub != null ? String(payload.sub) : null;
+    }
+
+    function accessExpired(token) {
+        const payload = decodeJwtPayload(token);
+        if (!payload || typeof payload.exp !== 'number') return false;
+        return payload.exp < Math.floor(Date.now() / 1000);
+    }
+
+    function accessSecondsLeft(token) {
+        const payload = decodeJwtPayload(token);
+        if (!payload || typeof payload.exp !== 'number') return Number.POSITIVE_INFINITY;
+        return payload.exp - Math.floor(Date.now() / 1000);
+    }
+
+    function readRawAccess() {
+        const tiers = [];
+        if (useLocalStorage) tiers.push(storageGet('localStorage', 'authToken') || storageGet('localStorage', 'linglish_token'));
+        if (useSessionStorage) tiers.push(storageGet('sessionStorage', 'authToken') || storageGet('sessionStorage', 'linglish_token'));
+        if (useCookies) tiers.push(CookieStore.getItem('authToken') || CookieStore.getItem('linglish_token'));
+        tiers.push(MemoryStore.getItem('authToken') || MemoryStore.getItem('linglish_token'));
+        for (let i = 0; i < tiers.length; i += 1) {
+            if (usable(tiers[i])) return tiers[i];
+        }
+        return null;
+    }
+
+    function writeRefresh(token, remember) {
+        if (!usable(token)) return;
+        refreshPersistent = remember !== false;
+        storageRemove('localStorage', REFRESH_KEY);
+        storageRemove('sessionStorage', REFRESH_KEY);
+        CookieStore.removeItem(REFRESH_KEY);
+        MemoryStore.removeItem(REFRESH_KEY);
+        if (refreshPersistent && useLocalStorage && storageSet('localStorage', REFRESH_KEY, token)) return;
+        if (!refreshPersistent && useSessionStorage && storageSet('sessionStorage', REFRESH_KEY, token)) return;
+        if (useCookies && CookieStore.setItem(REFRESH_KEY, token, refreshPersistent ? SESSION_MAX_AGE : null)) return;
+        if (refreshPersistent && useLocalStorage === false && useSessionStorage && storageSet('sessionStorage', REFRESH_KEY, token)) return;
+        MemoryStore.setItem(REFRESH_KEY, token);
+    }
+
+    function readRefresh() {
+        const local = useLocalStorage ? storageGet('localStorage', REFRESH_KEY) : null;
+        if (usable(local)) { refreshPersistent = true; return local; }
+        const session = useSessionStorage ? storageGet('sessionStorage', REFRESH_KEY) : null;
+        if (usable(session)) { refreshPersistent = false; return session; }
+        const cookie = useCookies ? CookieStore.getItem(REFRESH_KEY) : null;
+        if (usable(cookie)) { refreshPersistent = true; return cookie; }
+        const memory = MemoryStore.getItem(REFRESH_KEY);
+        if (usable(memory)) return memory;
+        return null;
+    }
+
+    function clearRefresh() {
+        storageRemove('localStorage', REFRESH_KEY);
+        storageRemove('sessionStorage', REFRESH_KEY);
+        CookieStore.removeItem(REFRESH_KEY);
+        MemoryStore.removeItem(REFRESH_KEY);
+    }
+
+    function writeDeviceId(id) {
+        if (!usable(id)) return;
+        if (!(useLocalStorage && storageSet('localStorage', DEVICE_KEY, id))) {
+            MemoryStore.setItem(DEVICE_KEY, id);
+        }
+    }
+
+    function getDeviceId() {
+        const existing = (useLocalStorage && storageGet('localStorage', DEVICE_KEY)) || MemoryStore.getItem(DEVICE_KEY);
+        if (usable(existing) && /^[A-Za-z0-9_-]{16,80}$/.test(existing)) return existing;
+        const bytes = new Uint8Array(16);
+        if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+            window.crypto.getRandomValues(bytes);
+        } else {
+            for (let i = 0; i < bytes.length; i += 1) bytes[i] = Math.floor(Math.random() * 256);
+        }
+        const id = Array.from(bytes).map(function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        writeDeviceId(id);
+        return id;
+    }
+
+    function requestUrl(input) {
+        if (typeof input === 'string') return input;
+        if (input && typeof input.url === 'string') return input.url;
+        return '';
+    }
+
+    function isSessionEndpoint(url) {
+        return /\/auth\/(login|register|guest|refresh|oauth\/session)(?:\?|$)/.test(url);
+    }
+
+    function headerHasAuth(headers) {
+        if (!headers) return false;
+        if (typeof headers.get === 'function') {
+            return Boolean(headers.get('Authorization') || headers.get('authorization'));
+        }
+        return Boolean(headers.Authorization || headers.authorization);
+    }
+
+    function captureIssuedSession(response) {
+        if (!response || typeof response.clone !== 'function') return;
+        response.clone().json().then(function (data) {
+            if (!data || typeof data !== 'object') return;
+            if (data.device_id) writeDeviceId(data.device_id);
+            if (data.refresh_token) writeRefresh(data.refresh_token, true);
+        }).catch(function () { });
+    }
+
+    function clearLocalCredentials() {
+        clearStoredTokens();
+        clearRefresh();
+    }
+
     console.log(`[AuthManager] Storage Status: LS=${useLocalStorage}, SS=${useSessionStorage}, Cookies=${useCookies}`);
 
-    // --- AuthManager API ---
-
     const AuthManager = {
-        /**
-         * Set auth token
-         * @param {string} token - The access token
-         * @param {boolean} remember - If true, persist across sessions (localStorage/Cookie). If false, session only.
-         */
         setToken: async function (token, remember) {
             if (!token) {
                 console.warn('[AuthManager] setToken: no token provided');
                 return false;
             }
 
-            const previousToken = this.getToken();
+            const previousToken = readRawAccess();
             if (previousToken && previousToken !== token) {
+                const previousSub = tokenSubject(previousToken);
+                const nextSub = tokenSubject(token);
                 clearStoredTokens();
-                await clearMediaSession();
+                if (previousSub && nextSub && previousSub !== nextSub) {
+                    await clearMediaSession();
+                }
             } else if (mediaClearPromise) {
                 await mediaClearPromise;
             }
-            console.log('[AuthManager] setToken: attempting to save token, remember=' + remember);
 
-            // 1. Try Native Storage first if available
+            const refresh = readRefresh();
+            if (refresh) writeRefresh(refresh, !!remember);
+
             if (remember && useLocalStorage) {
                 try {
                     localStorage.setItem('authToken', token);
                     localStorage.setItem('linglish_token', token);
-                    console.log('[AuthManager] Token saved to localStorage');
                     return true;
                 } catch (e) {
                     console.warn('[AuthManager] localStorage failed:', e.message);
@@ -133,266 +281,173 @@
                 try {
                     sessionStorage.setItem('authToken', token);
                     sessionStorage.setItem('linglish_token', token);
-                    console.log('[AuthManager] Token saved to sessionStorage');
                     return true;
                 } catch (e) {
                     console.warn('[AuthManager] sessionStorage failed:', e.message);
                 }
             }
 
-            // 2. Fallback to Cookies
-            console.log('[AuthManager] Trying Cookie fallback...');
             if (useCookies) {
                 try {
-                    const expires = remember ? 31536000 : null; // 1 year or session
+                    const expires = remember ? SESSION_MAX_AGE : null;
                     CookieStore.setItem('authToken', token, expires);
                     CookieStore.setItem('linglish_token', token, expires);
-                    console.log('[AuthManager] Token saved to Cookies');
                     return true;
                 } catch (e) {
                     console.warn('[AuthManager] Cookie storage failed:', e.message);
                 }
             }
 
-            // 3. Fallback to Memory (Last resort, will be lost on reload)
-            console.warn('[AuthManager] Using Memory storage (will be lost on reload)');
             MemoryStore.setItem('authToken', token);
             MemoryStore.setItem('linglish_token', token);
-            console.log('[AuthManager] Token saved to Memory');
             return true;
         },
 
-        /**
-         * Get auth token
-         * Checks: LocalStorage -> SessionStorage -> Cookies -> Memory
-         * Auto-clears expired tokens
-         * @returns {string|null}
-         */
+        storeAccess: function (token, remember) {
+            if (!token) return false;
+            const refresh = readRefresh();
+            if (refresh) writeRefresh(refresh, !!remember);
+            if (remember && useLocalStorage && storageSet('localStorage', 'authToken', token) && storageSet('localStorage', 'linglish_token', token)) {
+                return true;
+            }
+            if (!remember && useSessionStorage && storageSet('sessionStorage', 'authToken', token) && storageSet('sessionStorage', 'linglish_token', token)) {
+                return true;
+            }
+            if (useCookies && CookieStore.setItem('authToken', token, remember ? SESSION_MAX_AGE : null)) {
+                CookieStore.setItem('linglish_token', token, remember ? SESSION_MAX_AGE : null);
+                return true;
+            }
+            MemoryStore.setItem('authToken', token);
+            MemoryStore.setItem('linglish_token', token);
+            return true;
+        },
+
+        saveLogin: async function (payload, remember) {
+            const data = payload || {};
+            if (data.device_id) writeDeviceId(data.device_id);
+            if (data.refresh_token) writeRefresh(data.refresh_token, remember !== false);
+            const token = data.access_token || data.token || data.accessToken;
+            if (!token) return false;
+            return this.setToken(token, remember !== false);
+        },
+
         getToken: function () {
-            let token = null;
+            const refresh = readRefresh();
+            const tiers = [
+                { name: 'local', read: function () { return useLocalStorage ? (storageGet('localStorage', 'authToken') || storageGet('localStorage', 'linglish_token')) : null; }, clear: function () { storageRemove('localStorage', 'authToken'); storageRemove('localStorage', 'linglish_token'); } },
+                { name: 'session', read: function () { return useSessionStorage ? (storageGet('sessionStorage', 'authToken') || storageGet('sessionStorage', 'linglish_token')) : null; }, clear: function () { storageRemove('sessionStorage', 'authToken'); storageRemove('sessionStorage', 'linglish_token'); } },
+                { name: 'cookie', read: function () { return useCookies ? (CookieStore.getItem('authToken') || CookieStore.getItem('linglish_token')) : null; }, clear: function () { CookieStore.removeItem('authToken'); CookieStore.removeItem('linglish_token'); } },
+                { name: 'memory', read: function () { return MemoryStore.getItem('authToken') || MemoryStore.getItem('linglish_token'); }, clear: function () { MemoryStore.removeItem('authToken'); MemoryStore.removeItem('linglish_token'); } }
+            ];
 
-            // Check LocalStorage
-            if (useLocalStorage) {
-                try {
-                    token = localStorage.getItem('authToken') || localStorage.getItem('linglish_token');
-                    if (token && token !== 'null' && token !== 'undefined') {
-                        // Validate token expiry
-                        if (this.isTokenExpired(token)) {
-                            // Only clear this tier — a fresh token may exist in sessionStorage/cookies
-                            console.warn('[AuthManager] Token in localStorage is expired, removing localStorage copies...');
-                            localStorage.removeItem('authToken');
-                            localStorage.removeItem('linglish_token');
-                        } else {
-                            return token;
-                        }
+            let stale = null;
+            for (let i = 0; i < tiers.length; i += 1) {
+                const token = tiers[i].read();
+                if (!usable(token)) continue;
+                const payload = decodeJwtPayload(token);
+                if (!payload) return token;
+                if (typeof payload.exp === 'number' && payload.exp < Math.floor(Date.now() / 1000)) {
+                    if (refresh) {
+                        stale = stale || token;
+                        continue;
                     }
-                } catch (e) {
-                    console.warn('[AuthManager] localStorage read failed:', e.message);
+                    console.warn('[AuthManager] Access credential expired in ' + tiers[i].name + ', removing that copy');
+                    tiers[i].clear();
+                    continue;
                 }
+                return token;
             }
-
-            // Check SessionStorage
-            if (useSessionStorage) {
-                try {
-                    token = sessionStorage.getItem('authToken') || sessionStorage.getItem('linglish_token');
-                    if (token && token !== 'null' && token !== 'undefined') {
-                        if (this.isTokenExpired(token)) {
-                            console.warn('[AuthManager] Token in sessionStorage is expired, removing sessionStorage copies...');
-                            sessionStorage.removeItem('authToken');
-                            sessionStorage.removeItem('linglish_token');
-                        } else {
-                            return token;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('[AuthManager] sessionStorage read failed:', e.message);
-                }
+            if (stale) {
+                this.ensureSession();
+                return stale;
             }
-
-            // Check Cookies
-            if (useCookies) {
-                try {
-                    token = CookieStore.getItem('authToken') || CookieStore.getItem('linglish_token');
-                    if (token && token !== 'null' && token !== 'undefined') {
-                        if (this.isTokenExpired(token)) {
-                            console.warn('[AuthManager] Token in Cookies is expired, removing cookie copies...');
-                            CookieStore.removeItem('authToken');
-                            CookieStore.removeItem('linglish_token');
-                        } else {
-                            return token;
-                        }
-                    }
-                } catch (e) {
-                    console.warn('[AuthManager] Cookie read failed:', e.message);
-                }
-            }
-
-            // Check Memory
-            try {
-                token = MemoryStore.getItem('authToken') || MemoryStore.getItem('linglish_token');
-                if (token && token !== 'null' && token !== 'undefined') {
-                    if (this.isTokenExpired(token)) {
-                        console.warn('[AuthManager] Token in Memory is expired, removing memory copies...');
-                        MemoryStore.removeItem('authToken');
-                        MemoryStore.removeItem('linglish_token');
-                    } else {
-                        return token;
-                    }
-                }
-            } catch (e) {
-                console.warn('[AuthManager] Memory read failed:', e.message);
-            }
-
             return null;
         },
 
-        /**
-         * Check if token is expired
-         * @param {string} token - JWT token
-         * @returns {boolean}
-         */
         isTokenExpired: function (token) {
             if (!token || typeof token !== 'string') return true;
-
-            try {
-                // JWT format: header.payload.signature
-                const parts = token.split('.');
-                if (parts.length !== 3) return true;
-
-                // Decode payload (base64url)
-                const payload = JSON.parse(atob(parts[1].replace(/-/g, '+').replace(/_/g, '/')));
-
-                // Check expiry
-                if (payload.exp) {
-                    const now = Math.floor(Date.now() / 1000);
-                    if (payload.exp < now) {
-                        console.log('[AuthManager] Token expired:', {
-                            exp: payload.exp,
-                            now: now,
-                            expiredBy: now - payload.exp + ' seconds'
-                        });
-                        return true;
-                    }
-                }
-
-                return false;
-            } catch (err) {
-                console.warn('[AuthManager] Failed to decode token:', err.message);
-                return true; // Treat invalid tokens as expired
-            }
+            const parts = token.split('.');
+            if (parts.length !== 3) return true;
+            const payload = decodeJwtPayload(token);
+            if (!payload) return false;
+            if (typeof payload.exp !== 'number') return false;
+            return payload.exp < Math.floor(Date.now() / 1000);
         },
 
-        /**
-         * Clear all auth tokens from all possible storages
-         */
         clearToken: function (options) {
-            clearStoredTokens();
-            if (options && options.skipMediaSession) return Promise.resolve();
-            return clearMediaSession();
+            const refresh = readRefresh();
+            const access = readRawAccess();
+            clearLocalCredentials();
+            const jobs = [];
+            if (!(options && options.skipRevoke) && originalFetch && (refresh || access)) {
+                const headers = { 'Content-Type': 'application/json' };
+                if (access) headers.Authorization = 'Bearer ' + access;
+                jobs.push(originalFetch('/auth/logout', {
+                    method: 'POST',
+                    credentials: 'same-origin',
+                    headers: headers,
+                    body: JSON.stringify({ refresh_token: refresh || undefined, device_id: getDeviceId() }),
+                }).catch(function () { }));
+            }
+            if (!(options && options.skipMediaSession)) jobs.push(clearMediaSession());
+            return Promise.all(jobs).then(function () { });
         },
 
-        /**
-         * Check if user is logged in
-         * @returns {boolean}
-         */
         isLoggedIn: function () {
-            return !!this.getToken();
+            return !!this.getToken() || !!readRefresh();
         },
 
-        /**
-         * Validate token format (basic JWT structure check)
-         * @param {string} token - Token to validate
-         * @returns {boolean}
-         */
         isValidTokenFormat: function (token) {
             if (!token || typeof token !== 'string') return false;
             if (token === 'undefined' || token === 'null') return false;
-            // JWT tokens have 3 parts separated by dots
             const parts = token.split('.');
             return parts.length === 3;
         },
 
-        /**
-         * Health check: Validate and clean corrupted tokens
-         * @returns {boolean} - True if healthy or cleaned, false if critical failure
-         */
+        ensureSession: function (options) {
+            const force = Boolean(options && options.force);
+            if (refreshInFlight) return refreshInFlight;
+            const current = readRawAccess();
+            if (!force && current && accessSecondsLeft(current) > 300) return Promise.resolve(current);
+            const run = refreshAccess({ force: force });
+            const tracked = run.finally(function () {
+                if (refreshInFlight === tracked) refreshInFlight = null;
+            });
+            refreshInFlight = tracked;
+            return tracked;
+        },
+
         healthCheck: function () {
             try {
-                const token = this.getToken();
-                if (token && !this.isValidTokenFormat(token)) {
+                const token = readRawAccess();
+                if (token && !this.isValidTokenFormat(token) && !readRefresh()) {
                     console.warn('[AuthManager] Invalid token detected, clearing...');
-                    this.clearToken();
-                    return true; // Cleaned up
+                    clearLocalCredentials();
                 }
-                return true; // Healthy
+                return true;
             } catch (e) {
                 console.error('[AuthManager] Health check failed:', e);
-                try {
-                    this.clearToken();
-                } catch (clearError) {
-                    console.error('[AuthManager] Failed to clear corrupted data:', clearError);
-                }
                 return false;
             }
         },
 
-        /**
-         * Version check: Clear cache if app version changed
-         * @param {string} currentVersion - Current app version
-         * @returns {boolean} - True if version matches or was updated
-         */
         versionCheck: function (currentVersion) {
             const VERSION_KEY = 'linglish_app_version';
             try {
                 let storedVersion = null;
+                if (useLocalStorage) storedVersion = localStorage.getItem(VERSION_KEY);
+                else if (useCookies) storedVersion = CookieStore.getItem(VERSION_KEY);
+                else storedVersion = MemoryStore.getItem(VERSION_KEY);
 
-                // Get stored version
-                if (useLocalStorage) {
-                    storedVersion = localStorage.getItem(VERSION_KEY);
-                } else if (useCookies) {
-                    storedVersion = CookieStore.getItem(VERSION_KEY);
-                } else {
-                    storedVersion = MemoryStore.getItem(VERSION_KEY);
-                }
-
-                // If version mismatch, clear all data
                 if (storedVersion !== currentVersion) {
-                    console.log('[AuthManager] Version mismatch. Clearing cache...', {
+                    console.log('[AuthManager] App version changed. Login session kept.', {
                         stored: storedVersion,
                         current: currentVersion
                     });
-
-                    // Clear authentication data
-                    this.clearToken();
-
-                    // Clear other app data keys
-                    const keysToRemove = ['userSettings', 'lastSync', 'appConfig', 'cachedData',
-                                          'is_guest', 'guest_id', 'isGuest', 'userEmail'];
-                    keysToRemove.forEach(key => {
-                        if (useLocalStorage) {
-                            try { localStorage.removeItem(key); } catch (e) { }
-                        }
-                        if (useSessionStorage) {
-                            try { sessionStorage.removeItem(key); } catch (e) { }
-                        }
-                        if (useCookies) {
-                            CookieStore.removeItem(key);
-                        }
-                        MemoryStore.removeItem(key);
-                    });
-
-                    // Set new version
-                    if (useLocalStorage) {
-                        localStorage.setItem(VERSION_KEY, currentVersion);
-                    } else if (useCookies) {
-                        CookieStore.setItem(VERSION_KEY, currentVersion, Infinity);
-                    } else {
-                        MemoryStore.setItem(VERSION_KEY, currentVersion);
-                    }
-
-                    console.log('[AuthManager] Cache cleared. New version:', currentVersion);
+                    if (useLocalStorage) localStorage.setItem(VERSION_KEY, currentVersion);
+                    else if (useCookies) CookieStore.setItem(VERSION_KEY, currentVersion, Infinity);
+                    else MemoryStore.setItem(VERSION_KEY, currentVersion);
                 }
-
                 return true;
             } catch (e) {
                 console.error('[AuthManager] Version check failed:', e);
@@ -401,25 +456,116 @@
         }
     };
 
-    // App version - update this when making breaking changes
-    // Updated: 2024.12.16 - Added StorageHelper, fixed cache issues, auto-clear expired tokens
+    async function refreshAccess(options) {
+        const refresh = readRefresh();
+        const current = readRawAccess();
+        const force = Boolean(options && options.force);
+        if (!refresh || !originalFetch) {
+            return current && !accessExpired(current) ? current : null;
+        }
+        if (!force && current && accessSecondsLeft(current) > 300) return current;
+        try {
+            const response = await originalFetch('/auth/refresh', {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Linglish-Device': getDeviceId(),
+                },
+                body: JSON.stringify({ refresh_token: refresh, device_id: getDeviceId() }),
+            });
+            const data = await response.json().catch(function () { return {}; });
+            if (response.ok && data && data.access_token) {
+                if (data.device_id) writeDeviceId(data.device_id);
+                writeRefresh(data.refresh_token || refresh, refreshPersistent);
+                await AuthManager.setToken(data.access_token, refreshPersistent);
+                return data.access_token;
+            }
+            if (response.status === 401) {
+                clearLocalCredentials();
+                return null;
+            }
+            return current || null;
+        } catch (err) {
+            console.warn('[AuthManager] Session refresh skipped:', err && err.message ? err.message : err);
+            return current || null;
+        }
+    }
+
+    if (originalFetch) {
+        window.fetch = function (input, init) {
+            const url = requestUrl(input);
+            const nextInit = isSessionEndpoint(url) || /\/auth\/logout(?:\?|$)/.test(url)
+                ? Object.assign({}, init, {
+                    headers: (function () {
+                        const headers = new Headers(init && init.headers || undefined);
+                        if (!headers.has('X-Linglish-Device')) headers.set('X-Linglish-Device', getDeviceId());
+                        return headers;
+                    })()
+                })
+                : init;
+            return originalFetch(input, nextInit).then(function (response) {
+                if (response && response.ok && isSessionEndpoint(url)) captureIssuedSession(response);
+                if (!response || response.status !== 401 || isSessionEndpoint(url) || /\/auth\/logout(?:\?|$)/.test(url)) {
+                    return response;
+                }
+                if (nextInit && nextInit.__linglishRetried) return response;
+                if (!headerHasAuth(nextInit && nextInit.headers) && !headerHasAuth(init && init.headers) && !headerHasAuth(input && input.headers)) {
+                    return response;
+                }
+                return AuthManager.ensureSession({ force: true }).then(function (renewed) {
+                    if (!renewed) return response;
+                    const headers = new Headers((nextInit && nextInit.headers) || (init && init.headers) || undefined);
+                    headers.set('Authorization', 'Bearer ' + renewed);
+                    const retryInit = Object.assign({}, nextInit || init, { headers: headers, __linglishRetried: true });
+                    return originalFetch(input, retryInit);
+                });
+            });
+        };
+    }
+
+    function refreshAccessBlocking() {
+        const refresh = readRefresh();
+        const current = readRawAccess();
+        if (!refresh) return current && !accessExpired(current) ? current : null;
+        if (current && accessSecondsLeft(current) > 300) return current;
+        if (typeof XMLHttpRequest !== 'function') return current || null;
+        try {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/auth/refresh', false);
+            xhr.setRequestHeader('Content-Type', 'application/json');
+            xhr.setRequestHeader('X-Linglish-Device', getDeviceId());
+            xhr.send(JSON.stringify({ refresh_token: refresh, device_id: getDeviceId() }));
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText || '{}');
+                if (data && data.access_token) {
+                    if (data.device_id) writeDeviceId(data.device_id);
+                    writeRefresh(data.refresh_token || refresh, refreshPersistent);
+                    AuthManager.storeAccess(data.access_token, refreshPersistent);
+                    return data.access_token;
+                }
+            }
+            if (xhr.status === 401) {
+                clearLocalCredentials();
+                return null;
+            }
+        } catch (err) {
+            console.warn('[AuthManager] Session refresh skipped:', err && err.message ? err.message : err);
+        }
+        return current || null;
+    }
+
     const APP_VERSION = '2024.12.16.002';
 
-    // Run version check and health check on load
     try {
         AuthManager.versionCheck(APP_VERSION);
         AuthManager.healthCheck();
-
-        // Auto-clear expired tokens on page load
-        const currentToken = AuthManager.getToken();
-        if (currentToken === null) {
-            console.log('[AuthManager] No token or expired token detected, cleared automatically');
-        }
+        AuthManager.ready = Promise.resolve(refreshAccessBlocking());
     } catch (e) {
         console.error('[AuthManager] Initialization checks failed:', e);
+        AuthManager.ready = Promise.resolve(null);
     }
 
-    // Expose to window
     window.AuthManager = AuthManager;
 
 })(window);

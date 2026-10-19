@@ -3,7 +3,8 @@
  *
  * 筛选状态（全部 AND 组合）：
  *   query       搜索词（匹配标题、文件名、合集名、标签名）
- *   difficulty  beginner | intermediate | advanced | ''
+ *   difficulty  a1 | a2 | b1 | b2 | c1 | c2 | ''
+ *               beginner/intermediate/advanced are accepted and mapped to a1/b1/c1
  *   scene       场景 key（work/daily/interview/travel）| ''
  *   status      unseen | in-progress | complete | ''
  *   tagId       标签 ID（字符串比较）| '_untagged' | ''
@@ -26,11 +27,13 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var ALLOWED_DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
+  var CEFR_LEVELS = ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'];
+  var LEGACY_LEVELS = { beginner: 'a1', intermediate: 'b1', advanced: 'c1' };
 
   function normalizeDifficultyLevel(raw) {
     var v = String(raw || '').trim().toLowerCase();
-    return ALLOWED_DIFFICULTIES.indexOf(v) !== -1 ? v : null;
+    if (LEGACY_LEVELS[v]) return LEGACY_LEVELS[v];
+    return CEFR_LEVELS.indexOf(v) !== -1 ? v : null;
   }
 
   function createState(partial) {

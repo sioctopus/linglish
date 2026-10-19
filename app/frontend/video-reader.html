@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/tts-voice.js?v=1"></script>
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
     // IMPORTANT: This must be the first script to catch extension errors
@@ -319,9 +322,9 @@
     <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
 
     <!-- Preload critical resources for video playback -->
-    <link rel="preload" href="./js/video-reader/main.js?v=47" as="script">
+    <link rel="preload" href="./js/video-reader/main.js?v=20261019" as="script">
     <link rel="preload" href="./js/app/youtube-player.js" as="script">
-    <link rel="preload" href="./css/video-reader/components.css?v=19" as="style">
+    <link rel="preload" href="./css/video-reader/components.css?v=20261019" as="style">
     <link rel="preconnect" href="https://www.youtube.com">
     <link rel="preconnect" href="https://i.ytimg.com">
 
@@ -331,13 +334,14 @@
     <!-- Video Reader CSS Modules -->
     <link rel="stylesheet" href="./css/video-reader/variables.css?v=1" />
     <link rel="stylesheet" href="./css/video-reader/animations.css?v=1" />
-    <link rel="stylesheet" href="./css/video-reader/components.css?v=19" />
+    <link rel="stylesheet" href="./css/video-reader/components.css?v=20261019" />
+    <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=20261018-note" />
     <link rel="stylesheet" href="./styles/mobile/pages/video-reader-focus.css?v=2" />
     <link rel="stylesheet" href="./styles/mobile/components/modals.css?v=4" />
 
     <script src="./guest-check.js?v=1"></script>
     <script src="./auth-helpers.js?v=1"></script>
-    <script src="./i18n.js?v=1"></script>
+    <script src="./i18n.js?v=20261019"></script>
     <script src="./global-ui.js?v=20250108"></script>
     <script src="./feedback.js?v=1"></script>
     <script src="./js/app/lazy-loader.js?v=1"></script>
@@ -348,10 +352,11 @@
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="./js/video-reader/device-router.js?v=1"></script>
     <script>window.VideoReaderDeviceRouter && window.VideoReaderDeviceRouter.redirectIfNeeded(window);</script>
-  </head>
+    <link rel="stylesheet" href="./styles/icons.css?v=1">
+</head>
   <body class="video-reader-mobile-focus">
     <header class="mobile-reader-header">
-      <a class="mobile-reader-home" href="./index.html" aria-label="返回首页">‹</a>
+      <a class="mobile-reader-home" data-nav="back" href="./index.html" aria-label="返回">‹</a>
       <div class="mobile-reader-heading">
         <strong>视频学习</strong>
         <span>看视频 · 跟字幕</span>
@@ -486,6 +491,7 @@
                 <li>角色扮演练习</li>
                 <li>语音录制对比</li>
                 <li>词典查询功能</li>
+                <li>视频带教模式</li>
               </ul>
             </div>
 
@@ -500,6 +506,7 @@
               </div>
               <ul class="tier-features">
                 <li>初级会员所有功能</li>
+                <li>视频带教模式</li>
                 <li>AI智能评分</li>
                 <li>发音纠正建议</li>
                 <li>学习进度分析</li>
@@ -513,7 +520,7 @@
       <main class="video-main">
         <div class="video-toolbar" id="video-toolbar">
           <div class="toolbar-group">
-            <a href="./index.html">← Back to App</a>
+            <a href="./index.html" data-nav="back">返回</a>
             <button id="show-vocabulary-btn" class="vocabulary-btn-desktop" aria-label="查看我的词汇表">
               <span class="toolbar-icon toolbar-icon-lg">📚</span>
               <span class="toolbar-label">我的词汇表</span>
@@ -609,6 +616,7 @@
                 <h3 style="margin: 0; font-size: 0.9rem;">Transcript</h3>
                 <span id="transcript-language" style="font-size: 0.8rem; color: #666;"></span>
               </div>
+              <div id="sentence-assist" class="sentence-assist" hidden></div>
               <div id="transcript-content" class="transcript-content empty-state">
                 Select a video to view its transcript.
               </div>
@@ -768,27 +776,27 @@
     <nav class="bottom-nav">
       <div class="bottom-nav-container">
         <a href="#" class="nav-item active" data-tab="library">
-          <div class="nav-icon">🌍</div>
+          <div class="nav-icon" data-lx-icon="explore"></div>
           <div class="nav-label">探索世界</div>
         </a>
 
         <a href="#" class="nav-item" data-tab="vocabulary">
-          <div class="nav-icon">⚡</div>
+          <div class="nav-icon" data-lx-icon="power"></div>
           <div class="nav-label">能量站</div>
         </a>
 
         <a href="#" class="nav-item" data-tab="practice">
-          <div class="nav-icon">🎪</div>
+          <div class="nav-icon" data-lx-icon="arena"></div>
           <div class="nav-label">实战场</div>
         </a>
 
         <a href="mobile-treasure.html" class="nav-item">
-          <div class="nav-icon">🪴</div>
+          <div class="nav-icon" data-lx-icon="growth"></div>
           <div class="nav-label">成长中心</div>
         </a>
 
         <a href="./feedback.html" class="nav-item">
-          <div class="nav-icon">💬</div>
+          <div class="nav-icon" data-lx-icon="message"></div>
           <div class="nav-label">反馈</div>
         </a>
       </div>
@@ -828,9 +836,11 @@
     <script src="./js/video-reader/mobile-reader-layout.js?v=2"></script>
     <script src="./js/video-reader/first-lesson-focus.js?v=20260822"></script>
     <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-    <script src="./js/video-reader/first-lesson-goal.js?v=20260922"></script>
+    <script src="./js/video-reader/first-lesson-goal.js?v=20261015"></script>
     <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=20260922">
-    <script src="./js/video-reader/sentence-segments.js?v=20260822"></script>
+    <script src="./js/video-reader/sentence-segments.js?v=20261019"></script>
+    <script src="./js/video-reader/missed-words.js?v=20261015"></script>
+    <script src="./js/video-reader/sentence-assist.js?v=20261015"></script>
     <script src="./js/video-reader/first-lesson-practice.js?v=20260822"></script>
     <script src="./js/video-reader/first-lesson-readiness.js?v=20260808"></script>
     <script>
@@ -839,7 +849,10 @@
     <script src="./js/media-session.js"></script>
     <script src="./js/video-recommendation-client.js?v=20260925"></script>
     <script src="./js/video-reader/next-video-sheet.js?v=20260925"></script>
-    <script src="./js/video-reader/main.js?v=48"></script>
+    <script src="./js/video-reader/coaching-mode.js?v=20261015"></script>
+    <script src="./js/video-reader/coaching-dock.js?v=20261018-note"></script>
+    <script src="./js/video-reader/voice-slot.js?v=1"></script>
+    <script src="./js/video-reader/main.js?v=20261019"></script>
     <script>
       // Hide upload functionality for guest users
       (function() {
@@ -872,5 +885,7 @@
       })();
     </script>
     <script src="./js/page-tracker.js"></script>
-  </body>
+  <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+  <script src="./js/icons.js?v=1"></script>
+</body>
 </html>

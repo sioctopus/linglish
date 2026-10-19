@@ -6,7 +6,8 @@
   <title>学习报告 - Linglish</title>
   <meta name="description" content="查看 Linglish 最近 7 天真实英语训练报告：活跃天数、训练分钟、连续训练、跟读和复习建议。">
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml" sizes="any">
-  <script src="./js/auth-manager.js?v=1"></script>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     :root {
@@ -629,7 +630,7 @@
       <a class="nav-link" href="./today.html" data-track="nav_today">今日训练</a>
       <a class="nav-link" href="./video-vocabulary-desktop.html" data-track="nav_vocab">词汇复习</a>
       <a class="nav-link" href="./pricing.html" data-track="nav_pricing">会员方案</a>
-      <a class="btn btn-secondary" href="./today.html" data-track="back_today">返回训练</a>
+      <a class="btn btn-secondary" data-nav="back" href="./today.html" data-track="back_today">返回</a>
     </nav>
   </header>
 
@@ -1420,5 +1421,6 @@
     scheduleCommitmentCheck();
     loadReport();
   </script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
 </body>
 </html>

@@ -20,7 +20,7 @@ if (process.env.CORS_ALLOWED_ORIGINS) {
 function getCorsHeaders(origin, options = {}) {
   const { logUnknown = true } = options;
   const headers = {
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Range, If-Range',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, Range, If-Range, X-Linglish-Device',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
     'Access-Control-Expose-Headers': 'Content-Range, Accept-Ranges, Content-Length, ETag, Last-Modified',
     'Access-Control-Max-Age': '86400',

@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>导入学习文档 — Linglish</title>
+  <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles/tokens.css?v=1">
+  <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+  <style>
+    body {
+      margin: 0;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .nav {
+      max-width: 1180px;
+      margin: 16px auto 0;
+      padding: 6px 16px;
+      height: 68px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border-radius: 999px;
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+    }
+    .brand {
+      color: #0f172a;
+      font-weight: 700;
+      text-decoration: none;
+      font-size: 18px;
+    }
+    .nav a.back {
+      color: #0f766e;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 32px;
+      line-height: 40px;
+      font-weight: 600;
+    }
+    .lead {
+      margin: 0 0 20px;
+      max-width: 640px;
+      color: #64748b;
+      font-size: 16px;
+      line-height: 24px;
+    }
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
+      gap: 20px;
+      align-items: stretch;
+    }
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+    }
+    label {
+      display: block;
+      margin: 16px 0 8px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    input[type="text"], textarea, input[type="file"] {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      padding: 12px 14px;
+      font: inherit;
+      color: #0f172a;
+      background: #fff;
+    }
+    textarea { min-height: 120px; resize: vertical; }
+    .hint { margin: 8px 0 0; color: #64748b; font-size: 14px; line-height: 20px; }
+    .actions { margin-top: 20px; }
+    button.btn-primary {
+      border: 0;
+      cursor: pointer;
+      min-height: 52px;
+      padding: 0 22px;
+      color: #fff;
+      font: inherit;
+      font-weight: 700;
+      background: linear-gradient(135deg, #0d9488, #2dd4bf);
+    }
+    button.btn-primary:disabled { opacity: 0.6; cursor: wait; }
+    .status {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: #f0fdfa;
+      color: #0f172a;
+    }
+    .status.error { background: #fef2f2; color: #991b1b; }
+    .docs {
+      margin: 0;
+      background: #fff;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+    .docs h2 { font-size: 20px; margin: 0 0 8px; }
+    .workspace > .card,
+    .workspace > .docs { height: 100%; box-sizing: border-box; }
+    #doc-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      overflow: auto;
+      max-height: calc(100vh - 280px);
+    }
+    .doc {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      padding: 14px 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      color: #0f172a;
+      text-decoration: none;
+      background: #fff;
+    }
+    .doc:hover { background: #f0fdfa; border-color: #99f6e4; }
+    .doc strong { display: block; color: #0f172a; font-size: 15px; line-height: 22px; }
+    .doc span { color: #64748b; font-size: 14px; }
+    .doc .enter {
+      flex: none;
+      color: #0f766e;
+      font-weight: 700;
+      font-size: 14px;
+    }
+    @media (max-width: 860px) {
+      .workspace { grid-template-columns: 1fr; }
+    }
+  </style>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/nav-back.js?v=1"></script>
+</head>
+<body>
+  <nav class="nav">
+    <a class="brand" href="./index-desktop.html">Linglish</a>
+    <a class="back" data-nav="back" href="./index-desktop.html">返回</a>
+  </nav>
+  <main>
+    <h1>导入学习文档</h1>
+    <p class="lead">上传课文会做成朗读字幕。上传英语试卷，或 Grok 生成的试卷网页，会做成网页版试卷，每一段和参考答案都可以点喇叭朗读。</p>
+    <div class="workspace">
+    <form class="card" id="import-form">
+      <label for="doc-title">文档名称</label>
+      <input id="doc-title" name="title" type="text" placeholder="例如：三年级 Unit 2 课文">
+      <label for="doc-file">上传文件</label>
+      <input id="doc-file" name="file" type="file" accept=".pdf,.txt,.docx,.epub,.html,.htm,.png,.jpg,.jpeg,.webp">
+      <p class="hint">支持英语图片、PDF、Word（docx）、电子书（epub）、TXT，以及试卷网页（html）。PPT 或旧版 doc 请先另存成 PDF 或 docx。试卷会生成可朗读的网页版。</p>
+      <label for="doc-text">或粘贴课文</label>
+      <textarea id="doc-text" name="text" placeholder="把要朗读的课文粘贴在这里。如果已经选择了文件，会以文件为准。"></textarea>
+      <div class="actions">
+        <button class="btn btn-primary" id="import-btn" type="submit">导入并开始上课</button>
+      </div>
+      <div id="status" class="status" hidden></div>
+    </form>
+    <section class="docs">
+      <h2>我已导入的</h2>
+      <p class="hint">点一份文档进入学习。试卷会打开网页版试卷。</p>
+      <div id="doc-list"><p class="hint">正在读取…</p></div>
+    </section>
+    </div>
+  </main>
+  <script>
+    const statusEl = document.getElementById('status');
+
+    function readToken() {
+      return window.AuthManager ? window.AuthManager.getToken() || '' : '';
+    }
+
+    function showStatus(message, isError) {
+      statusEl.hidden = false;
+      statusEl.textContent = message;
+      statusEl.className = isError ? 'status error' : 'status';
+    }
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    function openUrl(article) {
+      const pdfPath = String(article.pdf_path || '');
+      const tags = Array.isArray(article.tags) ? article.tags : String(article.tags || '').split(/[,{}]/);
+      const names = tags.map(tag => String(tag).trim());
+      const scanned = names.includes('scan') && !names.includes('exam') && !names.includes('subtitles');
+      if (scanned && pdfPath.startsWith('/pdfs/') && !pdfPath.includes('..')) {
+        return './pdf-reader.html?path=' + encodeURIComponent(pdfPath);
+      }
+      return './daily-speaking.html?material=' + encodeURIComponent(article.id);
+    }
+
+    async function loadDocuments() {
+      const list = document.getElementById('doc-list');
+      const token = readToken();
+      if (!token) {
+        list.innerHTML = '<p class="hint">登录后可以查看已经导入的文档。</p>';
+        return;
+      }
+      try {
+        const response = await fetch('/articles', { headers: { Authorization: 'Bearer ' + token } });
+        const data = await response.json();
+        const kinds = new Set(['pdf', 'text', 'txt', 'md', 'docx', 'epub', 'image']);
+        const items = (data.items || []).filter(article =>
+          kinds.has(article.source_type) || article.pdf_path
+        );
+        if (!items.length) {
+          list.innerHTML = '<p class="hint">还没有导入的文档。</p>';
+          return;
+        }
+        list.innerHTML = items.map(article => `
+          <a class="doc" href="${openUrl(article)}">
+            <span>
+              <strong>${escapeHtml(article.title || '未命名文档')}</strong>
+              <span>${article.word_count || 0} 词 · ${article.level || ''}</span>
+            </span>
+            <span class="enter">在跟读页打开</span>
+          </a>
+        `).join('');
+      } catch (_) {
+        list.innerHTML = '<p class="hint">暂时读不到文档列表。</p>';
+      }
+    }
+
+    document.getElementById('import-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const token = readToken();
+      if (!token) {
+        showStatus('请先登录，再导入学习文档。', true);
+        window.location.href = './index-desktop.html';
+        return;
+      }
+      const file = document.getElementById('doc-file').files[0];
+      const text = document.getElementById('doc-text').value.trim();
+      if (!file && !text) {
+        showStatus('请上传 PDF、TXT，或粘贴课文。', true);
+        return;
+      }
+      const button = document.getElementById('import-btn');
+      button.disabled = true;
+      showStatus(file ? '正在导入文档…' : '正在保存课文…', false);
+      try {
+        const body = new FormData();
+        body.append('title', document.getElementById('doc-title').value.trim());
+        if (file) body.append('file', file);
+        if (text) body.append('text', text);
+        const response = await fetch('/documents/import', {
+          method: 'POST',
+          headers: { Authorization: 'Bearer ' + token },
+          body,
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.message || '导入失败');
+        window.location.href = result.document.openUrl;
+      } catch (err) {
+        showStatus(err.message || '导入失败', true);
+        button.disabled = false;
+      }
+    });
+
+    loadDocuments();
+  </script>
+</body>
+</html>

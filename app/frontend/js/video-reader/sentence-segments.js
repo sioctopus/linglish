@@ -7,8 +7,12 @@
 
   const END_PUNCTUATION = /[.!?。！？][”’"')\]]*$/;
   const MAX_GAP_SECONDS = 1.4;
-  const MAX_WORDS = 30;
-  const MAX_DURATION_SECONDS = 11;
+  const INCOMPLETE_GAP_SECONDS = 2.8;
+  const SAFETY_MAX_WORDS = 80;
+  const SAFETY_MAX_DURATION_SECONDS = 24;
+  const PARAGRAPH_MAX_SENTENCES = 3;
+  const PARAGRAPH_MAX_WORDS = 55;
+  const PARAGRAPH_MAX_GAP_SECONDS = 1.5;
 
   function numberOrNull(value) {
     const n = Number(value);
@@ -37,11 +41,27 @@
     return (String(text || '').match(/\b[\w’'-]+\b/g) || []).length;
   }
 
+  function maskInternalPeriods(text) {
+    return String(text || '')
+      .replace(/\b(?:Mr|Mrs|Ms|Miss|Dr|Prof|Sr|Jr|St|vs|etc)\./gi, (match) => `${match.slice(0, -1)}∯`)
+      .replace(/\b(?:e\.g|i\.e|a\.m|p\.m|U\.S|U\.K)\./gi, (match) => match.replace(/\./g, '∯'))
+      .replace(/(\d)\.(?=\d)/g, '$1∯');
+  }
+
+  function unmaskPeriods(text) {
+    return String(text || '').replace(/∯/g, '.');
+  }
+
   function splitSentences(text) {
     const normalized = String(text || '').replace(/\s+/g, ' ').trim();
     if (!normalized) return [];
-    const parts = normalized.match(/[^.!?。！？]+[.!?。！？]+[”’"')\]]*|[^.!?。！？]+$/g);
-    return (parts || [normalized]).map((part) => part.trim()).filter(Boolean);
+    const masked = maskInternalPeriods(normalized);
+    const parts = masked.match(/[^.!?。！？]+[.!?。！？]+[”’"')\]]*|[^.!?。！？]+$/g);
+    return (parts || [masked]).map((part) => unmaskPeriods(part).trim()).filter(Boolean);
+  }
+
+  function endsSentence(text) {
+    return END_PUNCTUATION.test(String(text || '').trim());
   }
 
   function splitSegment(segment, sourceIndex) {
@@ -116,14 +136,14 @@
     const pieceSpeaker = String(piece.speaker || '').trim();
     if (bufferSpeaker && pieceSpeaker && bufferSpeaker !== pieceSpeaker) return false;
 
+    const incomplete = !endsSentence(buffer.text);
     const gap = Math.max(0, (startOf(piece) ?? 0) - (endOf(buffer) ?? 0));
-    if (gap > MAX_GAP_SECONDS) return false;
+    if (gap > (incomplete ? INCOMPLETE_GAP_SECONDS : MAX_GAP_SECONDS)) return false;
+    if (!incomplete) return false;
 
     const combinedText = joinText(buffer.text, piece.text);
     const duration = (endOf(piece) ?? 0) - (startOf(buffer) ?? 0);
-    if (countWords(combinedText) > MAX_WORDS || duration > MAX_DURATION_SECONDS) return false;
-
-    return !END_PUNCTUATION.test(String(buffer.text || '').trim());
+    return countWords(combinedText) <= SAFETY_MAX_WORDS && duration <= SAFETY_MAX_DURATION_SECONDS;
   }
 
   function mergePieces(pieces) {
@@ -181,9 +201,74 @@
     }));
   }
 
+  function sameSpeaker(left, right) {
+    const a = String(left && left.speaker || '').trim();
+    const b = String(right && right.speaker || '').trim();
+    return !a || !b || a === b;
+  }
+
+  function canGroupParagraph(buffer, piece) {
+    if (!buffer || !sameSpeaker(buffer, piece)) return false;
+    const gap = Math.max(0, (startOf(piece) ?? 0) - (endOf(buffer) ?? 0));
+    if (!endsSentence(buffer.text)) return gap <= INCOMPLETE_GAP_SECONDS;
+    if (gap > PARAGRAPH_MAX_GAP_SECONDS) return false;
+    const sentenceCount = buffer.sentence_count || 1;
+    const combinedWords = countWords(joinText(buffer.text, piece.text));
+    return sentenceCount < PARAGRAPH_MAX_SENTENCES && combinedWords <= PARAGRAPH_MAX_WORDS;
+  }
+
+  function toParagraphs(sentences) {
+    const output = [];
+    let buffer = null;
+
+    function flush() {
+      if (!buffer) return;
+      const paragraph = makeOutput(buffer);
+      delete paragraph.sentence_count;
+      output.push(paragraph);
+      buffer = null;
+    }
+
+    (Array.isArray(sentences) ? sentences : []).forEach((piece) => {
+      const text = textOf(piece);
+      if (!text) return;
+      if (!buffer) {
+        buffer = makeOutput(piece);
+        buffer.sentence_count = endsSentence(text) ? 1 : 0;
+        return;
+      }
+      if (canGroupParagraph(buffer, piece)) {
+        buffer.text = joinText(buffer.text, text);
+        buffer.translation = joinTranslation(buffer.translation, translationOf(piece));
+        buffer.end = endOf(piece) ?? buffer.end;
+        buffer.end_sec = buffer.end;
+        buffer.sentence_count = (buffer.sentence_count || 0) + (endsSentence(text) ? 1 : 0);
+        buffer.source_indices = Array.from(new Set([
+          ...(buffer.source_indices || []),
+          ...(piece.source_indices || []),
+        ]));
+        return;
+      }
+      flush();
+      buffer = makeOutput(piece);
+      buffer.sentence_count = endsSentence(text) ? 1 : 0;
+    });
+
+    flush();
+    return output;
+  }
+
+  function toDisplayedParagraphs(segments) {
+    return toParagraphs(toDisplayedSentences(segments)).map((segment, index) => ({
+      ...segment,
+      index,
+    }));
+  }
+
   return {
     splitSentences,
     toCompleteSentences,
     toDisplayedSentences,
+    toDisplayedParagraphs,
   };
 });

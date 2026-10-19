@@ -3,7 +3,8 @@
 
 <head>
   <script src="/env.js"></script>
-  <script src="./js/auth-manager.js"></script>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <script src="./js/oauth-bootstrap.js?v=1"></script>
   <script src="./js/storage-helper.js"></script>
   <script>
@@ -162,12 +163,19 @@
   <link rel="alternate icon" href="/favicon.ico">
   <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest-desktop.json">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Linglish">
+  <link rel="stylesheet" href="/css/install-desktop.css?v=3">
+  <script src="/js/install-desktop.js?v=3" defer></script>
   <title>Linglish - 账号登录（桌面版）</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap">
-  <link rel="stylesheet" href="./styles/tokens.css?v=1">
-  <script src="./i18n.js"></script>
+  <link rel="stylesheet" href="./styles/tokens.css?v=3">
+  <script src="./i18n.js?v=20261019"></script>
   <script src="./auth-helpers.js"></script>
   <script src="./guest-check.js"></script>
   <style>
@@ -703,7 +711,7 @@
           <div class="logo">LL</div>
           <div class="title">Linglish · 登录</div>
         </div>
-        <a href="./landing.html" class="btn secondary" id="back-link">返回介绍页</a>
+        <a href="./landing.html" class="btn secondary" id="back-link" data-nav="back">返回</a>
       </div>
       <div class="content">
         <div class="hero">
@@ -764,13 +772,13 @@
                 autocomplete="current-password">
             </div>
             <div class="options">
-              <label><input type="checkbox" id="remember-me"> 记住我</label>
+              <label><input type="checkbox" id="remember-me" checked> 记住我</label>
               <a href="./reset-password.html?from=desktop_auth">忘记密码？</a>
             </div>
             <button type="submit" class="btn" id="login-submit">立即登录</button>
             <div class="form-note" id="login-note">登录后会自动回到当前训练路径。</div>
             <div class="divider">或者</div>
-            <button type="button" class="btn secondary full" id="guest-btn">游客体验</button>
+            <button type="button" class="btn secondary full" id="guest-btn">注册账号</button>
           </form>
 
           <form id="form-register" class="auth-form" style="display:none;">
@@ -851,7 +859,7 @@
       googleLoginBtn.textContent = '正在打开 Google 登录…';
       const params = new URLSearchParams({
         flow: 'cookie_v1',
-        redirect: location.pathname + location.search,
+        redirect: getSafeNext('./today.html'),
       });
       location.href = `/auth/oauth/google?${params.toString()}`;
     });
@@ -964,6 +972,17 @@
           intentCopy: '注册后会进入测评，生成等级、目标和每日训练时长。'
         };
       }
+      if (normalized === '/' || normalized.startsWith('/index-desktop') || normalized.startsWith('/landing')) {
+        return {
+          target,
+          label: '首页',
+          badge: 'Next: Home',
+          title: '账号将回到首页',
+          copy: '登录后回到首页，不会自动进入今日训练。',
+          intentTitle: '回到首页',
+          intentCopy: '登录完成后留在首页。'
+        };
+      }
       return {
         target,
         label: '今日训练',
@@ -985,7 +1004,7 @@
       const backLink = document.getElementById('back-link');
       if (backLink) {
         backLink.href = './landing.html';
-        backLink.textContent = '返回介绍页';
+        backLink.textContent = '返回';
       }
       document.getElementById('auth-context-title').textContent = destination.title;
       document.getElementById('auth-context-copy').textContent = savingPlan
@@ -1268,41 +1287,16 @@
     // Guest
     document.getElementById('guest-btn').addEventListener('click', async () => {
       postPublicAuthEvent('auth_guest_click', { destination: getDestinationMeta().label });
-      // Clear old tokens before guest login
-      console.log('[Guest Login] Clearing old tokens...');
-      try {
-        AuthManager.clearToken();
-      } catch (e) {
-        console.warn('[Guest Login] Failed to clear old tokens:', e.message);
-      }
-
-      try {
-        const r = await fetch('/auth/guest', { method: 'POST', headers: { 'Content-Type': 'application/json' } });
-        const j = await r.json();
-        if (!r.ok) { toast(j.message || '游客登录失败', 'error'); return; }
-        const token = j.access_token || j.token;
-        if (!token) { toast('游客登录失败：缺少令牌', 'error'); return; }
-
-        console.log('[Guest Login] Got token, saving...');
-        try {
-          AuthManager.setToken(token, true);
-          try { localStorage.setItem('is_guest', 'true'); } catch (e) {
-            console.warn('[Guest Login] Failed to save is_guest:', e.message);
-          }
-          try { localStorage.setItem('guest_id', j.guest_id || ''); } catch (e) {
-            console.warn('[Guest Login] Failed to save guest_id:', e.message);
-          }
-        } catch (err) {
-          console.error('[Guest Login] Token save error:', err);
-        }
-        await postAuthEvent('guest_login_success', { guest_id: j.guest_id || '' });
-        toast('已进入游客体验', 'success'); setTimeout(() => { location.href = getSafeNext(getDefaultAuthNext('guest')); }, 600);
-      } catch (err) { console.error('Guest login error', err); toast('网络异常，请稍后重试', 'error'); }
+      toast('请先注册账号。学习记录会保存在你的账号里。', 'info');
+      setAuthTab('register', { track: true });
     });
 
     // If already logged in, continue the requested training or purchase flow.
     (async function () {
       if (window.LinglishOAuthBootstrap) await window.LinglishOAuthBootstrap.ready;
+      if (window.AuthManager && AuthManager.ready && typeof AuthManager.ready.then === 'function') {
+        try { await AuthManager.ready; } catch (_) { }
+      }
       try {
         const params = new URLSearchParams(location.search || '');
         const wantsRegister = (params.get('mode') || '').toLowerCase() === 'register';
@@ -1318,6 +1312,7 @@
       } catch (_) { }
     })();
   </script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
 </body>
 
 </html>

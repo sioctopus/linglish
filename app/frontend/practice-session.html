@@ -2,6 +2,9 @@
 <html lang="zh-CN">
 
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/tts-voice.js?v=1"></script>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: data: blob:; media-src 'self' https: data: blob:; img-src 'self' https: data: blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;">
@@ -109,14 +112,28 @@
       } catch (_) { }
     })();
   </script>
+  <script>
+    (function () {
+      try {
+        const params = new URLSearchParams(window.location.search || '');
+        const from = params.get('from') || '';
+        const mode = params.get('mode') || '';
+        const fromToday = from === 'today' || from === 'today_first_lesson' || from === 'mobile_today_choice' || from === 'today_coach';
+        if (!fromToday || params.get('stay') === '1' || mode === 'dialogue' || mode === 'arena') return;
+        const next = new URLSearchParams({ from: 'today_first_lesson', focus: 'first_lesson', mode: 'shadowing' });
+        if (params.get('videoId')) next.set('videoId', params.get('videoId'));
+        window.location.replace('./video-reader.html?' + next.toString());
+      } catch (_) { }
+    })();
+  </script>
   <script src="/env.js"></script>
   <script src="./js/dialogue-recording-policy.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>跟读与对话练习 - Linglish</title>
   <script src="./js/practice/original-audio-replay.js?v=20261014"></script>
   <link rel="stylesheet" href="./mobile-styles.css">
-  <script src="./mobile-auth.js"></script>
-  <script src="./i18n.js"></script>
+  <script src="./mobile-auth.js?v=20261019"></script>
+  <script src="./i18n.js?v=20261019"></script>
   <script src="./guest-check.js"></script>
   <script src="./auth-helpers.js"></script>
   <script src="./feedback.js"></script>
@@ -3789,6 +3806,7 @@
     }
   </style>
   <script src="./js/media-session.js"></script>
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
 </head>
 
 <body>
@@ -3818,97 +3836,6 @@
               </svg>
               <span data-i18n="nav.home">主页</span>
             </a>
-          </div>
-          <!-- 语音选择器 -->
-          <div class="voice-selector" style="position: relative; display: inline-block; margin-right: 0.5rem;">
-            <button id="voice-btn-practice"
-              style="padding: 0.4rem 0.8rem; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;">
-              <span>🔊</span>
-              <span id="current-voice-practice">晓晓</span>
-            </button>
-            <div id="voice-dropdown-practice"
-              style="position: absolute; top: calc(100% + 0.5rem); right: 0; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 0.5rem; min-width: 180px; display: none; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto;">
-              <!-- 英文语音组 -->
-              <div
-                style="padding: 0.4rem 0.8rem; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
-                English</div>
-              <div class="voice-option" data-voice="en-US-AriaNeural" data-name="Aria"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👩</span>
-                <span>Aria (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-US-JennyNeural" data-name="Jenny"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👩</span>
-                <span>Jenny (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-US-GuyNeural" data-name="Guy"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👨</span>
-                <span>Guy (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-US-DavisNeural" data-name="Davis"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👨</span>
-                <span>Davis (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-US-AmberNeural" data-name="Amber"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👩</span>
-                <span>Amber (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-GB-SoniaNeural" data-name="Sonia"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👩</span>
-                <span>Sonia (UK)</span>
-              </div>
-              <div class="voice-option" data-voice="en-GB-RyanNeural" data-name="Ryan"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👨</span>
-                <span>Ryan (UK)</span>
-              </div>
-              <div class="voice-option" data-voice="en-AU-NatashaNeural" data-name="Natasha"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👩</span>
-                <span>Natasha (AU)</span>
-              </div>
-              <div class="voice-option" data-voice="en-AU-WilliamNeural" data-name="William"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👨</span>
-                <span>William (AU)</span>
-              </div>
-              <!-- 分隔线 -->
-              <div style="height: 1px; background: #e0e0e0; margin: 0.5rem 0;"></div>
-              <!-- 中文语音组 -->
-              <div
-                style="padding: 0.4rem 0.8rem; font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">
-                中文</div>
-              <div class="voice-option active" data-voice="en-US-AriaNeural" data-name="Aria"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👩</span>
-                <span>晓晓 (女声)</span>
-              </div>
-              <div class="voice-option" data-voice="zh-CN-YunxiNeural" data-name="云希"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👨</span>
-                <span>云希 (男声)</span>
-              </div>
-              <div class="voice-option" data-voice="zh-CN-YunyangNeural" data-name="云扬"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>📰</span>
-                <span>云扬 (男声新闻)</span>
-              </div>
-              <div class="voice-option" data-voice="zh-CN-XiaoyiNeural" data-name="晓伊"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>👧</span>
-                <span>晓伊 (女声)</span>
-              </div>
-              <div class="voice-option" data-voice="zh-CN-YunjianNeural" data-name="云健"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease; color: #0f172a;">
-                <span>💼</span>
-                <span>云健 (男声)</span>
-              </div>
-            </div>
           </div>
           <!-- 语言选择器 -->
           <div class="lang-selector" style="position: relative; display: inline-block;">
@@ -3945,14 +3872,14 @@
 
   <!-- Back Header -->
   <div class="back-header">
-    <a href="./index-desktop.html" class="back-btn" id="practice-back-link"
+    <a href="./index-desktop.html" class="back-btn" id="practice-back-link" data-nav="back"
       style="padding-left:0.7rem; padding-right:0.9rem;" title="返回">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
         stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
         <path d="M3 12l9-9 9 9" />
         <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
       </svg>
-      <span data-i18n="nav.home" id="practice-back-label">主页</span>
+      <span data-i18n="nav.back" id="practice-back-label">返回</span>
     </a>
   </div>
   <script>
@@ -4717,33 +4644,23 @@
     <!-- Bottom Navigation -->
     <nav class="bottom-nav">
       <a href="mobile-today.html" class="nav-item">
-        <div class="nav-icon">
-          <span class="nav-emoji">🎯</span>
-        </div>
+        <div class="nav-icon" data-lx-icon="today"></div>
         <span>今日</span>
       </a>
       <a href="mobile-explore.html" class="nav-item">
-        <div class="nav-icon">
-          <span class="nav-emoji">🌍</span>
-        </div>
+        <div class="nav-icon" data-lx-icon="explore"></div>
         <span>探索世界</span>
       </a>
       <a href="mobile-power.html" class="nav-item">
-        <div class="nav-icon">
-          <span class="nav-emoji">⚡</span>
-        </div>
+        <div class="nav-icon" data-lx-icon="power"></div>
         <span>能量站</span>
       </a>
       <a href="mobile-arena.html" class="nav-item active">
-        <div class="nav-icon">
-          <span class="nav-emoji">🎪</span>
-        </div>
+        <div class="nav-icon" data-lx-icon="arena"></div>
         <span>实战场</span>
       </a>
       <a href="mobile-treasure.html" class="nav-item">
-        <div class="nav-icon">
-          <span class="nav-emoji">🪴</span>
-        </div>
+        <div class="nav-icon" data-lx-icon="growth"></div>
         <span>成长中心</span>
       </a>
     </nav>
@@ -8131,7 +8048,7 @@
             reader.readAsDataURL(audioBlob);
           });
 
-          // Ensure we have a valid token (guest mode should use /auth/guest, not placeholder tokens)
+          // Ensure we have a valid account token, not a placeholder.
           const freshToken = await ensureAuthToken();
 
           // Call pronunciation API（与桌面版保持一致，交由后端决定provider与fallback）
@@ -8706,8 +8623,9 @@
       function parseJwtPayload(token) {
         try {
           if (!isValidTokenFormat(token)) return null;
-          const payloadB64 = token.split('.')[1];
-          const json = atob(payloadB64.replace(/-/g, '+').replace(/_/g, '/'));
+          let payloadB64 = token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+          while (payloadB64.length % 4) payloadB64 += '=';
+          const json = atob(payloadB64);
           return JSON.parse(json);
         } catch (_) {
           return null;
@@ -8751,47 +8669,19 @@
 
       async function ensureAuthToken({ force = false } = {}) {
         const existing = getAuthToken();
-        const guestMode = isGuestMode();
         const existingUsable = isValidTokenFormat(existing) && !isTokenExpired(existing);
         if (!force && existingUsable) return existing;
 
-        // Do NOT auto-downgrade a registered user to guest: only guest mode can call /auth/guest.
-        if (!guestMode) {
-          if (isValidTokenFormat(existing) && isTokenExpired(existing)) {
-            await clearAuthToken();
+        if (isValidTokenFormat(existing) && isTokenExpired(existing)) {
+          if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') {
+            try {
+              const renewed = await window.AuthManager.ensureSession({ force: true });
+              if (renewed) return renewed;
+            } catch (_) { }
           }
-          return existing;
+          await clearAuthToken();
         }
-
-        try {
-          const resp = await fetch(`${API_BASE}/auth/guest`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-          });
-          const payload = await resp.json().catch(() => ({}));
-          if (!resp.ok) {
-            return existing;
-          }
-          const token = payload?.access_token;
-          if (!isValidTokenFormat(token)) {
-            return existing;
-          }
-
-          if (window.AuthManager && typeof window.AuthManager.setToken === 'function') {
-            await window.AuthManager.setToken(token, false);
-          } else {
-            try { sessionStorage.setItem('authToken', token); } catch (_) { }
-            try { sessionStorage.setItem('linglish_token', token); } catch (_) { }
-          }
-          try { sessionStorage.setItem('isGuest', 'true'); } catch (_) { }
-          try { sessionStorage.setItem('is_guest', 'true'); } catch (_) { }
-          if (payload?.guest_id) {
-            try { sessionStorage.setItem('guestId', payload.guest_id); } catch (_) { }
-          }
-          return token;
-        } catch (_) {
-          return existing;
-        }
+        return existing;
       }
 
       function buildAuthHeaders(base = {}) {
@@ -15874,26 +15764,6 @@
 
           // 初始化语音选择器
           (function initVoiceSelector() {
-            console.log('[Practice] Initializing Voice Selector...');
-            const currentVoiceEl = document.getElementById('current-voice-practice');
-            const voiceBtn = document.getElementById('voice-btn-practice');
-            const voiceDropdown = document.getElementById('voice-dropdown-practice');
-
-            // 从localStorage加载当前选择的语音
-            const getSelectedVoice = () => {
-              try {
-                return localStorage.getItem('linglish_tts_voice') || 'en-US-AriaNeural';
-              } catch (_) {
-                return 'en-US-AriaNeural';
-              }
-            };
-
-            const savedVoice = getSelectedVoice();
-            const savedVoiceOption = document.querySelector(`#voice-dropdown-practice .voice-option[data-voice="${savedVoice}"]`);
-            if (savedVoiceOption && currentVoiceEl) {
-              currentVoiceEl.textContent = savedVoiceOption.dataset.name || '晓晓';
-            }
-
             // Haptic Feedback Helper
             function triggerHaptic() {
               if (navigator.vibrate) {
@@ -16008,65 +15878,6 @@
               observer.observe(autoControls, { attributes: true, childList: true, subtree: true });
             }
 
-            // 更新活动状态
-            const voiceOptions = document.querySelectorAll('#voice-dropdown-practice .voice-option');
-            voiceOptions.forEach(opt => {
-              const isActive = opt.dataset.voice === savedVoice;
-              opt.classList.toggle('active', isActive);
-              opt.style.background = isActive ? '#0ea5e9' : '';
-              opt.style.color = isActive ? 'white' : '#0f172a';
-            });
-
-            // 点击按钮显示/隐藏下拉菜单
-            voiceBtn?.addEventListener('click', (e) => {
-              e.stopPropagation();
-              if (voiceDropdown) {
-                voiceDropdown.style.display = voiceDropdown.style.display === 'none' ? 'block' : 'none';
-              }
-            });
-
-            // 点击页面其他地方关闭下拉菜单
-            document.addEventListener('click', () => {
-              if (voiceDropdown) voiceDropdown.style.display = 'none';
-            });
-
-            // 阻止点击下拉菜单内部时关闭
-            voiceDropdown?.addEventListener('click', (e) => {
-              e.stopPropagation();
-            });
-
-            // 选择语音选项
-            document.querySelectorAll('#voice-dropdown-practice .voice-option').forEach(option => {
-              option.addEventListener('click', () => {
-                const voice = option.dataset.voice;
-                const voiceName = option.dataset.name;
-                if (voice) {
-                  // 保存到localStorage
-                  try {
-                    localStorage.setItem('linglish_tts_voice', voice);
-                  } catch (_) { }
-
-                  // 更新显示
-                  if (currentVoiceEl) currentVoiceEl.textContent = voiceName || '晓晓';
-
-                  // 更新活动状态
-                  document.querySelectorAll('#voice-dropdown-practice .voice-option').forEach(opt => {
-                    const isActive = opt.dataset.voice === voice;
-                    opt.classList.toggle('active', isActive);
-                    opt.style.background = isActive ? '#0ea5e9' : '';
-                    opt.style.color = isActive ? 'white' : '#0f172a';
-                  });
-
-                  // 关闭下拉菜单
-                  if (voiceDropdown) voiceDropdown.style.display = 'none';
-
-                  // 显示提示（如果有toast函数）
-                  if (typeof showToast === 'function') {
-                    showToast(`已切换到 ${voiceName} 语音`);
-                  }
-                }
-              });
-            });
           })();
 
           ensureToken();
@@ -16118,6 +15929,7 @@
     </script>
     <script src="./js/page-tracker.js"></script>
 
+  <script src="./js/icons.js?v=1"></script>
 </body>
 
 </html>

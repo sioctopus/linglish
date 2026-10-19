@@ -2,6 +2,9 @@
 <html lang="zh-CN">
 
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/tts-voice.js?v=1"></script>
   <meta charset="UTF-8">
   <script>
     // Minimal deep-link only; stay on Explore by default
@@ -175,7 +178,7 @@
   <!-- Resource Hints -->
   <link rel="preconnect" href="https://example.com">
   <link rel="dns-prefetch" href="https://example.com">
-  <link rel="preload" href="./i18n.js?v=20250114e" as="script">
+  <link rel="preload" href="./i18n.js?v=20261019" as="script">
   <link rel="preload" href="./mobile-styles.css?v=2" as="style">
   <link rel="preload" href="./global-ui.js?v=20250108" as="script">
   <link rel="preload" href="./video-tag-system.js?v=20251223" as="script">
@@ -243,11 +246,11 @@
     }
   </style>
 
-  <script src="./i18n.js?v=20250114e"></script>
+  <script src="./i18n.js?v=20261019"></script>
   <script src="./global-ui.js?v=20250108"></script>
   <script src="./guest-check.js?v=1" defer></script>
   <script src="./auth-helpers.js?v=1" defer></script>
-  <script src="./mobile-auth.js?v=1" defer></script>
+  <script src="./mobile-auth.js?v=20261019" defer></script>
   <script src="./feedback.js?v=1" defer></script>
   <script src="./video-tag-system.js?v=20251223"></script>
   <style>
@@ -567,8 +570,32 @@
       color: white;
     }
 
+    .video-difficulty-badge.c1,
+    .video-difficulty-badge.c2,
     .video-difficulty-badge.advanced {
       background: rgba(239, 68, 68, 0.9);
+      color: white;
+    }
+
+    .video-difficulty-badge.a1,
+    .video-difficulty-badge.beginner {
+      background: rgba(34, 197, 94, 0.9);
+      color: white;
+    }
+
+    .video-difficulty-badge.a2 {
+      background: rgba(13, 148, 136, 0.9);
+      color: white;
+    }
+
+    .video-difficulty-badge.b1,
+    .video-difficulty-badge.intermediate {
+      background: rgba(245, 158, 11, 0.9);
+      color: white;
+    }
+
+    .video-difficulty-badge.b2 {
+      background: rgba(109, 40, 217, 0.9);
       color: white;
     }
 
@@ -1085,6 +1112,7 @@
       white-space: nowrap !important;
     }
   </style>
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
 </head>
 
 <body>
@@ -1111,9 +1139,6 @@
       </button>
       <button class="icon-btn lang-selector-btn" id="lang-selector-btn" title="语言" aria-label="语言">
         🌐
-      </button>
-      <button class="icon-btn voice-selector-btn" id="voice-selector-btn" title="语音" aria-label="语音">
-        🔊
       </button>
       <button class="icon-btn logout-btn" id="logout-btn" title="退出" aria-label="退出">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -1252,80 +1277,6 @@
       margin: 15px 0;
     }
   </style>
-
-  <div class="voice-modal-backdrop" id="voice-modal-backdrop"></div>
-  <div class="voice-modal" id="voice-modal">
-    <div class="voice-modal-header">
-      <h3 class="voice-modal-title"><span>🔊</span> <span data-i18n="mobile.voice.title">选择语音</span></h3>
-      <button class="voice-modal-close" id="voice-modal-close">×</button>
-    </div>
-
-    <div class="voice-group">
-      <div class="voice-group-title">English</div>
-      <div class="voice-option-mobile" data-voice="en-US-AriaNeural" data-name="Aria">
-        <span class="voice-option-emoji">👩</span>
-        <span class="voice-option-text">Aria (US)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="en-US-JennyNeural" data-name="Jenny">
-        <span class="voice-option-emoji">👩</span>
-        <span class="voice-option-text">Jenny (US)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="en-US-GuyNeural" data-name="Guy">
-        <span class="voice-option-emoji">👨</span>
-        <span class="voice-option-text">Guy (US)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="en-US-DavisNeural" data-name="Davis">
-        <span class="voice-option-emoji">👨</span>
-        <span class="voice-option-text">Davis (US)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="en-US-AmberNeural" data-name="Amber">
-        <span class="voice-option-emoji">👩</span>
-        <span class="voice-option-text">Amber (US)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="en-GB-SoniaNeural" data-name="Sonia">
-        <span class="voice-option-emoji">👩</span>
-        <span class="voice-option-text">Sonia (UK)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="en-GB-RyanNeural" data-name="Ryan">
-        <span class="voice-option-emoji">👨</span>
-        <span class="voice-option-text">Ryan (UK)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="en-AU-NatashaNeural" data-name="Natasha">
-        <span class="voice-option-emoji">👩</span>
-        <span class="voice-option-text">Natasha (AU)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="en-AU-WilliamNeural" data-name="William">
-        <span class="voice-option-emoji">👨</span>
-        <span class="voice-option-text">William (AU)</span>
-      </div>
-    </div>
-
-    <div class="voice-separator"></div>
-
-    <div class="voice-group">
-      <div class="voice-group-title">中文</div>
-      <div class="voice-option-mobile active" data-voice="en-US-AriaNeural" data-name="Aria">
-        <span class="voice-option-emoji">👩</span>
-        <span class="voice-option-text">晓晓 (女声)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="zh-CN-YunxiNeural" data-name="云希">
-        <span class="voice-option-emoji">👨</span>
-        <span class="voice-option-text">云希 (男声)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="zh-CN-YunyangNeural" data-name="云扬">
-        <span class="voice-option-emoji">📰</span>
-        <span class="voice-option-text">云扬 (男声新闻)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="zh-CN-XiaoyiNeural" data-name="晓伊">
-        <span class="voice-option-emoji">👧</span>
-        <span class="voice-option-text">晓伊 (女声)</span>
-      </div>
-      <div class="voice-option-mobile" data-voice="zh-CN-YunjianNeural" data-name="云健">
-        <span class="voice-option-emoji">💼</span>
-        <span class="voice-option-text">云健 (男声)</span>
-      </div>
-    </div>
-  </div>
 
   <!-- Language Selector Modal -->
   <div class="voice-modal-backdrop" id="lang-modal-backdrop"></div>
@@ -1573,10 +1524,13 @@
 
       <!-- 难度筛选 -->
       <div class="difficulty-filter-container" id="difficulty-filter-container">
-        <button class="difficulty-tab active" data-difficulty="">全部难度</button>
-        <button class="difficulty-tab" data-difficulty="beginner">🌱 入门</button>
-        <button class="difficulty-tab" data-difficulty="intermediate">🌿 进阶</button>
-        <button class="difficulty-tab" data-difficulty="advanced">🌳 高级</button>
+        <button class="difficulty-tab active" data-difficulty="">全部</button>
+        <button class="difficulty-tab" data-difficulty="a1">A1</button>
+        <button class="difficulty-tab" data-difficulty="a2">A2</button>
+        <button class="difficulty-tab" data-difficulty="b1">B1</button>
+        <button class="difficulty-tab" data-difficulty="b2">B2</button>
+        <button class="difficulty-tab" data-difficulty="c1">C1</button>
+        <button class="difficulty-tab" data-difficulty="c2">C2</button>
       </div>
 
       <div class="video-grid" id="video-grid"></div>
@@ -1721,33 +1675,23 @@
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <a href="mobile-today.html" class="nav-item">
-      <div class="nav-icon">
-        <span class="nav-emoji">🎯</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="today"></div>
       <span>今日</span>
     </a>
     <a href="mobile-explore.html" class="nav-item active">
-      <div class="nav-icon">
-        <span class="nav-emoji">🌍</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="explore"></div>
       <span data-i18n="mobile.explore.title">探索世界</span>
     </a>
     <a href="mobile-power.html" class="nav-item">
-      <div class="nav-icon">
-        <span class="nav-emoji">⚡</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="power"></div>
       <span data-i18n="mobile.power.title">能量站</span>
     </a>
     <a href="mobile-arena.html" class="nav-item">
-      <div class="nav-icon">
-        <span class="nav-emoji">🎪</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="arena"></div>
       <span data-i18n="mobile.arena.title">实战场</span>
     </a>
     <a href="mobile-treasure.html" class="nav-item">
-      <div class="nav-icon">
-        <span class="nav-emoji">🪴</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="growth"></div>
       <span data-i18n="mobile.treasure.title">成长中心</span>
     </a>
   </nav>
@@ -1766,91 +1710,6 @@
       if (typeof i18n !== 'undefined') {
         i18n.init();
       }
-    });
-
-    // Initialize voice selector
-    window.addEventListener('DOMContentLoaded', () => {
-      const voiceSelectorBtn = document.getElementById('voice-selector-btn');
-      const voiceModal = document.getElementById('voice-modal');
-      const voiceModalBackdrop = document.getElementById('voice-modal-backdrop');
-      const voiceModalClose = document.getElementById('voice-modal-close');
-
-      // Get selected voice from localStorage
-      const getSelectedVoice = () => {
-        try {
-          return localStorage.getItem('linglish_tts_voice') || 'en-US-AriaNeural';
-        } catch (_) {
-          return 'en-US-AriaNeural';
-        }
-      };
-
-      // Update active state
-      const updateActiveState = () => {
-        const savedVoice = getSelectedVoice();
-        document.querySelectorAll('.voice-option-mobile').forEach(opt => {
-          opt.classList.toggle('active', opt.dataset.voice === savedVoice);
-        });
-      };
-
-      // Show modal
-      const showModal = () => {
-        voiceModal && voiceModal.classList.add('show');
-        voiceModalBackdrop && voiceModalBackdrop.classList.add('show');
-        document.body.style.overflow = 'hidden';
-      };
-
-      // Hide modal
-      const hideModal = () => {
-        voiceModal && voiceModal.classList.remove('show');
-        voiceModalBackdrop && voiceModalBackdrop.classList.remove('show');
-        document.body.style.overflow = '';
-      };
-
-      // Open modal
-      voiceSelectorBtn && voiceSelectorBtn.addEventListener('click', showModal);
-
-      // Close modal
-      voiceModalClose && voiceModalClose.addEventListener('click', hideModal);
-      voiceModalBackdrop && voiceModalBackdrop.addEventListener('click', hideModal);
-
-      // Select voice
-      document.querySelectorAll('.voice-option-mobile').forEach(option => {
-        option.addEventListener('click', () => {
-          const voice = option.dataset.voice;
-          const voiceName = option.dataset.name;
-          if (voice) {
-            try {
-              localStorage.setItem('linglish_tts_voice', voice);
-            } catch (_) { }
-            updateActiveState();
-            hideModal();
-
-            // Show toast
-            try {
-              const changedText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('mobile.voice.changed') : '已切换到';
-              const applyText = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('mobile.voice.apply_all') : '语音（全站生效）';
-              const toast = document.createElement('div');
-              toast.textContent = `${changedText} ${voiceName} ${applyText}`;
-              toast.style.position = 'fixed';
-              toast.style.left = '50%';
-              toast.style.bottom = '90px';
-              toast.style.transform = 'translateX(-50%)';
-              toast.style.background = 'rgba(0,0,0,0.85)';
-              toast.style.color = '#fff';
-              toast.style.padding = '12px 18px';
-              toast.style.borderRadius = '12px';
-              toast.style.fontSize = '14px';
-              toast.style.zIndex = '10000';
-              toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
-              document.body.appendChild(toast);
-              setTimeout(() => toast.remove(), 2000);
-            } catch (_) { }
-          }
-        });
-      });
-
-      // Initialize active state
-      updateActiveState();
     });
 
     // Initialize language selector
@@ -2319,21 +2178,33 @@
 
         // Apply difficulty filter
         if (state.currentDifficulty) {
-          filtered = filtered.filter((video) => video.difficulty_level === state.currentDifficulty);
+          filtered = filtered.filter((video) => canonicalExploreLevel(video.difficulty_level) === state.currentDifficulty);
         }
 
         return filtered;
       }
 
+      function canonicalExploreLevel(raw) {
+        const value = String(raw || '').trim().toLowerCase();
+        if (value === 'beginner') return 'a1';
+        if (value === 'intermediate') return 'b1';
+        if (value === 'advanced') return 'c1';
+        return ['a1', 'a2', 'b1', 'b2', 'c1', 'c2'].includes(value) ? value : null;
+      }
+
+      function profileLevelForExplore(level) {
+        if (level === 'a1' || level === 'a2') return 'beginner';
+        if (level === 'b1' || level === 'b2') return 'intermediate';
+        if (level === 'c1' || level === 'c2') return 'advanced';
+        return null;
+      }
+
       // Load user's default level
       async function loadUserDefaultLevel() {
-        // 优先从 localStorage 读取用户选择的等级
         try {
           const storedLevel = localStorage.getItem('linglish_active_level');
-          if (storedLevel && ['beginner', 'intermediate', 'advanced'].includes(storedLevel)) {
-            console.log('[Difficulty] Using level from localStorage:', storedLevel);
-            return storedLevel;
-          }
+          const stored = canonicalExploreLevel(storedLevel);
+          if (stored) return stored;
         } catch (e) {
           console.warn('[Difficulty] Failed to read level from localStorage:', e);
         }
@@ -2347,10 +2218,8 @@
           });
           if (response.ok) {
             const data = await response.json();
-            const level = data.user?.level;
-            if (level === 'beginner' || level === 'intermediate' || level === 'advanced') {
-              return level;
-            }
+            const level = canonicalExploreLevel(data.user?.current_vocabulary_level || data.user?.level);
+            if (level) return level;
           }
         } catch (e) {
           console.warn('[Difficulty] Failed to load user level:', e);
@@ -2385,7 +2254,9 @@
         renderVideos(filtered);
         // Save to user profile if a specific level is selected
         if (difficulty) {
-          saveUserLevel(difficulty);
+          try { localStorage.setItem('linglish_active_level', difficulty); } catch (_) {}
+          const profileLevel = profileLevelForExplore(difficulty);
+          if (profileLevel) saveUserLevel(profileLevel);
         }
       }
 
@@ -2402,12 +2273,16 @@
         const container = document.getElementById('difficulty-filter-container');
         if (!container) return;
 
-        const stats = state.difficultyStats || {};
+        const videos = Array.isArray(state.videos) ? state.videos : [];
+        const countLevel = (key) => videos.filter((video) => canonicalExploreLevel(video.difficulty_level) === key).length;
         const levels = [
-          { key: null, label: '全部难度', count: null },
-          { key: 'beginner', label: '🌱 入门', count: stats.beginner || 0 },
-          { key: 'intermediate', label: '🌿 进阶', count: stats.intermediate || 0 },
-          { key: 'advanced', label: '🌳 高级', count: stats.advanced || 0 },
+          { key: null, label: '全部', count: videos.length },
+          { key: 'a1', label: 'A1', count: countLevel('a1') },
+          { key: 'a2', label: 'A2', count: countLevel('a2') },
+          { key: 'b1', label: 'B1', count: countLevel('b1') },
+          { key: 'b2', label: 'B2', count: countLevel('b2') },
+          { key: 'c1', label: 'C1', count: countLevel('c1') },
+          { key: 'c2', label: 'C2', count: countLevel('c2') },
         ];
 
         container.innerHTML = levels.map(level => {
@@ -2486,9 +2361,12 @@
           ` : '';
 
           // 难度标识
-          const difficultyLabels = { beginner: '入门', intermediate: '进阶', advanced: '高级' };
-          const difficultyLevel = video && video.difficulty_level;
-          const difficultyBadgeHtml = difficultyLevel && difficultyLabels[difficultyLevel]
+          const difficultyLabels = {
+            a1: 'A1', a2: 'A2', b1: 'B1', b2: 'B2', c1: 'C1', c2: 'C2',
+            beginner: 'A1', intermediate: 'B1', advanced: 'C1',
+          };
+          const difficultyLevel = canonicalExploreLevel(video && video.difficulty_level);
+          const difficultyBadgeHtml = difficultyLevel
             ? `<span class="video-difficulty-badge ${difficultyLevel}">${difficultyLabels[difficultyLevel]}</span>`
             : '';
 
@@ -3946,6 +3824,8 @@
     })();
   </script>
   <script src="./js/page-tracker.js?v=1"></script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+  <script src="./js/icons.js?v=1"></script>
 </body>
 
 </html>

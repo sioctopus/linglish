@@ -115,14 +115,14 @@ test('logout and account-switch paths clear the media cookie through the shared 
 
   const reader = read('frontend/js/video-reader/main.js');
   assert.match(reader, /await window\.AuthManager\.clearToken\(\)/);
-  assert.match(reader, /await window\.AuthManager\.setToken\(guestToken, false\)/);
+  assert.doesNotMatch(reader, /\/auth\/guest/);
 
   const practice = read('frontend/practice-session.html');
   assert.match(practice, /await window\.AuthManager\.clearToken\(\)/);
-  assert.match(practice, /await window\.AuthManager\.setToken\(token, false\)/);
+  assert.doesNotMatch(practice, /\/auth\/guest/);
 
   const appMainSource = read('frontend/js/app/main.js');
-  assert.match(appMainSource, /await window\.AuthManager\.setToken\(token, false\)/);
+  assert.doesNotMatch(appMainSource, /\/auth\/guest/);
 });
 
 test('PDF route logs only query-free request paths or anonymous error codes', () => {

@@ -1,0 +1,3257 @@
+{
+  "id": "theme-cards",
+  "name": "主题单词卡片",
+  "sources": [
+    "Cambridge YLE theme lists (animals, clothes, colours, food_and_drink, transport, places)",
+    "https://github.com/ozbonus/yle-vocabulary-dataset",
+    "https://github.com/neozhu/word-cards",
+    "English cardinal numbers 1-100",
+    "English alphabet A-Z"
+  ],
+  "decks": [
+    {
+      "id": "fruits",
+      "label": "水果",
+      "emoji": "🍎",
+      "words": [
+        {
+          "lemma": "apple",
+          "zh": "苹果",
+          "ipa": "/ˈæpl/",
+          "emoji": "🍎",
+          "photo": "/images/game/photos/apple.jpg?v=4"
+        },
+        {
+          "lemma": "banana",
+          "zh": "香蕉",
+          "ipa": "/bəˈnɑːnə/",
+          "emoji": "🍌",
+          "photo": "/images/game/photos/banana.jpg?v=4"
+        },
+        {
+          "lemma": "orange",
+          "zh": "橙子",
+          "ipa": "/ˈɒrɪndʒ/",
+          "emoji": "🍊",
+          "photo": "/images/game/photos/orange.jpg?v=4"
+        },
+        {
+          "lemma": "grape",
+          "zh": "葡萄",
+          "ipa": "/ɡreɪp/",
+          "emoji": "🍇",
+          "photo": "/images/game/photos/grape.jpg?v=4"
+        },
+        {
+          "lemma": "strawberry",
+          "zh": "草莓",
+          "ipa": "/ˈstrɔːbəri/",
+          "emoji": "🍓",
+          "photo": "/images/game/photos/strawberry.jpg?v=4"
+        },
+        {
+          "lemma": "watermelon",
+          "zh": "西瓜",
+          "ipa": "/ˈwɔːtəmelən/",
+          "emoji": "🍉",
+          "photo": "/images/game/photos/watermelon.jpg?v=4"
+        },
+        {
+          "lemma": "pear",
+          "zh": "梨",
+          "ipa": "/peə/",
+          "emoji": "🍐",
+          "photo": "/images/game/photos/pear.jpg?v=4"
+        },
+        {
+          "lemma": "peach",
+          "zh": "桃子",
+          "ipa": "/piːtʃ/",
+          "emoji": "🍑",
+          "photo": "/images/game/photos/peach.jpg?v=4"
+        },
+        {
+          "lemma": "pineapple",
+          "zh": "菠萝",
+          "ipa": "/ˈpaɪnæpl/",
+          "emoji": "🍍",
+          "photo": "/images/game/photos/pineapple.jpg?v=4"
+        },
+        {
+          "lemma": "mango",
+          "zh": "芒果",
+          "ipa": "/ˈmæŋɡəʊ/",
+          "emoji": "🥭",
+          "photo": "/images/game/photos/mango.jpg?v=4"
+        },
+        {
+          "lemma": "lemon",
+          "zh": "柠檬",
+          "ipa": "/ˈlemən/",
+          "emoji": "🍋",
+          "photo": "/images/game/photos/lemon.jpg?v=5"
+        },
+        {
+          "lemma": "cherry",
+          "zh": "樱桃",
+          "ipa": "/ˈtʃeri/",
+          "emoji": "🍒",
+          "photo": "/images/game/photos/cherry.jpg?v=4"
+        },
+        {
+          "lemma": "kiwi",
+          "zh": "猕猴桃",
+          "ipa": "/ˈkiːwiː/",
+          "emoji": "🥝",
+          "photo": "/images/game/photos/kiwi.jpg?v=5"
+        },
+        {
+          "lemma": "coconut",
+          "zh": "椰子",
+          "ipa": "/ˈkəʊkənʌt/",
+          "emoji": "🥥",
+          "photo": "/images/game/photos/coconut.jpg?v=5"
+        },
+        {
+          "lemma": "blueberry",
+          "zh": "蓝莓",
+          "ipa": "/ˈbluːberi/",
+          "emoji": "🫐",
+          "photo": "/images/game/photos/blueberry.jpg?v=4"
+        },
+        {
+          "lemma": "raspberry",
+          "zh": "树莓",
+          "ipa": "/ˈrɑːzbəri/",
+          "emoji": "🍓",
+          "photo": "/images/game/photos/raspberry.jpg?v=4"
+        },
+        {
+          "lemma": "melon",
+          "zh": "甜瓜",
+          "ipa": "/ˈmelən/",
+          "emoji": "🍈",
+          "photo": "/images/game/photos/melon.jpg?v=4"
+        },
+        {
+          "lemma": "plum",
+          "zh": "李子",
+          "ipa": "/plʌm/",
+          "emoji": "🟣",
+          "photo": "/images/game/photos/plum.jpg?v=5"
+        },
+        {
+          "lemma": "apricot",
+          "zh": "杏子",
+          "ipa": "/ˈeɪprɪkɒt/",
+          "emoji": "🍑",
+          "photo": "/images/game/photos/apricot.jpg?v=5"
+        },
+        {
+          "lemma": "fig",
+          "zh": "无花果",
+          "ipa": "/fɪɡ/",
+          "emoji": "🟤",
+          "photo": "/images/game/photos/fig.jpg?v=5"
+        },
+        {
+          "lemma": "papaya",
+          "zh": "木瓜",
+          "ipa": "/pəˈpaɪə/",
+          "emoji": "🧡",
+          "photo": "/images/game/photos/papaya.jpg?v=5"
+        },
+        {
+          "lemma": "avocado",
+          "zh": "牛油果",
+          "ipa": "/ˌævəˈkɑːdəʊ/",
+          "emoji": "🥑",
+          "photo": "/images/game/photos/avocado.jpg?v=4"
+        },
+        {
+          "lemma": "pomegranate",
+          "zh": "石榴",
+          "ipa": "/ˈpɒmɪɡrænɪt/",
+          "emoji": "🔴",
+          "photo": "/images/game/photos/pomegranate.jpg?v=5"
+        },
+        {
+          "lemma": "lychee",
+          "zh": "荔枝",
+          "ipa": "/ˈlaɪtʃiː/",
+          "emoji": "🩷",
+          "photo": "/images/game/photos/lychee.jpg?v=5"
+        },
+        {
+          "lemma": "durian",
+          "zh": "榴莲",
+          "ipa": "/ˈdʊəriən/",
+          "emoji": "🟡",
+          "photo": "/images/game/photos/durian.jpg?v=5"
+        },
+        {
+          "lemma": "grapefruit",
+          "zh": "葡萄柚",
+          "ipa": "/ˈɡreɪpfruːt/",
+          "emoji": "🍊",
+          "photo": "/images/game/photos/grapefruit.jpg?v=5"
+        },
+        {
+          "lemma": "lime",
+          "zh": "青柠",
+          "ipa": "/laɪm/",
+          "emoji": "🍋",
+          "photo": "/images/game/photos/lime.jpg?v=5"
+        },
+        {
+          "lemma": "tangerine",
+          "zh": "橘子",
+          "ipa": "/ˌtændʒəˈriːn/",
+          "emoji": "🍊",
+          "photo": "/images/game/photos/tangerine.jpg?v=5"
+        },
+        {
+          "lemma": "cantaloupe",
+          "zh": "哈密瓜",
+          "ipa": "/ˈkæntəluːp/",
+          "emoji": "🍈",
+          "photo": "/images/game/photos/cantaloupe.jpg?v=5"
+        },
+        {
+          "lemma": "dragon fruit",
+          "zh": "火龙果",
+          "ipa": "/ˈdræɡən fruːt/",
+          "emoji": "🩷",
+          "photo": "/images/game/photos/dragon-fruit.jpg?v=5"
+        }
+      ]
+    },
+    {
+      "id": "animals",
+      "label": "动物",
+      "emoji": "🐶",
+      "words": [
+        {
+          "lemma": "dog",
+          "zh": "狗",
+          "ipa": "/dɒɡ/",
+          "emoji": "🐶",
+          "photo": "/images/game/photos/dog.jpg?v=4"
+        },
+        {
+          "lemma": "cat",
+          "zh": "猫",
+          "ipa": "/kæt/",
+          "emoji": "🐱",
+          "photo": "/images/game/photos/cat.jpg?v=4"
+        },
+        {
+          "lemma": "bird",
+          "zh": "鸟",
+          "ipa": "/bɜːd/",
+          "emoji": "🐦",
+          "photo": "/images/game/photos/bird.jpg?v=4"
+        },
+        {
+          "lemma": "fish",
+          "zh": "鱼",
+          "ipa": "/fɪʃ/",
+          "emoji": "🐟",
+          "photo": "/images/game/photos/fish.jpg?v=5"
+        },
+        {
+          "lemma": "rabbit",
+          "zh": "兔子",
+          "ipa": "/ˈræbɪt/",
+          "emoji": "🐰",
+          "photo": "/images/game/photos/rabbit.jpg?v=4"
+        },
+        {
+          "lemma": "horse",
+          "zh": "马",
+          "ipa": "/hɔːs/",
+          "emoji": "🐴",
+          "photo": "/images/game/photos/horse.jpg?v=5"
+        },
+        {
+          "lemma": "cow",
+          "zh": "牛",
+          "ipa": "/kaʊ/",
+          "emoji": "🐮",
+          "photo": "/images/game/photos/cow.jpg?v=5"
+        },
+        {
+          "lemma": "pig",
+          "zh": "猪",
+          "ipa": "/pɪɡ/",
+          "emoji": "🐷",
+          "photo": "/images/game/photos/pig.jpg?v=5"
+        },
+        {
+          "lemma": "lion",
+          "zh": "狮子",
+          "ipa": "/ˈlaɪən/",
+          "emoji": "🦁",
+          "photo": "/images/game/photos/lion.jpg?v=4"
+        },
+        {
+          "lemma": "elephant",
+          "zh": "大象",
+          "ipa": "/ˈelɪfənt/",
+          "emoji": "🐘",
+          "photo": "/images/game/photos/elephant.jpg?v=4"
+        },
+        {
+          "lemma": "monkey",
+          "zh": "猴子",
+          "ipa": "/ˈmʌŋki/",
+          "emoji": "🐵",
+          "photo": "/images/game/photos/monkey.jpg?v=4"
+        },
+        {
+          "lemma": "bear",
+          "zh": "熊",
+          "ipa": "/beə/",
+          "emoji": "🐻",
+          "photo": "/images/game/photos/bear.jpg?v=5"
+        },
+        {
+          "lemma": "tiger",
+          "zh": "老虎",
+          "ipa": "/ˈtaɪɡə/",
+          "emoji": "🐯",
+          "photo": "/images/game/photos/tiger.jpg?v=4"
+        },
+        {
+          "lemma": "panda",
+          "zh": "熊猫",
+          "ipa": "/ˈpændə/",
+          "emoji": "🐼",
+          "photo": "/images/game/photos/panda.jpg?v=5"
+        },
+        {
+          "lemma": "giraffe",
+          "zh": "长颈鹿",
+          "ipa": "/dʒəˈrɑːf/",
+          "emoji": "🦒",
+          "photo": "/images/game/photos/giraffe.jpg?v=4"
+        },
+        {
+          "lemma": "zebra",
+          "zh": "斑马",
+          "ipa": "/ˈzebrə/",
+          "emoji": "🦓",
+          "photo": "/images/game/photos/zebra.jpg?v=5"
+        },
+        {
+          "lemma": "fox",
+          "zh": "狐狸",
+          "ipa": "/fɒks/",
+          "emoji": "🦊",
+          "photo": "/images/game/photos/fox.jpg?v=4"
+        },
+        {
+          "lemma": "wolf",
+          "zh": "狼",
+          "ipa": "/wʊlf/",
+          "emoji": "🐺",
+          "photo": "/images/game/photos/wolf.jpg?v=4"
+        },
+        {
+          "lemma": "deer",
+          "zh": "鹿",
+          "ipa": "/dɪə/",
+          "emoji": "🦌",
+          "photo": "/images/game/photos/deer.jpg?v=5"
+        },
+        {
+          "lemma": "sheep",
+          "zh": "绵羊",
+          "ipa": "/ʃiːp/",
+          "emoji": "🐑",
+          "photo": "/images/game/photos/sheep.jpg?v=5"
+        },
+        {
+          "lemma": "goat",
+          "zh": "山羊",
+          "ipa": "/ɡəʊt/",
+          "emoji": "🐐",
+          "photo": "/images/game/photos/goat.jpg?v=4"
+        },
+        {
+          "lemma": "chicken",
+          "zh": "鸡",
+          "ipa": "/ˈtʃɪkɪn/",
+          "emoji": "🐔",
+          "photo": "/images/game/photos/chicken.jpg?v=4"
+        },
+        {
+          "lemma": "duck",
+          "zh": "鸭子",
+          "ipa": "/dʌk/",
+          "emoji": "🦆",
+          "photo": "/images/game/photos/duck.jpg?v=4"
+        },
+        {
+          "lemma": "frog",
+          "zh": "青蛙",
+          "ipa": "/frɒɡ/",
+          "emoji": "🐸",
+          "photo": "/images/game/photos/frog.jpg?v=5"
+        },
+        {
+          "lemma": "snake",
+          "zh": "蛇",
+          "ipa": "/sneɪk/",
+          "emoji": "🐍",
+          "photo": "/images/game/photos/snake.jpg?v=5"
+        },
+        {
+          "lemma": "turtle",
+          "zh": "乌龟",
+          "ipa": "/ˈtɜːtl/",
+          "emoji": "🐢",
+          "photo": "/images/game/photos/turtle.jpg?v=5"
+        },
+        {
+          "lemma": "mouse",
+          "zh": "老鼠",
+          "ipa": "/maʊs/",
+          "emoji": "🐭",
+          "photo": "/images/game/photos/mouse.jpg?v=5"
+        },
+        {
+          "lemma": "kangaroo",
+          "zh": "袋鼠",
+          "ipa": "/ˌkæŋɡəˈruː/",
+          "emoji": "🦘",
+          "photo": "/images/game/photos/kangaroo.jpg?v=5"
+        },
+        {
+          "lemma": "penguin",
+          "zh": "企鹅",
+          "ipa": "/ˈpeŋɡwɪn/",
+          "emoji": "🐧",
+          "photo": "/images/game/photos/penguin.jpg?v=5"
+        },
+        {
+          "lemma": "dolphin",
+          "zh": "海豚",
+          "ipa": "/ˈdɒlfɪn/",
+          "emoji": "🐬",
+          "photo": "/images/game/photos/dolphin.jpg?v=5"
+        },
+        {
+          "lemma": "bee",
+          "zh": "蜜蜂",
+          "ipa": "/biː/",
+          "emoji": "🐝",
+          "photo": "/images/game/photos/bee.jpg?v=5"
+        },
+        {
+          "lemma": "butterfly",
+          "zh": "蝴蝶",
+          "ipa": "/ˈbʌtəflaɪ/",
+          "emoji": "🦋",
+          "photo": "/images/game/photos/butterfly.jpg?v=5"
+        },
+        {
+          "lemma": "ant",
+          "zh": "蚂蚁",
+          "ipa": "/ænt/",
+          "emoji": "🐜",
+          "photo": "/images/game/photos/ant.jpg?v=5"
+        },
+        {
+          "lemma": "spider",
+          "zh": "蜘蛛",
+          "ipa": "/ˈspaɪdə/",
+          "emoji": "🕷️",
+          "photo": "/images/game/photos/spider.jpg?v=5"
+        },
+        {
+          "lemma": "crab",
+          "zh": "螃蟹",
+          "ipa": "/kræb/",
+          "emoji": "🦀",
+          "photo": "/images/game/photos/crab.jpg?v=5"
+        },
+        {
+          "lemma": "shark",
+          "zh": "鲨鱼",
+          "ipa": "/ʃɑːk/",
+          "emoji": "🦈",
+          "photo": "/images/game/photos/shark.jpg?v=5"
+        },
+        {
+          "lemma": "whale",
+          "zh": "鲸鱼",
+          "ipa": "/weɪl/",
+          "emoji": "🐋",
+          "photo": "/images/game/photos/whale.jpg?v=5"
+        },
+        {
+          "lemma": "owl",
+          "zh": "猫头鹰",
+          "ipa": "/aʊl/",
+          "emoji": "🦉",
+          "photo": "/images/game/photos/owl.jpg?v=5"
+        },
+        {
+          "lemma": "eagle",
+          "zh": "老鹰",
+          "ipa": "/ˈiːɡl/",
+          "emoji": "🦅",
+          "photo": "/images/game/photos/eagle.jpg?v=5"
+        },
+        {
+          "lemma": "camel",
+          "zh": "骆驼",
+          "ipa": "/ˈkæml/",
+          "emoji": "🐪",
+          "photo": "/images/game/photos/camel.jpg?v=5"
+        },
+        {
+          "lemma": "crocodile",
+          "zh": "鳄鱼",
+          "ipa": "/ˈkrɒkədaɪl/",
+          "emoji": "🐊",
+          "photo": "/images/game/photos/crocodile.jpg?v=5"
+        },
+        {
+          "lemma": "squirrel",
+          "zh": "松鼠",
+          "ipa": "/ˈskwɪrəl/",
+          "emoji": "🐿️",
+          "photo": "/images/game/photos/squirrel.jpg?v=5"
+        },
+        {
+          "lemma": "peacock",
+          "zh": "孔雀",
+          "ipa": "/ˈpiːkɒk/",
+          "emoji": "🦚",
+          "photo": "/images/game/photos/peacock.jpg?v=5"
+        },
+        {
+          "lemma": "bat",
+          "zh": "蝙蝠",
+          "ipa": "/bæt/",
+          "emoji": "🦇",
+          "photo": "/images/game/photos/bat.jpg?v=5"
+        },
+        {
+          "lemma": "jellyfish",
+          "zh": "水母",
+          "ipa": "/ˈdʒelifɪʃ/",
+          "emoji": "🪼",
+          "photo": "/images/game/photos/jellyfish.jpg?v=5"
+        },
+        {
+          "lemma": "goose",
+          "zh": "鹅",
+          "ipa": "/ɡuːs/",
+          "emoji": "🪿",
+          "photo": "/images/game/photos/goose.jpg?v=5"
+        },
+        {
+          "lemma": "snail",
+          "zh": "蜗牛",
+          "ipa": "/sneɪl/",
+          "emoji": "🐌",
+          "photo": "/images/game/photos/snail.jpg?v=5"
+        },
+        {
+          "lemma": "gorilla",
+          "zh": "大猩猩",
+          "ipa": "/ɡəˈrɪlə/",
+          "emoji": "🦍",
+          "photo": "/images/game/photos/gorilla.jpg?v=5"
+        },
+        {
+          "lemma": "polar bear",
+          "zh": "北极熊",
+          "ipa": "/ˈpəʊlə beə/",
+          "emoji": "🐻‍❄️",
+          "photo": "/images/game/photos/polar-bear.jpg?v=5"
+        }
+      ]
+    },
+    {
+      "id": "vehicles",
+      "label": "汽车",
+      "emoji": "🚗",
+      "words": [
+        {
+          "lemma": "car",
+          "zh": "小汽车",
+          "ipa": "/kɑː/",
+          "emoji": "🚗",
+          "photo": "/images/game/photos/car.jpg?v=4"
+        },
+        {
+          "lemma": "bus",
+          "zh": "公共汽车",
+          "ipa": "/bʌs/",
+          "emoji": "🚌",
+          "photo": "/images/game/photos/bus.jpg?v=6"
+        },
+        {
+          "lemma": "bike",
+          "zh": "自行车",
+          "ipa": "/baɪk/",
+          "emoji": "🚲",
+          "photo": "/images/game/photos/bike.jpg?v=4"
+        },
+        {
+          "lemma": "train",
+          "zh": "火车",
+          "ipa": "/treɪn/",
+          "emoji": "🚆",
+          "photo": "/images/game/photos/train.jpg?v=4"
+        },
+        {
+          "lemma": "plane",
+          "zh": "飞机",
+          "ipa": "/pleɪn/",
+          "emoji": "✈️",
+          "photo": "/images/game/photos/plane.jpg?v=4"
+        },
+        {
+          "lemma": "boat",
+          "zh": "小船",
+          "ipa": "/bəʊt/",
+          "emoji": "🚤",
+          "photo": "/images/game/photos/boat.jpg?v=6"
+        },
+        {
+          "lemma": "taxi",
+          "zh": "出租车",
+          "ipa": "/ˈtæksi/",
+          "emoji": "🚕",
+          "photo": "/images/game/photos/taxi.jpg?v=8"
+        },
+        {
+          "lemma": "truck",
+          "zh": "卡车",
+          "ipa": "/trʌk/",
+          "emoji": "🚚",
+          "photo": "/images/game/photos/truck.jpg?v=4"
+        },
+        {
+          "lemma": "motorcycle",
+          "zh": "摩托车",
+          "ipa": "/ˈməʊtəsaɪkl/",
+          "emoji": "🏍️",
+          "photo": "/images/game/photos/motorcycle.jpg?v=4"
+        },
+        {
+          "lemma": "subway",
+          "zh": "地铁",
+          "ipa": "/ˈsʌbweɪ/",
+          "emoji": "🚇",
+          "photo": "/images/game/photos/subway.jpg?v=4"
+        },
+        {
+          "lemma": "ship",
+          "zh": "轮船",
+          "ipa": "/ʃɪp/",
+          "emoji": "🚢",
+          "photo": "/images/game/photos/ship.jpg?v=4"
+        },
+        {
+          "lemma": "helicopter",
+          "zh": "直升机",
+          "ipa": "/ˈhelɪkɒptə/",
+          "emoji": "🚁",
+          "photo": "/images/game/photos/helicopter.jpg?v=8"
+        },
+        {
+          "lemma": "van",
+          "zh": "厢式货车",
+          "ipa": "/væn/",
+          "emoji": "🚐",
+          "photo": "/images/game/photos/van.jpg?v=8"
+        },
+        {
+          "lemma": "ambulance",
+          "zh": "救护车",
+          "ipa": "/ˈæmbjələns/",
+          "emoji": "🚑",
+          "photo": "/images/game/photos/ambulance.jpg?v=8"
+        },
+        {
+          "lemma": "police car",
+          "zh": "警车",
+          "ipa": "/pəˈliːs kɑː/",
+          "emoji": "🚓",
+          "photo": "/images/game/photos/police-car.jpg?v=8"
+        },
+        {
+          "lemma": "fire truck",
+          "zh": "消防车",
+          "ipa": "/ˈfaɪə trʌk/",
+          "emoji": "🚒",
+          "photo": "/images/game/photos/fire-truck.jpg?v=8"
+        },
+        {
+          "lemma": "scooter",
+          "zh": "滑板车",
+          "ipa": "/ˈskuːtə/",
+          "emoji": "🛴",
+          "photo": "/images/game/photos/scooter.jpg?v=8"
+        },
+        {
+          "lemma": "tram",
+          "zh": "有轨电车",
+          "ipa": "/træm/",
+          "emoji": "🚊",
+          "photo": "/images/game/photos/tram.jpg?v=8"
+        },
+        {
+          "lemma": "tractor",
+          "zh": "拖拉机",
+          "ipa": "/ˈtræktə/",
+          "emoji": "🚜",
+          "photo": "/images/game/photos/tractor.jpg?v=8"
+        },
+        {
+          "lemma": "jeep",
+          "zh": "吉普车",
+          "ipa": "/dʒiːp/",
+          "emoji": "🚙",
+          "photo": "/images/game/photos/jeep.jpg?v=8"
+        },
+        {
+          "lemma": "convertible",
+          "zh": "敞篷车",
+          "ipa": "/kənˈvɜːtəbl/",
+          "emoji": "🚗",
+          "photo": "/images/game/photos/convertible.jpg?v=8"
+        },
+        {
+          "lemma": "rocket",
+          "zh": "火箭",
+          "ipa": "/ˈrɒkɪt/",
+          "emoji": "🚀",
+          "photo": "/images/game/photos/rocket.jpg?v=8"
+        },
+        {
+          "lemma": "yacht",
+          "zh": "游艇",
+          "ipa": "/jɒt/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/yacht.jpg?v=8"
+        },
+        {
+          "lemma": "canoe",
+          "zh": "独木舟",
+          "ipa": "/kəˈnuː/",
+          "emoji": "🛶",
+          "photo": "/images/game/photos/canoe.jpg?v=8"
+        },
+        {
+          "lemma": "ferry",
+          "zh": "渡轮",
+          "ipa": "/ˈferi/",
+          "emoji": "⛴️",
+          "photo": "/images/game/photos/ferry.jpg?v=8"
+        },
+        {
+          "lemma": "hot air balloon",
+          "zh": "热气球",
+          "ipa": "/ˌhɒt eə bəˈluːn/",
+          "emoji": "🎈",
+          "photo": "/images/game/photos/hot-air-balloon.jpg?v=8"
+        },
+        {
+          "lemma": "skateboard",
+          "zh": "滑板",
+          "ipa": "/ˈskeɪtbɔːd/",
+          "emoji": "🛹",
+          "photo": "/images/game/photos/skateboard.jpg?v=8"
+        },
+        {
+          "lemma": "roller skates",
+          "zh": "旱冰鞋",
+          "ipa": "/ˈrəʊlə skeɪts/",
+          "emoji": "⛸️",
+          "photo": "/images/game/photos/roller-skates.jpg?v=8"
+        },
+        {
+          "lemma": "carriage",
+          "zh": "马车",
+          "ipa": "/ˈkærɪdʒ/",
+          "emoji": "🐎",
+          "photo": "/images/game/photos/carriage.jpg?v=8"
+        },
+        {
+          "lemma": "cable car",
+          "zh": "缆车",
+          "ipa": "/ˈkeɪbl kɑː/",
+          "emoji": "🚡",
+          "photo": "/images/game/photos/cable-car.jpg?v=8"
+        }
+      ]
+    },
+    {
+      "id": "colors",
+      "label": "颜色",
+      "emoji": "🎨",
+      "words": [
+        {
+          "lemma": "red",
+          "zh": "红色",
+          "ipa": "/red/",
+          "emoji": "🟥",
+          "photo": "/images/game/photos/color-red.jpg?v=4"
+        },
+        {
+          "lemma": "blue",
+          "zh": "蓝色",
+          "ipa": "/bluː/",
+          "emoji": "🟦",
+          "photo": "/images/game/photos/color-blue.jpg?v=4"
+        },
+        {
+          "lemma": "green",
+          "zh": "绿色",
+          "ipa": "/ɡriːn/",
+          "emoji": "🟩",
+          "photo": "/images/game/photos/color-green.jpg?v=4"
+        },
+        {
+          "lemma": "yellow",
+          "zh": "黄色",
+          "ipa": "/ˈjeləʊ/",
+          "emoji": "🟨",
+          "photo": "/images/game/photos/color-yellow.jpg?v=4"
+        },
+        {
+          "lemma": "orange",
+          "zh": "橙色",
+          "ipa": "/ˈɒrɪndʒ/",
+          "emoji": "🟧",
+          "photo": "/images/game/photos/color-orange.jpg?v=4"
+        },
+        {
+          "lemma": "purple",
+          "zh": "紫色",
+          "ipa": "/ˈpɜːpl/",
+          "emoji": "🟪",
+          "photo": "/images/game/photos/color-purple.jpg?v=4"
+        },
+        {
+          "lemma": "pink",
+          "zh": "粉色",
+          "ipa": "/pɪŋk/",
+          "emoji": "🩷",
+          "photo": "/images/game/photos/color-pink.jpg?v=4"
+        },
+        {
+          "lemma": "black",
+          "zh": "黑色",
+          "ipa": "/blæk/",
+          "emoji": "⚫",
+          "photo": "/images/game/photos/color-black.jpg?v=4"
+        },
+        {
+          "lemma": "white",
+          "zh": "白色",
+          "ipa": "/waɪt/",
+          "emoji": "⚪",
+          "photo": "/images/game/photos/color-white.jpg?v=4"
+        },
+        {
+          "lemma": "brown",
+          "zh": "棕色",
+          "ipa": "/braʊn/",
+          "emoji": "🟫",
+          "photo": "/images/game/photos/color-brown.jpg?v=4"
+        },
+        {
+          "lemma": "gray",
+          "zh": "灰色",
+          "ipa": "/ɡreɪ/",
+          "emoji": "🩶",
+          "photo": "/images/game/photos/color-gray.jpg?v=4"
+        },
+        {
+          "lemma": "gold",
+          "zh": "金色",
+          "ipa": "/ɡəʊld/",
+          "emoji": "🟡",
+          "photo": "/images/game/photos/color-gold.jpg?v=4"
+        },
+        {
+          "lemma": "silver",
+          "zh": "银色",
+          "ipa": "/ˈsɪlvə/",
+          "emoji": "🥈",
+          "photo": "/images/game/photos/color-silver.jpg?v=4"
+        },
+        {
+          "lemma": "beige",
+          "zh": "米色",
+          "ipa": "/beɪʒ/",
+          "emoji": "🧺",
+          "photo": "/images/game/photos/color-beige.jpg?v=4"
+        },
+        {
+          "lemma": "navy",
+          "zh": "藏青色",
+          "ipa": "/ˈneɪvi/",
+          "emoji": "🔵",
+          "photo": "/images/game/photos/color-navy.jpg?v=4"
+        },
+        {
+          "lemma": "turquoise",
+          "zh": "青绿色",
+          "ipa": "/ˈtɜːkwɔɪz/",
+          "emoji": "🩵",
+          "photo": "/images/game/photos/color-turquoise.jpg?v=4"
+        },
+        {
+          "lemma": "violet",
+          "zh": "紫罗兰色",
+          "ipa": "/ˈvaɪələt/",
+          "emoji": "💜",
+          "photo": "/images/game/photos/color-violet.jpg?v=4"
+        },
+        {
+          "lemma": "indigo",
+          "zh": "靛蓝色",
+          "ipa": "/ˈɪndɪɡəʊ/",
+          "emoji": "💙",
+          "photo": "/images/game/photos/color-indigo.jpg?v=4"
+        },
+        {
+          "lemma": "maroon",
+          "zh": "栗色",
+          "ipa": "/məˈruːn/",
+          "emoji": "❤️",
+          "photo": "/images/game/photos/color-maroon.jpg?v=4"
+        },
+        {
+          "lemma": "crimson",
+          "zh": "深红色",
+          "ipa": "/ˈkrɪmzn/",
+          "emoji": "🌹",
+          "photo": "/images/game/photos/color-crimson.jpg?v=4"
+        },
+        {
+          "lemma": "scarlet",
+          "zh": "猩红",
+          "ipa": "/ˈskɑːlət/",
+          "emoji": "🔴",
+          "photo": "/images/game/photos/color-scarlet.jpg?v=4"
+        },
+        {
+          "lemma": "ivory",
+          "zh": "象牙色",
+          "ipa": "/ˈaɪvəri/",
+          "emoji": "⬜",
+          "photo": "/images/game/photos/color-ivory.jpg?v=4"
+        },
+        {
+          "lemma": "cream",
+          "zh": "奶油色",
+          "ipa": "/kriːm/",
+          "emoji": "🍦",
+          "photo": "/images/game/photos/color-cream.jpg?v=4"
+        },
+        {
+          "lemma": "tan",
+          "zh": "棕褐色",
+          "ipa": "/tæn/",
+          "emoji": "🤎",
+          "photo": "/images/game/photos/color-tan.jpg?v=4"
+        },
+        {
+          "lemma": "olive",
+          "zh": "橄榄色",
+          "ipa": "/ˈɒlɪv/",
+          "emoji": "🫒",
+          "photo": "/images/game/photos/color-olive.jpg?v=4"
+        },
+        {
+          "lemma": "lime",
+          "zh": "青柠",
+          "ipa": "/laɪm/",
+          "emoji": "🟢",
+          "photo": "/images/game/photos/color-lime.jpg?v=4"
+        },
+        {
+          "lemma": "cyan",
+          "zh": "青色",
+          "ipa": "/ˈsaɪən/",
+          "emoji": "💠",
+          "photo": "/images/game/photos/color-cyan.jpg?v=4"
+        },
+        {
+          "lemma": "magenta",
+          "zh": "品红色",
+          "ipa": "/məˈdʒentə/",
+          "emoji": "💗",
+          "photo": "/images/game/photos/color-magenta.jpg?v=4"
+        },
+        {
+          "lemma": "rainbow",
+          "zh": "彩虹色",
+          "ipa": "/ˈreɪnbəʊ/",
+          "emoji": "🌈",
+          "photo": "/images/game/photos/color-rainbow.jpg?v=4"
+        },
+        {
+          "lemma": "colorful",
+          "zh": "五颜六色",
+          "ipa": "/ˈkʌləfl/",
+          "emoji": "🎨",
+          "photo": "/images/game/photos/color-colorful.jpg?v=4"
+        }
+      ]
+    },
+    {
+      "id": "clothes",
+      "label": "衣服",
+      "emoji": "👕",
+      "words": [
+        {
+          "lemma": "shirt",
+          "zh": "衬衫",
+          "ipa": "/ʃɜːt/",
+          "emoji": "👕",
+          "photo": "/images/game/photos/shirt.jpg?v=4"
+        },
+        {
+          "lemma": "pants",
+          "zh": "裤子",
+          "ipa": "/pænts/",
+          "emoji": "👖",
+          "photo": "/images/game/photos/pants.jpg?v=4"
+        },
+        {
+          "lemma": "dress",
+          "zh": "连衣裙",
+          "ipa": "/dres/",
+          "emoji": "👗",
+          "photo": "/images/game/photos/dress.jpg?v=4"
+        },
+        {
+          "lemma": "skirt",
+          "zh": "裙子",
+          "ipa": "/skɜːt/",
+          "emoji": "👗",
+          "photo": "/images/game/photos/skirt.jpg?v=4"
+        },
+        {
+          "lemma": "coat",
+          "zh": "外套",
+          "ipa": "/kəʊt/",
+          "emoji": "🧥",
+          "photo": "/images/game/photos/coat.jpg?v=4"
+        },
+        {
+          "lemma": "hat",
+          "zh": "帽子",
+          "ipa": "/hæt/",
+          "emoji": "🎩",
+          "photo": "/images/game/photos/hat.jpg?v=5"
+        },
+        {
+          "lemma": "shoes",
+          "zh": "鞋子",
+          "ipa": "/ʃuːz/",
+          "emoji": "👟",
+          "photo": "/images/game/photos/shoes.jpg?v=4"
+        },
+        {
+          "lemma": "socks",
+          "zh": "袜子",
+          "ipa": "/sɒks/",
+          "emoji": "🧦",
+          "photo": "/images/game/photos/socks.jpg?v=4"
+        },
+        {
+          "lemma": "jacket",
+          "zh": "夹克",
+          "ipa": "/ˈdʒækɪt/",
+          "emoji": "🧥",
+          "photo": "/images/game/photos/jacket.jpg?v=4"
+        },
+        {
+          "lemma": "sweater",
+          "zh": "毛衣",
+          "ipa": "/ˈswetə/",
+          "emoji": "🧶",
+          "photo": "/images/game/photos/sweater.jpg?v=4"
+        },
+        {
+          "lemma": "scarf",
+          "zh": "围巾",
+          "ipa": "/skɑːf/",
+          "emoji": "🧣",
+          "photo": "/images/game/photos/scarf.jpg?v=4"
+        },
+        {
+          "lemma": "gloves",
+          "zh": "手套",
+          "ipa": "/ɡlʌvz/",
+          "emoji": "🧤",
+          "photo": "/images/game/photos/gloves.jpg?v=4"
+        },
+        {
+          "lemma": "T-shirt",
+          "zh": "T恤",
+          "ipa": "/ˈtiː ʃɜːt/",
+          "emoji": "👕",
+          "photo": "/images/game/photos/t-shirt.jpg?v=4"
+        },
+        {
+          "lemma": "jeans",
+          "zh": "牛仔裤",
+          "ipa": "/dʒiːnz/",
+          "emoji": "👖",
+          "photo": "/images/game/photos/jeans.jpg?v=4"
+        },
+        {
+          "lemma": "shorts",
+          "zh": "短裤",
+          "ipa": "/ʃɔːts/",
+          "emoji": "🩳",
+          "photo": "/images/game/photos/shorts.jpg?v=4"
+        },
+        {
+          "lemma": "boots",
+          "zh": "靴子",
+          "ipa": "/buːts/",
+          "emoji": "🥾",
+          "photo": "/images/game/photos/boots.jpg?v=4"
+        },
+        {
+          "lemma": "sandals",
+          "zh": "凉鞋",
+          "ipa": "/ˈsændlz/",
+          "emoji": "👡",
+          "photo": "/images/game/photos/sandals.jpg?v=4"
+        },
+        {
+          "lemma": "slippers",
+          "zh": "拖鞋",
+          "ipa": "/ˈslɪpəz/",
+          "emoji": "🩴",
+          "photo": "/images/game/photos/slippers.jpg?v=4"
+        },
+        {
+          "lemma": "cap",
+          "zh": "鸭舌帽",
+          "ipa": "/kæp/",
+          "emoji": "🧢",
+          "photo": "/images/game/photos/cap.jpg?v=5"
+        },
+        {
+          "lemma": "beanie",
+          "zh": "毛线帽",
+          "ipa": "/ˈbiːni/",
+          "emoji": "👒",
+          "photo": "/images/game/photos/beanie.jpg?v=4"
+        },
+        {
+          "lemma": "belt",
+          "zh": "腰带",
+          "ipa": "/belt/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/belt.jpg?v=4"
+        },
+        {
+          "lemma": "tie",
+          "zh": "领带",
+          "ipa": "/taɪ/",
+          "emoji": "👔",
+          "photo": "/images/game/photos/tie.jpg?v=4"
+        },
+        {
+          "lemma": "suit",
+          "zh": "西装",
+          "ipa": "/suːt/",
+          "emoji": "🤵",
+          "photo": "/images/game/photos/suit.jpg?v=4"
+        },
+        {
+          "lemma": "uniform",
+          "zh": "制服",
+          "ipa": "/ˈjuːnɪfɔːm/",
+          "emoji": "👮",
+          "photo": "/images/game/photos/uniform.jpg?v=4"
+        },
+        {
+          "lemma": "pajamas",
+          "zh": "睡衣",
+          "ipa": "/pəˈdʒɑːməz/",
+          "emoji": "🛌",
+          "photo": "/images/game/photos/pajamas.jpg?v=4"
+        },
+        {
+          "lemma": "raincoat",
+          "zh": "雨衣",
+          "ipa": "/ˈreɪnkəʊt/",
+          "emoji": "🧥",
+          "photo": "/images/game/photos/raincoat.jpg?v=4"
+        },
+        {
+          "lemma": "swimsuit",
+          "zh": "泳衣",
+          "ipa": "/ˈswɪmsuːt/",
+          "emoji": "🩱",
+          "photo": "/images/game/photos/swimsuit.jpg?v=4"
+        },
+        {
+          "lemma": "hoodie",
+          "zh": "连帽衫",
+          "ipa": "/ˈhʊdi/",
+          "emoji": "🧥",
+          "photo": "/images/game/photos/hoodie.jpg?v=4"
+        },
+        {
+          "lemma": "vest",
+          "zh": "背心",
+          "ipa": "/vest/",
+          "emoji": "🦺",
+          "photo": "/images/game/photos/vest.jpg?v=4"
+        },
+        {
+          "lemma": "umbrella",
+          "zh": "雨伞",
+          "ipa": "/ʌmˈbrelə/",
+          "emoji": "☂️",
+          "photo": "/images/game/photos/umbrella.jpg?v=4"
+        }
+      ]
+    },
+    {
+      "id": "scenes",
+      "label": "场景",
+      "emoji": "🏞️",
+      "words": [
+        {
+          "lemma": "park",
+          "zh": "公园",
+          "ipa": "/pɑːk/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/park.jpg?v=4"
+        },
+        {
+          "lemma": "beach",
+          "zh": "海滩",
+          "ipa": "/biːtʃ/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/beach.jpg?v=4"
+        },
+        {
+          "lemma": "kitchen",
+          "zh": "厨房",
+          "ipa": "/ˈkɪtʃɪn/",
+          "emoji": "🍳",
+          "photo": "/images/game/photos/kitchen.jpg?v=4"
+        },
+        {
+          "lemma": "bedroom",
+          "zh": "卧室",
+          "ipa": "/ˈbedruːm/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/bedroom.jpg?v=4"
+        },
+        {
+          "lemma": "hospital",
+          "zh": "医院",
+          "ipa": "/ˈhɒspɪtl/",
+          "emoji": "🏥",
+          "photo": "/images/game/photos/hospital.jpg?v=4"
+        },
+        {
+          "lemma": "supermarket",
+          "zh": "超市",
+          "ipa": "/ˈsuːpəmɑːkɪt/",
+          "emoji": "🛒",
+          "photo": "/images/game/photos/supermarket.jpg?v=4"
+        },
+        {
+          "lemma": "library",
+          "zh": "图书馆",
+          "ipa": "/ˈlaɪbrəri/",
+          "emoji": "📚",
+          "photo": "/images/game/photos/library.jpg?v=4"
+        },
+        {
+          "lemma": "zoo",
+          "zh": "动物园",
+          "ipa": "/zuː/",
+          "emoji": "🦁",
+          "photo": "/images/game/photos/zoo.jpg?v=4"
+        },
+        {
+          "lemma": "farm",
+          "zh": "农场",
+          "ipa": "/fɑːm/",
+          "emoji": "🐄",
+          "photo": "/images/game/photos/farm.jpg?v=4"
+        },
+        {
+          "lemma": "airport",
+          "zh": "机场",
+          "ipa": "/ˈeəpɔːt/",
+          "emoji": "✈️",
+          "photo": "/images/game/photos/airport.jpg?v=4"
+        },
+        {
+          "lemma": "restaurant",
+          "zh": "餐厅",
+          "ipa": "/ˈrestrɒnt/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/restaurant.jpg?v=4"
+        },
+        {
+          "lemma": "street",
+          "zh": "街道",
+          "ipa": "/striːt/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/street.jpg?v=4"
+        },
+        {
+          "lemma": "school",
+          "zh": "学校",
+          "ipa": "/skuːl/",
+          "emoji": "🏫",
+          "photo": "/images/game/photos/school.jpg?v=6"
+        },
+        {
+          "lemma": "classroom",
+          "zh": "教室",
+          "ipa": "/ˈklɑːsruːm/",
+          "emoji": "🧑‍🏫",
+          "photo": "/images/game/photos/classroom.jpg?v=6"
+        },
+        {
+          "lemma": "playground",
+          "zh": "操场",
+          "ipa": "/ˈpleɪɡraʊnd/",
+          "emoji": "🛝",
+          "photo": "/images/game/photos/playground.jpg?v=5"
+        },
+        {
+          "lemma": "museum",
+          "zh": "博物馆",
+          "ipa": "/mjuːˈziːəm/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/museum.jpg?v=4"
+        },
+        {
+          "lemma": "cinema",
+          "zh": "电影院",
+          "ipa": "/ˈsɪnəmə/",
+          "emoji": "🎬",
+          "photo": "/images/game/photos/cinema.jpg?v=4"
+        },
+        {
+          "lemma": "bank",
+          "zh": "银行",
+          "ipa": "/bæŋk/",
+          "emoji": "🏦",
+          "photo": "/images/game/photos/bank.jpg?v=4"
+        },
+        {
+          "lemma": "post office",
+          "zh": "邮局",
+          "ipa": "/ˈpəʊst ˌɒfɪs/",
+          "emoji": "🏣",
+          "photo": "/images/game/photos/post-office.jpg?v=4"
+        },
+        {
+          "lemma": "station",
+          "zh": "车站",
+          "ipa": "/ˈsteɪʃn/",
+          "emoji": "🚉",
+          "photo": "/images/game/photos/station.jpg?v=4"
+        },
+        {
+          "lemma": "hotel",
+          "zh": "酒店",
+          "ipa": "/həʊˈtel/",
+          "emoji": "🏨",
+          "photo": "/images/game/photos/hotel.jpg?v=4"
+        },
+        {
+          "lemma": "bathroom",
+          "zh": "卫生间",
+          "ipa": "/ˈbɑːθruːm/",
+          "emoji": "🚽",
+          "photo": "/images/game/photos/bathroom.jpg?v=4"
+        },
+        {
+          "lemma": "living room",
+          "zh": "客厅",
+          "ipa": "/ˈlɪvɪŋ ruːm/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/living-room.jpg?v=4"
+        },
+        {
+          "lemma": "garden",
+          "zh": "花园",
+          "ipa": "/ˈɡɑːdn/",
+          "emoji": "🌷",
+          "photo": "/images/game/photos/garden.jpg?v=4"
+        },
+        {
+          "lemma": "forest",
+          "zh": "森林",
+          "ipa": "/ˈfɒrɪst/",
+          "emoji": "🌲",
+          "photo": "/images/game/photos/forest.jpg?v=4"
+        },
+        {
+          "lemma": "mountain",
+          "zh": "山",
+          "ipa": "/ˈmaʊntən/",
+          "emoji": "⛰️",
+          "photo": "/images/game/photos/mountain.jpg?v=4"
+        },
+        {
+          "lemma": "river",
+          "zh": "河流",
+          "ipa": "/ˈrɪvə/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/river.jpg?v=4"
+        },
+        {
+          "lemma": "market",
+          "zh": "市场",
+          "ipa": "/ˈmɑːkɪt/",
+          "emoji": "🧺",
+          "photo": "/images/game/photos/market.jpg?v=4"
+        },
+        {
+          "lemma": "bookstore",
+          "zh": "书店",
+          "ipa": "/ˈbʊkstɔː/",
+          "emoji": "📖",
+          "photo": "/images/game/photos/bookstore.jpg?v=4"
+        },
+        {
+          "lemma": "cafe",
+          "zh": "咖啡馆",
+          "ipa": "/ˈkæfeɪ/",
+          "emoji": "☕",
+          "photo": "/images/game/photos/cafe.jpg?v=4"
+        }
+      ]
+    },
+    {
+      "id": "numbers",
+      "label": "数数",
+      "emoji": "🔢",
+      "words": [
+        {
+          "lemma": "one",
+          "zh": "1 · 一",
+          "ipa": "/wʌn/",
+          "emoji": "1",
+          "photo": "/images/game/photos/one.png?v=6"
+        },
+        {
+          "lemma": "two",
+          "zh": "2 · 二",
+          "ipa": "/tuː/",
+          "emoji": "2",
+          "photo": "/images/game/photos/two.png?v=6"
+        },
+        {
+          "lemma": "three",
+          "zh": "3 · 三",
+          "ipa": "/θriː/",
+          "emoji": "3",
+          "photo": "/images/game/photos/three.png?v=6"
+        },
+        {
+          "lemma": "four",
+          "zh": "4 · 四",
+          "ipa": "/fɔː/",
+          "emoji": "4",
+          "photo": "/images/game/photos/four.png?v=6"
+        },
+        {
+          "lemma": "five",
+          "zh": "5 · 五",
+          "ipa": "/faɪv/",
+          "emoji": "5",
+          "photo": "/images/game/photos/five.png?v=6"
+        },
+        {
+          "lemma": "six",
+          "zh": "6 · 六",
+          "ipa": "/sɪks/",
+          "emoji": "6",
+          "photo": "/images/game/photos/six.png?v=6"
+        },
+        {
+          "lemma": "seven",
+          "zh": "7 · 七",
+          "ipa": "/ˈsevn/",
+          "emoji": "7",
+          "photo": "/images/game/photos/seven.png?v=6"
+        },
+        {
+          "lemma": "eight",
+          "zh": "8 · 八",
+          "ipa": "/eɪt/",
+          "emoji": "8",
+          "photo": "/images/game/photos/eight.png?v=6"
+        },
+        {
+          "lemma": "nine",
+          "zh": "9 · 九",
+          "ipa": "/naɪn/",
+          "emoji": "9",
+          "photo": "/images/game/photos/nine.png?v=6"
+        },
+        {
+          "lemma": "ten",
+          "zh": "10 · 十",
+          "ipa": "/ten/",
+          "emoji": "10",
+          "photo": "/images/game/photos/ten.png?v=6"
+        },
+        {
+          "lemma": "eleven",
+          "zh": "11 · 十一",
+          "ipa": "/ɪˈlevn/",
+          "emoji": "11",
+          "photo": "/images/game/photos/eleven.png?v=6"
+        },
+        {
+          "lemma": "twelve",
+          "zh": "12 · 十二",
+          "ipa": "/twelv/",
+          "emoji": "12",
+          "photo": "/images/game/photos/twelve.png?v=6"
+        },
+        {
+          "lemma": "thirteen",
+          "zh": "13 · 十三",
+          "ipa": "/ˌθɜːˈtiːn/",
+          "emoji": "13",
+          "photo": "/images/game/photos/thirteen.png?v=6"
+        },
+        {
+          "lemma": "fourteen",
+          "zh": "14 · 十四",
+          "ipa": "/ˌfɔːˈtiːn/",
+          "emoji": "14",
+          "photo": "/images/game/photos/fourteen.png?v=6"
+        },
+        {
+          "lemma": "fifteen",
+          "zh": "15 · 十五",
+          "ipa": "/ˌfɪfˈtiːn/",
+          "emoji": "15",
+          "photo": "/images/game/photos/fifteen.png?v=6"
+        },
+        {
+          "lemma": "sixteen",
+          "zh": "16 · 十六",
+          "ipa": "/ˌsɪksˈtiːn/",
+          "emoji": "16",
+          "photo": "/images/game/photos/sixteen.png?v=6"
+        },
+        {
+          "lemma": "seventeen",
+          "zh": "17 · 十七",
+          "ipa": "/ˌsevnˈtiːn/",
+          "emoji": "17",
+          "photo": "/images/game/photos/seventeen.png?v=6"
+        },
+        {
+          "lemma": "eighteen",
+          "zh": "18 · 十八",
+          "ipa": "/ˌeɪˈtiːn/",
+          "emoji": "18",
+          "photo": "/images/game/photos/eighteen.png?v=6"
+        },
+        {
+          "lemma": "nineteen",
+          "zh": "19 · 十九",
+          "ipa": "/ˌnaɪnˈtiːn/",
+          "emoji": "19",
+          "photo": "/images/game/photos/nineteen.png?v=6"
+        },
+        {
+          "lemma": "twenty",
+          "zh": "20 · 二十",
+          "ipa": "/ˈtwenti/",
+          "emoji": "20",
+          "photo": "/images/game/photos/twenty.png?v=6"
+        },
+        {
+          "lemma": "twenty-one",
+          "zh": "21 · 二十一",
+          "ipa": "/ˈtwenti wʌn/",
+          "emoji": "21",
+          "photo": "/images/game/photos/twenty-one.png?v=6"
+        },
+        {
+          "lemma": "twenty-two",
+          "zh": "22 · 二十二",
+          "ipa": "/ˈtwenti tuː/",
+          "emoji": "22",
+          "photo": "/images/game/photos/twenty-two.png?v=6"
+        },
+        {
+          "lemma": "twenty-three",
+          "zh": "23 · 二十三",
+          "ipa": "/ˈtwenti θriː/",
+          "emoji": "23",
+          "photo": "/images/game/photos/twenty-three.png?v=6"
+        },
+        {
+          "lemma": "twenty-four",
+          "zh": "24 · 二十四",
+          "ipa": "/ˈtwenti fɔː/",
+          "emoji": "24",
+          "photo": "/images/game/photos/twenty-four.png?v=6"
+        },
+        {
+          "lemma": "twenty-five",
+          "zh": "25 · 二十五",
+          "ipa": "/ˈtwenti faɪv/",
+          "emoji": "25",
+          "photo": "/images/game/photos/twenty-five.png?v=6"
+        },
+        {
+          "lemma": "twenty-six",
+          "zh": "26 · 二十六",
+          "ipa": "/ˈtwenti sɪks/",
+          "emoji": "26",
+          "photo": "/images/game/photos/twenty-six.png?v=6"
+        },
+        {
+          "lemma": "twenty-seven",
+          "zh": "27 · 二十七",
+          "ipa": "/ˈtwenti ˈsevn/",
+          "emoji": "27",
+          "photo": "/images/game/photos/twenty-seven.png?v=6"
+        },
+        {
+          "lemma": "twenty-eight",
+          "zh": "28 · 二十八",
+          "ipa": "/ˈtwenti eɪt/",
+          "emoji": "28",
+          "photo": "/images/game/photos/twenty-eight.png?v=6"
+        },
+        {
+          "lemma": "twenty-nine",
+          "zh": "29 · 二十九",
+          "ipa": "/ˈtwenti naɪn/",
+          "emoji": "29",
+          "photo": "/images/game/photos/twenty-nine.png?v=6"
+        },
+        {
+          "lemma": "thirty",
+          "zh": "30 · 三十",
+          "ipa": "/ˈθɜːti/",
+          "emoji": "30",
+          "photo": "/images/game/photos/thirty.png?v=6"
+        },
+        {
+          "lemma": "thirty-one",
+          "zh": "31 · 三十一",
+          "ipa": "/ˈθɜːti wʌn/",
+          "emoji": "31",
+          "photo": "/images/game/photos/thirty-one.png?v=6"
+        },
+        {
+          "lemma": "thirty-two",
+          "zh": "32 · 三十二",
+          "ipa": "/ˈθɜːti tuː/",
+          "emoji": "32",
+          "photo": "/images/game/photos/thirty-two.png?v=6"
+        },
+        {
+          "lemma": "thirty-three",
+          "zh": "33 · 三十三",
+          "ipa": "/ˈθɜːti θriː/",
+          "emoji": "33",
+          "photo": "/images/game/photos/thirty-three.png?v=6"
+        },
+        {
+          "lemma": "thirty-four",
+          "zh": "34 · 三十四",
+          "ipa": "/ˈθɜːti fɔː/",
+          "emoji": "34",
+          "photo": "/images/game/photos/thirty-four.png?v=6"
+        },
+        {
+          "lemma": "thirty-five",
+          "zh": "35 · 三十五",
+          "ipa": "/ˈθɜːti faɪv/",
+          "emoji": "35",
+          "photo": "/images/game/photos/thirty-five.png?v=6"
+        },
+        {
+          "lemma": "thirty-six",
+          "zh": "36 · 三十六",
+          "ipa": "/ˈθɜːti sɪks/",
+          "emoji": "36",
+          "photo": "/images/game/photos/thirty-six.png?v=6"
+        },
+        {
+          "lemma": "thirty-seven",
+          "zh": "37 · 三十七",
+          "ipa": "/ˈθɜːti ˈsevn/",
+          "emoji": "37",
+          "photo": "/images/game/photos/thirty-seven.png?v=6"
+        },
+        {
+          "lemma": "thirty-eight",
+          "zh": "38 · 三十八",
+          "ipa": "/ˈθɜːti eɪt/",
+          "emoji": "38",
+          "photo": "/images/game/photos/thirty-eight.png?v=6"
+        },
+        {
+          "lemma": "thirty-nine",
+          "zh": "39 · 三十九",
+          "ipa": "/ˈθɜːti naɪn/",
+          "emoji": "39",
+          "photo": "/images/game/photos/thirty-nine.png?v=6"
+        },
+        {
+          "lemma": "forty",
+          "zh": "40 · 四十",
+          "ipa": "/ˈfɔːti/",
+          "emoji": "40",
+          "photo": "/images/game/photos/forty.png?v=6"
+        },
+        {
+          "lemma": "forty-one",
+          "zh": "41 · 四十一",
+          "ipa": "/ˈfɔːti wʌn/",
+          "emoji": "41",
+          "photo": "/images/game/photos/forty-one.png?v=6"
+        },
+        {
+          "lemma": "forty-two",
+          "zh": "42 · 四十二",
+          "ipa": "/ˈfɔːti tuː/",
+          "emoji": "42",
+          "photo": "/images/game/photos/forty-two.png?v=6"
+        },
+        {
+          "lemma": "forty-three",
+          "zh": "43 · 四十三",
+          "ipa": "/ˈfɔːti θriː/",
+          "emoji": "43",
+          "photo": "/images/game/photos/forty-three.png?v=6"
+        },
+        {
+          "lemma": "forty-four",
+          "zh": "44 · 四十四",
+          "ipa": "/ˈfɔːti fɔː/",
+          "emoji": "44",
+          "photo": "/images/game/photos/forty-four.png?v=6"
+        },
+        {
+          "lemma": "forty-five",
+          "zh": "45 · 四十五",
+          "ipa": "/ˈfɔːti faɪv/",
+          "emoji": "45",
+          "photo": "/images/game/photos/forty-five.png?v=6"
+        },
+        {
+          "lemma": "forty-six",
+          "zh": "46 · 四十六",
+          "ipa": "/ˈfɔːti sɪks/",
+          "emoji": "46",
+          "photo": "/images/game/photos/forty-six.png?v=6"
+        },
+        {
+          "lemma": "forty-seven",
+          "zh": "47 · 四十七",
+          "ipa": "/ˈfɔːti ˈsevn/",
+          "emoji": "47",
+          "photo": "/images/game/photos/forty-seven.png?v=6"
+        },
+        {
+          "lemma": "forty-eight",
+          "zh": "48 · 四十八",
+          "ipa": "/ˈfɔːti eɪt/",
+          "emoji": "48",
+          "photo": "/images/game/photos/forty-eight.png?v=6"
+        },
+        {
+          "lemma": "forty-nine",
+          "zh": "49 · 四十九",
+          "ipa": "/ˈfɔːti naɪn/",
+          "emoji": "49",
+          "photo": "/images/game/photos/forty-nine.png?v=6"
+        },
+        {
+          "lemma": "fifty",
+          "zh": "50 · 五十",
+          "ipa": "/ˈfɪfti/",
+          "emoji": "50",
+          "photo": "/images/game/photos/fifty.png?v=6"
+        },
+        {
+          "lemma": "fifty-one",
+          "zh": "51 · 五十一",
+          "ipa": "/ˈfɪfti wʌn/",
+          "emoji": "51",
+          "photo": "/images/game/photos/fifty-one.png?v=6"
+        },
+        {
+          "lemma": "fifty-two",
+          "zh": "52 · 五十二",
+          "ipa": "/ˈfɪfti tuː/",
+          "emoji": "52",
+          "photo": "/images/game/photos/fifty-two.png?v=6"
+        },
+        {
+          "lemma": "fifty-three",
+          "zh": "53 · 五十三",
+          "ipa": "/ˈfɪfti θriː/",
+          "emoji": "53",
+          "photo": "/images/game/photos/fifty-three.png?v=6"
+        },
+        {
+          "lemma": "fifty-four",
+          "zh": "54 · 五十四",
+          "ipa": "/ˈfɪfti fɔː/",
+          "emoji": "54",
+          "photo": "/images/game/photos/fifty-four.png?v=6"
+        },
+        {
+          "lemma": "fifty-five",
+          "zh": "55 · 五十五",
+          "ipa": "/ˈfɪfti faɪv/",
+          "emoji": "55",
+          "photo": "/images/game/photos/fifty-five.png?v=6"
+        },
+        {
+          "lemma": "fifty-six",
+          "zh": "56 · 五十六",
+          "ipa": "/ˈfɪfti sɪks/",
+          "emoji": "56",
+          "photo": "/images/game/photos/fifty-six.png?v=6"
+        },
+        {
+          "lemma": "fifty-seven",
+          "zh": "57 · 五十七",
+          "ipa": "/ˈfɪfti ˈsevn/",
+          "emoji": "57",
+          "photo": "/images/game/photos/fifty-seven.png?v=6"
+        },
+        {
+          "lemma": "fifty-eight",
+          "zh": "58 · 五十八",
+          "ipa": "/ˈfɪfti eɪt/",
+          "emoji": "58",
+          "photo": "/images/game/photos/fifty-eight.png?v=6"
+        },
+        {
+          "lemma": "fifty-nine",
+          "zh": "59 · 五十九",
+          "ipa": "/ˈfɪfti naɪn/",
+          "emoji": "59",
+          "photo": "/images/game/photos/fifty-nine.png?v=6"
+        },
+        {
+          "lemma": "sixty",
+          "zh": "60 · 六十",
+          "ipa": "/ˈsɪksti/",
+          "emoji": "60",
+          "photo": "/images/game/photos/sixty.png?v=6"
+        },
+        {
+          "lemma": "sixty-one",
+          "zh": "61 · 六十一",
+          "ipa": "/ˈsɪksti wʌn/",
+          "emoji": "61",
+          "photo": "/images/game/photos/sixty-one.png?v=6"
+        },
+        {
+          "lemma": "sixty-two",
+          "zh": "62 · 六十二",
+          "ipa": "/ˈsɪksti tuː/",
+          "emoji": "62",
+          "photo": "/images/game/photos/sixty-two.png?v=6"
+        },
+        {
+          "lemma": "sixty-three",
+          "zh": "63 · 六十三",
+          "ipa": "/ˈsɪksti θriː/",
+          "emoji": "63",
+          "photo": "/images/game/photos/sixty-three.png?v=6"
+        },
+        {
+          "lemma": "sixty-four",
+          "zh": "64 · 六十四",
+          "ipa": "/ˈsɪksti fɔː/",
+          "emoji": "64",
+          "photo": "/images/game/photos/sixty-four.png?v=6"
+        },
+        {
+          "lemma": "sixty-five",
+          "zh": "65 · 六十五",
+          "ipa": "/ˈsɪksti faɪv/",
+          "emoji": "65",
+          "photo": "/images/game/photos/sixty-five.png?v=6"
+        },
+        {
+          "lemma": "sixty-six",
+          "zh": "66 · 六十六",
+          "ipa": "/ˈsɪksti sɪks/",
+          "emoji": "66",
+          "photo": "/images/game/photos/sixty-six.png?v=6"
+        },
+        {
+          "lemma": "sixty-seven",
+          "zh": "67 · 六十七",
+          "ipa": "/ˈsɪksti ˈsevn/",
+          "emoji": "67",
+          "photo": "/images/game/photos/sixty-seven.png?v=6"
+        },
+        {
+          "lemma": "sixty-eight",
+          "zh": "68 · 六十八",
+          "ipa": "/ˈsɪksti eɪt/",
+          "emoji": "68",
+          "photo": "/images/game/photos/sixty-eight.png?v=6"
+        },
+        {
+          "lemma": "sixty-nine",
+          "zh": "69 · 六十九",
+          "ipa": "/ˈsɪksti naɪn/",
+          "emoji": "69",
+          "photo": "/images/game/photos/sixty-nine.png?v=6"
+        },
+        {
+          "lemma": "seventy",
+          "zh": "70 · 七十",
+          "ipa": "/ˈsevnti/",
+          "emoji": "70",
+          "photo": "/images/game/photos/seventy.png?v=6"
+        },
+        {
+          "lemma": "seventy-one",
+          "zh": "71 · 七十一",
+          "ipa": "/ˈsevnti wʌn/",
+          "emoji": "71",
+          "photo": "/images/game/photos/seventy-one.png?v=6"
+        },
+        {
+          "lemma": "seventy-two",
+          "zh": "72 · 七十二",
+          "ipa": "/ˈsevnti tuː/",
+          "emoji": "72",
+          "photo": "/images/game/photos/seventy-two.png?v=6"
+        },
+        {
+          "lemma": "seventy-three",
+          "zh": "73 · 七十三",
+          "ipa": "/ˈsevnti θriː/",
+          "emoji": "73",
+          "photo": "/images/game/photos/seventy-three.png?v=6"
+        },
+        {
+          "lemma": "seventy-four",
+          "zh": "74 · 七十四",
+          "ipa": "/ˈsevnti fɔː/",
+          "emoji": "74",
+          "photo": "/images/game/photos/seventy-four.png?v=6"
+        },
+        {
+          "lemma": "seventy-five",
+          "zh": "75 · 七十五",
+          "ipa": "/ˈsevnti faɪv/",
+          "emoji": "75",
+          "photo": "/images/game/photos/seventy-five.png?v=6"
+        },
+        {
+          "lemma": "seventy-six",
+          "zh": "76 · 七十六",
+          "ipa": "/ˈsevnti sɪks/",
+          "emoji": "76",
+          "photo": "/images/game/photos/seventy-six.png?v=6"
+        },
+        {
+          "lemma": "seventy-seven",
+          "zh": "77 · 七十七",
+          "ipa": "/ˈsevnti ˈsevn/",
+          "emoji": "77",
+          "photo": "/images/game/photos/seventy-seven.png?v=6"
+        },
+        {
+          "lemma": "seventy-eight",
+          "zh": "78 · 七十八",
+          "ipa": "/ˈsevnti eɪt/",
+          "emoji": "78",
+          "photo": "/images/game/photos/seventy-eight.png?v=6"
+        },
+        {
+          "lemma": "seventy-nine",
+          "zh": "79 · 七十九",
+          "ipa": "/ˈsevnti naɪn/",
+          "emoji": "79",
+          "photo": "/images/game/photos/seventy-nine.png?v=6"
+        },
+        {
+          "lemma": "eighty",
+          "zh": "80 · 八十",
+          "ipa": "/ˈeɪti/",
+          "emoji": "80",
+          "photo": "/images/game/photos/eighty.png?v=6"
+        },
+        {
+          "lemma": "eighty-one",
+          "zh": "81 · 八十一",
+          "ipa": "/ˈeɪti wʌn/",
+          "emoji": "81",
+          "photo": "/images/game/photos/eighty-one.png?v=6"
+        },
+        {
+          "lemma": "eighty-two",
+          "zh": "82 · 八十二",
+          "ipa": "/ˈeɪti tuː/",
+          "emoji": "82",
+          "photo": "/images/game/photos/eighty-two.png?v=6"
+        },
+        {
+          "lemma": "eighty-three",
+          "zh": "83 · 八十三",
+          "ipa": "/ˈeɪti θriː/",
+          "emoji": "83",
+          "photo": "/images/game/photos/eighty-three.png?v=6"
+        },
+        {
+          "lemma": "eighty-four",
+          "zh": "84 · 八十四",
+          "ipa": "/ˈeɪti fɔː/",
+          "emoji": "84",
+          "photo": "/images/game/photos/eighty-four.png?v=6"
+        },
+        {
+          "lemma": "eighty-five",
+          "zh": "85 · 八十五",
+          "ipa": "/ˈeɪti faɪv/",
+          "emoji": "85",
+          "photo": "/images/game/photos/eighty-five.png?v=6"
+        },
+        {
+          "lemma": "eighty-six",
+          "zh": "86 · 八十六",
+          "ipa": "/ˈeɪti sɪks/",
+          "emoji": "86",
+          "photo": "/images/game/photos/eighty-six.png?v=6"
+        },
+        {
+          "lemma": "eighty-seven",
+          "zh": "87 · 八十七",
+          "ipa": "/ˈeɪti ˈsevn/",
+          "emoji": "87",
+          "photo": "/images/game/photos/eighty-seven.png?v=6"
+        },
+        {
+          "lemma": "eighty-eight",
+          "zh": "88 · 八十八",
+          "ipa": "/ˈeɪti eɪt/",
+          "emoji": "88",
+          "photo": "/images/game/photos/eighty-eight.png?v=6"
+        },
+        {
+          "lemma": "eighty-nine",
+          "zh": "89 · 八十九",
+          "ipa": "/ˈeɪti naɪn/",
+          "emoji": "89",
+          "photo": "/images/game/photos/eighty-nine.png?v=6"
+        },
+        {
+          "lemma": "ninety",
+          "zh": "90 · 九十",
+          "ipa": "/ˈnaɪnti/",
+          "emoji": "90",
+          "photo": "/images/game/photos/ninety.png?v=6"
+        },
+        {
+          "lemma": "ninety-one",
+          "zh": "91 · 九十一",
+          "ipa": "/ˈnaɪnti wʌn/",
+          "emoji": "91",
+          "photo": "/images/game/photos/ninety-one.png?v=6"
+        },
+        {
+          "lemma": "ninety-two",
+          "zh": "92 · 九十二",
+          "ipa": "/ˈnaɪnti tuː/",
+          "emoji": "92",
+          "photo": "/images/game/photos/ninety-two.png?v=6"
+        },
+        {
+          "lemma": "ninety-three",
+          "zh": "93 · 九十三",
+          "ipa": "/ˈnaɪnti θriː/",
+          "emoji": "93",
+          "photo": "/images/game/photos/ninety-three.png?v=6"
+        },
+        {
+          "lemma": "ninety-four",
+          "zh": "94 · 九十四",
+          "ipa": "/ˈnaɪnti fɔː/",
+          "emoji": "94",
+          "photo": "/images/game/photos/ninety-four.png?v=6"
+        },
+        {
+          "lemma": "ninety-five",
+          "zh": "95 · 九十五",
+          "ipa": "/ˈnaɪnti faɪv/",
+          "emoji": "95",
+          "photo": "/images/game/photos/ninety-five.png?v=6"
+        },
+        {
+          "lemma": "ninety-six",
+          "zh": "96 · 九十六",
+          "ipa": "/ˈnaɪnti sɪks/",
+          "emoji": "96",
+          "photo": "/images/game/photos/ninety-six.png?v=6"
+        },
+        {
+          "lemma": "ninety-seven",
+          "zh": "97 · 九十七",
+          "ipa": "/ˈnaɪnti ˈsevn/",
+          "emoji": "97",
+          "photo": "/images/game/photos/ninety-seven.png?v=6"
+        },
+        {
+          "lemma": "ninety-eight",
+          "zh": "98 · 九十八",
+          "ipa": "/ˈnaɪnti eɪt/",
+          "emoji": "98",
+          "photo": "/images/game/photos/ninety-eight.png?v=6"
+        },
+        {
+          "lemma": "ninety-nine",
+          "zh": "99 · 九十九",
+          "ipa": "/ˈnaɪnti naɪn/",
+          "emoji": "99",
+          "photo": "/images/game/photos/ninety-nine.png?v=6"
+        },
+        {
+          "lemma": "one hundred",
+          "zh": "100 · 一百",
+          "ipa": "/ˌwʌn ˈhʌndrəd/",
+          "emoji": "100",
+          "photo": "/images/game/photos/one-hundred.png?v=6"
+        }
+      ]
+    },
+    {
+      "id": "letters",
+      "label": "字母",
+      "emoji": "🔤",
+      "words": [
+        {
+          "lemma": "A",
+          "zh": "字母 A",
+          "ipa": "/eɪ/",
+          "emoji": "A",
+          "photo": "/images/game/photos/a.png?v=6"
+        },
+        {
+          "lemma": "B",
+          "zh": "字母 B",
+          "ipa": "/biː/",
+          "emoji": "B",
+          "photo": "/images/game/photos/b.png?v=6"
+        },
+        {
+          "lemma": "C",
+          "zh": "字母 C",
+          "ipa": "/siː/",
+          "emoji": "C",
+          "photo": "/images/game/photos/c.png?v=6"
+        },
+        {
+          "lemma": "D",
+          "zh": "字母 D",
+          "ipa": "/diː/",
+          "emoji": "D",
+          "photo": "/images/game/photos/d.png?v=6"
+        },
+        {
+          "lemma": "E",
+          "zh": "字母 E",
+          "ipa": "/iː/",
+          "emoji": "E",
+          "photo": "/images/game/photos/e.png?v=6"
+        },
+        {
+          "lemma": "F",
+          "zh": "字母 F",
+          "ipa": "/ef/",
+          "emoji": "F",
+          "photo": "/images/game/photos/f.png?v=6"
+        },
+        {
+          "lemma": "G",
+          "zh": "字母 G",
+          "ipa": "/dʒiː/",
+          "emoji": "G",
+          "photo": "/images/game/photos/g.png?v=6"
+        },
+        {
+          "lemma": "H",
+          "zh": "字母 H",
+          "ipa": "/eɪtʃ/",
+          "emoji": "H",
+          "photo": "/images/game/photos/h.png?v=6"
+        },
+        {
+          "lemma": "I",
+          "zh": "字母 I",
+          "ipa": "/aɪ/",
+          "emoji": "I",
+          "photo": "/images/game/photos/i.png?v=6"
+        },
+        {
+          "lemma": "J",
+          "zh": "字母 J",
+          "ipa": "/dʒeɪ/",
+          "emoji": "J",
+          "photo": "/images/game/photos/j.png?v=6"
+        },
+        {
+          "lemma": "K",
+          "zh": "字母 K",
+          "ipa": "/keɪ/",
+          "emoji": "K",
+          "photo": "/images/game/photos/k.png?v=6"
+        },
+        {
+          "lemma": "L",
+          "zh": "字母 L",
+          "ipa": "/el/",
+          "emoji": "L",
+          "photo": "/images/game/photos/l.png?v=6"
+        },
+        {
+          "lemma": "M",
+          "zh": "字母 M",
+          "ipa": "/em/",
+          "emoji": "M",
+          "photo": "/images/game/photos/m.png?v=6"
+        },
+        {
+          "lemma": "N",
+          "zh": "字母 N",
+          "ipa": "/en/",
+          "emoji": "N",
+          "photo": "/images/game/photos/n.png?v=6"
+        },
+        {
+          "lemma": "O",
+          "zh": "字母 O",
+          "ipa": "/əʊ/",
+          "emoji": "O",
+          "photo": "/images/game/photos/o.png?v=6"
+        },
+        {
+          "lemma": "P",
+          "zh": "字母 P",
+          "ipa": "/piː/",
+          "emoji": "P",
+          "photo": "/images/game/photos/p.png?v=6"
+        },
+        {
+          "lemma": "Q",
+          "zh": "字母 Q",
+          "ipa": "/kjuː/",
+          "emoji": "Q",
+          "photo": "/images/game/photos/q.png?v=6"
+        },
+        {
+          "lemma": "R",
+          "zh": "字母 R",
+          "ipa": "/ɑː/",
+          "emoji": "R",
+          "photo": "/images/game/photos/r.png?v=6"
+        },
+        {
+          "lemma": "S",
+          "zh": "字母 S",
+          "ipa": "/es/",
+          "emoji": "S",
+          "photo": "/images/game/photos/s.png?v=6"
+        },
+        {
+          "lemma": "T",
+          "zh": "字母 T",
+          "ipa": "/tiː/",
+          "emoji": "T",
+          "photo": "/images/game/photos/t.png?v=6"
+        },
+        {
+          "lemma": "U",
+          "zh": "字母 U",
+          "ipa": "/juː/",
+          "emoji": "U",
+          "photo": "/images/game/photos/u.png?v=6"
+        },
+        {
+          "lemma": "V",
+          "zh": "字母 V",
+          "ipa": "/viː/",
+          "emoji": "V",
+          "photo": "/images/game/photos/v.png?v=6"
+        },
+        {
+          "lemma": "W",
+          "zh": "字母 W",
+          "ipa": "/ˈdʌbljuː/",
+          "emoji": "W",
+          "photo": "/images/game/photos/w.png?v=6"
+        },
+        {
+          "lemma": "X",
+          "zh": "字母 X",
+          "ipa": "/eks/",
+          "emoji": "X",
+          "photo": "/images/game/photos/x.png?v=6"
+        },
+        {
+          "lemma": "Y",
+          "zh": "字母 Y",
+          "ipa": "/waɪ/",
+          "emoji": "Y",
+          "photo": "/images/game/photos/y.png?v=6"
+        },
+        {
+          "lemma": "Z",
+          "zh": "字母 Z",
+          "ipa": "/zed/",
+          "emoji": "Z",
+          "photo": "/images/game/photos/z.png?v=6"
+        }
+      ]
+    },
+    {
+      "id": "shapes",
+      "label": "形状",
+      "emoji": "🔺",
+      "words": [
+        {
+          "lemma": "circle",
+          "zh": "圆形",
+          "ipa": "/ˈsɜːkl/",
+          "emoji": "⭕",
+          "photo": "/images/game/shapes/circle.svg?v=2"
+        },
+        {
+          "lemma": "square",
+          "zh": "正方形",
+          "ipa": "/skweə/",
+          "emoji": "⬜",
+          "photo": "/images/game/shapes/square.svg?v=2"
+        },
+        {
+          "lemma": "triangle",
+          "zh": "三角形",
+          "ipa": "/ˈtraɪæŋɡl/",
+          "emoji": "🔺",
+          "photo": "/images/game/shapes/triangle.svg?v=2"
+        },
+        {
+          "lemma": "rectangle",
+          "zh": "长方形",
+          "ipa": "/ˈrektæŋɡl/",
+          "emoji": "🟦",
+          "photo": "/images/game/shapes/rectangle.svg?v=2"
+        },
+        {
+          "lemma": "oval",
+          "zh": "椭圆形",
+          "ipa": "/ˈəʊvl/",
+          "emoji": "🥚",
+          "photo": "/images/game/shapes/oval.svg?v=2"
+        },
+        {
+          "lemma": "star",
+          "zh": "星形",
+          "ipa": "/stɑː/",
+          "emoji": "⭐",
+          "photo": "/images/game/shapes/star.svg?v=2"
+        },
+        {
+          "lemma": "heart",
+          "zh": "心形",
+          "ipa": "/hɑːt/",
+          "emoji": "❤️",
+          "photo": "/images/game/shapes/heart.svg?v=2"
+        },
+        {
+          "lemma": "diamond",
+          "zh": "菱形",
+          "ipa": "/ˈdaɪəmənd/",
+          "emoji": "💎",
+          "photo": "/images/game/shapes/diamond.svg?v=2"
+        },
+        {
+          "lemma": "pentagon",
+          "zh": "五边形",
+          "ipa": "/ˈpentəɡən/",
+          "emoji": "🔶",
+          "photo": "/images/game/shapes/pentagon.svg?v=2"
+        },
+        {
+          "lemma": "hexagon",
+          "zh": "六边形",
+          "ipa": "/ˈheksəɡən/",
+          "emoji": "🔷",
+          "photo": "/images/game/shapes/hexagon.svg?v=2"
+        },
+        {
+          "lemma": "crescent",
+          "zh": "月牙形",
+          "ipa": "/ˈkresnt/",
+          "emoji": "🌙",
+          "photo": "/images/game/shapes/crescent.svg?v=2"
+        },
+        {
+          "lemma": "cross",
+          "zh": "十字形",
+          "ipa": "/krɒs/",
+          "emoji": "✖️",
+          "photo": "/images/game/shapes/cross.svg?v=2"
+        },
+        {
+          "lemma": "cube",
+          "zh": "立方体",
+          "ipa": "/kjuːb/",
+          "emoji": "🧊",
+          "photo": "/images/game/shapes/cube.svg?v=2"
+        },
+        {
+          "lemma": "sphere",
+          "zh": "球体",
+          "ipa": "/sfɪə/",
+          "emoji": "🔮",
+          "photo": "/images/game/shapes/sphere.svg?v=2"
+        },
+        {
+          "lemma": "cone",
+          "zh": "圆锥",
+          "ipa": "/kəʊn/",
+          "emoji": "🍦",
+          "photo": "/images/game/shapes/cone.svg?v=2"
+        },
+        {
+          "lemma": "cylinder",
+          "zh": "圆柱",
+          "ipa": "/ˈsɪlɪndə/",
+          "emoji": "🥫",
+          "photo": "/images/game/shapes/cylinder.svg?v=2"
+        },
+        {
+          "lemma": "up",
+          "zh": "上",
+          "ipa": "/ʌp/",
+          "emoji": "⬆️",
+          "photo": "/images/game/shapes/up.svg?v=2"
+        },
+        {
+          "lemma": "down",
+          "zh": "下",
+          "ipa": "/daʊn/",
+          "emoji": "⬇️",
+          "photo": "/images/game/shapes/down.svg?v=2"
+        },
+        {
+          "lemma": "left",
+          "zh": "左",
+          "ipa": "/left/",
+          "emoji": "⬅️",
+          "photo": "/images/game/shapes/left.svg?v=2"
+        },
+        {
+          "lemma": "right",
+          "zh": "右",
+          "ipa": "/raɪt/",
+          "emoji": "➡️",
+          "photo": "/images/game/shapes/right.svg?v=2"
+        }
+      ]
+    },
+    {
+      "id": "body",
+      "label": "人体",
+      "emoji": "🧍",
+      "words": [
+        {
+          "lemma": "body",
+          "zh": "身体",
+          "ipa": "/ˈbɒdi/",
+          "emoji": "🧍",
+          "photo": "/images/game/body/body.svg?v=2"
+        },
+        {
+          "lemma": "head",
+          "zh": "脑袋",
+          "ipa": "/hed/",
+          "emoji": "🔤",
+          "photo": "/images/game/body/head.svg?v=2"
+        },
+        {
+          "lemma": "hair",
+          "zh": "头发",
+          "ipa": "/heə/",
+          "emoji": "💇",
+          "photo": "/images/game/photos/hair.jpg?v=5"
+        },
+        {
+          "lemma": "face",
+          "zh": "脸",
+          "ipa": "/feɪs/",
+          "emoji": "😀",
+          "photo": "/images/game/photos/face.jpg?v=5"
+        },
+        {
+          "lemma": "eye",
+          "zh": "眼睛",
+          "ipa": "/aɪ/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/eye.jpg?v=5"
+        },
+        {
+          "lemma": "ear",
+          "zh": "耳朵",
+          "ipa": "/ɪə/",
+          "emoji": "👂",
+          "photo": "/images/game/body/ear.svg?v=2"
+        },
+        {
+          "lemma": "nose",
+          "zh": "鼻子",
+          "ipa": "/nəʊz/",
+          "emoji": "👃",
+          "photo": "/images/game/body/nose.svg?v=2"
+        },
+        {
+          "lemma": "mouth",
+          "zh": "嘴巴",
+          "ipa": "/maʊθ/",
+          "emoji": "👄",
+          "photo": "/images/game/body/mouth.svg?v=2"
+        },
+        {
+          "lemma": "tooth",
+          "zh": "牙齿",
+          "ipa": "/tuːθ/",
+          "emoji": "🦷",
+          "photo": "/images/game/body/tooth.svg?v=2"
+        },
+        {
+          "lemma": "tongue",
+          "zh": "舌头",
+          "ipa": "/tʌŋ/",
+          "emoji": "👅",
+          "photo": "/images/game/body/tongue.svg?v=2"
+        },
+        {
+          "lemma": "neck",
+          "zh": "脖子",
+          "ipa": "/nek/",
+          "emoji": "🧣",
+          "photo": "/images/game/photos/neck.jpg?v=5"
+        },
+        {
+          "lemma": "shoulder",
+          "zh": "肩膀",
+          "ipa": "/ˈʃəʊldə/",
+          "emoji": "🤷",
+          "photo": "/images/game/body/shoulder.svg?v=2"
+        },
+        {
+          "lemma": "arm",
+          "zh": "胳膊",
+          "ipa": "/ɑːm/",
+          "emoji": "💪",
+          "photo": "/images/game/body/arm.svg?v=2"
+        },
+        {
+          "lemma": "hand",
+          "zh": "手",
+          "ipa": "/hænd/",
+          "emoji": "✋",
+          "photo": "/images/game/body/hand.svg?v=2"
+        },
+        {
+          "lemma": "finger",
+          "zh": "手指",
+          "ipa": "/ˈfɪŋɡə/",
+          "emoji": "👆",
+          "photo": "/images/game/body/finger.svg?v=2"
+        },
+        {
+          "lemma": "leg",
+          "zh": "腿",
+          "ipa": "/leɡ/",
+          "emoji": "🦵",
+          "photo": "/images/game/body/leg.svg?v=2"
+        },
+        {
+          "lemma": "knee",
+          "zh": "膝盖",
+          "ipa": "/niː/",
+          "emoji": "🦵",
+          "photo": "/images/game/body/knee.svg?v=2"
+        },
+        {
+          "lemma": "foot",
+          "zh": "脚",
+          "ipa": "/fʊt/",
+          "emoji": "🦶",
+          "photo": "/images/game/body/foot.svg?v=2"
+        },
+        {
+          "lemma": "toe",
+          "zh": "脚趾",
+          "ipa": "/təʊ/",
+          "emoji": "🦶",
+          "photo": "/images/game/body/toe.svg?v=2"
+        },
+        {
+          "lemma": "stomach",
+          "zh": "肚子",
+          "ipa": "/ˈstʌmək/",
+          "emoji": "🫃",
+          "photo": "/images/game/body/stomach.svg?v=2"
+        },
+        {
+          "lemma": "back",
+          "zh": "后背",
+          "ipa": "/bæk/",
+          "emoji": "🦴",
+          "photo": "/images/game/body/back.svg?v=2"
+        }
+      ]
+    },
+    {
+      "id": "appliances",
+      "label": "电器",
+      "emoji": "📺",
+      "words": [
+        {
+          "lemma": "television",
+          "zh": "电视",
+          "ipa": "/ˌtelɪˈvɪʒn/",
+          "emoji": "📺",
+          "photo": "/images/game/photos/television.jpg?v=5"
+        },
+        {
+          "lemma": "fridge",
+          "zh": "冰箱",
+          "ipa": "/frɪdʒ/",
+          "emoji": "🧊",
+          "photo": "/images/game/photos/fridge.jpg?v=6"
+        },
+        {
+          "lemma": "washing machine",
+          "zh": "洗衣机",
+          "ipa": "/ˈwɒʃɪŋ məˌʃiːn/",
+          "emoji": "🧼",
+          "photo": "/images/game/photos/washing-machine.jpg?v=6"
+        },
+        {
+          "lemma": "air conditioner",
+          "zh": "空调",
+          "ipa": "/eə kənˈdɪʃənə/",
+          "emoji": "❄️",
+          "photo": "/images/game/photos/air-conditioner.jpg?v=6"
+        },
+        {
+          "lemma": "fan",
+          "zh": "电风扇",
+          "ipa": "/fæn/",
+          "emoji": "🌀",
+          "photo": "/images/game/photos/fan.jpg?v=6"
+        },
+        {
+          "lemma": "microwave",
+          "zh": "微波炉",
+          "ipa": "/ˈmaɪkrəweɪv/",
+          "emoji": "📦",
+          "photo": "/images/game/photos/microwave.jpg?v=6"
+        },
+        {
+          "lemma": "rice cooker",
+          "zh": "电饭煲",
+          "ipa": "/raɪs ˈkʊkə/",
+          "emoji": "🍚",
+          "photo": "/images/game/photos/rice-cooker.jpg?v=6"
+        },
+        {
+          "lemma": "kettle",
+          "zh": "电热水壶",
+          "ipa": "/ˈketl/",
+          "emoji": "🫖",
+          "photo": "/images/game/photos/kettle.jpg?v=6"
+        },
+        {
+          "lemma": "lamp",
+          "zh": "台灯",
+          "ipa": "/læmp/",
+          "emoji": "💡",
+          "photo": "/images/game/photos/lamp.jpg?v=5"
+        },
+        {
+          "lemma": "computer",
+          "zh": "电脑",
+          "ipa": "/kəmˈpjuːtə/",
+          "emoji": "💻",
+          "photo": "/images/game/photos/computer.jpg?v=6"
+        },
+        {
+          "lemma": "phone",
+          "zh": "手机",
+          "ipa": "/fəʊn/",
+          "emoji": "📱",
+          "photo": "/images/game/photos/phone.jpg?v=5"
+        },
+        {
+          "lemma": "vacuum",
+          "zh": "吸尘器",
+          "ipa": "/ˈvækjuːm/",
+          "emoji": "🧹",
+          "photo": "/images/game/photos/vacuum.jpg?v=6"
+        },
+        {
+          "lemma": "oven",
+          "zh": "烤箱",
+          "ipa": "/ˈʌvn/",
+          "emoji": "🔥",
+          "photo": "/images/game/photos/oven.jpg?v=6"
+        },
+        {
+          "lemma": "toaster",
+          "zh": "烤面包机",
+          "ipa": "/ˈtəʊstə/",
+          "emoji": "🍞",
+          "photo": "/images/game/photos/toaster.jpg?v=6"
+        },
+        {
+          "lemma": "hair dryer",
+          "zh": "吹风机",
+          "ipa": "/heə ˈdraɪə/",
+          "emoji": "💇",
+          "photo": "/images/game/photos/hair-dryer.jpg?v=6"
+        },
+        {
+          "lemma": "iron",
+          "zh": "熨斗",
+          "ipa": "/ˈaɪən/",
+          "emoji": "🧲",
+          "photo": "/images/game/photos/iron.jpg?v=6"
+        },
+        {
+          "lemma": "speaker",
+          "zh": "音箱",
+          "ipa": "/ˈspiːkə/",
+          "emoji": "🔊",
+          "photo": "/images/game/photos/speaker.jpg?v=6"
+        },
+        {
+          "lemma": "heater",
+          "zh": "电暖器",
+          "ipa": "/ˈhiːtə/",
+          "emoji": "🔥",
+          "photo": "/images/game/photos/heater.jpg?v=6"
+        },
+        {
+          "lemma": "water heater",
+          "zh": "热水器",
+          "ipa": "/ˈwɔːtə ˈhiːtə/",
+          "emoji": "🚿",
+          "photo": "/images/game/photos/water-heater.jpg?v=6"
+        },
+        {
+          "lemma": "dishwasher",
+          "zh": "洗碗机",
+          "ipa": "/ˈdɪʃwɒʃə/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/dishwasher.jpg?v=6"
+        }
+      ]
+    },
+    {
+      "id": "nature",
+      "label": "大自然",
+      "emoji": "🌲",
+      "words": [
+        {
+          "lemma": "forest",
+          "zh": "森林",
+          "ipa": "/ˈfɒrɪst/",
+          "emoji": "🌲",
+          "photo": "/images/game/photos/forest.jpg?v=5"
+        },
+        {
+          "lemma": "ocean",
+          "zh": "海洋",
+          "ipa": "/ˈəʊʃn/",
+          "emoji": "🌊",
+          "photo": "/images/game/photos/ocean.jpg?v=5"
+        },
+        {
+          "lemma": "snow mountain",
+          "zh": "雪山",
+          "ipa": "/snəʊ ˈmaʊntən/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/snow-mountain.jpg?v=5"
+        },
+        {
+          "lemma": "mountain",
+          "zh": "高山",
+          "ipa": "/ˈmaʊntən/",
+          "emoji": "⛰️",
+          "photo": "/images/game/photos/mountain.jpg?v=5"
+        },
+        {
+          "lemma": "lake",
+          "zh": "湖泊",
+          "ipa": "/leɪk/",
+          "emoji": "🏞️",
+          "photo": "/images/game/photos/lake.jpg?v=5"
+        },
+        {
+          "lemma": "desert",
+          "zh": "沙漠",
+          "ipa": "/ˈdezət/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/desert.jpg?v=5"
+        },
+        {
+          "lemma": "grassland",
+          "zh": "草原",
+          "ipa": "/ˈɡrɑːslænd/",
+          "emoji": "🌾",
+          "photo": "/images/game/photos/grassland.jpg?v=5"
+        },
+        {
+          "lemma": "waterfall",
+          "zh": "瀑布",
+          "ipa": "/ˈwɔːtəfɔːl/",
+          "emoji": "💦",
+          "photo": "/images/game/photos/waterfall.jpg?v=5"
+        },
+        {
+          "lemma": "jungle",
+          "zh": "丛林",
+          "ipa": "/ˈdʒʌŋɡl/",
+          "emoji": "🌴",
+          "photo": "/images/game/photos/jungle.jpg?v=5"
+        },
+        {
+          "lemma": "beach",
+          "zh": "海滩",
+          "ipa": "/biːtʃ/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/beach.jpg?v=5"
+        },
+        {
+          "lemma": "field",
+          "zh": "田野",
+          "ipa": "/fiːld/",
+          "emoji": "🌻",
+          "photo": "/images/game/photos/field.jpg?v=5"
+        },
+        {
+          "lemma": "sky",
+          "zh": "天空",
+          "ipa": "/skaɪ/",
+          "emoji": "🔤",
+          "photo": "/images/game/photos/sky.jpg?v=5"
+        },
+        {
+          "lemma": "sunrise",
+          "zh": "日出",
+          "ipa": "/ˈsʌnraɪz/",
+          "emoji": "🌅",
+          "photo": "/images/game/photos/sunrise.jpg?v=5"
+        },
+        {
+          "lemma": "cloud",
+          "zh": "云",
+          "ipa": "/klaʊd/",
+          "emoji": "☁️",
+          "photo": "/images/game/photos/cloud.jpg?v=5"
+        },
+        {
+          "lemma": "rain",
+          "zh": "雨",
+          "ipa": "/reɪn/",
+          "emoji": "🌧️",
+          "photo": "/images/game/photos/rain.jpg?v=5"
+        },
+        {
+          "lemma": "canyon",
+          "zh": "峡谷",
+          "ipa": "/ˈkænjən/",
+          "emoji": "🪨",
+          "photo": "/images/game/photos/canyon.jpg?v=5"
+        },
+        {
+          "lemma": "volcano",
+          "zh": "火山",
+          "ipa": "/vɒlˈkeɪnəʊ/",
+          "emoji": "🌋",
+          "photo": "/images/game/photos/volcano.jpg?v=5"
+        },
+        {
+          "lemma": "wave",
+          "zh": "海浪",
+          "ipa": "/weɪv/",
+          "emoji": "🌊",
+          "photo": "/images/game/photos/wave.jpg?v=5"
+        },
+        {
+          "lemma": "stars",
+          "zh": "星空",
+          "ipa": "/stɑːz/",
+          "emoji": "🌌",
+          "photo": "/images/game/photos/stars.jpg?v=5"
+        }
+      ]
+    },
+    {
+      "id": "currencies",
+      "label": "货币",
+      "emoji": "💰",
+      "groups": [
+        {
+          "id": "yuan",
+          "label": "人民币",
+          "words": [
+            {
+              "lemma": "one yuan",
+              "zh": "1元",
+              "ipa": "/wʌn juˈɑːn/",
+              "emoji": "💴",
+              "photo": "/images/game/photos/currency-yuan-1.jpg?v=2",
+              "amount": 1
+            },
+            {
+              "lemma": "five yuan",
+              "zh": "5元",
+              "ipa": "/faɪv juˈɑːn/",
+              "emoji": "💴",
+              "photo": "/images/game/photos/currency-yuan-5.jpg?v=2",
+              "amount": 5
+            },
+            {
+              "lemma": "ten yuan",
+              "zh": "10元",
+              "ipa": "/ten juˈɑːn/",
+              "emoji": "💴",
+              "photo": "/images/game/photos/currency-yuan-10.jpg?v=2",
+              "amount": 10
+            },
+            {
+              "lemma": "twenty yuan",
+              "zh": "20元",
+              "ipa": "/ˈtwenti juˈɑːn/",
+              "emoji": "💴",
+              "photo": "/images/game/photos/currency-yuan-20.jpg?v=2",
+              "amount": 20
+            },
+            {
+              "lemma": "fifty yuan",
+              "zh": "50元",
+              "ipa": "/ˈfɪfti juˈɑːn/",
+              "emoji": "💴",
+              "photo": "/images/game/photos/currency-yuan-50.jpg?v=2",
+              "amount": 50
+            },
+            {
+              "lemma": "one hundred yuan",
+              "zh": "100元",
+              "ipa": "/wʌn ˈhʌndrəd juˈɑːn/",
+              "emoji": "💴",
+              "photo": "/images/game/photos/currency-yuan-100.jpg?v=2",
+              "amount": 100
+            }
+          ]
+        },
+        {
+          "id": "dollar",
+          "label": "美元",
+          "words": [
+            {
+              "lemma": "one dollar",
+              "zh": "1美元",
+              "ipa": "/wʌn ˈdɒlə/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-dollar-1.jpg?v=2",
+              "amount": 1
+            },
+            {
+              "lemma": "five dollars",
+              "zh": "5美元",
+              "ipa": "/faɪv ˈdɒləz/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-dollar-5.jpg?v=2",
+              "amount": 5
+            },
+            {
+              "lemma": "ten dollars",
+              "zh": "10美元",
+              "ipa": "/ten ˈdɒləz/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-dollar-10.jpg?v=2",
+              "amount": 10
+            },
+            {
+              "lemma": "twenty dollars",
+              "zh": "20美元",
+              "ipa": "/ˈtwenti ˈdɒləz/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-dollar-20.jpg?v=2",
+              "amount": 20
+            },
+            {
+              "lemma": "fifty dollars",
+              "zh": "50美元",
+              "ipa": "/ˈfɪfti ˈdɒləz/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-dollar-50.jpg?v=2",
+              "amount": 50
+            },
+            {
+              "lemma": "one hundred dollars",
+              "zh": "100美元",
+              "ipa": "/wʌn ˈhʌndrəd ˈdɒləz/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-dollar-100.jpg?v=2",
+              "amount": 100
+            }
+          ]
+        },
+        {
+          "id": "pound",
+          "label": "英镑",
+          "words": [
+            {
+              "lemma": "five pounds",
+              "zh": "5英镑",
+              "ipa": "/faɪv paʊndz/",
+              "emoji": "💷",
+              "photo": "/images/game/photos/currency-pound-5.jpg?v=2",
+              "amount": 5
+            },
+            {
+              "lemma": "ten pounds",
+              "zh": "10英镑",
+              "ipa": "/ten paʊndz/",
+              "emoji": "💷",
+              "photo": "/images/game/photos/currency-pound-10.jpg?v=2",
+              "amount": 10
+            }
+          ]
+        },
+        {
+          "id": "euro",
+          "label": "欧元",
+          "words": [
+            {
+              "lemma": "five euros",
+              "zh": "5欧元",
+              "ipa": "/faɪv ˈjʊərəʊz/",
+              "emoji": "💶",
+              "photo": "/images/game/photos/currency-euro-5.jpg?v=2",
+              "amount": 5
+            },
+            {
+              "lemma": "ten euros",
+              "zh": "10欧元",
+              "ipa": "/ten ˈjʊərəʊz/",
+              "emoji": "💶",
+              "photo": "/images/game/photos/currency-euro-10.jpg?v=2",
+              "amount": 10
+            },
+            {
+              "lemma": "twenty euros",
+              "zh": "20欧元",
+              "ipa": "/ˈtwenti ˈjʊərəʊz/",
+              "emoji": "💶",
+              "photo": "/images/game/photos/currency-euro-20.jpg?v=2",
+              "amount": 20
+            },
+            {
+              "lemma": "fifty euros",
+              "zh": "50欧元",
+              "ipa": "/ˈfɪfti ˈjʊərəʊz/",
+              "emoji": "💶",
+              "photo": "/images/game/photos/currency-euro-50.jpg?v=2",
+              "amount": 50
+            },
+            {
+              "lemma": "one hundred euros",
+              "zh": "100欧元",
+              "ipa": "/wʌn ˈhʌndrəd ˈjʊərəʊz/",
+              "emoji": "💶",
+              "photo": "/images/game/photos/currency-euro-100.jpg?v=2",
+              "amount": 100
+            },
+            {
+              "lemma": "two hundred euros",
+              "zh": "200欧元",
+              "ipa": "/tuː ˈhʌndrəd ˈjʊərəʊz/",
+              "emoji": "💶",
+              "photo": "/images/game/photos/currency-euro-200.jpg?v=2",
+              "amount": 200
+            }
+          ]
+        },
+        {
+          "id": "yen",
+          "label": "日元",
+          "words": [
+            {
+              "lemma": "one thousand yen",
+              "zh": "1000日元",
+              "ipa": "/wʌn ˈθaʊznd jen/",
+              "emoji": "💴",
+              "photo": "/images/game/photos/currency-yen-1000.jpg?v=2",
+              "amount": 1000
+            },
+            {
+              "lemma": "five thousand yen",
+              "zh": "5000日元",
+              "ipa": "/faɪv ˈθaʊznd jen/",
+              "emoji": "💴",
+              "photo": "/images/game/photos/currency-yen-5000.jpg?v=2",
+              "amount": 5000
+            },
+            {
+              "lemma": "ten thousand yen",
+              "zh": "10000日元",
+              "ipa": "/ten ˈθaʊznd jen/",
+              "emoji": "💴",
+              "photo": "/images/game/photos/currency-yen-10000.jpg?v=2",
+              "amount": 10000
+            }
+          ]
+        },
+        {
+          "id": "won",
+          "label": "韩元",
+          "words": [
+            {
+              "lemma": "one thousand won",
+              "zh": "1000韩元",
+              "ipa": "/wʌn ˈθaʊznd wʌn/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-won-1000.jpg?v=2",
+              "amount": 1000
+            },
+            {
+              "lemma": "five thousand won",
+              "zh": "5000韩元",
+              "ipa": "/faɪv ˈθaʊznd wʌn/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-won-5000.jpg?v=2",
+              "amount": 5000
+            },
+            {
+              "lemma": "ten thousand won",
+              "zh": "10000韩元",
+              "ipa": "/ten ˈθaʊznd wʌn/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-won-10000.jpg?v=2",
+              "amount": 10000
+            },
+            {
+              "lemma": "fifty thousand won",
+              "zh": "50000韩元",
+              "ipa": "/ˈfɪfti ˈθaʊznd wʌn/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-won-50000.jpg?v=2",
+              "amount": 50000
+            }
+          ]
+        },
+        {
+          "id": "taiwan-dollar",
+          "label": "台币",
+          "words": [
+            {
+              "lemma": "one hundred Taiwan dollars",
+              "zh": "100台币",
+              "ipa": "/wʌn ˈhʌndrəd ˌtaɪˈwɑːn ˈdɒləz/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-taiwan-dollar-100.jpg?v=2",
+              "amount": 100
+            }
+          ]
+        },
+        {
+          "id": "hong-kong-dollar",
+          "label": "港币",
+          "words": [
+            {
+              "lemma": "ten Hong Kong dollars",
+              "zh": "10港币",
+              "ipa": "/ten ˌhɒŋ kɒŋ ˈdɒləz/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-hong-kong-dollar-10.jpg?v=2",
+              "amount": 10
+            }
+          ]
+        },
+        {
+          "id": "baht",
+          "label": "泰铢",
+          "words": [
+            {
+              "lemma": "twenty baht",
+              "zh": "20泰铢",
+              "ipa": "/ˈtwenti bɑːt/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-baht-20.jpg?v=2",
+              "amount": 20
+            }
+          ]
+        },
+        {
+          "id": "dong",
+          "label": "越南盾",
+          "words": [
+            {
+              "lemma": "five hundred thousand dong",
+              "zh": "50万越南盾",
+              "ipa": "/faɪv ˈhʌndrəd ˈθaʊznd dɒŋ/",
+              "emoji": "💵",
+              "photo": "/images/game/photos/currency-dong-500000.jpg?v=2",
+              "amount": 500000
+            }
+          ]
+        }
+      ],
+      "words": [
+        {
+          "lemma": "one yuan",
+          "zh": "1元",
+          "ipa": "/wʌn juˈɑːn/",
+          "emoji": "💴",
+          "photo": "/images/game/photos/currency-yuan-1.jpg?v=2",
+          "amount": 1
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英语老师 / 博主工作台 — Linglish</title>
+  <meta name="description" content="粘贴英文或导入素材，AI 自动标注单词与拆句，用模板编辑后导出长图，并生成学生跟读练习链接。">
+  <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles/tokens.css?v=2">
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
+  <link rel="stylesheet" href="./css/workbench.css?v=31">
+  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/icons.js?v=1"></script>
+</head>
+<body class="wb-page">
+  <nav class="wb-nav" aria-label="工作台导航">
+    <div class="wb-nav-left">
+      <a class="wb-brand" href="./index-desktop.html">Linglish · 工作台</a>
+      <a class="wb-back" data-nav="back" href="./index-desktop.html">返回</a>
+    </div>
+    <div class="wb-nav-actions">
+      <div class="wb-role" id="wb-role-switch" role="group" aria-label="角色切换">
+        <button type="button" id="wb-role-teacher" class="active">老师模式</button>
+        <button type="button" id="wb-role-blogger">博主模式</button>
+      </div>
+      <button type="button" class="wb-btn-outline" id="wb-save-btn" data-studio-only>保存</button>
+      <button type="button" class="wb-btn-outline" id="wb-export-png" data-studio-only>导出长图</button>
+      <button type="button" class="wb-btn" id="wb-practice-btn" data-studio-only>生成练习链接</button>
+    </div>
+  </nav>
+
+  <div class="wb-tool-bar">
+    <div class="wb-tool" role="tablist" aria-label="工作台功能">
+      <button type="button" id="wb-tool-studio" class="active" role="tab" aria-selected="true">精读素材</button>
+      <button type="button" id="wb-tool-class-note" role="tab" aria-selected="false">课后微信笔记</button>
+    </div>
+    <div class="wb-export-inline" data-studio-only aria-label="导出与分发">
+      <strong>导出 / 分发</strong>
+      <label for="wb-expire-days" class="wb-export-days">
+        有效天数
+        <input id="wb-expire-days" type="number" min="1" max="365" placeholder="长期">
+      </label>
+      <input id="wb-link-output" type="text" readonly placeholder="练习链接生成后显示">
+      <button type="button" class="wb-btn-outline" id="wb-copy-link-btn">复制链接</button>
+      <button type="button" class="wb-btn-outline" id="wb-export-pdf">导出 PDF</button>
+    </div>
+  </div>
+
+  <div class="wb-auth-banner" id="wb-auth-banner" hidden>
+    <span>登录后可保存内容、生成学生练习链接，并同步到跟读流程。</span>
+    <button type="button" class="wb-btn" id="wb-login-btn">去登录</button>
+  </div>
+
+  <!-- Studio mode -->
+  <div id="wb-studio" class="wb-mode">
+    <div class="wb-shell">
+      <aside class="wb-panel wb-stack" aria-label="内容输入与模板">
+        <div>
+          <div class="wb-inline-label">
+            <h2>1. 内容输入</h2>
+            <label for="wb-title">标题</label>
+          </div>
+          <input id="wb-title" type="text" placeholder="例如：Unit 3 · Ordering food" maxlength="200">
+          <label for="wb-kicker">卡片眉题</label>
+          <input id="wb-kicker" type="text" placeholder="例如 INTENSIVE READING" maxlength="48" autocomplete="off">
+          <label for="wb-source-text">英文文本</label>
+          <textarea id="wb-source-text" placeholder="粘贴英文课文、台词或口播稿…"></textarea>
+          <p class="wb-hint">可粘贴英文，或从日常用语 / 视频字幕一键导入。</p>
+          <div class="wb-row wb-actions-inline" style="margin-top:12px">
+            <button type="button" class="wb-btn" id="wb-annotate-btn">AI 标注</button>
+            <button type="button" class="wb-btn-outline" id="wb-save-inline-btn" data-studio-only>保存</button>
+            <button type="button" class="wb-btn-ghost" id="wb-delete-btn">删除当前</button>
+          </div>
+          <p class="wb-status" id="wb-status"></p>
+        </div>
+
+        <div>
+          <h2>2. 模板库</h2>
+          <div class="wb-templates" id="wb-template-list"></div>
+        </div>
+
+        <div>
+          <div class="wb-section-head">
+            <h2>已保存</h2>
+            <button type="button" class="wb-btn-outline wb-save-mini" id="wb-save-list-btn" data-studio-only>保存</button>
+          </div>
+          <div class="wb-saved-list" id="wb-saved-list">
+            <p class="wb-hint">登录后显示。</p>
+          </div>
+        </div>
+      </aside>
+
+      <main class="wb-center" aria-label="预览编辑区">
+        <div class="wb-preview-wrap">
+          <article id="wb-canvas" class="wb-canvas" contenteditable="true" spellcheck="false" aria-label="所见即所得预览"></article>
+        </div>
+      </main>
+
+      <aside class="wb-panel" aria-label="样式控制">
+        <div class="wb-inline-label">
+          <h2>样式</h2>
+          <span class="wb-inline-tag">画幅</span>
+        </div>
+        <div class="wb-style-grid">
+          <div class="wb-orient wb-seg-3" id="wb-orient" role="group" aria-label="卡片画幅">
+            <button type="button" data-orient="portrait" class="active">竖屏 3:4</button>
+            <button type="button" data-orient="story">竖屏 9:16</button>
+            <button type="button" data-orient="landscape">横屏 16:9</button>
+          </div>
+
+          <label>排版密度</label>
+          <div class="wb-orient wb-seg-3" id="wb-density" role="group" aria-label="排版密度">
+            <button type="button" data-density="compact">紧凑</button>
+            <button type="button" data-density="normal" class="active">标准</button>
+            <button type="button" data-density="relaxed">疏朗</button>
+          </div>
+
+          <label>标题对齐</label>
+          <div class="wb-orient" id="wb-align" role="group" aria-label="标题对齐">
+            <button type="button" data-align="left" class="active">居左</button>
+            <button type="button" data-align="center">居中</button>
+          </div>
+
+          <label>配色模板</label>
+          <div class="wb-theme-list" id="wb-theme-list" role="listbox" aria-label="配色模板"></div>
+
+          <div class="pair">
+            <div>
+              <label for="wb-font-size">字号</label>
+              <input id="wb-font-size" type="number" min="12" max="36" value="18">
+            </div>
+            <div>
+              <label for="wb-line-gap">行距</label>
+              <input id="wb-line-gap" type="number" min="1.2" max="2.4" step="0.1" value="1.7">
+            </div>
+          </div>
+
+          <!-- Kept for save/load compatibility; driven by theme templates -->
+          <select id="wb-font-family" hidden aria-hidden="true">
+            <option value='Manrope, "PingFang SC", "Microsoft YaHei", sans-serif'>Manrope（默认）</option>
+            <option value='"PingFang SC", "Microsoft YaHei", sans-serif'>苹方 / 雅黑</option>
+            <option value='Georgia, "Times New Roman", serif'>Georgia 衬线</option>
+            <option value='"Courier New", monospace'>等宽</option>
+          </select>
+          <input id="wb-text-color" type="color" value="#0f172a" hidden aria-hidden="true">
+          <input id="wb-accent-color" type="color" value="#0f766e" hidden aria-hidden="true">
+          <input id="wb-bg-color" type="color" value="#ffffff" hidden aria-hidden="true">
+          <input id="wb-highlight-color" type="color" value="#ccfbf1" hidden aria-hidden="true">
+
+          <label class="wb-toggle"><span>显示音标</span><input id="wb-show-phonetic" type="checkbox" checked></label>
+          <label class="wb-toggle"><span>显示词性</span><input id="wb-show-pos" type="checkbox" checked></label>
+          <label class="wb-toggle"><span>显示 CEFR 词级</span><input id="wb-show-cefr" type="checkbox" checked></label>
+          <label class="wb-toggle"><span>显示释义</span><input id="wb-show-gloss" type="checkbox" checked></label>
+          <label class="wb-toggle"><span>显示卡片摘要</span><input id="wb-show-meta" type="checkbox" checked></label>
+        </div>
+      </aside>
+    </div>
+  </div>
+
+  <!-- Class note mode -->
+  <div id="wb-class-note" class="wb-mode" hidden>
+    <div class="wb-cn-wrap">
+      <section id="wb-cn-composer">
+        <h1>课后微信笔记</h1>
+        <form class="wb-panel wb-cn-form" id="wb-cn-form">
+          <div class="wb-cn-fields">
+            <div class="wb-cn-field">
+              <label for="wb-cn-word">今天教的单词</label>
+              <input id="wb-cn-word" name="word" type="text" placeholder="例如 cola" autocomplete="off">
+            </div>
+            <div class="wb-cn-field">
+              <label for="wb-cn-photo">单词卡片</label>
+              <label class="wb-cn-file" for="wb-cn-photo">
+                <span>选择照片</span>
+                <em id="wb-cn-file-name">未选择照片</em>
+              </label>
+              <input id="wb-cn-photo" name="file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
+            </div>
+          </div>
+          <div class="wb-cn-lines-head">课堂练习句子</div>
+          <div id="wb-cn-line-fields" class="wb-cn-lines"></div>
+          <div class="wb-cn-actions">
+            <p class="wb-status" id="wb-cn-status" hidden></p>
+            <button class="wb-btn" id="wb-cn-save-btn" type="submit">生成笔记</button>
+          </div>
+        </form>
+      </section>
+      <section id="wb-cn-viewer" hidden>
+        <article class="wb-cn-note-card" id="wb-cn-note"></article>
+        <div class="wb-row" id="wb-cn-share-actions" hidden style="margin-top:16px">
+          <button class="wb-btn" id="wb-cn-copy-btn" type="button">复制私有链接</button>
+          <button class="wb-btn-outline" id="wb-cn-edit-btn" type="button">返回修改</button>
+          <button class="wb-btn-outline" id="wb-cn-another-btn" type="button">再做一条</button>
+        </div>
+        <p class="wb-cn-share" id="wb-cn-share-link" hidden></p>
+        <p class="wb-status" id="wb-cn-view-status"></p>
+      </section>
+    </div>
+  </div>
+
+  <div id="wb-word-pop" class="wb-word-pop" hidden></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
+  <script src="./js/workbench/import-bridge.js?v=20261019"></script>
+  <script src="./js/workbench/templates.js?v=12"></script>
+  <script src="./js/workbench/class-note.js?v=20261019"></script>
+  <script src="./js/workbench/app.js?v=14"></script>
+</body>
+</html>

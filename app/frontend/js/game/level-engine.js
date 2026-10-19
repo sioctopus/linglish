@@ -6,12 +6,14 @@
         mastery: require('./mastery.js'),
         rig: require('./character-rig.js'),
         boss: require('./boss.js'),
+        daily: require('./daily-challenge.js'),
       }
     : {
         wordPool: root.GameWordPool,
         mastery: root.GameMastery,
         rig: root.GameCharacterRig,
         boss: root.GameBoss,
+        daily: root.GameDailyChallenge,
       };
   const api = factory(deps);
   if (isNode) module.exports = api;
@@ -19,7 +21,7 @@
 })(typeof window !== 'undefined' ? window : null, function (deps) {
   'use strict';
 
-  const { wordPool, mastery, rig, boss } = deps;
+  const { wordPool, mastery, rig, boss, daily } = deps;
 
   const LEVELS_PER_CHAPTER = 5;
   const BOSS_LEVEL = LEVELS_PER_CHAPTER + 1;
@@ -152,6 +154,30 @@
         }, progress.relearnQueue || []),
       };
 
+      // 每日挑战只记词态/复习队列/打卡日,不推进关卡、不写星、不解锁部位。
+      if (session.isDaily) {
+        const today = daily && typeof daily.todayKey === 'function'
+          ? daily.todayKey()
+          : new Date().toISOString().slice(0, 10);
+        nextProgress = { ...nextProgress, lastDailyDate: today };
+
+        const statsResult = await apiClient.logSession({
+          minutes: Math.max(1, Math.round((Date.now() - session.startedAt) / 60000)),
+          wordsLearned: session.newWords.length,
+        });
+        progressStore.save(nextProgress);
+        return {
+          progress: nextProgress,
+          stars: 0,
+          accuracy,
+          unlockedPart: null,
+          bossStatus: null,
+          characterComplete: rig.isCharacterComplete(nextProgress.unlockedParts),
+          statsResult,
+          isDaily: true,
+        };
+      }
+
       const stars = computeStars({
         accuracy,
         elapsedMs: Date.now() - session.startedAt,
@@ -205,6 +231,7 @@
         bossStatus: bossVerdict ? bossVerdict.status : null,
         characterComplete: rig.isCharacterComplete(nextProgress.unlockedParts),
         statsResult,
+        isDaily: false,
       };
     }
 

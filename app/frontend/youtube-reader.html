@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/tts-voice.js?v=1"></script>
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
     // IMPORTANT: This must be the absolute first script to catch extension errors
@@ -640,17 +643,32 @@
       font-weight: 500;
     }
 
-    .tag-error,
-    .difficulty-error {
+    .tag-error {
       color: #ef4444;
       font-size: 12px;
       margin-top: 8px;
       display: none;
     }
 
-    .tag-error.show,
-    .difficulty-error.show {
+    .tag-error.show {
       display: block;
+    }
+
+    .difficulty-auto {
+      padding: 12px 14px;
+      border-radius: 10px;
+      background: #f0fdf4;
+      color: #166534;
+      font-weight: 700;
+      border: 1px solid #bbf7d0;
+      line-height: 1.5;
+    }
+
+    .difficulty-auto.pending {
+      background: #f8fafc;
+      color: #64748b;
+      font-weight: 500;
+      border-color: #e2e8f0;
     }
 
     .save-select {
@@ -746,7 +764,7 @@
         </select>
         <span id="timeDisplay" style="color: white; font-size: 14px; min-width: 80px;">00:00</span>
         <button class="control-btn" id="saveToLibraryBtn" style="background: #059669;">保存到视频库</button>
-        <button class="control-btn" id="backBtn" onclick="window.location.href='/youtube-import.html'">
+        <button class="control-btn" id="backBtn" data-nav="back" onclick="window.location.href='/youtube-import.html'">
           返回
         </button>
       </div>
@@ -793,14 +811,9 @@
           <div class="collection-hint" style="font-size: 12px; color: #64748b; margin-top: 4px;">可选，用于在主标签下进一步分类，如「课程 → RAZ分级阅读」</div>
         </div>
         <div class="save-form-group">
-          <label for="saveDifficultyLevel">难度级别 <span class="required">*</span></label>
-          <select id="saveDifficultyLevel" class="save-select">
-            <option value="">请选择难度级别</option>
-            <option value="beginner">🌱 Beginner - 初级</option>
-            <option value="intermediate">🌿 Intermediate - 中级</option>
-            <option value="advanced">🌳 Advanced - 高级</option>
-          </select>
-          <div class="difficulty-error" id="difficultyError">请选择难度级别</div>
+          <label>难度级别</label>
+          <div class="difficulty-auto pending" id="saveDifficultyLevel">系统会根据字幕自动识别</div>
+          <div class="tag-selector-hint" style="font-size: 12px; color: #64748b; margin-top: 6px;">按字幕用词和句子分成 A1、A2、B1、B2、C1 或 C2，不用自己选。</div>
         </div>
       </div>
       <div class="save-modal-footer">
@@ -859,12 +872,31 @@
     const saveTagOptions = document.getElementById('saveTagOptions');
     const tagError = document.getElementById('tagError');
     const saveDifficultyLevel = document.getElementById('saveDifficultyLevel');
-    const difficultyError = document.getElementById('difficultyError');
     const saveCollectionName = document.getElementById('saveCollectionName');
     const collectionDatalist = document.getElementById('collectionDatalist');
-
-    // Selected tags for saving
     const selectedSaveTags = new Set();
+
+    function formatDetectedLevel(raw) {
+      const labels = {
+        a1: 'A1 · 入门',
+        a2: 'A2 · 初级',
+        b1: 'B1 · 中级',
+        b2: 'B2 · 中高级',
+        c1: 'C1 · 高级',
+        c2: 'C2 · 精通',
+        beginner: 'A1 · 入门',
+        intermediate: 'B1 · 中级',
+        advanced: 'C1 · 高级',
+      };
+      return labels[String(raw || '').trim().toLowerCase()] || '';
+    }
+
+    function showDetectedLevel() {
+      if (!saveDifficultyLevel) return;
+      const label = formatDetectedLevel(videoData && videoData.difficulty_level);
+      saveDifficultyLevel.textContent = label || '字幕里的英文太少，暂时无法判断等级';
+      saveDifficultyLevel.classList.toggle('pending', !label);
+    }
 
     // Collection name cache for suggestions
     let collectionSuggestions = [];
@@ -973,7 +1005,8 @@
 
         // Set title and info
         videoTitle.textContent = videoData.title || 'YouTube 视频';
-        videoInfo.textContent = `${videoData.segments?.length || 0} 个字幕片段`;
+        const levelLabel = formatDetectedLevel(videoData.difficulty_level);
+        videoInfo.textContent = `${videoData.segments?.length || 0} 个字幕片段${levelLabel ? ` · 系统识别 ${levelLabel}` : ''}`;
 
         // Load vocabulary map for color highlighting
         await loadVocabMap();
@@ -1061,9 +1094,9 @@
         loading.innerHTML = `
           <div style="text-align: center;">
             <p style="color: #ef4444; margin-bottom: 20px;">加载失败：${errorMsg}</p>
-            <button onclick="window.location.href='/youtube-import.html'"
+            <button data-nav="back" onclick="window.location.href='/youtube-import.html'"
                     style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer;">
-              返回导入页面
+              返回
             </button>
           </div>
         `;
@@ -1553,7 +1586,7 @@
                     text: trimmed,
                     lang: 'en',
                     provider: 'edge',
-                    voice: 'en-US-AriaNeural'
+                    voice: (window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural')
                   })
                 });
                 if (res.ok) {
@@ -1782,10 +1815,8 @@
       // Render tag options
       renderSaveTagOptions();
 
-      // Reset difficulty level
-      if (saveDifficultyLevel) {
-        saveDifficultyLevel.value = '';
-      }
+      // 展示系统识别出的等级，不要求手选
+      showDetectedLevel();
 
       // Reset collection name
       if (saveCollectionName) {
@@ -1797,7 +1828,6 @@
 
       // Reset error states
       tagError.classList.remove('show');
-      difficultyError.classList.remove('show');
 
       // Show modal
       saveModalOverlay.classList.add('active');
@@ -1859,15 +1889,6 @@
         tagError.classList.remove('show');
       }
 
-      // Validate: difficulty level must be selected
-      const difficultyLevel = saveDifficultyLevel?.value || '';
-      if (!difficultyLevel) {
-        difficultyError.classList.add('show');
-        hasError = true;
-      } else {
-        difficultyError.classList.remove('show');
-      }
-
       if (hasError) {
         return;
       }
@@ -1893,7 +1914,7 @@
       console.log('[Save] Custom title:', customTitle);
       console.log('[Save] Selected tags:', tagNames);
       console.log('[Save] Collection name:', collectionName);
-      console.log('[Save] Difficulty level:', difficultyLevel);
+      console.log('[Save] Detected level:', videoData.difficulty_level || null);
       if (videoData.segments && videoData.segments.length > 0) {
         console.log('[Save] First segment:', videoData.segments[0]);
       } else {
@@ -1912,7 +1933,6 @@
           language: 'en',
           segments: videoData.segments || [],
           tags: tagNames,
-          difficulty_level: difficultyLevel,
           collection_name: collectionName || null,
           is_public: true,
         };
@@ -1952,8 +1972,9 @@
             saveCollectionToHistory(collectionName);
           }
 
+          const savedLevel = formatDetectedLevel(result?.video?.difficulty_level || videoData.difficulty_level);
           closeSaveModal();
-          alert('视频已成功保存到视频库！');
+          alert(savedLevel ? `已保存。系统识别为 ${savedLevel}` : '视频已成功保存到视频库！');
         } else if (response.status === 409 && result.message === 'VIDEO_ALREADY_EXISTS') {
           // Video already exists in library
           isVideoSaved = true;
@@ -2015,5 +2036,6 @@
     });
   </script>
   <script src="./js/page-tracker.js"></script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=1">
 </body>
 </html>

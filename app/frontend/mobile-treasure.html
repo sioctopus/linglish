@@ -2,6 +2,8 @@
 <html lang="zh-CN">
 
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
@@ -110,7 +112,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>linglish - 成长中心</title>
   <link rel="preload" href="./mobile-styles.css?v=2" as="style">
-  <link rel="preload" href="./i18n.js?v=20250114e" as="script">
+  <link rel="preload" href="./i18n.js?v=20261019" as="script">
   <link rel="preload" href="./global-ui.js?v=20250108" as="script">
   <link rel="preload" href="./mobile-treasure.js?v=1" as="script">
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -120,8 +122,8 @@
   <link rel="stylesheet" href="./mobile-styles.css?v=2">
   <script src="./auth-helpers.js?v=1"></script>
   <script src="./guest-check.js?v=1"></script>
-  <script src="./mobile-auth.js?v=1"></script>
-  <script src="./i18n.js?v=20250114e"></script>
+  <script src="./mobile-auth.js?v=20261019"></script>
+  <script src="./i18n.js?v=20261019"></script>
   <script src="./global-ui.js?v=20250108"></script>
   <style>
     /* ==================== 2025 Premium Treasure Theme ==================== */
@@ -867,6 +869,7 @@
       color: #475569;
     }
   </style>
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
 </head>
 
 <body>
@@ -1094,33 +1097,23 @@
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <a href="mobile-today.html" class="nav-item">
-      <div class="nav-icon">
-        <span class="nav-emoji">🎯</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="today"></div>
       <span>今日</span>
     </a>
     <a href="mobile-explore.html" class="nav-item">
-      <div class="nav-icon">
-        <span class="nav-emoji">🌍</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="explore"></div>
       <span data-i18n="mobile.explore.title">探索世界</span>
     </a>
     <a href="mobile-power.html" class="nav-item">
-      <div class="nav-icon">
-        <span class="nav-emoji">⚡</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="power"></div>
       <span data-i18n="mobile.power.title">能量站</span>
     </a>
     <a href="mobile-arena.html" class="nav-item">
-      <div class="nav-icon">
-        <span class="nav-emoji">🎪</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="arena"></div>
       <span data-i18n="mobile.arena.title">实战场</span>
     </a>
     <a href="mobile-treasure.html" class="nav-item active">
-      <div class="nav-icon">
-        <span class="nav-emoji">🪴</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="growth"></div>
       <span data-i18n="mobile.treasure.title">成长中心</span>
     </a>
   </nav>
@@ -1138,6 +1131,8 @@
     }
   </script>
   <script src="./js/page-tracker.js?v=1"></script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+  <script src="./js/icons.js?v=1"></script>
 </body>
 
 </html>

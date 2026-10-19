@@ -39,6 +39,7 @@ async function parseMultipart(req, opts = {}) {
     let fileSize = 0;
     let currentFilePath = null;
     let finished = false;
+    const pendingFileWrites = [];
 
     const parts = {};
     const files = {};
@@ -46,6 +47,15 @@ async function parseMultipart(req, opts = {}) {
     let totalReceived = 0;
     let lastLogTime = Date.now();
     const maxTotalBytes = Number(opts.maxTotalBytes || 0) || null;
+
+    function waitForStreamEnd(stream, finalChunk) {
+      return new Promise((resolveWrite, rejectWrite) => {
+        stream.once('finish', resolveWrite);
+        stream.once('error', rejectWrite);
+        if (finalChunk && finalChunk.length) stream.end(finalChunk);
+        else stream.end();
+      });
+    }
 
     function fail(err) {
       if (typeof err === 'string') {
@@ -64,8 +74,11 @@ async function parseMultipart(req, opts = {}) {
     function succeed(payload) {
       if (finished) return;
       finished = true;
-      try { if (fileStream) fileStream.end(); } catch (_) {}
-      resolve(payload);
+      const closeOpen = fileStream ? waitForStreamEnd(fileStream) : Promise.resolve();
+      fileStream = null;
+      Promise.all([...pendingFileWrites, closeOpen])
+        .then(() => resolve(payload))
+        .catch(reject);
     }
 
     req.on('data', (chunk) => {
@@ -218,9 +231,9 @@ async function parseMultipart(req, opts = {}) {
             const contentBuffer = buffer.slice(0, contentEnd);
 
             if (currentHeaders.filename && fileStream) {
-              // Write final chunk and close stream
+              // Write final chunk and close stream — wait for flush before callers copy the file.
               fileSize += contentBuffer.length;
-              fileStream.end(contentBuffer);
+              const stream = fileStream;
               const fileRecord = {
                 originalname: currentPart.filename,
                 filename: path.basename(currentPart.filepath),
@@ -235,6 +248,7 @@ async function parseMultipart(req, opts = {}) {
               } else {
                 files[currentPart.name] = fileRecord;
               }
+              pendingFileWrites.push(waitForStreamEnd(stream, contentBuffer));
               fileStream = null;
               currentFilePath = null;
             } else {

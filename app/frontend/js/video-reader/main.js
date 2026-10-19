@@ -62,7 +62,8 @@ function parseJwtPayload(tokenValue) {
     if (!tokenValue || typeof tokenValue !== 'string') return null;
     const parts = tokenValue.split('.');
     if (parts.length !== 3 || !parts[1]) return null;
-    const payloadB64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    let payloadB64 = parts[1].replace(/-/g, '+').replace(/_/g, '/');
+    while (payloadB64.length % 4) payloadB64 += '=';
     const json = atob(payloadB64);
     return JSON.parse(json);
   } catch (_) {
@@ -557,6 +558,14 @@ const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.g
     if (state.recorder?.state === 'recording') { stopPracticeRecording('manual'); return; }
     if (firstLessonGoalBusy || !selectMobileGoalLine(index)) return;
     startPracticeRecording();
+  },
+  next: () => {
+    const index = (state.practiceIndex ?? 0) + 1;
+    if (!selectMobileGoalLine(index)) {
+      location.href = './mobile-today.html#learning-details';
+      return;
+    }
+    firstLessonGoalCard.update(firstLessonGoal);
   },
 });
 
@@ -1697,6 +1706,7 @@ delegateDictionarySpeak(dictionaryContent);
 delegateDictionarySpeak(vocabDetailDictCard);
 
 function resumePlaybackIfNeeded() {
+  stopDictSpeech();
   if (!wasPlayingBeforeLookupMobile) return;
   try {
     const youtubePlayerWrapper = document.getElementById('youtube-player-wrapper');
@@ -2869,6 +2879,14 @@ function renderTranscript(video) {
     ? window.LinglishSentenceSegments.toDisplayedSentences(rawSegments)
     : rawSegments;
   state.currentSegments = segments;
+  if (window && window.LinglishCoachingDock && typeof window.LinglishCoachingDock.sync === 'function') {
+    window.LinglishCoachingDock.sync({
+      segments: state.currentSegments,
+      index: -1,
+      videoId: state.selectedVideoId,
+      user: state.user,
+    });
+  }
 
   if (segments.length === 0) {
     // 如果正在加载，显示加载状态
@@ -3406,6 +3424,7 @@ async function selectVideo(id) {
           youtubePlayer.on('statechange', function (event) {
             if (event.data === YT.PlayerState.PLAYING) {
               if (firstLessonSession.isActive() && firstLessonGoalBusy) { youtubePlayer.pause(); return; }
+              noteLearningVideoStarted();
               startWatchTimer();
               firstLessonLifecycle.playback({ video_resource_id: state.selectedVideoId });
             } else if (event.data === YT.PlayerState.ENDED) {
@@ -3504,6 +3523,7 @@ async function selectVideo(id) {
               return;
             }
             lastSegmentIndex = index;
+            publishCoaching(index);
 
             // 移除上一个字幕的 playing 高亮
             if (state._lastActiveSegmentIndex >= 0) {
@@ -4036,6 +4056,52 @@ function observeMobileFirstLessonPlayback(currentTime, index, playing) {
   }
 }
 
+function coachingTransport() {
+  const wrapper = document.getElementById('youtube-player-wrapper');
+  const useYouTube = wrapper && wrapper.style.display !== 'none' && youtubePlayer && typeof youtubePlayer.getCurrentTime === 'function';
+  if (useYouTube) {
+    return {
+      getCurrentTime() { try { return Number(youtubePlayer.getCurrentTime()) || 0; } catch (_) { return 0; } },
+      seek(seconds) { try { youtubePlayer.seekTo(seconds, true); } catch (_) {} },
+      play() { try { if (typeof youtubePlayer.play === 'function') youtubePlayer.play(); else youtubePlayer.playVideo(); } catch (_) {} },
+      pause() { try { if (typeof youtubePlayer.pause === 'function') youtubePlayer.pause(); else youtubePlayer.pauseVideo(); } catch (_) {} },
+      isPlaying() {
+        try {
+          if (typeof youtubePlayer.isPlaying === 'function') return youtubePlayer.isPlaying() === true;
+          if (typeof youtubePlayer.getPlayerState === 'function') {
+            const code = youtubePlayer.getPlayerState();
+            return code === 1 || code === 3;
+          }
+        } catch (_) {}
+        return false;
+      },
+    };
+  }
+  return {
+    getCurrentTime() { return videoPlayer ? Number(videoPlayer.currentTime) || 0 : 0; },
+    seek(seconds) { if (videoPlayer) { try { videoPlayer.currentTime = seconds; } catch (_) {} } },
+    play() {
+      if (!videoPlayer) return;
+      const pending = videoPlayer.play();
+      if (pending && typeof pending.catch === 'function') pending.catch(() => {});
+    },
+    pause() { if (videoPlayer) { try { videoPlayer.pause(); } catch (_) {} } },
+    isPlaying() { return Boolean(videoPlayer && !videoPlayer.paused && !videoPlayer.ended); },
+  };
+}
+
+function publishCoaching(index) {
+  const dock = window.LinglishCoachingDock;
+  if (!dock || typeof dock.sync !== 'function') return;
+  dock.sync({
+    segments: state.currentSegments,
+    index: Number.isInteger(index) ? index : -1,
+    videoId: state.selectedVideoId,
+    user: state.user,
+    transport: coachingTransport(),
+  });
+}
+
 // 性能优化：节流timeupdate处理，减少iPhone卡顿
 let timeupdateThrottleTimer = null;
 const TIMEUPDATE_THROTTLE = 200; // 限制处理频率到200ms一次
@@ -4142,6 +4208,7 @@ videoPlayer.addEventListener('timeupdate', function () {
   // 字幕切换时立即更新，不使用节流，确保字幕与音频同步
   // (Segment changes are already naturally rate-limited, no need for additional throttling)
   lastSegmentIndex = index;
+  publishCoaching(index);
 
   // 智能导入：记录观看的片段
   if (index >= 0 && state.smartImport.isActive && state.smartImport.sessionId) {
@@ -4310,7 +4377,9 @@ videoPlayer.addEventListener('timeupdate', function () {
 videoPlayer.addEventListener('play', function () {
   if (state.practiceArmed && state.practicePlaybackLock) {
     videoPlayer.pause();
+    return;
   }
+  noteLearningVideoStarted();
 });
 
 // Resume video when dictionary is closed (via back button or close button)
@@ -4318,6 +4387,7 @@ videoPlayer.addEventListener('play', function () {
   try {
     // 定义恢复播放的共用函数
     const resumeVideoPlayback = function () {
+      stopDictSpeech();
       console.log('[移动端关闭查词] wasPlayingBeforeLookupMobile =', wasPlayingBeforeLookupMobile);
       // Only resume if video was playing before lookup
       if (wasPlayingBeforeLookupMobile) {
@@ -4374,6 +4444,7 @@ videoPlayer.addEventListener('play', function () {
         const shouldResume = (prevHidden === false || prevHidden === null) && hidden && wasPlayingBeforeLookupMobile && state.lookupUiMode === 'sidebar';
         prevHidden = hidden;
         if (shouldResume) {
+          stopDictSpeech();
           // Only resume if video was playing before lookup
           console.log('[移动端关闭查词] 尝试恢复播放 (MutationObserver)');
           try {
@@ -4402,14 +4473,104 @@ videoPlayer.addEventListener('play', function () {
 // Client-side audio cache for instant playback
 const audioCache = new Map();
 
-// Global audio player to prevent overlapping sounds
+// One audible source for the word, a definition, a sentence, or the learning video.
 let currentAudioPlayer = null;
+let dictSpeakFallbackTimer = null;
+const dictVoiceSlot = (window.LinglishVoiceSlot
+  ? window.LinglishVoiceSlot.createVoiceSlot()
+  : { claim() { return 1; }, release() {}, isCurrent() { return true; } });
+
+function haltDictSpeechOutput() {
+  if (dictSpeakFallbackTimer) {
+    clearTimeout(dictSpeakFallbackTimer);
+    dictSpeakFallbackTimer = null;
+  }
+  if (currentAudioPlayer) {
+    try {
+      currentAudioPlayer.pause();
+      currentAudioPlayer.currentTime = 0;
+    } catch (_) { }
+    currentAudioPlayer = null;
+  }
+  try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) { }
+}
+
+let learningVideoYieldUntil = 0;
+function stopDictSpeech() {
+  learningVideoYieldUntil = 0;
+  dictVoiceSlot.release();
+  haltDictSpeechOutput();
+}
+
+function pauseLearningVideoNow() {
+  try {
+    const youtubePlayerWrapper = document.getElementById('youtube-player-wrapper');
+    const isUsingYouTube = youtubePlayerWrapper && youtubePlayerWrapper.style.display !== 'none';
+    if (isUsingYouTube && youtubePlayer) {
+      const playing = youtubePlayer.getPlayerState && youtubePlayer.getPlayerState() === 1;
+      if (playing) {
+        if (typeof youtubePlayer.pause === 'function') youtubePlayer.pause();
+        if (youtubePlayer.player && typeof youtubePlayer.player.pauseVideo === 'function') youtubePlayer.player.pauseVideo();
+      }
+    } else if (videoPlayer && !videoPlayer.paused) {
+      videoPlayer.pause();
+    }
+  } catch (_) { }
+}
+
+function pauseLearningVideoForWord() {
+  learningVideoYieldUntil = Date.now() + 250;
+  pauseLearningVideoNow();
+}
+
+function noteLearningVideoStarted() {
+  if (Date.now() < learningVideoYieldUntil) {
+    pauseLearningVideoNow();
+    return;
+  }
+  stopDictSpeech();
+}
 
 // Track if video was playing before lookup (mobile)
 let wasPlayingBeforeLookupMobile = false;
 
 // Track current dictionary polling to stop it when looking up a new word
 let currentDictPollingStop = null;
+
+async function showSentenceAssist(word) {
+  const card = document.getElementById('sentence-assist');
+  const assist = window.LinglishSentenceAssist;
+  if (!card || !assist) return false;
+  const sentence = (state.lastLookupContext && state.lastLookupContext.sentence) || '';
+  const paint = (gloss, phonetic) => {
+    card.hidden = false;
+    card.innerHTML = assist.cardHTML({ word, phonetic, gloss, sentence });
+    const closeBtn = card.querySelector('[data-assist="close"]');
+    const sayBtn = card.querySelector('[data-assist="say"]');
+    if (closeBtn) closeBtn.addEventListener('click', () => { card.hidden = true; });
+    if (sayBtn) sayBtn.addEventListener('click', () => {
+      card.hidden = true;
+      const record = document.getElementById('practice-start');
+      if (record) record.click();
+    });
+  };
+  paint('正在查这个词…', '');
+  let entry = null;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 2500);
+  try {
+    const token = localStorage.getItem('linglish_token') || localStorage.getItem('authToken');
+    const res = await fetch(`${API_BASE}/dictionary/${encodeURIComponent(word)}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      signal: controller.signal,
+    });
+    if (res.ok) entry = (await res.json()).entry || null;
+  } catch (_) { }
+  finally { clearTimeout(timer); }
+  if (card.hidden) return true;
+  paint(assist.shortGloss(entry), assist.phoneticOf(entry));
+  return true;
+}
 
 async function lookupWord(rawWord) {
   // Stop any previous polling to prevent old word's data from overwriting new word's display
@@ -4482,6 +4643,10 @@ async function lookupWord(rawWord) {
       console.warn('[Lookup] Failed to pause HTML5 player:', e);
       wasPlayingBeforeLookupMobile = false;
     }
+  }
+  if (new URLSearchParams(window.location.search).get('focus') === 'first_lesson') {
+    const stayed = await showSentenceAssist(word);
+    if (stayed) return;
   }
   const useOverlay = window.innerWidth <= 768 && vocabDetailOverlay && vocabDetailDictCard;
   if (useOverlay) {
@@ -4792,10 +4957,9 @@ function playWordAudio(audioUrl) {
 
 // Prefetch TTS audio in background for faster playback
 async function prefetchTTSAudio(word) {
-  if (!word || audioCache.has(`tts_${word}`)) return;
+  const selectedVoice = window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural';
+  if (!word || audioCache.has(`tts_${selectedVoice}_${word}`)) return;
   try {
-    let selectedVoice = 'en-US-AriaNeural';
-    try { selectedVoice = localStorage.getItem('linglish_tts_voice') || selectedVoice; } catch (_) { }
     const voiceLang = selectedVoice.startsWith('en-') ? 'en' : (selectedVoice.startsWith('zh-') ? 'zh-CN' : 'en');
 
     const _headers1 = { 'Content-Type': 'application/json' };
@@ -4803,13 +4967,13 @@ async function prefetchTTSAudio(word) {
     const res = await fetch(`${API_BASE}/tts/generate`, {
       method: 'POST',
       headers: _headers1,
-      body: JSON.stringify({ text: word, lang: voiceLang, provider: 'edge', voice: 'en-US-AriaNeural' })
+      body: JSON.stringify({ text: word, lang: voiceLang, provider: 'edge', voice: selectedVoice })
     });
 
     if (res.ok) {
       const data = await res.json();
       if (data.audioUrl) {
-        audioCache.set(`tts_${word}`, data.audioUrl);
+        audioCache.set(`tts_${selectedVoice}_${word}`, data.audioUrl);
         console.log('TTS audio prefetched and cached for:', word);
       }
     }
@@ -4822,31 +4986,13 @@ async function prefetchTTSAudio(word) {
 async function playWordAudioSmart(word, dictAudioUrl) {
   const lemma = String(word || '').trim();
   const normKey = lemma.toLowerCase();
+  if (!lemma) return;
+  const speakToken = dictVoiceSlot.claim(lemma);
+  if (!speakToken) return;
+  const alive = () => dictVoiceSlot.isCurrent(speakToken);
+  haltDictSpeechOutput();
+  pauseLearningVideoForWord();
 
-  // Stop any currently playing audio to prevent overlap
-  if (currentAudioPlayer) {
-    try {
-      currentAudioPlayer.pause();
-      currentAudioPlayer.currentTime = 0;
-      currentAudioPlayer = null;
-    } catch (_) { }
-  }
-
-  // Cancel any ongoing speech synthesis
-  try {
-    if (window.speechSynthesis) {
-      window.speechSynthesis.cancel();
-    }
-  } catch (_) { }
-
-  // Re-entrancy guard: ignore repeated triggers within 800ms
-  if (!window.__recentSpeak) window.__recentSpeak = new Map();
-  try {
-    const lastAt = window.__recentSpeak.get(normKey) || 0;
-    const now = Date.now();
-    if (now - lastAt < 800) return; // skip rapid double-fire on mobile
-    window.__recentSpeak.set(normKey, now);
-  } catch (_) { }
   const ua = navigator.userAgent || '';
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || (window.innerWidth && window.innerWidth <= 768);
   let fallbackTimer = null;
@@ -4858,7 +5004,7 @@ async function playWordAudioSmart(word, dictAudioUrl) {
     try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) { }
     fallbackTimer = setTimeout(() => {
       try {
-        if (played) return;
+        if (played || !alive()) return;
         const u = new SpeechSynthesisUtterance(lemma);
         let v = 'en-US';
         try {
@@ -4866,13 +5012,22 @@ async function playWordAudioSmart(word, dictAudioUrl) {
           v = pref && pref.startsWith('zh-') ? 'zh-CN' : 'en-US';
         } catch (_) { }
         u.lang = v;
+        if (!alive()) return;
         window.speechSynthesis.speak(u);
         played = true;
       } catch (_) { }
     }, timeoutMs);
+    dictSpeakFallbackTimer = fallbackTimer;
   }
-  function clearGestureFallback() { if (fallbackTimer) { clearTimeout(fallbackTimer); fallbackTimer = null; } }
+  function clearGestureFallback() {
+    if (dictSpeakFallbackTimer) {
+      clearTimeout(dictSpeakFallbackTimer);
+      dictSpeakFallbackTimer = null;
+    }
+    fallbackTimer = null;
+  }
   async function tryPlay(url) {
+    if (!alive()) return false;
     if (!url) return false;
     if (played) return false;
     try {
@@ -4886,6 +5041,11 @@ async function playWordAudioSmart(word, dictAudioUrl) {
       currentAudioPlayer = a;
 
       await a.play();
+      if (!alive()) {
+        try { a.pause(); } catch (_) { }
+        if (currentAudioPlayer === a) currentAudioPlayer = null;
+        return false;
+      }
       clearGestureFallback();
       played = true;
 
@@ -4928,9 +5088,11 @@ async function playWordAudioSmart(word, dictAudioUrl) {
       }
       const cached = audioCache.get(`dict_${normKey}`);
       if (cached && await tryPlay(cached)) return;
+      if (!alive()) return;
     } else {
       const cachedTts = audioCache.get(`tts_${normKey}`);
       if (cachedTts && await tryPlay(cachedTts)) return;
+      if (!alive()) return;
     }
 
     // 2) Dictionary audio if provided; if it fails, continue to TTS
@@ -4941,16 +5103,17 @@ async function playWordAudioSmart(word, dictAudioUrl) {
         audioCache.set(`dict_${normKey}`, dictAudioUrl);
         return;
       }
+      if (!alive()) return;
       console.log('[Audio] Falling back to TTS for', word);
     }
 
     // 3) Prefetched TTS
-    const pref = audioCache.get(`tts_${normKey}`);
+    const selectedVoice = window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural';
+    const pref = audioCache.get(`tts_${selectedVoice}_${normKey}`);
     if (pref && await tryPlay(pref)) return;
+    if (!alive()) return;
 
     // 4) Generate TTS on demand
-    let selectedVoice = 'en-US-AriaNeural';
-    try { selectedVoice = localStorage.getItem('linglish_tts_voice') || selectedVoice; } catch (_) { }
     const voiceLang = selectedVoice.startsWith('en-') ? 'en' : (selectedVoice.startsWith('zh-') ? 'zh-CN' : 'en');
 
     const _headers2 = { 'Content-Type': 'application/json' };
@@ -4958,23 +5121,27 @@ async function playWordAudioSmart(word, dictAudioUrl) {
     const res = await fetch(`${API_BASE}/tts/generate`, {
       method: 'POST',
       headers: _headers2,
-      body: JSON.stringify({ text: lemma, lang: voiceLang, provider: 'edge', voice: 'en-US-AriaNeural' })
+      body: JSON.stringify({ text: lemma, lang: voiceLang, provider: 'edge', voice: selectedVoice })
     });
+    if (!alive()) return;
 
     if (res.ok) {
       const data = await res.json();
       if (data.audioUrl) {
-        audioCache.set(`tts_${normKey}`, data.audioUrl);
+        audioCache.set(`tts_${selectedVoice}_${normKey}`, data.audioUrl);
         if (await tryPlay(data.audioUrl)) return;
+        if (!alive()) return;
       }
     }
 
     // 5) Last resort: Web Speech API
     try {
+      if (!alive()) return;
       clearGestureFallback();
       const utterance = new SpeechSynthesisUtterance(lemma);
       utterance.lang = voiceLang.startsWith('zh') ? 'zh-CN' : 'en-US';
       speechSynthesis.cancel();
+      if (!alive()) return;
       speechSynthesis.speak(utterance);
       played = true;
     } catch (_) { }
@@ -5073,6 +5240,18 @@ async function assessPronunciation(text) {
       return t;
     }
 
+    if (isValid(t) && isTokenExpired(t)) {
+      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') {
+        try {
+          const renewed = await window.AuthManager.ensureSession({ force: true });
+          if (renewed) {
+            token = renewed;
+            return renewed;
+          }
+        } catch (_) { }
+      }
+    }
+
     // Registered token exists but is expired -> force re-login instead of silently switching.
     if (isValid(t) && isTokenExpired(t)) {
       try {
@@ -5088,41 +5267,7 @@ async function assessPronunciation(text) {
       return null;
     }
 
-    const guestMode = (() => {
-      try {
-        return (
-          sessionStorage.getItem('isGuest') === 'true' ||
-          localStorage.getItem('isGuest') === 'true' ||
-          sessionStorage.getItem('is_guest') === 'true' ||
-          localStorage.getItem('is_guest') === 'true'
-        );
-      } catch (_) {
-        return false;
-      }
-    })();
-    if (!guestMode) return null;
-
-    const resp = await fetch(`${API_BASE}/auth/guest`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-    });
-    const payload = await resp.json().catch(() => ({}));
-    const guestToken = payload?.access_token;
-    if (!resp.ok || !isValid(guestToken)) return null;
-
-    try {
-      if (window.AuthManager && typeof window.AuthManager.setToken === 'function') {
-        await window.AuthManager.setToken(guestToken, false);
-      } else {
-        sessionStorage.setItem('authToken', guestToken);
-        sessionStorage.setItem('linglish_token', guestToken);
-      }
-      sessionStorage.setItem('isGuest', 'true');
-      sessionStorage.setItem('is_guest', 'true');
-    } catch (_) { }
-
-    token = guestToken;
-    return guestToken;
+    return null;
   }
 
     const freshToken = await ensureAuthToken();
@@ -5271,12 +5416,11 @@ function renderPronunciationCard(result) {
   const pronSlowTtsBtn = document.getElementById('pron-slow-tts');
   if (pronSlowTtsBtn) pronSlowTtsBtn.addEventListener('click', async () => {
     try {
-      let selectedVoice = 'en-US-AriaNeural';
-      try { selectedVoice = localStorage.getItem('linglish_tts_voice') || selectedVoice; } catch (_) { }
+      const selectedVoice = window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural';
       const voiceLang = selectedVoice.startsWith('en-') ? 'en' : (selectedVoice.startsWith('zh-') ? 'zh-CN' : 'en');
       const resp = await fetch(`${API_BASE}/tts/generate`, {
         method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-        body: JSON.stringify({ text: result.text, slow: true, lang: voiceLang, provider: 'edge', voice: 'en-US-AriaNeural' })
+        body: JSON.stringify({ text: result.text, slow: true, lang: voiceLang, provider: 'edge', voice: selectedVoice })
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data.message || 'TTS 失败');
@@ -5600,10 +5744,11 @@ function tokenizeForPracticeComparison(text) {
 
 function computePracticeWordMatches(referenceText, recognizedText) {
   const correctIndexes = [];
+  const missingIndexes = [];
   const refTokens = tokenizeForPracticeComparison(referenceText);
   const hypTokens = tokenizeForPracticeComparison(recognizedText);
-  if (!refTokens.length || !hypTokens.length) {
-    return { correctIndexes };
+  if (!refTokens.length) {
+    return { correctIndexes, missingIndexes };
   }
   const hypCounts = new Map();
   hypTokens.forEach((token) => {
@@ -5616,14 +5761,17 @@ function computePracticeWordMatches(referenceText, recognizedText) {
     if (remaining > 0) {
       correctIndexes.push(i);
       hypCounts.set(token, remaining - 1);
+    } else {
+      missingIndexes.push(i);
     }
   }
-  return { correctIndexes };
+  return { correctIndexes, missingIndexes };
 }
 
-function buildHighlightedPracticeHTML(originalText, correctIndexes) {
+function buildHighlightedPracticeHTML(originalText, correctIndexes, missingIndexes) {
   if (!originalText) return '';
   const correctSet = new Set(correctIndexes || []);
+  const missingSet = new Set(missingIndexes || []);
   const segments = [];
   const wordRegex = /[A-Za-z0-9']+/g;
   let lastIndex = 0;
@@ -5638,6 +5786,8 @@ function buildHighlightedPracticeHTML(originalText, correctIndexes) {
     const escapedWord = escapeHtml(wordText);
     if (correctSet.has(wordIndex)) {
       segments.push(`<span class="practice-word-correct">${escapedWord}</span>`);
+    } else if (missingSet.has(wordIndex)) {
+      segments.push(`<span class="practice-word-missing">${escapedWord}</span>`);
     } else {
       segments.push(escapedWord);
     }
@@ -5670,8 +5820,18 @@ function renderPracticeCurrentLine() {
   const key = line && line.index != null ? line.index : state.practiceIndex;
   const lineStatus = state.practiceLineResults[key] || null;
   const isSuccessful = lineStatus === 'success';
+  const storedMatches = state.practiceLineWordResults[key] || {};
+  let missingIndexes = storedMatches.missingIndexes;
+  if (!Array.isArray(missingIndexes) && window.LinglishMissedWords && line.text) {
+    const saved = new Set(window.LinglishMissedWords.wordsFor(localStorage, state.selectedVideoId, key));
+    missingIndexes = [];
+    const tokens = String(line.text).match(/[A-Za-z0-9']+/g) || [];
+    tokens.forEach((token, index) => {
+      if (saved.has(token.toLowerCase())) missingIndexes.push(index);
+    });
+  }
   const highlightedLineHtml = line.text
-    ? buildHighlightedPracticeHTML(line.text, (state.practiceLineWordResults[key] || {}).correctIndexes)
+    ? buildHighlightedPracticeHTML(line.text, storedMatches.correctIndexes, missingIndexes)
     : '';
   const currentLineHTML = `
           <div style="font-weight:600; margin-bottom:0.4rem;">Line ${state.practiceIndex + 1} of ${state.practiceLines.length}</div>
@@ -6008,9 +6168,34 @@ function handlePracticeResult(result, line, assessmentContext = null) {
   const percent = Math.round(similarity * 100);
   const key = line && line.index != null ? line.index : state.practiceIndex;
   const wordMatches = computePracticeWordMatches(targetText || (line ? line.text : ''), recognizedText || '');
+  if (window.LinglishMissedWords && line) {
+    const persisted = window.LinglishMissedWords.remember(
+      localStorage,
+      state.selectedVideoId,
+      key,
+      targetText || line.text || '',
+      recognizedText || ''
+    );
+    wordMatches.missingWords = persisted;
+  }
   state.practiceLineWordResults[key] = wordMatches;
   renderPracticeCurrentLine();
 
+  if (firstLessonSession.isActive()) {
+    if (success) {
+      markPracticedMobileFirstLesson(assessmentContext, result, result.__assessmentId, 'recording_assessment');
+      state.practiceLineResults[key] = 'success';
+      state.practiceAttempts = 0;
+      state.waitingForPractice = false;
+      state.practicePlaybackLock = false;
+      videoPlayer.pause();
+      state.segmentPlaybackEnd = null;
+      state.segmentPlaybackCallback = null;
+    }
+    firstLessonGoalCard.settle(window.LinglishFirstLessonGoal.sentenceResult(success === true, wordMatches.missingWords));
+    updatePracticeButtons(false, false, false);
+    return true;
+  }
   if (success) {
     markPracticedMobileFirstLesson(assessmentContext, result, result.__assessmentId, 'recording_assessment');
     updatePracticeFeedback(`Great! (${percent}% match) — "${recognizedText}"`, '#155724');
@@ -6019,18 +6204,14 @@ function handlePracticeResult(result, line, assessmentContext = null) {
     state.practiceAttempts = 0;
     state.waitingForPractice = false;
     state.practicePlaybackLock = false;
-    if (assessmentContext && firstLessonGoal) {
-      videoPlayer.pause();
-      state.segmentPlaybackEnd = null;
-      state.segmentPlaybackCallback = null;
-      if (!firstLessonGoal.complete) selectMobileGoalLine(firstLessonGoal.nextIndex);
-      updatePracticeButtons(false, false, false);
-      return true;
-    }
     scheduleNextLine(line, 'Continuing video...');
   } else {
     state.practiceAttempts += 1;
     let feedbackMsg = `Not quite (${percent}% match). Recognized: "${recognizedText}". Try again! (${state.practiceAttempts}/3)`;
+    const missedList = (wordMatches.missingWords || []).slice(0, 4);
+    if (missedList.length) {
+      feedbackMsg = `这句漏了 ${missedList.join('、')}（${percent}%）。漏掉的词留在这一句里。 (${state.practiceAttempts}/3)`;
+    }
     if (state.practiceAttempts >= 3) {
       feedbackMsg += ' Playing original line.';
       updatePracticeFeedback(feedbackMsg, '#b71c1c');

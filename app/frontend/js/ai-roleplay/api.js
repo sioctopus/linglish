@@ -295,7 +295,7 @@
           text: boundedText(text, 600),
           lang: 'en',
           provider: 'edge',
-          voice: 'en-US-AriaNeural',
+          voice: (window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural'),
         }),
         signal,
       });

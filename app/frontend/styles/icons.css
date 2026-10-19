@@ -1,0 +1,74 @@
+/* Linglish icon system — pair with js/icons.js and --lx-icon-* tokens */
+
+.lx-icon {
+  width: var(--lx-icon-md, 20px);
+  height: var(--lx-icon-md, 20px);
+  display: inline-block;
+  flex: none;
+  vertical-align: middle;
+  color: inherit;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: var(--lx-icon-stroke, 2);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.lx-icon--xs { width: var(--lx-icon-xs, 14px); height: var(--lx-icon-xs, 14px); }
+.lx-icon--sm { width: var(--lx-icon-sm, 16px); height: var(--lx-icon-sm, 16px); }
+.lx-icon--md { width: var(--lx-icon-md, 20px); height: var(--lx-icon-md, 20px); }
+.lx-icon--lg { width: var(--lx-icon-lg, 24px); height: var(--lx-icon-lg, 24px); }
+.lx-icon--xl { width: var(--lx-icon-xl, 28px); height: var(--lx-icon-xl, 28px); }
+
+.lx-icon--filled {
+  fill: currentColor;
+  stroke: none;
+}
+
+/* Mobile bottom nav — SVG chrome instead of emoji */
+.bottom-nav .nav-icon {
+  margin-bottom: 4px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.3s var(--lx-ease, cubic-bezier(0.4, 0, 0.2, 1));
+}
+
+.bottom-nav .nav-icon .lx-icon,
+.bottom-nav .nav-icon svg {
+  width: 22px;
+  height: 22px;
+  color: inherit;
+}
+
+.bottom-nav .nav-item.active .nav-icon {
+  transform: translateY(-2px);
+  filter: drop-shadow(0 4px 8px rgba(15, 118, 110, 0.28));
+}
+
+.bottom-nav .nav-emoji {
+  display: none;
+}
+
+/* Desktop / pill chrome */
+.pill .lx-icon,
+.nav-btn .lx-icon,
+.wb-btn .lx-icon,
+.wb-btn-outline .lx-icon {
+  margin-right: 0.25em;
+}
+
+.line-play .lx-icon,
+.line-play svg.lx-icon {
+  width: 14px;
+  height: 14px;
+}
+
+.mic .lx-icon,
+.mic svg.lx-icon {
+  width: 28px;
+  height: 28px;
+}

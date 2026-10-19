@@ -194,6 +194,74 @@ test('speaking the same word twice only generates the audio once', async () => {
   assert.equal(audio.played.length, 2);
 });
 
+function controllableAudio() {
+  const state = { played: [], playing: false, paused: false, pauses: 0, resumes: 0 };
+  return {
+    state,
+    play: async (url) => {
+      state.played.push(url);
+      state.playing = true;
+      state.paused = false;
+    },
+    playing: () => state.playing && !state.paused,
+    paused: () => state.paused,
+    pause: () => {
+      state.pauses += 1;
+      state.paused = true;
+    },
+    resume: async () => {
+      state.resumes += 1;
+      state.paused = false;
+      state.playing = true;
+    },
+  };
+}
+
+test('toggleSpeak pauses a playing clip and resumes it without another request', async () => {
+  const { createApiClient } = loadModule();
+  const fetch = recordingFetch(() => ok({ audioUrl: '/tts-audio/apple.mp3' }));
+  const audio = controllableAudio();
+  const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio });
+  assert.equal(await client.toggleSpeak('apple'), 'playing');
+  assert.equal(await client.toggleSpeak('apple'), 'paused');
+  assert.equal(await client.toggleSpeak('apple'), 'playing');
+  assert.equal(fetch.calls.length, 1);
+  assert.equal(audio.state.played.length, 1);
+  assert.equal(audio.state.pauses, 1);
+  assert.equal(audio.state.resumes, 1);
+});
+
+test('toggleSpeak pauses speech and resumes it without requesting audio', async () => {
+  const { createApiClient } = loadModule();
+  const fetch = recordingFetch(() => ok({ audioUrl: '/tts-audio/apple.mp3' }));
+  const synth = {
+    speaking: false,
+    paused: false,
+    pending: false,
+    cancel() {},
+    pause() { this.paused = true; },
+    resume() { this.paused = false; },
+    speak() { this.speaking = true; this.paused = false; },
+  };
+  const previous = global.window;
+  global.window = {
+    speechSynthesis: synth,
+    SpeechSynthesisUtterance: function SpeechSynthesisUtterance() {},
+  };
+  try {
+    const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio: fakeAudio() });
+    assert.equal(await client.toggleSpeak('dragon fruit'), 'playing');
+    assert.equal(await client.toggleSpeak('dragon fruit'), 'paused');
+    assert.equal(synth.paused, true);
+    assert.equal(await client.toggleSpeak('dragon fruit'), 'playing');
+    assert.equal(synth.paused, false);
+    assert.equal(fetch.calls.length, 0);
+  } finally {
+    if (previous === undefined) delete global.window;
+    else global.window = previous;
+  }
+});
+
 test('speak fails silently when tts is unavailable', async () => {
   const { createApiClient } = loadModule();
   const fetch = recordingFetch(() => { throw new Error('offline'); });

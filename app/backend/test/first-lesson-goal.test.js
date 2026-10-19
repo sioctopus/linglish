@@ -96,6 +96,50 @@ test('unrecordably long lines are skipped and unavailable storage stays usable',
   assert.equal(store.latest('user:1').videoId, '10');
 });
 
+test('one spoken sentence leaves a single line and two choices', () => {
+  assert.equal(goals.sentenceResult(false, ['responsible', 'the']), '这句漏了 responsible、the。');
+  assert.equal(goals.sentenceResult(true, []), '这句说出来了。');
+  const calls = [];
+  function element(tag) {
+    return {
+      tag, hidden: false, className: '', textContent: '', children: [], attrs: {},
+      setAttribute(name, value) { this.attrs[name] = value; },
+      append(...nodes) { this.children.push(...nodes); },
+      replaceChildren(...nodes) { this.children = nodes; },
+      addEventListener(type, fn) { this.listeners = { ...(this.listeners || {}), [type]: fn }; },
+      click() { this.listeners?.click?.(); },
+    };
+  }
+  const doc = { createElement: element };
+  const container = element('div');
+  container.ownerDocument = doc;
+  container.classList = { add() {} };
+  const card = goals.createCard(container, {
+    mobile: false,
+    listen() {},
+    record() {},
+    next() { calls.push('next'); },
+  });
+  card.update({ total: 3, completedCount: 0, complete: false, saved: true, nextIndex: 0 });
+  card.feedback('先听，再开口。');
+  card.settle('这句漏了 responsible。');
+  card.feedback('这条说明不该盖住结果');
+  const flat = [];
+  (function walk(node) {
+    flat.push(node);
+    (node.children || []).forEach(walk);
+  })(container);
+  assert.equal(flat.find(node => node.className === 'goal-feedback').textContent, '这句漏了 responsible。');
+  const again = flat.find(node => node.textContent === '再来一句');
+  const stop = flat.find(node => node.textContent === '今天到这');
+  assert.equal(again.hidden, false);
+  assert.equal(stop.hidden, false);
+  assert.equal(stop.href, './today.html?from=first_lesson_complete&lines=1#day-end');
+  assert.equal(flat.find(node => node.tag === 'progress').hidden, true);
+  again.click();
+  assert.deepEqual(calls, ['next']);
+});
+
 test('resume URLs are same-origin known pages and reject invalid video IDs', () => {
   assert.equal(goals.resumeHref({ videoId: 'javascript:alert(1)' }, true), null);
   const url = new URL(goals.resumeHref({ videoId: '10' }, true), 'https://example.com/');

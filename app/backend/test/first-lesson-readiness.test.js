@@ -72,6 +72,8 @@ function extractNamedFunction(source, name) {
 
 function loadVideoDetailsContract() {
   const source = extractNamedFunction(readerHtml, 'loadVideoDetails');
+  const rememberSource = readerHtml.match(/    function rememberVideoWords\(videoId, segments\) \{[\s\S]*?\n    \}/)?.[0];
+  assert.ok(rememberSource, 'the reader vocabulary helper must remain available');
   return new Function(
     'state',
     'fetch',
@@ -90,7 +92,7 @@ function loadVideoDetailsContract() {
     'postEvent',
     'startFirstLessonProgress',
     'firstLessonLifecycle',
-    `return (${source});`,
+    `const rememberVideoWords = (${rememberSource}); return (${source});`,
   );
 }
 
@@ -276,7 +278,7 @@ test('mobile first lesson commits and renders subtitles without starting wavefor
         payload: readiness,
       });
     },
-    { log: () => {}, warn: () => {} },
+    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
     async () => ({ ok: false }),
     '/api',
     { LinglishSentenceSegments: sentenceSegments },
@@ -331,7 +333,7 @@ test('normal mobile entry keeps asynchronous waveform refinement behavior', asyn
     () => {},
     null,
     (currentVideo, segments) => committed.push({ currentVideo, segments }),
-    { log: () => {}, warn: () => {} },
+    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
     async () => ({ ok: false }),
     '/api',
     { LinglishSentenceSegments: sentenceSegments },
@@ -380,7 +382,7 @@ test('desktop first lesson commits and renders subtitles without starting wavefo
     (segments) => segments,
     () => { renderCalls += 1; },
     () => {},
-    { log: () => {}, warn: () => {} },
+    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
     { isCurrent: () => true },
     { isActive: () => true },
     tracker,
@@ -431,7 +433,7 @@ test('normal desktop entry still waits for waveform refinement before committing
     (segments) => segments,
     () => { renderCalls += 1; },
     () => {},
-    { log: () => {}, warn: () => {} },
+    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
     { isCurrent: () => true },
     { isActive: () => false },
     createFirstLessonReadiness({ focus: null, from: 'library', startedAt: 1000, now: () => 2500 }),
@@ -472,7 +474,7 @@ test('reader suppresses readiness when an asynchronous subtitle load becomes sta
     (segments) => segments,
     () => {},
     () => {},
-    { log: () => {}, warn: () => {} },
+    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
     { isCurrent: () => true },
     { isActive: () => false },
     { markReady: (details) => { marks.push(details); return details; } },
@@ -528,7 +530,7 @@ test('deactivated mobile session cannot emit readiness and resumes ordinary wave
     () => {},
     null,
     markCommitted,
-    { log: () => {}, warn: () => {} },
+    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
     async () => ({ ok: false }),
     '/api',
     { LinglishSentenceSegments: sentenceSegments },

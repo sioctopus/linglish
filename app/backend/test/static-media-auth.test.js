@@ -66,6 +66,7 @@ test.before(async () => {
   await fsp.writeFile(RECORDING_FILE, RECORDING_BODY);
   await fsp.writeFile(EMPTY_RECORDING_FILE, Buffer.alloc(0));
   await fsp.writeFile(PDF_FILE, PDF_BODY);
+  await fsp.writeFile(path.join(__dirname, '../pdfs', '试卷-auth.pdf'), PDF_BODY);
 
   dataStore.findUserById = async id => [OWNER_ID, 8].includes(Number(id))
     ? { id: Number(id), email: 'owner@example.test', status: 'active', password_hash: 'hidden' }
@@ -97,7 +98,10 @@ test.before(async () => {
     }
     return [];
   };
-  dataStore.getArticles = async () => [{ pdf_path: PDF_PATH }];
+  dataStore.getArticles = async () => [
+    { pdf_path: PDF_PATH },
+    { pdf_path: '/pdfs/试卷-auth.pdf' },
+  ];
 
   server = http.createServer(async (req, res) => {
     for (const [name, value] of Object.entries(getCorsHeaders(req.headers.origin, { logUnknown: false }))) {
@@ -123,6 +127,7 @@ test.after(async () => {
     fsp.unlink(RECORDING_FILE),
     fsp.unlink(EMPTY_RECORDING_FILE),
     fsp.unlink(PDF_FILE),
+    fsp.unlink(path.join(__dirname, '../pdfs', '试卷-auth.pdf')),
   ]);
   try { await dataStore.pool.end(); } catch (_) { /* already closed */ }
 });
@@ -188,6 +193,17 @@ test('clean PDF URLs accept only a valid media cookie or compatible account Bear
     headers: { authorization: `Bearer ${mediaBearer}` },
   });
   assert.equal(deniedMediaBearer.status, 401);
+
+  const encodedExam = await request(`/pdfs/${encodeURIComponent('试卷-auth.pdf')}`, {
+    headers: { authorization: `Bearer ${accountToken()}` },
+  });
+  assert.equal(encodedExam.status, 200);
+  assert.deepEqual(encodedExam.body, PDF_BODY);
+
+  const traversal = await request(`/pdfs/${encodeURIComponent('../package.json')}`, {
+    headers: { authorization: `Bearer ${accountToken()}` },
+  });
+  assert.equal(traversal.status, 403);
 
   const unknownDocument = await request('/pdfs/not-authorized.pdf', {
     headers: { cookie: mediaCookie() },

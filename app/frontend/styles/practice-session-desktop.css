@@ -4077,7 +4077,7 @@
       justify-content: center;
       flex-direction: column;
       gap: 1.5rem;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
+      transition: none;
     }
 
     .page-loader.hidden {
@@ -5230,36 +5230,24 @@ body.dialogue-focus-layout .back-header {
   padding-block: 7px !important;
 }
 
+/* Geometry owned by body.practice-focus-active (file end). Keep behavior only. */
 body.dialogue-focus-layout .practice-grid {
-  grid-template-columns: minmax(560px, 1.45fr) minmax(380px, 0.75fr) !important;
-  grid-template-rows: minmax(0, 1fr) !important;
-  gap: 16px !important;
-  height: calc(100dvh - 72px) !important;
-  padding: 0 20px 16px !important;
-  max-width: 1680px !important;
+  min-height: 0;
 }
 
 body.dialogue-focus-layout .practice-left {
-  display: grid !important;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: 8px !important;
   min-width: 0;
-  height: 100%;
   overflow: hidden !important;
   padding: 0 !important;
 }
 
 body.dialogue-focus-layout .video-card {
-  width: 100%;
-  height: 100% !important;
   min-height: 0;
-  aspect-ratio: auto !important;
   border-radius: 18px !important;
 }
 
 body.dialogue-focus-layout .video-player-container {
   width: 100%;
-  height: 100%;
   min-height: 0 !important;
   border-width: 3px !important;
   border-radius: 16px !important;
@@ -5267,11 +5255,7 @@ body.dialogue-focus-layout .video-player-container {
 
 body.dialogue-focus-layout #desktop-controls-container {
   display: block !important;
-  min-height: 58px;
-  max-height: 82px;
   margin: 0 !important;
-  padding: 4px 8px !important;
-  overflow: hidden !important;
   border-radius: 14px !important;
 }
 
@@ -5490,11 +5474,11 @@ body.dialogue-focus-layout .line-item.current {
 }
 
 @media (max-width: 900px) {
-  body.dialogue-focus-layout {
+  body.dialogue-focus-layout:not(.practice-focus-active) {
     overflow: auto;
   }
 
-  body.dialogue-focus-layout .practice-grid {
+  body.dialogue-focus-layout:not(.practice-focus-active) .practice-grid {
     grid-template-columns: 1fr !important;
     grid-template-rows: auto auto !important;
     height: auto !important;
@@ -5502,7 +5486,7 @@ body.dialogue-focus-layout .line-item.current {
     padding-inline: 10px !important;
   }
 
-  body.dialogue-focus-layout .practice-left {
+  body.dialogue-focus-layout:not(.practice-focus-active) .practice-left {
     grid-template-rows: minmax(240px, 42dvh);
     height: auto;
     overflow: visible !important;
@@ -5512,7 +5496,7 @@ body.dialogue-focus-layout .line-item.current {
     display: block !important;
   }
 
-  body.dialogue-focus-layout .practice-right {
+  body.dialogue-focus-layout:not(.practice-focus-active) .practice-right {
     grid-template-rows: minmax(88px, auto) minmax(360px, auto);
     max-height: none;
   }
@@ -5605,31 +5589,82 @@ body.dialogue-focus-layout .line-item.current {
 
 .focus-essential-controls button:hover,
 .focus-essential-controls button.is-playing {
-  color: #0369a1;
-  border-color: #38bdf8;
-  background: #f0f9ff;
+  color: #0f766e;
+  border-color: #5eead4;
+  background: #f0fdfa;
+}
+
+.practice-focus-badge {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 999px;
+  color: #0f766e;
+  background: #ccfbf1;
+  border: 1px solid #99f6e4;
+  font: 800 12px/1 "Manrope", "PingFang SC", sans-serif;
+}
+
+.practice-focus-badge[hidden],
+.practice-focus-exit[hidden] {
+  display: none !important;
+}
+
+.practice-focus-exit {
+  flex: 0 0 auto;
+  min-height: 36px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid #99f6e4;
+  background: #fff;
+  color: #0f766e;
+  font: 700 13px/1 "Manrope", "PingFang SC", sans-serif;
+  cursor: pointer;
+}
+
+.practice-focus-exit:hover {
+  background: #f0fdfa;
+  border-color: #5eead4;
 }
 
 .mode-top-bar[data-workspace-position="top"] + .practice-grid {
   height: calc(100dvh - 142px) !important;
 }
 
-body.dialogue-focus-layout .mode-top-bar {
+/* Match video-learning focus: hide global chrome; unified inset from tokens. */
+body.practice-focus-active > .topbar {
+  display: none !important;
+}
+
+body.practice-focus-active {
+  --lx-focus-inset: 24px;
+  --lx-focus-gap: 16px;
+  padding: var(--lx-focus-inset, 24px) !important;
+  box-sizing: border-box !important;
+}
+
+body.practice-focus-active .mode-top-bar,
+body.dialogue-focus-layout .mode-top-bar,
+body.immersive-active .mode-top-bar {
   display: flex !important;
 }
 
-body.dialogue-focus-layout .mode-top-bar::before {
-  content: "● 专注中";
-  flex: 0 0 auto;
-  padding: 6px 9px;
-  border-radius: 999px;
-  color: #047857;
-  background: #d1fae5;
-  font: 800 12px/1 "Manrope", "PingFang SC", sans-serif;
+body.practice-focus-active .start-practice-btn,
+body.dialogue-focus-layout .start-practice-btn,
+body.immersive-active .start-practice-btn {
+  display: none !important;
 }
 
-body.dialogue-focus-layout .practice-grid {
-  height: calc(100dvh - 128px) !important;
+body.dialogue-focus-layout .practice-grid,
+body.immersive-active .practice-grid,
+body.practice-focus-active .practice-grid {
+  /* mode-top-bar lives inside the grid — do not subtract extra chrome */
+  height: calc(100dvh - (var(--lx-focus-inset, 24px) * 2)) !important;
+  max-width: none !important;
+  width: 100% !important;
+  margin: 0 !important;
+  gap: var(--lx-focus-gap, 16px) !important;
 }
 
 @media (max-width: 1050px) {
@@ -5651,4 +5686,2644 @@ body.dialogue-focus-layout .practice-grid {
   .mode-top-bar[data-workspace-position="top"] + .practice-grid {
     height: auto !important;
   }
+}
+
+/* =========================================================
+   AI coach desk
+   One toolbar, a 16:9 stage, one primary action, a script rail.
+   ========================================================= */
+body {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 16px 24px 20px !important;
+  box-sizing: border-box !important;
+  background: #f8fafc !important;
+  background-image: none !important;
+  color: #0f172a !important;
+  font-family: "Manrope", "PingFang SC", "Microsoft YaHei", sans-serif !important;
+}
+
+.coach-frame {
+  display: flex !important;
+  flex-flow: row nowrap !important;
+  align-items: center;
+  gap: 12px;
+  flex: 0 0 auto;
+  width: min(1216px, 100%);
+  min-height: 68px;
+  margin: 0 auto;
+  padding: 8px 10px 8px 8px;
+  box-sizing: border-box;
+  background: #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+}
+
+.coach-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 112px;
+  flex: 0 0 auto;
+}
+
+.coach-brand strong {
+  color: #0f172a;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 20px;
+}
+
+.coach-brand span {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+}
+
+.coach-frame .back-header {
+  order: 0;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.coach-frame .back-btn {
+  min-height: 40px;
+  padding: 0 16px !important;
+  border-radius: 999px !important;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #d9dde6 !important;
+  box-shadow: none !important;
+}
+
+.coach-frame .mode-top-bar,
+.coach-frame .mode-top-bar[data-workspace-position="top"] {
+  order: 2;
+  flex: 1 1 auto;
+  width: auto !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.coach-frame .mode-top-title {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+}
+
+.coach-frame .mode-top-row {
+  order: 4;
+  flex: 0 0 auto;
+}
+
+.coach-frame .theme-toggle {
+  width: 44px;
+  height: 26px;
+}
+
+.coach-frame .theme-toggle::after {
+  background: #0d9488;
+  box-shadow: none;
+}
+
+.coach-frame .mode-tabs,
+.coach-frame .mode-top-bar[data-workspace-position="top"] .mode-tabs {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 2px !important;
+  margin: 0 !important;
+  padding: 4px !important;
+  border-radius: 999px !important;
+  background: #f1f5f9 !important;
+}
+
+.coach-frame .mode-tab,
+.coach-frame .mode-top-bar[data-workspace-position="top"] .mode-tab {
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 14px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: #334155 !important;
+  box-shadow: none !important;
+  animation: none !important;
+}
+
+.coach-frame .mode-tab.active,
+.coach-frame .mode-top-bar[data-workspace-position="top"] .mode-tab.active {
+  background: #ffffff !important;
+  color: #0f766e !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08) !important;
+}
+
+.mode-selector-card .card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 64px;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border-bottom: 0 !important;
+  background: transparent !important;
+}
+
+.mode-selector-card:not(.collapsed) .card-header {
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+.mode-selector-card .card-header h3 {
+  flex: 0 0 auto;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.mode-selector-card .stage-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mode-selector-card .start-practice-btn {
+  flex: 0 0 auto;
+  width: auto !important;
+  min-height: 40px;
+  margin: 0;
+}
+
+.mode-selector-card.collapsed .mode-demo-grid,
+.mode-selector-card.collapsed .mode-description,
+.mode-selector-card.collapsed .mode-quick-steps {
+  display: none !important;
+}
+
+.coach-frame .focus-essential-controls {
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+.coach-frame .focus-essential-controls button {
+  min-height: 34px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #0f172a;
+  box-shadow: none;
+}
+
+.coach-frame .focus-essential-controls button:hover,
+.coach-frame .focus-essential-controls button.is-playing {
+  border: 0;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.coach-frame,
+.practice-grid {
+  width: min(1680px, 100%) !important;
+  max-width: 1680px !important;
+}
+
+.practice-grid {
+  flex: 1 1 auto !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  gap: 16px !important;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 420px) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+}
+
+.practice-left {
+  min-height: 0;
+  align-items: center;
+  overflow: auto !important;
+}
+
+.video-card,
+.start-practice-container,
+.mode-selector-card {
+  width: min(100%, calc(min(60vh, 620px) * 16 / 9 + 18px)) !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9 + 18px)) !important;
+  box-sizing: border-box;
+}
+
+.video-card {
+  flex: 0 0 auto !important;
+  height: auto !important;
+  padding: 8px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04) !important;
+  backdrop-filter: none !important;
+}
+
+.video-player-container {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: 16 / 9 !important;
+  margin-inline: auto;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: #0f172a !important;
+  box-shadow: none !important;
+}
+
+#desktop-controls-container {
+  align-self: center;
+  box-sizing: border-box;
+  width: min(100%, calc(min(60vh, 620px) * 16 / 9 + 18px)) !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9 + 18px)) !important;
+  margin-top: 12px !important;
+  padding: 16px !important;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04) !important;
+}
+
+#desktop-controls-container .dialogue-onboard-card {
+  margin: 0 0 12px;
+  padding: 14px 16px;
+  background: #f0fdfa;
+  border: 1px solid #99f6e4;
+  border-radius: 16px;
+}
+
+#desktop-controls-container .dialogue-onboard-title {
+  margin: 0 0 10px;
+  color: #0f766e;
+  font-size: 14px;
+}
+
+#desktop-controls-container .dialogue-onboard-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#desktop-controls-container .dialogue-onboard-step {
+  min-width: 0;
+  color: #0f172a;
+  font-size: 13px;
+  line-height: 20px;
+}
+
+#desktop-controls-container .dialogue-setup-header {
+  margin: 0 !important;
+  padding-top: 4px;
+}
+
+#desktop-controls-container .dialogue-setup-container {
+  padding-top: 12px;
+}
+
+body[data-theme="dark"] #desktop-controls-container {
+  background: #1e293b !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  color: #e2e8f0 !important;
+}
+
+body[data-theme="dark"] #desktop-controls-container .dialogue-onboard-card {
+  background: #134e4a;
+  border-color: rgba(153, 246, 228, 0.28);
+}
+
+body[data-theme="dark"] #desktop-controls-container .dialogue-onboard-title,
+body[data-theme="dark"] #desktop-controls-container .dialogue-onboard-step {
+  color: #ccfbf1;
+}
+
+.video-player-container.is-empty #play-overlay {
+  background: #0f172a !important;
+  cursor: default !important;
+}
+
+.video-player-container.is-empty #play-overlay > div > div:first-child {
+  display: none !important;
+}
+
+.video-player-container.is-empty #play-overlay > div > div:last-child {
+  color: #cbd5e1 !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+}
+
+.video-player-container.is-empty #play-overlay > div > div:last-child::before {
+  content: "等待视频";
+  display: block;
+  margin-bottom: 6px;
+  color: #f8fafc;
+  font-size: 20px;
+  font-weight: 650;
+}
+
+.start-practice-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 10px;
+  margin: 0 !important;
+}
+
+.start-practice-btn {
+  width: auto !important;
+  min-height: 52px;
+  padding: 0 28px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%) !important;
+  box-shadow: none !important;
+  letter-spacing: 0 !important;
+  font-size: 16px !important;
+}
+
+.start-practice-btn .btn-icon {
+  display: none;
+}
+
+.start-practice-btn .btn-text {
+  font-size: 16px !important;
+  font-weight: 700;
+}
+
+.mode-selector-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04) !important;
+}
+
+.practice-right {
+  min-height: 0;
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 24px !important;
+  box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04) !important;
+  overflow: hidden !important;
+}
+
+.lines-card {
+  height: 100%;
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+.script-head {
+  flex: 0 0 auto;
+  padding: 16px 16px 8px;
+}
+
+.script-head-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: nowrap;
+  min-width: 0;
+}
+
+.practice-focus-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 32px;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #99f6e4;
+  background: #f0fdfa;
+  color: #0f766e;
+  font: 600 0.78rem/1 "Manrope", "PingFang SC", "Microsoft YaHei", sans-serif;
+  cursor: pointer;
+  box-shadow: none;
+}
+
+.practice-intensive-note-btn {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  color: #0f766e;
+  font: 600 0.78rem/1 "Manrope", "PingFang SC", "Microsoft YaHei", sans-serif;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.practice-intensive-note-btn:hover {
+  border-color: #99f6e4;
+  background: #f0fdfa;
+}
+
+.practice-focus-toggle:hover {
+  background: #ccfbf1;
+  border-color: #5eead4;
+  color: #0f766e;
+}
+
+.practice-focus-toggle.is-active,
+body.practice-focus-active .practice-focus-toggle {
+  color: #fff;
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
+  border-color: transparent;
+}
+
+.practice-focus-toggle .focus-toggle__icon {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 auto;
+}
+
+.practice-focus-toggle .focus-toggle__icon--on {
+  display: none;
+}
+
+.practice-focus-toggle.is-active .focus-toggle__icon--off,
+body.practice-focus-active .practice-focus-toggle .focus-toggle__icon--off {
+  display: none;
+}
+
+.practice-focus-toggle.is-active .focus-toggle__icon--on,
+body.practice-focus-active .practice-focus-toggle .focus-toggle__icon--on {
+  display: block;
+}
+
+.script-head .practice-script-hint,
+.practice-script-hint {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lines-container {
+  background: transparent !important;
+}
+
+.practice-line-list:has(.practice-load-error),
+.practice-line-list:has(.script-empty) {
+  flex: 1;
+  justify-content: center;
+  min-height: 100%;
+  padding-top: 0 !important;
+}
+
+.script-empty {
+  max-width: 280px;
+  margin: 0 auto;
+  padding: 8px 12px;
+  list-style: none;
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+  text-align: center;
+}
+
+.practice-load-error.is-empty {
+  max-width: 280px;
+  margin: 0 auto;
+  padding: 8px 12px;
+  background: transparent;
+  border: 0;
+}
+
+.practice-load-error.is-empty p {
+  color: #64748b;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 24px;
+}
+
+.practice-load-error.is-empty button {
+  min-height: 40px;
+  border-color: #d9dde6;
+  color: #0f172a;
+}
+
+.practice-load-error.is-empty button:hover {
+  background: #f8fafc;
+  color: #0f766e;
+  border-color: #99f6e4;
+}
+
+/* Geometry for dialogue focus is owned by body.practice-focus-active (end of file).
+   Keep only behavioral visibility here. */
+body.dialogue-focus-layout .mode-top-bar {
+  display: flex !important;
+}
+
+body.dialogue-focus-layout #desktop-controls-container {
+  display: block !important;
+}
+
+@media (max-width: 980px) {
+  body {
+    padding: 12px !important;
+  }
+
+  .coach-frame {
+    border-radius: 24px;
+    flex-wrap: nowrap !important;
+    align-items: center;
+    padding: 10px 12px;
+    overflow-x: auto;
+  }
+
+  .coach-brand span,
+  .coach-frame .focus-essential-controls button span {
+    display: none;
+  }
+
+  .practice-grid {
+    grid-template-columns: 1fr !important;
+    overflow: auto !important;
+  }
+}
+
+/* Day / night covers the page chrome. The video screen stays a dark picture. */
+body[data-theme="dark"] {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+}
+
+body[data-theme="dark"] .coach-frame {
+  background: #1e293b !important;
+  box-shadow: 0 4px 40px rgba(0, 0, 0, 0.28) !important;
+}
+
+body[data-theme="dark"] .coach-brand strong,
+body[data-theme="dark"] .script-head h2,
+body[data-theme="dark"] .mode-selector-card .card-header h3 {
+  color: #f8fafc !important;
+}
+
+body[data-theme="dark"] .coach-brand span,
+body[data-theme="dark"] .stage-hint,
+body[data-theme="dark"] .script-head p,
+body[data-theme="dark"] .script-empty,
+body[data-theme="dark"] .practice-load-error.is-empty p {
+  color: #94a3b8 !important;
+}
+
+body[data-theme="dark"] .coach-libraries button,
+body[data-theme="dark"] .coach-libraries a {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+}
+body[data-theme="dark"] .coach-frame .back-btn,
+body[data-theme="dark"] .coach-frame .focus-essential-controls,
+body[data-theme="dark"] .coach-frame .theme-toggle {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+}
+
+body[data-theme="dark"] .coach-frame .focus-essential-controls button {
+  color: #e2e8f0 !important;
+}
+
+body[data-theme="dark"] .coach-frame .focus-essential-controls button:hover,
+body[data-theme="dark"] .coach-frame .focus-essential-controls button.is-playing,
+body[data-theme="dark"] .coach-frame .back-btn:hover {
+  background: #134e4a !important;
+  color: #ccfbf1 !important;
+}
+
+body[data-theme="dark"] .coach-frame .mode-tabs,
+body[data-theme="dark"] .coach-frame .mode-top-bar[data-workspace-position="top"] .mode-tabs {
+  background: #0f172a !important;
+}
+
+body[data-theme="dark"] .coach-frame .mode-tab,
+body[data-theme="dark"] .coach-frame .mode-top-bar[data-workspace-position="top"] .mode-tab {
+  color: #cbd5e1 !important;
+}
+
+body[data-theme="dark"] .coach-frame .mode-tab.active,
+body[data-theme="dark"] .coach-frame .mode-top-bar[data-workspace-position="top"] .mode-tab.active {
+  background: #134e4a !important;
+  color: #ccfbf1 !important;
+}
+
+body[data-theme="dark"] .video-card,
+body[data-theme="dark"] .mode-selector-card,
+body[data-theme="dark"] .mode-selector-card .card-header,
+body[data-theme="dark"] .card-header,
+body[data-theme="dark"] .practice-right,
+body[data-theme="dark"] .lines-card,
+body[data-theme="dark"] .practice-score-panel,
+body[data-theme="dark"] .practice-score-card,
+body[data-theme="dark"] .score-waveform,
+body[data-theme="dark"] .score-phoneme-panel,
+body[data-theme="dark"] .score-history-panel {
+  background: #1e293b !important;
+  border-color: rgba(148, 163, 184, 0.22) !important;
+  color: #e2e8f0 !important;
+  box-shadow: none !important;
+}
+
+body[data-theme="dark"] .video-player-container,
+body[data-theme="dark"] .video-player-container.is-empty #play-overlay {
+  background: #020617 !important;
+}
+
+body[data-theme="dark"] .practice-score-header,
+body[data-theme="dark"] .practice-score-desc,
+body[data-theme="dark"] .score-waveform-title,
+body[data-theme="dark"] .score-phoneme-title,
+body[data-theme="dark"] .score-history-title,
+body[data-theme="dark"] .score-history-chart {
+  color: #94a3b8 !important;
+}
+
+body[data-theme="dark"] .mode-collapse-btn,
+body[data-theme="dark"] .practice-load-error.is-empty button {
+  background: #0f172a !important;
+  color: #e2e8f0 !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+}
+
+/* One screen: a flat top bar, then a player that yields height to the controls. */
+body {
+  padding: 10px 16px 12px !important;
+  gap: 8px !important;
+}
+
+.coach-frame {
+  min-height: 0 !important;
+  padding: 6px 8px !important;
+  gap: 6px !important;
+  flex-flow: column nowrap !important;
+  align-items: stretch !important;
+  border-radius: 20px !important;
+}
+
+.coach-study-row,
+.coach-tools-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  min-height: 36px;
+}
+
+.coach-study-row {
+  width: 100%;
+}
+
+.coach-libraries {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+.coach-libraries button,
+.coach-libraries a {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 10px;
+  border: 1px solid #d9dde6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #334155;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.coach-libraries button:hover,
+.coach-libraries a:hover {
+  border-color: #99f6e4;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.coach-brand {
+  display: none;
+}
+
+.coach-tools-row .mode-top-bar {
+  width: 100% !important;
+}
+
+.coach-brand {
+  min-width: 0;
+  gap: 0;
+}
+
+.coach-brand strong {
+  font-size: 14px;
+  line-height: 18px;
+}
+
+.coach-brand span {
+  display: none;
+}
+
+.coach-frame .back-btn {
+  min-height: 30px;
+  padding: 0 10px !important;
+  font-size: 13px;
+}
+
+.coach-frame .mode-tabs,
+.coach-frame .mode-top-bar[data-workspace-position="top"] .mode-tabs {
+  padding: 2px !important;
+}
+
+.coach-frame .mode-tab,
+.coach-frame .mode-top-bar[data-workspace-position="top"] .mode-tab {
+  height: 28px !important;
+  min-height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 13px;
+}
+
+.coach-frame .mode-tab .mode-icon {
+  font-size: 13px;
+}
+
+.coach-frame .focus-essential-controls {
+  padding: 2px;
+}
+
+.coach-frame .focus-essential-controls button {
+  min-height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+}
+
+.coach-frame .theme-toggle {
+  width: 36px;
+  height: 22px;
+}
+
+.practice-grid {
+  gap: 12px !important;
+}
+
+.practice-left {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  gap: 8px;
+  overflow: hidden !important;
+  container-type: size;
+  --coach-dock: 64px;
+}
+
+body.mode-dialogue .practice-left:has(#desktop-controls-container[style*="display: block"]),
+body.mode-dialogue .practice-left:has(#desktop-controls-container[style*="display:block"]) {
+  --coach-dock: 404px;
+}
+
+body.mode-shadowing .practice-left:has(#desktop-controls-container[style*="display: block"]),
+body.mode-shadowing .practice-left:has(#desktop-controls-container[style*="display:block"]) {
+  --coach-dock: 340px;
+}
+
+#mode-live-header {
+  display: none !important;
+}
+
+.video-card {
+  flex: 0 0 auto !important;
+  width: min(100cqw, calc((100cqh - var(--coach-dock)) * 16 / 9)) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: calc(100cqh - var(--coach-dock)) !important;
+  aspect-ratio: 16 / 9 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  container-type: normal;
+}
+
+.video-player-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  aspect-ratio: auto !important;
+}
+
+.mode-selector-card,
+#desktop-controls-container,
+.start-practice-container:not(:empty) {
+  flex: 0 0 auto;
+  width: min(100cqw, calc((100cqh - var(--coach-dock)) * 16 / 9)) !important;
+  max-width: 100% !important;
+  max-height: none;
+}
+
+.mode-selector-card .card-header {
+  min-height: 40px;
+  padding: 4px 8px !important;
+  gap: 8px;
+}
+
+#desktop-controls-container {
+  margin-top: 0 !important;
+  padding: 10px 12px !important;
+}
+
+#desktop-controls-container .dialogue-onboard-card {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+}
+
+#desktop-controls-container .dialogue-onboard-title {
+  margin-bottom: 6px;
+  font-size: 13px;
+}
+
+#desktop-controls-container .dialogue-onboard-step {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+#desktop-controls-container .dialogue-onboard-step .step-dot {
+  width: 16px;
+  height: 16px;
+  font-size: 10px;
+}
+
+.practice-right {
+  min-height: 0;
+  overflow: hidden !important;
+}
+
+.script-head {
+  padding: 14px 16px 4px;
+}
+
+.practice-score-panel {
+  margin-top: 8px !important;
+  padding: 8px 10px !important;
+  gap: 6px !important;
+}
+
+.score-waveform-canvas,
+#practice-waveform-original,
+#practice-waveform-recording {
+  height: 36px !important;
+}
+
+#desktop-controls-container .native-controls {
+  gap: 16px;
+  margin: 8px 0;
+}
+
+#desktop-controls-container .native-btn.primary {
+  width: 48px !important;
+  height: 48px !important;
+}
+
+#desktop-controls-container .native-btn.secondary {
+  width: 36px !important;
+  height: 36px !important;
+}
+
+#desktop-controls-container .native-control-icon {
+  width: 18px;
+  height: 18px;
+}
+
+#desktop-controls-container .mode-live-header {
+  margin-bottom: 4px;
+}
+
+/* Shared video-learning top bar. Coaching playback sits under the picture. */
+body > .topbar {
+  position: sticky;
+  top: 12px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  flex: 0 0 auto;
+  flex-wrap: wrap;
+  width: min(1880px, calc(100% - 32px));
+  min-height: 64px;
+  margin: 12px auto 0;
+  padding: 8px 12px 8px 20px;
+  box-sizing: border-box;
+  border: 1px solid rgba(23, 25, 31, 0.06);
+  border-radius: 28px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(23, 25, 31, 0.08);
+}
+
+body > .topbar .brand h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+body > .topbar .nav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  min-width: 0;
+  flex: 1 1 280px;
+  flex-wrap: wrap;
+}
+
+body > .topbar .pill,
+body > .topbar .theme-toggle,
+body > .topbar .daily-goal,
+body > .topbar .lang-selector,
+body > .topbar .vip-badge,
+body > .topbar .study-switch {
+  flex: 0 0 auto;
+}
+
+body > .topbar .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.28rem;
+  height: 36px;
+  padding: 0 0.72rem;
+  border: 1px solid #d9dde6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+body > .topbar .pill.pill-browser {
+  background: linear-gradient(135deg, #ff6b35 0%, #2dd4bf 60%, #0d9488 100%);
+  color: #fff;
+  border: 0;
+  font-weight: 600;
+  box-shadow: 0 4px 14px rgba(249, 115, 22, 0.35);
+}
+
+body > .topbar .pill.primary {
+  color: #fff;
+  background: linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%);
+  border: 0;
+  box-shadow: 0 4px 16px rgba(15, 118, 110, 0.28);
+}
+
+body > .topbar .pill:hover {
+  border-color: #99f6e4;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+body > .topbar .theme-toggle {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  justify-content: center;
+}
+
+body > .topbar .theme-toggle::after {
+  display: none;
+}
+
+body:not([data-theme="dark"]) > .topbar .icon-sun,
+body[data-theme="dark"] > .topbar .icon-moon {
+  display: none;
+}
+
+body > .topbar .daily-goal {
+  display: flex;
+  flex-direction: column;
+  gap: 0.18rem;
+  min-width: 148px;
+  padding: 0.28rem 0.65rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #f8fafc;
+}
+
+body > .topbar .daily-goal-label {
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+body > .topbar .daily-goal-bar {
+  height: 6px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #e2e8f0;
+}
+
+body > .topbar .daily-goal-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #0d9488, #2dd4bf);
+}
+
+body > .topbar .lang-selector {
+  position: relative;
+}
+
+body > .topbar .lang-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 40;
+  min-width: 132px;
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+body > .topbar .lang-option {
+  display: flex;
+  gap: 6px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+body > .topbar .vip-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+body > .topbar .vip-badge[hidden],
+#back-to-onboarding[hidden] {
+  display: none !important;
+}
+
+body > .topbar .vip-badge.svip {
+  background: linear-gradient(135deg, #38bdf8, #3b82f6);
+}
+
+body > .topbar .vip-badge.vip {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #78350f;
+}
+
+body > .topbar .vip-badge.free,
+body > .topbar .vip-badge.family {
+  background: #0f766e;
+}
+
+.practice-left {
+  justify-content: flex-start !important;
+}
+
+.video-card,
+.practice-transport,
+.mode-selector-card,
+#desktop-controls-container,
+.start-practice-container {
+  width: min(100%, calc(min(60vh, 620px) * 16 / 9)) !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  max-width: 100% !important;
+  flex: 0 0 auto !important;
+}
+
+.video-card {
+  aspect-ratio: auto !important;
+  height: auto !important;
+  max-height: none !important;
+  display: block !important;
+}
+
+.video-player-container {
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  aspect-ratio: 16 / 9 !important;
+}
+
+.practice-transport .mode-top-bar {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px;
+  width: 100% !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  margin: 0 !important;
+  padding: 0 8px !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #ffffff !important;
+  box-shadow: none !important;
+  box-sizing: border-box;
+}
+
+.practice-transport .mode-top-bar > * {
+  align-self: center;
+}
+
+.practice-transport .stage-hint {
+  order: 2;
+  flex: 1 1 auto;
+  min-width: 0;
+  height: 32px;
+  margin: 0;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 32px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.practice-transport .start-practice-btn,
+.practice-transport .mode-collapse-btn,
+.practice-transport .mode-tab,
+.practice-transport .focus-essential-controls button {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  margin: 0 !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 999px !important;
+  line-height: 32px !important;
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.practice-transport .start-practice-btn {
+  order: 3;
+  flex: 0 0 auto;
+  width: auto !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+  font-size: 14px !important;
+  letter-spacing: 0 !important;
+  transform: none !important;
+}
+
+.practice-transport .start-practice-btn:hover,
+.practice-transport .start-practice-btn:active {
+  transform: none !important;
+}
+
+.practice-transport .mode-collapse-btn {
+  order: 4;
+  flex: 0 0 auto;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  font-size: 13px !important;
+}
+
+.practice-transport .focus-essential-controls {
+  order: 5;
+}
+
+.practice-transport .start-practice-btn[hidden],
+.practice-transport .stage-hint[hidden],
+.practice-transport .mode-collapse-btn[hidden] {
+  display: none !important;
+}
+
+.mode-selector-card.collapsed {
+  display: none !important;
+}
+
+.practice-transport .mode-tabs {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 999px;
+  background: #f1f5f9;
+  box-sizing: border-box;
+}
+
+.practice-transport .mode-tab {
+  gap: 4px;
+  padding-left: 12px !important;
+  padding-right: 12px !important;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.practice-transport .mode-tab.active {
+  background: #ffffff;
+  color: #0f766e;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
+}
+
+.practice-transport .focus-essential-controls {
+  display: flex;
+  align-items: center;
+  height: 36px;
+  gap: 2px;
+  margin-left: auto;
+  padding: 2px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+  box-sizing: border-box;
+}
+
+.practice-transport .focus-essential-controls button {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+  border: 0;
+  background: transparent;
+  color: #0f172a;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+#desktop-controls-container .native-controls {
+  display: none !important;
+}
+
+body[data-theme="dark"] > .topbar {
+  background: rgba(15, 23, 42, 0.94) !important;
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+  color: #e2e8f0;
+}
+
+body[data-theme="dark"] .practice-transport .mode-top-bar,
+body[data-theme="dark"] .practice-transport .focus-essential-controls {
+  background: #1e293b !important;
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+body[data-theme="dark"] > .topbar .brand h1 {
+  color: #e2e8f0;
+}
+
+body[data-theme="dark"] > .topbar .pill,
+body[data-theme="dark"] .practice-transport .focus-essential-controls button {
+  color: #f8fafc;
+}
+
+body[data-theme="dark"] > .topbar .pill,
+body[data-theme="dark"] > .topbar .daily-goal,
+body[data-theme="dark"] > .topbar .theme-toggle {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.85) 100%);
+  border-color: rgba(148, 163, 184, 0.3);
+}
+
+body[data-theme="dark"] > .topbar .daily-goal-label {
+  color: #e2e8f0;
+}
+
+body[data-theme="dark"] > .topbar .pill.pill-browser {
+  background: linear-gradient(135deg, #ff6b35 0%, #2dd4bf 60%, #0d9488 100%);
+  color: #fff;
+  border: 0;
+}
+
+body[data-theme="dark"] > .topbar .pill.primary {
+  background: linear-gradient(135deg, #0f766e 0%, #2dd4bf 100%);
+  color: #fff;
+  border: 0;
+}
+
+/* The started practice stack stays inside the viewport. */
+.practice-left {
+  overflow: hidden !important;
+  justify-content: flex-start !important;
+}
+
+.video-card {
+  flex: 0 0 auto !important;
+  align-items: flex-start;
+  justify-content: flex-start;
+  width: min(100%, calc(min(60vh, 620px) * 16 / 9)) !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 12px auto 0 !important;
+  display: flex !important;
+  container-type: normal;
+}
+
+.video-player-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: min(60vh, 620px) !important;
+  max-height: min(60dvh, 620px) !important;
+  aspect-ratio: 16 / 9 !important;
+  margin: 0 !important;
+}
+
+.practice-transport,
+.practice-transport .mode-top-bar,
+#desktop-controls-container,
+.mode-selector-card,
+.start-practice-container {
+  width: min(100%, calc(min(60vh, 620px) * 16 / 9)) !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  max-width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+#desktop-controls-container {
+  padding: 8px 10px !important;
+}
+
+#shadowing-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 6px 12px;
+  align-items: center;
+}
+
+#shadowing-controls .shadowing-status {
+  margin: 0 !important;
+  padding: 6px 12px !important;
+  min-height: 34px;
+  box-sizing: border-box;
+}
+
+#shadowing-controls .speed-selector-compact {
+  margin: 0 !important;
+}
+
+#shadowing-controls .practice-hint {
+  display: none !important;
+}
+
+#desktop-controls-container .control-modes-panel {
+  grid-column: 1 / -1;
+  margin: 0 !important;
+  padding: 4px 0 0 !important;
+  gap: 8px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+#desktop-controls-container .dialogue-onboard-card {
+  margin-bottom: 6px;
+  padding: 6px 8px;
+}
+
+.practice-right {
+  overflow: hidden !important;
+}
+
+/* Dialogue setup sits inside the same card, in both themes. */
+#desktop-controls-container .dialogue-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+#desktop-controls-container .dialogue-setup-header {
+  min-height: 28px;
+  margin: 0 !important;
+}
+
+#desktop-controls-container .dialogue-setup-header .section-title {
+  margin: 0 !important;
+  font-size: 14px !important;
+  line-height: 20px;
+}
+
+#desktop-controls-container #toggle-setup-btn {
+  color: #64748b;
+  font-size: 13px !important;
+}
+
+#desktop-controls-container .dialogue-setup-container {
+  max-width: 100%;
+  padding-top: 0 !important;
+  overflow: visible;
+}
+
+#desktop-controls-container .dialogue-setup-container.collapsed {
+  overflow: hidden;
+}
+
+#desktop-controls-container .role-selection-section {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+#desktop-controls-container .role-selection-section .section-title {
+  margin: 0 0 8px !important;
+  color: #0f172a;
+  font-size: 14px !important;
+  line-height: 20px;
+}
+
+#desktop-controls-container .role-buttons-container {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 8px !important;
+  margin: 0 !important;
+  min-width: 0;
+}
+
+#desktop-controls-container .role-button {
+  flex: 1 1 180px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 0 !important;
+  height: auto;
+  padding: 8px 10px !important;
+  box-sizing: border-box;
+}
+
+#desktop-controls-container .role-name-zh,
+#desktop-controls-container .role-name-en,
+#desktop-controls-container .role-meta {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+#desktop-controls-container .role-hint {
+  margin: 8px 0 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #64748b;
+  font-size: 12px !important;
+  line-height: 18px;
+  text-align: left !important;
+}
+
+#desktop-controls-container .advanced-settings {
+  margin-top: 6px;
+}
+
+#desktop-controls-container .advanced-settings summary {
+  width: fit-content;
+  padding: 4px 0;
+  color: #64748b;
+}
+
+#desktop-controls-container .advanced-content {
+  background: #ffffff;
+  border-color: #e2e8f0;
+}
+
+body[data-theme="dark"] #desktop-controls-container .dialogue-setup-header .section-title,
+body[data-theme="dark"] #desktop-controls-container #toggle-setup-btn,
+body[data-theme="dark"] #desktop-controls-container .role-selection-section .section-title,
+body[data-theme="dark"] #desktop-controls-container .role-name-zh,
+body[data-theme="dark"] #desktop-controls-container .role-hint,
+body[data-theme="dark"] #desktop-controls-container .advanced-settings summary,
+body[data-theme="dark"] #desktop-controls-container .setting-row label {
+  color: #e2e8f0 !important;
+}
+
+body[data-theme="dark"] #desktop-controls-container .role-selection-section,
+body[data-theme="dark"] #desktop-controls-container .role-button,
+body[data-theme="dark"] #desktop-controls-container .advanced-content {
+  background: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  color: #e2e8f0;
+  box-shadow: none !important;
+}
+
+body[data-theme="dark"] #desktop-controls-container .role-name-en,
+body[data-theme="dark"] #desktop-controls-container .role-meta {
+  color: #94a3b8 !important;
+}
+
+/* Same borderless 16:9 stage on AI陪练 and 实战场. */
+.video-card,
+body.dialogue-focus-layout .video-card {
+  width: min(100%, calc(min(60vh, 620px) * 16 / 9)) !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  height: auto !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.video-player-container {
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  aspect-ratio: 16 / 9 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 16px !important;
+  background: #000 !important;
+  box-shadow: none !important;
+}
+
+/* 视频学习、AI陪练、实战场共用同一块播放窗口，切换时位置和大小不变。 */
+body {
+  padding: 0 0 12px !important;
+  gap: 0 !important;
+}
+
+body > .topbar {
+  margin: 12px auto 0 !important;
+}
+
+.practice-stage-spacer {
+  display: none;
+}
+
+@media (min-width: 1180px) {
+  .practice-grid {
+    width: calc(100% - 32px) !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    gap: 14px !important;
+    grid-template-columns: minmax(250px, 280px) minmax(0, 1fr) minmax(380px, 420px) !important;
+  }
+
+  .practice-stage-spacer {
+    display: block;
+    min-width: 0;
+    min-height: 0;
+  }
+}
+
+body.mode-shadowing .practice-left,
+body.mode-dialogue .practice-left {
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  gap: 8px !important;
+}
+
+body .practice-left .video-card,
+body.mode-dialogue .practice-left .video-card,
+body.mode-shadowing .practice-left .video-card {
+  flex: 0 0 auto !important;
+  align-self: center !important;
+  width: min(100%, calc(min(60vh, 620px) * 16 / 9)) !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
+  margin: 12px auto 0 !important;
+  padding: 0 !important;
+  display: block !important;
+  container-type: normal !important;
+}
+
+body .practice-left .video-player-container,
+body.mode-dialogue .practice-left .video-player-container,
+body.mode-shadowing .practice-left .video-player-container {
+  width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  aspect-ratio: 16 / 9 !important;
+}
+
+body.mode-dialogue .practice-transport,
+body.mode-dialogue #desktop-controls-container,
+body.mode-shadowing .practice-transport,
+body.mode-shadowing #desktop-controls-container {
+  width: min(100%, calc(min(60vh, 620px) * 16 / 9)) !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  max-width: 100% !important;
+  flex: 0 0 auto !important;
+}
+
+body.mode-dialogue #desktop-controls-container {
+  padding: 8px 10px !important;
+}
+
+body.mode-dialogue #shadowing-controls {
+  display: none !important;
+}
+
+body.mode-dialogue #desktop-controls-container > .practice-controls {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 12px !important;
+  min-width: 0;
+}
+
+body.mode-dialogue #dialogue-controls {
+  display: grid !important;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "steps head"
+    "roles roles";
+  gap: 6px 12px;
+  align-items: center;
+  min-width: 0;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-card {
+  grid-area: steps;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  min-width: 0;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-title {
+  margin: 0 0 6px !important;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-steps {
+  display: flex !important;
+  flex-direction: row;
+  gap: 8px;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-step {
+  flex: 1 1 auto;
+  min-width: 0;
+  white-space: nowrap;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-setup-header {
+  grid-area: head;
+  margin: 0 !important;
+  padding: 0 !important;
+  white-space: nowrap;
+}
+
+body.mode-dialogue #dialogue-setup-container {
+  grid-area: roles;
+  min-width: 0;
+  padding-top: 0 !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-selection-section {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-selection-section .section-title,
+body.mode-dialogue #dialogue-setup-container .role-hint,
+body.mode-dialogue #dialogue-setup-container .advanced-settings {
+  margin: 0 !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-selection-section .section-title {
+  font-size: 14px !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-hint {
+  flex: 1 1 180px;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-buttons-container {
+  display: flex !important;
+  flex-wrap: wrap;
+  gap: 6px !important;
+  margin: 0 !important;
+  width: 100%;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-buttons-container:empty {
+  display: none !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-button {
+  width: auto !important;
+  min-height: 0;
+  padding: 6px 10px !important;
+}
+
+body.mode-dialogue #practice-control-section,
+body.mode-dialogue #asr-comparison-section {
+  grid-column: 1 / -1;
+}
+
+body.mode-dialogue #control-modes-panel {
+  flex: 0 0 auto;
+  width: auto !important;
+  max-width: none;
+  margin: 0 !important;
+  align-self: center;
+}
+
+body.mode-dialogue #audio-mode-toggle {
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+  gap: 6px;
+  overflow: visible;
+}
+
+/* Shared 16:9 stage outside focus mode (AI陪练 / 实战场). Focus uses practice-focus-active. */
+.practice-left,
+body.mode-dialogue .practice-left,
+body.mode-shadowing .practice-left {
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: auto !important;
+  padding: 0 !important;
+}
+
+.video-card,
+body.mode-dialogue .practice-left .video-card {
+  flex: 0 0 auto !important;
+  align-self: center !important;
+  width: min(100%, calc(min(60vh, 620px) * 16 / 9)) !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  margin: 12px auto 0 !important;
+  aspect-ratio: auto !important;
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  container-type: normal !important;
+}
+
+.video-player-container,
+body.mode-dialogue .practice-left .video-player-container {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: min(60vh, 620px) !important;
+  max-height: min(60dvh, 620px) !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  aspect-ratio: 16 / 9 !important;
+}
+
+.practice-transport,
+body.mode-dialogue .practice-transport,
+.practice-transport .mode-top-bar,
+.mode-top-bar[data-workspace-position="top"] {
+  width: fit-content !important;
+  max-width: min(100%, calc(min(60vh, 620px) * 16 / 9)) !important;
+  max-width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  flex: 0 0 auto !important;
+}
+
+.practice-transport .mode-top-bar {
+  flex-wrap: nowrap !important;
+  gap: 6px !important;
+  padding: 0 6px !important;
+}
+
+.practice-transport .stage-hint {
+  display: none !important;
+}
+
+.practice-transport .focus-essential-controls {
+  flex: 0 0 auto !important;
+  gap: 4px !important;
+}
+
+.practice-transport .focus-essential-controls button {
+  padding: 0 8px !important;
+  white-space: nowrap !important;
+}
+
+/* 实战场：选择角色、高级设置与播放模式菜单同一尺寸。 */
+body.mode-dialogue #dialogue-setup-container .role-selection-section {
+  display: flex !important;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 6px !important;
+  width: 100% !important;
+  max-width: 100%;
+  height: 32px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: hidden !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-selection-section:has(details[open]) {
+  height: auto;
+  overflow: visible !important;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-selection-section .section-title {
+  margin: 0 !important;
+  color: #475569 !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 32px !important;
+  white-space: nowrap;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-hint {
+  flex: 1 1 140px;
+  min-width: 0;
+  height: 32px;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 12px !important;
+  line-height: 32px !important;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-buttons-container {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px !important;
+  width: auto !important;
+  margin: 0 !important;
+}
+
+body.mode-dialogue .audio-mode-btn,
+body.mode-dialogue #dialogue-setup-container .role-button,
+body.mode-dialogue #dialogue-setup-container .advanced-settings summary,
+body.mode-dialogue #dialogue-setup-container .setting-btn {
+  box-sizing: border-box !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  margin: 0 !important;
+  padding: 0 10px !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 8px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+body.mode-dialogue .audio-mode-btn:not(.active):not(#clear-recordings-btn),
+body.mode-dialogue #dialogue-setup-container .role-button:not(.selected),
+body.mode-dialogue #dialogue-setup-container .advanced-settings summary,
+body.mode-dialogue #dialogue-setup-container .setting-btn {
+  background: #ffffff !important;
+  color: #475569 !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-settings {
+  display: inline-flex;
+  align-items: center;
+  margin: 0 !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-settings summary {
+  list-style: none;
+  cursor: pointer;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-settings summary::-webkit-details-marker {
+  display: none;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-settings[open] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-content {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .setting-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .setting-row select,
+body.mode-dialogue #dialogue-setup-container .setting-row .form-select {
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #475569;
+  font-size: 12px;
+}
+
+body[data-theme="dark"].mode-dialogue #dialogue-setup-container .role-selection-section .section-title,
+body[data-theme="dark"].mode-dialogue #dialogue-setup-container .role-hint,
+body[data-theme="dark"].mode-dialogue #dialogue-setup-container .setting-row label {
+  color: #e2e8f0 !important;
+}
+
+body[data-theme="dark"].mode-dialogue .audio-mode-btn:not(.active):not(#clear-recordings-btn),
+body[data-theme="dark"].mode-dialogue #dialogue-setup-container .role-button:not(.selected),
+body[data-theme="dark"].mode-dialogue #dialogue-setup-container .advanced-settings summary,
+body[data-theme="dark"].mode-dialogue #dialogue-setup-container .setting-btn,
+body[data-theme="dark"].mode-dialogue #dialogue-setup-container .setting-row select {
+  background: #0f172a !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  color: #e2e8f0 !important;
+}
+
+/* 实战场控制卡：步骤、角色、设置、播放模式分行，避免互相挤压。 */
+body.mode-dialogue #desktop-controls-container > .practice-controls {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+}
+
+body.mode-dialogue #dialogue-controls {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-width: 0;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-card {
+  width: 100%;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-title {
+  margin: 0 0 8px !important;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-steps {
+  display: grid !important;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px 12px;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  min-width: 0;
+  white-space: normal !important;
+  line-height: 1.4;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-step span:last-child {
+  min-width: 0;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-setup-header {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-selection-section {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center;
+  gap: 8px !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .role-hint {
+  flex: 1 1 220px;
+  height: auto;
+  line-height: 1.4 !important;
+  white-space: normal !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-settings,
+body.mode-dialogue #dialogue-setup-container .advanced-settings[open] {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-settings summary {
+  align-self: flex-start;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-content {
+  display: flex !important;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+  margin: 0 !important;
+  padding: 4px 0 0 !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .setting-row {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  margin: 0 !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .setting-row label {
+  min-width: 64px;
+  font-size: 12px;
+  line-height: 32px;
+  white-space: nowrap;
+}
+
+body.mode-dialogue #dialogue-setup-container .setting-row select,
+body.mode-dialogue #dialogue-setup-container .setting-row .form-select {
+  width: min(100%, 280px);
+  max-width: 280px;
+  flex: 0 1 280px;
+}
+
+body.mode-dialogue #control-modes-panel {
+  width: 100% !important;
+  align-self: stretch !important;
+  padding-top: 2px;
+  border-top: 1px solid #e2e8f0;
+}
+
+body.mode-dialogue #audio-mode-toggle {
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+
+body[data-theme="dark"].mode-dialogue #control-modes-panel {
+  border-top-color: rgba(148, 163, 184, 0.28);
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-content {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 16px;
+}
+
+body.mode-dialogue #dialogue-setup-container .setting-row {
+  height: 32px;
+  min-height: 32px;
+  flex-wrap: nowrap !important;
+  font-size: 0;
+  line-height: 0;
+}
+
+body.mode-dialogue #dialogue-setup-container .setting-row > * {
+  margin: 0 !important;
+  font-size: 12px;
+  line-height: 32px;
+}
+
+body.mode-dialogue .practice-left .video-card,
+body.mode-shadowing .practice-left .video-card {
+  flex: 0 0 auto !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: none !important;
+  margin: 12px auto 0 !important;
+}
+
+body.mode-dialogue .practice-left .video-player-container,
+body.mode-shadowing .practice-left .video-player-container {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: min(60dvh, 620px) !important;
+  aspect-ratio: 16 / 9 !important;
+}
+
+body.mode-shadowing #dialogue-controls {
+  display: none !important;
+}
+
+body.mode-shadowing #desktop-controls-container,
+body.mode-dialogue #desktop-controls-container {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+}
+
+/* 实战场底部：步骤收成一行小字，功能按钮连成胶囊。 */
+body.mode-dialogue #dialogue-controls {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  grid-template-areas: "steps head" "setup setup" !important;
+  gap: 6px 12px !important;
+  align-items: center !important;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-card {
+  grid-area: steps;
+  display: flex !important;
+  align-items: center;
+  width: auto !important;
+  min-height: 0;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-steps {
+  display: flex !important;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px !important;
+  margin: 0;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-step {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  min-width: 0;
+  color: #64748b !important;
+  font-size: 12px !important;
+  font-weight: 500;
+  line-height: 16px !important;
+  white-space: nowrap !important;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-onboard-step .step-dot {
+  width: 14px !important;
+  height: 14px !important;
+  font-size: 10px !important;
+  line-height: 14px;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-setup-header {
+  grid-area: head;
+  gap: 6px;
+}
+
+body.mode-dialogue #dialogue-controls .dialogue-setup-header .section-title,
+body.mode-dialogue #toggle-setup-btn {
+  color: #64748b !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  line-height: 16px !important;
+}
+
+body.mode-dialogue #dialogue-setup-container {
+  grid-area: setup;
+}
+
+body.mode-dialogue #practice-control-section,
+body.mode-dialogue #asr-comparison-section {
+  grid-column: 1 / -1;
+}
+
+body.mode-dialogue .capsule-group {
+  display: inline-flex;
+  align-items: stretch;
+  height: 32px;
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #ffffff;
+}
+
+body.mode-dialogue .capsule-group > .audio-mode-btn,
+body.mode-dialogue .capsule-group > .setting-btn {
+  height: 32px !important;
+  min-height: 32px !important;
+  max-height: 32px !important;
+  margin: 0 !important;
+  padding: 0 12px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  border-right: 1px solid #e2e8f0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transform: none !important;
+  font-size: 12px !important;
+  line-height: 32px !important;
+}
+
+body.mode-dialogue .capsule-group > :last-child {
+  border-right: 0 !important;
+}
+
+body.mode-dialogue .capsule-group > .audio-mode-btn.active {
+  background: linear-gradient(135deg, #60a5fa 0%, #0d9488 100%) !important;
+  color: #ffffff !important;
+}
+
+body.mode-dialogue #clear-recordings-btn,
+body.mode-dialogue #dialogue-setup-container .advanced-settings summary,
+body.mode-dialogue #test-mic-btn {
+  border-radius: 999px !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .setting-row:has(.capsule-group) {
+  width: auto;
+  height: 32px;
+}
+
+body[data-theme="dark"].mode-dialogue .capsule-group {
+  background: #0f172a;
+  border-color: rgba(148, 163, 184, 0.28);
+}
+
+body[data-theme="dark"].mode-dialogue .capsule-group > .audio-mode-btn,
+body[data-theme="dark"].mode-dialogue .capsule-group > .setting-btn {
+  border-right-color: rgba(148, 163, 184, 0.28) !important;
+  color: #e2e8f0 !important;
+}
+
+body[data-theme="dark"].mode-dialogue #dialogue-controls .dialogue-onboard-step,
+body[data-theme="dark"].mode-dialogue #dialogue-controls .dialogue-setup-header .section-title,
+body[data-theme="dark"].mode-dialogue #toggle-setup-btn {
+  color: #94a3b8 !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-settings,
+body.mode-dialogue #dialogue-setup-container .advanced-settings[open] {
+  display: block !important;
+  width: 100% !important;
+  height: auto !important;
+  overflow: visible !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-settings:not([open]) .advanced-content {
+  display: none !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .advanced-settings summary {
+  width: fit-content;
+}
+
+body.mode-dialogue #dialogue-setup-container .capsule-group > .setting-btn,
+body.mode-dialogue #dialogue-setup-container .capsule-group > .audio-mode-btn {
+  border-radius: 0 !important;
+  border-right: 1px solid #e2e8f0 !important;
+  background: transparent !important;
+  font-size: 12px !important;
+  line-height: 32px !important;
+}
+
+body.mode-dialogue #dialogue-setup-container .capsule-group > :last-child {
+  border-right: 0 !important;
+}
+
+/* =========================================================
+   Canonical practice focus layout (AI陪练 + 实战场)
+   Must stay LAST so it wins over stage/16:9 locks above.
+   Matches video-learning focus: 24px inset, 2 columns, 16px gap.
+   ========================================================= */
+body.practice-focus-active {
+  --lx-focus-inset: 24px;
+  --lx-focus-gap: 16px;
+  padding: var(--lx-focus-inset, 24px) !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+body.practice-focus-active > .topbar {
+  display: none !important;
+}
+
+body.practice-focus-active .practice-stage-spacer {
+  display: none !important;
+}
+
+body.practice-focus-active .practice-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 430px) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: calc(100dvh - (var(--lx-focus-inset, 24px) * 2)) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: var(--lx-focus-gap, 16px) !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  align-items: stretch !important;
+}
+
+body.practice-focus-active.mode-dialogue .practice-grid,
+body.practice-focus-active.mode-shadowing .practice-grid {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 430px) !important;
+  grid-template-rows: minmax(0, 1fr) !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: calc(100dvh - (var(--lx-focus-inset, 24px) * 2)) !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  gap: var(--lx-focus-gap, 16px) !important;
+}
+
+body.practice-focus-active .practice-left {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  gap: 8px !important;
+  padding: 0 !important;
+}
+
+body.practice-focus-active.mode-dialogue .practice-left,
+body.practice-focus-active.mode-shadowing .practice-left {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  gap: 8px !important;
+  padding: 0 !important;
+}
+
+body.practice-focus-active .practice-right,
+body.practice-focus-active .lines-card {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Shared focus player window (= 视频学习 body.focus-mode .player). */
+body.practice-focus-active .video-card,
+body.practice-focus-active .practice-left .video-card,
+body.practice-focus-active.mode-dialogue .practice-left .video-card,
+body.practice-focus-active .practice-transport,
+body.practice-focus-active.mode-dialogue .practice-transport,
+body.practice-focus-active .practice-transport .mode-top-bar,
+body.practice-focus-active .mode-top-bar[data-workspace-position="top"],
+body.practice-focus-active #desktop-controls-container {
+  width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9))) !important;
+  max-width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9))) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  align-self: center !important;
+  flex: 0 0 auto !important;
+}
+
+body.practice-focus-active .video-card,
+body.practice-focus-active .practice-left .video-card,
+body.practice-focus-active.mode-dialogue .practice-left .video-card {
+  margin-top: 0 !important;
+  display: block !important;
+  aspect-ratio: auto !important;
+  height: auto !important;
+  max-height: none !important;
+}
+
+body.practice-focus-active .video-player-container,
+body.practice-focus-active .practice-left .video-player-container,
+body.practice-focus-active.mode-dialogue .practice-left .video-player-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: var(--lx-focus-player-max-h, min(68dvh, 680px, calc(100dvh - 210px))) !important;
+  min-height: 0 !important;
+  margin: 0 !important;
+  aspect-ratio: 16 / 9 !important;
+  flex: 0 0 auto !important;
+  border-radius: 16px !important;
+  background: #0f172a !important;
+}
+
+body.practice-focus-active .mode-top-bar,
+body.practice-focus-active .practice-transport .mode-top-bar {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  height: 48px !important;
+  min-height: 48px !important;
+  max-height: 48px !important;
+  margin-top: 0 !important;
+  margin-bottom: 0 !important;
+  overflow: visible !important;
+}
+
+body.practice-focus-active .practice-transport .stage-hint,
+body.practice-focus-active #mode-top-hint {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+body.practice-focus-active #desktop-controls-container {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-height: 72px !important;
+  max-height: none !important;
+  height: auto !important;
+  margin-top: 0 !important;
+  padding: 10px 12px !important;
+  overflow: auto !important;
+}
+
+body.practice-focus-active #desktop-controls-container > .practice-controls {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  height: auto !important;
+  max-height: none !important;
+  min-height: 0 !important;
+  overflow: visible !important;
+  padding: 0 !important;
+}
+
+/* 实战场专注：压过后续 mode-dialogue 的 display:flex，避免设置卡被裁切。 */
+body.practice-focus-active.dialogue-focus-layout #mode-live-header,
+body.practice-focus-active.dialogue-focus-layout #shadowing-controls,
+body.practice-focus-active.dialogue-focus-layout .dialogue-onboard-card,
+body.practice-focus-active.dialogue-focus-layout .dialogue-setup-header,
+body.practice-focus-active.dialogue-focus-layout #dialogue-setup-container,
+body.practice-focus-active.dialogue-focus-layout #practice-control-section,
+body.practice-focus-active.dialogue-focus-layout #dialogue-controls {
+  display: none !important;
+}
+
+/* 无录音状态时不留空控制卡，避免红框里半截内容。 */
+body.practice-focus-active.dialogue-focus-layout #desktop-controls-container:not(:has(#auto-practice-status:not([hidden]))) {
+  display: none !important;
+}
+
+body.practice-focus-active.dialogue-focus-layout #control-modes-panel {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 8px !important;
+  width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: visible !important;
+}
+
+body.practice-focus-active.dialogue-focus-layout #audio-mode-toggle {
+  display: none !important;
+}
+
+body.practice-focus-active.dialogue-focus-layout #auto-practice-status:not([hidden]) {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  width: 100% !important;
+  min-height: 48px !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 8px 10px !important;
+  overflow: visible !important;
+}
+
+body.practice-focus-active.dialogue-focus-layout .practice-right > #asr-comparison-section {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: none !important;
+  overflow: auto !important;
+  margin: 0 !important;
 }

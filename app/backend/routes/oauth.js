@@ -10,6 +10,7 @@
 
 const oauthService = require('../services/oauth');
 const authService = require('../services/auth');
+const loginSession = require('../services/login-session');
 const dataStore = require('../data-store');
 const { sendJson, sendError } = require('../middleware/error-handler');
 const { authenticate } = require('../middleware/auth');
@@ -56,14 +57,6 @@ function getClientIp(req) {
   return Array.isArray(forwarded)
     ? forwarded[0]
     : (forwarded ? forwarded.split(',')[0].trim() : req.socket?.remoteAddress || 'unknown');
-}
-
-/**
- * Build JWT token for OAuth user
- * Reuses the signed token format from auth.js.
- */
-function buildOAuthToken(user) {
-  return authService.createAccessTokenForUser(user);
 }
 
 /**
@@ -118,7 +111,8 @@ async function registerOAuthRoutes(pathname, req, res, url) {
       const bootstrap = readOAuthBootstrapCookie(req);
       if (!bootstrap) throw new Error('UNAUTHORIZED');
       const payload = verifyOAuthBootstrapToken(bootstrap);
-      await oauthService.consumeOAuthBootstrapJti(payload.jti);
+      const consumed = await oauthService.consumeOAuthBootstrapJti(payload.jti);
+      const provider = consumed && consumed.provider === 'wechat' ? 'wechat' : 'google';
       const user = await dataStore.findUserById(payload.sub);
       if (!user) throw new Error('UNAUTHORIZED');
       if (String(user.status || '').toLowerCase() === 'banned') {
@@ -126,11 +120,12 @@ async function registerOAuthRoutes(pathname, req, res, url) {
         err.status = 403;
         throw err;
       }
-      const token = buildOAuthToken(user);
+      const issued = await authService.issueLoginCredentials(user, {
+        deviceId: req.headers?.['x-linglish-device'] || null,
+        provider,
+      });
       return sendJson(res, 200, {
-        access_token: token,
-        refresh_token: token,
-        user_id: user.id,
+        ...issued,
         is_new: payload.is_new,
         user: authService.sanitizeUser(user),
         redirect_url: payload.redirect_url,
@@ -266,6 +261,13 @@ async function registerOAuthRoutes(pathname, req, res, url) {
 
       // Handle login/registration
       const { user, isNewUser } = await oauthService.handleOAuthLogin('google', profile);
+      if (tokens.refreshToken) {
+        try {
+          await oauthService.saveGoogleRefreshToken(user.id, tokens.refreshToken);
+        } catch (err) {
+          console.warn('[OAuth] Failed to store Google refresh token:', err?.message || err);
+        }
+      }
 
       // Record login session
       try {
@@ -308,8 +310,8 @@ async function registerOAuthRoutes(pathname, req, res, url) {
       }
 
       if (process.env.OAUTH_ALLOW_LEGACY_FRAGMENT === 'true') {
-        const token = buildOAuthToken(user);
-        const legacyFragment = `token=${encodeURIComponent(token)}&user_id=${user.id}&is_new=${isNewUser}`;
+        const issued = await authService.issueLoginCredentials(user, { provider: 'google' });
+        const legacyFragment = `token=${encodeURIComponent(issued.access_token)}&user_id=${user.id}&is_new=${isNewUser}`;
         return sendRedirect(res, `${redirectUrl}#${legacyFragment}`);
       }
 
@@ -320,6 +322,115 @@ async function registerOAuthRoutes(pathname, req, res, url) {
       if (err?.status === 503) return sendError(res, 503, 'Service unavailable');
       const errorPage = isMobile ? MOBILE_HOME_PAGE_URL : HOME_PAGE_URL;
       return sendRedirect(res, `${FRONTEND_BASE_URL}${errorPage}?error=oauth_failed`);
+    }
+  }
+
+  // ============================================
+  // POST /auth/oauth/wechat/start - bind WeChat to the signed-in account
+  // GET /auth/oauth/wechat - open the WeChat QR login page
+  // GET /auth/oauth/wechat/callback - finish scan login or binding
+  // ============================================
+  if (pathname === '/auth/oauth/wechat/start' && req.method === 'POST') {
+    try {
+      if (!oauthService.isWechatEnabled()) return sendError(res, 403, 'WECHAT_OAUTH_DISABLED');
+      if (!oauthService.isWechatConfigured()) return sendError(res, 503, 'WECHAT_OAUTH_NOT_CONFIGURED');
+      const user = await authenticate(req);
+      validateScopedTokenConfiguration();
+      const transactionNonce = createOAuthTransactionNonce();
+      const transactionHash = hashOAuthTransactionNonce(transactionNonce);
+      const redirectUrl = url.searchParams.get('redirect') || HOME_PAGE_URL;
+      const state = await oauthService.createOAuthState('wechat', redirectUrl, {
+        source: 'web',
+        ip: clientIp,
+        flow: 'cookie_v1',
+        oauth_tx_hash: transactionHash,
+        link_user_id: String(user.id),
+      });
+      res.setHeader('Set-Cookie', serializeOAuthTransactionCookie(transactionNonce));
+      return sendJson(res, 200, { url: oauthService.buildWechatAuthUrl(state) });
+    } catch (err) {
+      if (err?.status === 503) return sendError(res, 503, 'Service unavailable');
+      const status = err?.message === 'UNAUTHORIZED' || err?.status === 401 ? 401 : 500;
+      return sendError(res, status, err?.message || 'OAUTH_INIT_FAILED');
+    }
+  }
+
+  if (pathname === '/auth/oauth/wechat' && req.method === 'GET') {
+    try {
+      if (!oauthService.isWechatEnabled()) return sendError(res, 403, 'WECHAT_OAUTH_DISABLED');
+      if (!oauthService.isWechatConfigured()) return sendError(res, 503, 'WECHAT_OAUTH_NOT_CONFIGURED');
+      const cookieFlow = url.searchParams.get('flow') === 'cookie_v1';
+      if (!cookieFlow && process.env.OAUTH_ALLOW_LEGACY_FRAGMENT !== 'true') {
+        return sendError(res, 403, 'OAUTH_LEGACY_FLOW_DISABLED');
+      }
+      if (cookieFlow) validateScopedTokenConfiguration();
+      const redirectUrl = url.searchParams.get('redirect') || HOME_PAGE_URL;
+      const transactionNonce = createOAuthTransactionNonce();
+      const transactionHash = hashOAuthTransactionNonce(transactionNonce);
+      const extraData = { source: 'web', ip: clientIp, oauth_tx_hash: transactionHash };
+      if (cookieFlow) extraData.flow = 'cookie_v1';
+      const state = await oauthService.createOAuthState('wechat', redirectUrl, extraData);
+      res.setHeader('Set-Cookie', serializeOAuthTransactionCookie(transactionNonce));
+      return sendRedirect(res, oauthService.buildWechatAuthUrl(state));
+    } catch (err) {
+      if (err?.status === 503) return sendError(res, 503, 'Service unavailable');
+      return sendError(res, 500, 'OAUTH_INIT_FAILED');
+    }
+  }
+
+  if (pathname === '/auth/oauth/wechat/callback' && req.method === 'GET') {
+    appendSetCookie(res, serializeOAuthTransactionCookie('', { maxAge: 0 }));
+    try {
+      if (!oauthService.isWechatEnabled()) return sendError(res, 403, 'WECHAT_OAUTH_DISABLED');
+      const code = url.searchParams.get('code');
+      const state = url.searchParams.get('state');
+      let transactionHash = null;
+      try {
+        transactionHash = hashOAuthTransactionNonce(readOAuthTransactionCookie(req));
+      } catch (_) { }
+      let stateData = null;
+      if (state) {
+        try {
+          stateData = await oauthService.verifyOAuthState(state, 'wechat', { transactionHash });
+        } catch (_) { }
+      }
+      if (url.searchParams.get('error') || !code || !state || !stateData) {
+        return sendRedirect(res, `${FRONTEND_BASE_URL}${HOME_PAGE_URL}?error=oauth_expired`);
+      }
+      if (stateData.extra_data?.flow === 'cookie_v1') validateScopedTokenConfiguration();
+      const tokens = await oauthService.exchangeWechatCode(code);
+      const profile = await oauthService.getWechatUserProfile(tokens.accessToken, tokens.openid);
+      const { user, isNewUser } = await oauthService.handleOAuthLogin('wechat', profile, {
+        linkUserId: stateData.extra_data?.link_user_id || null,
+      });
+      try {
+        await dataStore.recordLoginSession(user.id, clientIp, req.headers['user-agent'] || null);
+        await dataStore.createEvent({
+          user_id: user.id,
+          event_time: new Date().toISOString(),
+          event_name: isNewUser ? 'oauth_register' : 'oauth_login',
+          properties: { provider: 'wechat', ip: clientIp },
+          source: 'web',
+        });
+      } catch (e) {
+        console.warn('[OAuth] Failed to record WeChat login:', e.message);
+      }
+      const redirectTarget = isNewUser ? WELCOME_PAGE_URL : (stateData.redirect_url || HOME_PAGE_URL);
+      if (stateData.extra_data?.flow === 'cookie_v1') {
+        const bootstrapToken = createOAuthBootstrapToken(user, {
+          isNew: isNewUser,
+          redirectUrl: redirectTarget,
+        });
+        const bootstrapPayload = verifyOAuthBootstrapToken(bootstrapToken);
+        await oauthService.registerOAuthBootstrapJti(bootstrapPayload.jti, bootstrapPayload.exp, { provider: 'wechat' });
+        appendSetCookie(res, serializeOAuthBootstrapCookie(bootstrapToken));
+        return sendRedirect(res, addQueryParameter(`${FRONTEND_BASE_URL}${isNewUser ? WELCOME_PAGE_URL : HOME_PAGE_URL}`, 'oauth', 'cookie_v1'));
+      }
+      return sendRedirect(res, `${FRONTEND_BASE_URL}${HOME_PAGE_URL}?error=oauth_expired`);
+    } catch (err) {
+      const errorCode = err?.message === 'WECHAT_ALREADY_LINKED' ? 'wechat_already_linked' : 'oauth_failed';
+      if (err?.status === 503) return sendError(res, 503, 'Service unavailable');
+      return sendRedirect(res, `${FRONTEND_BASE_URL}${HOME_PAGE_URL}?error=${errorCode}`);
     }
   }
 
@@ -353,6 +464,7 @@ async function registerOAuthRoutes(pathname, req, res, url) {
       }
 
       await oauthService.unlinkOAuthProvider(user.id, provider);
+      if (provider === 'google') await loginSession.revokeProvider(user.id, 'google');
 
       logWithTs(`[OAuth] Unlinked ${provider} from user ${user.id}`);
 
@@ -372,7 +484,7 @@ async function registerOAuthRoutes(pathname, req, res, url) {
   if (pathname === '/auth/oauth/status' && req.method === 'GET') {
     return sendJson(res, 200, {
       google: oauthService.isGoogleConfigured(),
-      wechat: false,  // Not implemented yet
+      wechat: oauthService.isWechatConfigured(),
       twitter: false, // Not implemented yet
       github: false   // Not implemented yet
     });

@@ -16,6 +16,7 @@
     unlockedParts: [],
     wordStates: {},
     relearnQueue: [],
+    lastDailyDate: '',
   });
 
   function cloneDefault() {
@@ -27,6 +28,7 @@
       unlockedParts: [],
       wordStates: {},
       relearnQueue: [],
+      lastDailyDate: '',
     };
   }
 
@@ -48,6 +50,7 @@
       unlockedParts: Array.isArray(value.unlockedParts) ? value.unlockedParts.slice() : [],
       wordStates: value.wordStates && typeof value.wordStates === 'object' ? { ...value.wordStates } : {},
       relearnQueue: Array.isArray(value.relearnQueue) ? value.relearnQueue.slice() : [],
+      lastDailyDate: typeof value.lastDailyDate === 'string' ? value.lastDailyDate : '',
     };
   }
 

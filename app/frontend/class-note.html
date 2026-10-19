@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>课后微信笔记 — Linglish</title>
+  <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
+  <style>
+    body {
+      margin: 0;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+    }
+    .nav {
+      max-width: 720px;
+      margin: 16px auto 0;
+      padding: 6px 16px;
+      height: 68px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border-radius: 999px;
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+    }
+    .brand { color: #0f172a; font-weight: 700; text-decoration: none; }
+    .back { color: #0f766e; font-weight: 700; text-decoration: none; }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 24px 16px calc(96px + env(safe-area-inset-bottom, 0px));
+    }
+    h1 { margin: 0 0 8px; font-size: 32px; line-height: 40px; font-weight: 600; }
+    .lead { margin: 0 0 20px; color: #64748b; line-height: 24px; }
+    .card {
+      background: #fff;
+      border-radius: 24px;
+      padding: 24px;
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+    }
+    label { display: block; margin: 14px 0 6px; font-weight: 700; }
+    input[type="text"], textarea, input[type="file"] {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      padding: 10px 12px;
+      font: inherit;
+    }
+    textarea { min-height: 44px; resize: vertical; }
+    .btn-primary, .btn-outline {
+      border-radius: 999px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    .btn-primary { border: 0; color: #fff; background: linear-gradient(90deg, #0d9488, #2dd4bf); }
+    .btn-outline { border: 1px solid #e2e8f0; background: #fff; color: #0f172a; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+    [hidden] { display: none !important; }
+    .status { color: #64748b; margin: 14px 0 0; line-height: 24px; }
+    .status.error { color: #b91c1c; }
+    #viewer .status {
+      margin-top: 18px;
+      margin-bottom: 8px;
+      padding: 12px 4px 0;
+    }
+    .note-card {
+      background: #eef1f4;
+      border-radius: 18px;
+      padding: 18px 18px 28px;
+      overflow: visible;
+    }
+    .note-card img {
+      width: 100%;
+      max-height: min(42vh, 360px);
+      object-fit: contain;
+      border-radius: 8px;
+      display: block;
+      background: #fff;
+    }
+    .word {
+      margin: 18px 0 8px;
+      text-align: center;
+      font-size: 48px;
+      line-height: 1.1;
+      font-weight: 800;
+    }
+    .line {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-top: 10px;
+    }
+    .line:last-child { margin-bottom: 2px; }
+    .horn {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 0;
+      background: #0d9488;
+      color: #fff;
+      cursor: pointer;
+      flex: none;
+    }
+    .horn.playing { background: #115e59; }
+    .share { margin-top: 16px; word-break: break-all; color: #0f766e; }
+  </style>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/nav-back.js?v=1"></script>
+</head>
+<body>
+  <nav class="nav">
+    <a class="brand" href="./index-desktop.html">Linglish</a>
+    <a class="back" data-nav="back" href="./index-desktop.html">返回</a>
+  </nav>
+  <main>
+    <section id="composer">
+      <h1>课后微信笔记</h1>
+      <p class="lead">今天教了哪个单词，就拍下课堂上的单词卡片。系统会配上几句幼儿园能跟着说的话。笔记默认私有，仅本人或管理员登录后可查看。复制私有链接，方便自己回看。</p>
+      <form class="card" id="note-form">
+        <label for="word">今天教的单词</label>
+        <input id="word" name="word" type="text" placeholder="例如 cola" autocomplete="off">
+        <label for="photo">单词卡片照片</label>
+        <input id="photo" name="file" type="file" accept="image/png,image/jpeg,image/webp">
+        <label>课堂练习句子</label>
+        <div id="line-fields"></div>
+        <div class="actions">
+          <button class="btn-primary" id="save-btn" type="submit">生成笔记</button>
+        </div>
+        <p class="status" id="status" hidden></p>
+      </form>
+    </section>
+    <section id="viewer" hidden>
+      <article class="note-card" id="note"></article>
+      <div class="actions" id="share-actions" hidden>
+        <button class="btn-primary" id="copy-btn" type="button">复制私有链接</button>
+        <button class="btn-outline" id="edit-btn" type="button">返回修改</button>
+        <button class="btn-outline" id="another-btn" type="button">再做一条</button>
+      </div>
+      <p class="share" id="share-link" hidden></p>
+      <p class="status" id="view-status"></p>
+    </section>
+  </main>
+  <script>
+    const params = new URLSearchParams(location.search);
+    let noteId = params.get('id');
+    let linesDirty = false;
+    let lastNote = null;
+    let composerBound = false;
+    let currentAudio = null;
+    let speakToken = 0;
+    let audioUnlocked = false;
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    function readToken() {
+      return window.AuthManager ? window.AuthManager.getToken() || '' : '';
+    }
+
+    async function privateNoteFetch(url, options = {}) {
+      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') {
+        await window.AuthManager.ensureSession();
+      }
+      const token = readToken();
+      if (!token) throw new Error('请先登录后再查看笔记。');
+      const headers = new Headers(options.headers || {});
+      headers.set('Authorization', 'Bearer ' + token);
+      return fetch(url, { ...options, headers, cache: 'no-store' });
+    }
+
+    let noteImageGeneration = 0;
+    let noteImageUrl = '';
+
+    function releaseNoteImage() {
+      noteImageGeneration += 1;
+      if (noteImageUrl) {
+        URL.revokeObjectURL(noteImageUrl);
+        noteImageUrl = '';
+      }
+    }
+
+    async function loadPrivateNoteImage(source, host, generation) {
+      if (!source) return;
+      try {
+        const url = new URL(source, location.origin);
+        if (url.origin !== location.origin || !url.pathname.startsWith('/note-images/')) {
+          throw new Error('图片地址无效');
+        }
+        const response = await privateNoteFetch(url.pathname + url.search);
+        if (!response.ok) throw new Error('图片加载失败');
+        const blob = await response.blob();
+        if (generation !== noteImageGeneration) return;
+        if (!/^image\/(png|jpeg|webp)$/i.test(blob.type)) throw new Error('图片格式无效');
+        const image = host.querySelector('img[data-note-image]');
+        if (!image) return;
+        noteImageUrl = URL.createObjectURL(blob);
+        image.src = noteImageUrl;
+        image.hidden = false;
+      } catch (_) {
+        if (generation === noteImageGeneration) document.getElementById('view-status').textContent = '图片暂时无法加载，请确认已登录后重试。';
+      }
+    }
+
+    window.addEventListener('pagehide', releaseNoteImage);
+    window.addEventListener('pageshow', (event) => {
+      if (event.persisted && lastNote && !document.getElementById('viewer').hidden) showNote(lastNote, false);
+    });
+
+    function defaultLines(word) {
+      const spoken = String(word || '').trim().replace(/\s+/g, ' ');
+      const lower = spoken.toLowerCase();
+      const titleWord = lower ? lower.charAt(0).toUpperCase() + lower.slice(1) : 'Cola';
+      const say = lower || 'cola';
+      return [say, `${titleWord} please`, `May I have ${say} please?`, 'Here you are', 'Thank you'];
+    }
+
+    function renderLineFields(lines) {
+      document.getElementById('line-fields').innerHTML = lines.map((line, index) => (
+        `<textarea data-line="${index}">${escapeHtml(line)}</textarea>`
+      )).join('');
+    }
+
+    function currentLines() {
+      return [...document.querySelectorAll('[data-line]')].map((field) => field.value.trim()).filter(Boolean);
+    }
+
+    function showShare(enabled) {
+      document.getElementById('share-actions').hidden = !enabled;
+      document.getElementById('share-link').hidden = !enabled;
+    }
+
+    function showNote(note, share) {
+      stopSpeaking();
+      releaseNoteImage();
+      const imageGeneration = noteImageGeneration;
+      lastNote = {
+        id: note.id || noteId || '',
+        word: note.word || '',
+        title: note.title || '',
+        lines: Array.isArray(note.lines) ? note.lines.slice() : [],
+        image: note.image || '',
+      };
+      document.getElementById('composer').hidden = true;
+      document.getElementById('viewer').hidden = false;
+      document.title = `${note.title || note.word} — Linglish`;
+      const image = note.image
+        ? `<img data-note-image hidden alt="${escapeHtml(note.word)}">`
+        : '';
+      const lines = (note.lines || []).map((line) => (
+        `<div class="line"><button class="horn" type="button" data-speak="${escapeHtml(line)}" aria-label="朗读">▶</button><div>${escapeHtml(line)}</div></div>`
+      )).join('');
+      document.getElementById('note').innerHTML = `${image}<p class="word">${escapeHtml(note.word || '')}</p>${lines}`;
+      loadPrivateNoteImage(note.image, document.getElementById('note'), imageGeneration);
+      const id = note.id || noteId;
+      if (id) noteId = String(id);
+      const link = `${location.origin}/class-note.html?id=${encodeURIComponent(noteId || '')}`;
+      document.getElementById('share-link').textContent = link;
+      // Keep the private link available after generating or reopening a note.
+      showShare(true);
+      document.getElementById('view-status').textContent = share
+        ? '私有链接已准备好，仅本人或管理员登录后可查看。'
+        : '点每一句前面的按钮听一听。笔记仅本人或管理员登录后可查看。';
+    }
+
+    function showComposer(note) {
+      stopSpeaking();
+      releaseNoteImage();
+      bindComposer();
+      document.getElementById('viewer').hidden = true;
+      document.getElementById('composer').hidden = false;
+      document.title = '课后微信笔记 — Linglish';
+      const word = String(note?.word || '').trim();
+      const lines = Array.isArray(note?.lines) && note.lines.length
+        ? note.lines
+        : defaultLines(word || 'cola');
+      document.getElementById('word').value = word;
+      linesDirty = true;
+      renderLineFields(lines);
+      document.getElementById('photo').value = '';
+      const button = document.getElementById('save-btn');
+      button.disabled = false;
+      button.textContent = '重新生成笔记';
+      const status = document.getElementById('status');
+      status.hidden = false;
+      status.className = 'status';
+      status.textContent = '已带回单词和句子。请重新选择单词卡片照片，再生成。';
+      try {
+        history.replaceState({}, '', './class-note.html');
+      } catch (_) {}
+      noteId = null;
+    }
+
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      audioUnlocked = true;
+      try {
+        const Ctx = window.AudioContext || window.webkitAudioContext;
+        if (Ctx) {
+          const ctx = new Ctx();
+          if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+        }
+      } catch (_) {}
+      try {
+        const warm = new Audio();
+        warm.muted = true;
+        warm.play().then(() => {
+          warm.pause();
+          warm.muted = false;
+        }).catch(() => {});
+      } catch (_) {}
+    }
+
+    function stopSpeaking() {
+      speakToken += 1;
+      if (currentAudio) {
+        try {
+          currentAudio.onended = null;
+          currentAudio.onerror = null;
+          currentAudio.pause();
+          currentAudio.removeAttribute('src');
+          currentAudio.load();
+        } catch (_) {}
+        currentAudio = null;
+      }
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      document.querySelectorAll('.horn').forEach((item) => item.classList.remove('playing'));
+    }
+
+    function speakBrowser(text, token) {
+      return new Promise((resolve) => {
+        if (!window.speechSynthesis) {
+          resolve(false);
+          return;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.9;
+        utterance.onend = () => resolve(token === speakToken);
+        utterance.onerror = () => resolve(false);
+        setTimeout(() => {
+          if (token !== speakToken) {
+            resolve(false);
+            return;
+          }
+          window.speechSynthesis.speak(utterance);
+        }, 40);
+      });
+    }
+
+    function playUrl(url, token) {
+      return new Promise((resolve) => {
+        if (token !== speakToken) {
+          resolve(false);
+          return;
+        }
+        const audio = new Audio();
+        currentAudio = audio;
+        const finish = (ok) => {
+          if (currentAudio === audio) currentAudio = null;
+          resolve(ok && token === speakToken);
+        };
+        audio.onended = () => finish(true);
+        audio.onerror = () => finish(false);
+        audio.src = url;
+        const start = audio.play();
+        if (start && typeof start.then === 'function') {
+          start.catch(() => finish(false));
+        }
+      });
+    }
+
+    async function fetchLineAudio(text) {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 15000);
+      try {
+        const response = await fetch('/tts/practice', {
+          method: 'POST',
+          signal: controller.signal,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, voice: 'en-US-AvaMultilingualNeural' }),
+        });
+        const data = await response.json().catch(() => ({}));
+        if (response.ok && data.audioUrl) return data.audioUrl;
+      } catch (_) {
+      } finally {
+        clearTimeout(timer);
+      }
+      return '';
+    }
+
+    async function speak(text, button) {
+      const value = String(text || '').trim();
+      if (!value || !button) return;
+      unlockAudio();
+      stopSpeaking();
+      const token = speakToken;
+      button.classList.add('playing');
+      const status = document.getElementById('view-status');
+      const previous = status.textContent;
+      status.textContent = '正在朗读…';
+      let played = false;
+      try {
+        const audioUrl = await fetchLineAudio(value);
+        if (token !== speakToken) return;
+        if (audioUrl) played = await playUrl(audioUrl, token);
+        if (!played && token === speakToken) played = await speakBrowser(value, token);
+      } finally {
+        if (token === speakToken) {
+          button.classList.remove('playing');
+          if (!played) status.textContent = '这句暂时读不出来，请再点一次。';
+          else status.textContent = previous || '点每一句前面的按钮听一听。';
+        }
+      }
+    }
+
+    document.getElementById('note').addEventListener('click', (event) => {
+      const button = event.target.closest('[data-speak]');
+      if (!button) return;
+      const text = button.getAttribute('data-speak') || button.dataset.speak || '';
+      speak(text, button);
+    });
+
+    document.getElementById('copy-btn').addEventListener('click', async () => {
+      const link = document.getElementById('share-link').textContent;
+      try {
+        await navigator.clipboard.writeText(link);
+        document.getElementById('view-status').textContent = '私有链接已复制，仅本人或管理员登录后可查看。';
+      } catch (_) {
+        document.getElementById('view-status').textContent = '请长按下面的私有链接复制，仅本人或管理员登录后可查看。';
+        showShare(true);
+      }
+    });
+
+    document.getElementById('edit-btn').addEventListener('click', () => {
+      location.href = './workbench.html?mode=class-note';
+    });
+
+    document.getElementById('another-btn').addEventListener('click', () => {
+      location.href = './workbench.html?mode=class-note';
+    });
+
+    function bindComposer() {
+      if (composerBound) return;
+      composerBound = true;
+      document.getElementById('word').addEventListener('input', () => {
+        if (linesDirty) return;
+        renderLineFields(defaultLines(document.getElementById('word').value));
+      });
+      document.getElementById('line-fields').addEventListener('input', () => { linesDirty = true; });
+      document.getElementById('note-form').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const status = document.getElementById('status');
+        const token = readToken();
+        if (!token) {
+          status.hidden = false;
+          status.className = 'status error';
+          status.textContent = '请先登录，再生成笔记。';
+          return;
+        }
+        const word = document.getElementById('word').value.trim();
+        const file = document.getElementById('photo').files[0];
+        if (!word || !file) {
+          status.hidden = false;
+          status.className = 'status error';
+          status.textContent = file ? '请填写单词。' : '请重新选择单词卡片照片，再生成。';
+          return;
+        }
+        const button = document.getElementById('save-btn');
+        button.disabled = true;
+        status.hidden = false;
+        status.className = 'status';
+        status.textContent = '正在生成笔记…';
+        try {
+          const body = new FormData();
+          body.append('word', word);
+          body.append('lines', JSON.stringify(currentLines()));
+          body.append('file', file);
+          const response = await fetch('/class-notes', {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token },
+            body,
+          });
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok) throw new Error(result.message || '笔记没有生成');
+          let note = { ...result.note, lines: currentLines() };
+          try {
+            const articleRes = await privateNoteFetch(`/articles/${encodeURIComponent(result.note.id)}`);
+            if (articleRes.ok) {
+              const article = await articleRes.json();
+              note = JSON.parse(article.content || '{}');
+            }
+          } catch (_) {}
+          note.id = result.note.id;
+          try {
+            history.replaceState({}, '', `./class-note.html?id=${encodeURIComponent(note.id)}`);
+          } catch (_) {}
+          showNote(note, true);
+        } catch (err) {
+          status.className = 'status error';
+          status.textContent = err.message || '笔记没有生成';
+          button.disabled = false;
+        }
+      });
+    }
+
+    async function loadNote() {
+      const response = await privateNoteFetch(`/articles/${encodeURIComponent(noteId)}`);
+      if (!response.ok) throw new Error('找不到这条笔记');
+      const article = await response.json();
+      const note = JSON.parse(article.content || '{}');
+      if (note.kind !== 'class-note') throw new Error('这不是课后笔记');
+      note.id = article.id;
+      showNote(note, false);
+    }
+
+    // Teacher create/edit lives in workbench; this page reopens the owner-authorized note.
+    if (noteId) {
+      loadNote().catch((err) => {
+        document.getElementById('composer').hidden = true;
+        document.getElementById('viewer').hidden = false;
+        showShare(false);
+        document.getElementById('view-status').textContent = err.message || '笔记打开失败';
+      });
+    } else {
+      location.replace('./workbench.html?mode=class-note');
+    }
+  </script>
+</body>
+</html>

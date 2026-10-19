@@ -3,9 +3,14 @@ const crypto = require('crypto');
 const dataStore = require('../data-store');
 const { getEntitlement } = require('./entitlements');
 const emailService = require('./email');
+const loginSession = require('./login-session');
 
 const SECRET_SALT = 'linglish-mvp-salt';
-const TOKEN_TTL_SECONDS = Number(process.env.AUTH_TOKEN_TTL_SECONDS || (60 * 60 * 24 * 7)); // default 7 days
+// Data-access credential. The 30/90 day login is a separate refresh session.
+const ACCESS_TTL_SECONDS = Math.max(
+  60,
+  Math.min(24 * 60 * 60, Number(process.env.AUTH_ACCESS_TTL_SECONDS || 60 * 60) || 3600),
+);
 const PASSWORD_RESET_TTL_MINUTES = Math.max(
   5,
   Math.min(120, Number(process.env.PASSWORD_RESET_TTL_MINUTES || 30) || 30),
@@ -144,15 +149,99 @@ function decodeToken(token) {
   }
 }
 
-function createAccessTokenForUser(user) {
+function createAccessTokenForUser(user, extra = {}) {
   if (!user || !user.id) {
     throw new Error('INVALID_USER');
   }
   return buildToken({
+    ...extra,
     sub: user.id,
     email: user.email,
-    exp: Math.floor(Date.now() / 1000) + TOKEN_TTL_SECONDS,
+    exp: Math.floor(Date.now() / 1000) + ACCESS_TTL_SECONDS,
   });
+}
+
+function sessionResponse(user, session, accessToken, refreshToken) {
+  return {
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    expires_in: ACCESS_TTL_SECONDS,
+    session_expires_at: new Date(session.slidingExp * 1000).toISOString(),
+    absolute_expires_at: new Date(session.absoluteExp * 1000).toISOString(),
+    device_id: session.deviceId,
+    user_id: user.id,
+  };
+}
+
+async function issueLoginCredentials(user, options = {}) {
+  if (!user || !user.id) throw new Error('INVALID_USER');
+  const provider = options.provider || (isGuestEmail(user.email) ? 'guest' : 'password');
+  const session = await loginSession.openSession({
+    userId: user.id,
+    deviceId: options.deviceId,
+    provider,
+  });
+  const accessToken = createAccessTokenForUser(user, { sid: session.id });
+  const refreshToken = buildToken({
+    typ: 'refresh',
+    sub: user.id,
+    email: user.email,
+    sid: session.id,
+    did: session.deviceId,
+    abs: session.absoluteExp,
+    exp: session.slidingExp,
+  });
+  return sessionResponse(user, session, accessToken, refreshToken);
+}
+
+async function refreshLogin(refreshToken, deviceId) {
+  const payload = decodeToken(refreshToken);
+  if (!payload || payload.typ !== 'refresh' || !payload.sid) {
+    throw new Error('INVALID_TOKEN');
+  }
+  const now = Math.floor(Date.now() / 1000);
+  if ((payload.exp && payload.exp < now) || (payload.abs && payload.abs < now)) {
+    throw new Error('TOKEN_EXPIRED');
+  }
+  const session = await loginSession.touch(payload.sid, deviceId || payload.did || null, {
+    absoluteExp: payload.abs,
+  });
+  if (!session) throw new Error('TOKEN_EXPIRED');
+
+  if (loginSession.shouldCheckGoogle(session)) {
+    const oauthService = require('./oauth');
+    const grant = await oauthService.probeStoredGoogleGrant(session.userId);
+    await loginSession.markGoogleChecked(session.id);
+    if (grant === 'revoked') {
+      await loginSession.revokeProvider(session.userId, 'google');
+      throw new Error('GOOGLE_AUTHORIZATION_REVOKED');
+    }
+  }
+
+  const user = await dataStore.findUserById(session.userId);
+  if (!user) throw new Error('UNAUTHORIZED');
+  if (String(user.status || '').toLowerCase() === 'banned') {
+    const err = new Error('BANNED');
+    err.status = 403;
+    throw err;
+  }
+  const accessToken = createAccessTokenForUser(user, { sid: session.id });
+  const nextRefresh = buildToken({
+    typ: 'refresh',
+    sub: user.id,
+    email: user.email,
+    sid: session.id,
+    did: session.deviceId,
+    abs: session.absoluteExp,
+    exp: session.slidingExp,
+  });
+  return sessionResponse(user, session, accessToken, nextRefresh);
+}
+
+async function revokeSessionToken(token) {
+  const payload = decodeToken(token);
+  if (payload?.sid) await loginSession.revoke(payload.sid);
+  return true;
 }
 
 function hashPasswordResetToken(token) {
@@ -246,7 +335,7 @@ async function register({ email, password, username, phone, account, level }) {
   return sanitizeUser(userRecord);
 }
 
-async function login({ email, password, phone, account }) {
+async function login({ email, password, phone, account, device_id: bodyDeviceId, deviceId: bodyDeviceAlias } = {}, options = {}) {
   // Support unified 'account' field - auto-detect email or phone
   let finalEmail = email;
   let finalPhone = phone;
@@ -286,12 +375,10 @@ async function login({ email, password, phone, account }) {
       console.warn('[Auth] Failed to upgrade legacy password hash:', err?.message || err);
     }
   }
-  const token = createAccessTokenForUser(user);
-  return {
-    access_token: token,
-    refresh_token: token,
-    user_id: user.id,
-  };
+  return issueLoginCredentials(user, {
+    deviceId: options.deviceId || bodyDeviceId || bodyDeviceAlias || null,
+    provider: options.provider || (isGuestEmail(user.email) ? 'guest' : 'password'),
+  });
 }
 
 async function requestPasswordReset(payload = {}, metadata = {}) {
@@ -537,6 +624,10 @@ async function requireUser(token) {
   if (payload.exp && payload.exp < Math.floor(Date.now() / 1000)) {
     throw new Error('TOKEN_EXPIRED');
   }
+  if (payload.sid) {
+    const active = await loginSession.assertActive(payload.sid);
+    if (!active) throw new Error('TOKEN_EXPIRED');
+  }
   const user = await dataStore.findUserById(payload.sub);
   if (!user) {
     throw new Error('UNAUTHORIZED');
@@ -581,4 +672,8 @@ module.exports = {
   sanitizeUser,
   decodeToken,
   createAccessTokenForUser,
+  issueLoginCredentials,
+  refreshLogin,
+  revokeSessionToken,
+  ACCESS_TTL_SECONDS,
 };

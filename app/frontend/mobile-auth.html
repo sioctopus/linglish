@@ -322,12 +322,13 @@
   <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="stylesheet" href="./mobile-styles.css">
-  <script src="./i18n.js"></script>
-  <script src="./js/auth-manager.js"></script>
+  <script src="./i18n.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <script src="./js/oauth-bootstrap.js"></script>
   <script src="./auth-helpers.js"></script>
   <script src="./guest-check.js"></script>
-  <script src="./js/first-lesson-entry.js?v=1"></script>
+  <script src="./js/first-lesson-entry.js?v=20261019"></script>
   <style>
     /* Extension warning banner */
     .extension-warning-banner {
@@ -797,7 +798,7 @@
       </div>
       <div class="form-options">
         <label class="checkbox-label">
-          <input type="checkbox" id="remember-me">
+          <input type="checkbox" id="remember-me" checked>
           <span data-i18n="auth.remember_me">记住我</span>
         </label>
         <a href="./reset-password.html?from=mobile_auth" class="forgot-link" data-i18n="auth.forgot_password">忘记密码？</a>
@@ -807,7 +808,7 @@
       <div class="auth-divider">
         <span data-i18n="auth.or">或者</span>
       </div>
-      <button type="button" class="guest-btn" data-i18n="auth.guest_mode">游客体验</button>
+      <button type="button" class="guest-btn" data-i18n="auth.guest_mode">注册账号</button>
     </form>
 
     <!-- Register Form -->
@@ -987,7 +988,7 @@
 
     // Version check and cache clearing mechanism
     (function() {
-      const APP_VERSION = '2024.12.16.002'; // Synced with auth-manager.js
+      const APP_VERSION = '2024.12.16.002'; // Synced with auth-manager.js?v=2
       const STORAGE_VERSION_KEY = 'linglish_app_version';
 
       try {
@@ -995,25 +996,11 @@
 
         // If version mismatch or no version stored, clear all app data
         if (storedVersion !== APP_VERSION) {
-          console.log('[Version] Version mismatch detected. Clearing cache...', {
+          console.log('[Version] Version changed. Login session kept.', {
             stored: storedVersion,
             current: APP_VERSION
           });
-
-          // Clear all authentication and app data
-          safeStorage.clearAuth();
-
-          // Clear other possible app data
-          const keysToRemove = ['userSettings', 'lastSync', 'appConfig', 'cachedData'];
-          keysToRemove.forEach(key => {
-            safeStorage.remove(localStorage, key);
-            safeStorage.remove(sessionStorage, key);
-          });
-
-          // Set new version
           safeStorage.set(localStorage, STORAGE_VERSION_KEY, APP_VERSION);
-
-          console.log('[Version] Cache cleared successfully. New version:', APP_VERSION);
         }
       } catch (err) {
         console.error('[Version] Version check failed:', err);
@@ -1574,81 +1561,8 @@
     // Guest Mode
     document.querySelector('.guest-btn').addEventListener('click', async () => {
       postPublicAuthEvent('auth_guest_click', { destination: getDestinationMeta().label });
-      try {
-        const response = await fetch('/auth/guest', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          }
-        });
-
-        const data = await response.json();
-
-        if (!response.ok) {
-          throw new Error(data.message || i18n.t('auth.guest_login_failed') || '游客登录失败');
-        }
-
-        // Save token using AuthManager with robust fallback
-        const token = data.access_token || data.token;
-
-        // Validate token exists
-        if (!token) {
-          console.error('Guest credential missing:', { status: response.status });
-          throw new Error('游客登录失败：服务器未返回令牌');
-        }
-
-        console.log('[Guest Login] Credential received:', Boolean(token));
-        console.log('[Guest Login] Response accepted:', { status: response.status });
-
-        if (window.LinglishMediaSession) {
-          await window.LinglishMediaSession.clear();
-        } else {
-          await fetch('/auth/media-session', { method: 'DELETE', credentials: 'include' }).catch(() => {});
-        }
-
-        if (window.AuthManager) {
-          await window.AuthManager.clearToken({ skipMediaSession: true });
-        } else {
-          safeStorage.clearAuth({ skipMediaSession: true });
-        }
-
-        // Use AuthManager for robust token storage (localStorage → Cookies → Memory)
-        if (window.AuthManager) {
-          await window.AuthManager.setToken(token, true); // remember=true for guest mode
-        } else {
-          // Fallback if AuthManager not available
-          safeStorage.set(localStorage, 'linglish_token', token);
-          safeStorage.set(localStorage, 'authToken', token);
-          safeStorage.set(sessionStorage, 'authToken', token);
-          safeStorage.set(sessionStorage, 'linglish_token', token);
-        }
-
-        // Set guest flags
-        safeStorage.set(localStorage, 'is_guest', 'true');
-        safeStorage.set(localStorage, 'guest_id', data.guest_id || '');
-        safeStorage.set(sessionStorage, 'is_guest', 'true');
-        safeStorage.set(sessionStorage, 'isGuest', 'true');
-
-        // Verify storage
-        const savedToken = window.AuthManager ? window.AuthManager.getToken() : safeStorage.get(localStorage, 'linglish_token');
-        const savedGuestFlag = safeStorage.get(localStorage, 'is_guest');
-        console.log('[Guest Login] Token saved successfully:', {
-          tokenSavedCorrectly: savedToken === token || !!savedToken, // Cookie/Memory might differ
-          guestFlagSaved: savedGuestFlag === 'true',
-          tokenPresent: Boolean(savedToken)
-        });
-
-        showToast(tt('auth.toast_guest_mode'), 'info');
-        await postAuthSuccessEvent('guest_login_success', { guest: true });
-
-        setTimeout(() => {
-          window.location.href = getSafeNext(getDefaultAuthNext('guest'));
-        }, 500);
-      } catch (error) {
-        console.error('Guest login error:', error);
-        postPublicAuthEvent('auth_submit_error', { method: 'guest', status: 'network', message: error.message || 'GUEST_LOGIN_FAILED' });
-        showToast(error.message || tt('auth.toast_network_error'), 'error');
-      }
+      showToast('请先注册账号。学习记录会保存在你的账号里。', 'info');
+      registerTab.click();
     });
 
     // Quick Start taps -> 引导到登录/游客
@@ -1676,6 +1590,9 @@
       if (window.LinglishOAuthBootstrap && window.LinglishOAuthBootstrap.isCookieFlow()) {
         await window.LinglishOAuthBootstrap.ready;
         return;
+      }
+      if (window.AuthManager && AuthManager.ready && typeof AuthManager.ready.then === 'function') {
+        try { await AuthManager.ready; } catch (_) { }
       }
 
       // Check for valid authentication.
@@ -1771,5 +1688,6 @@
     handleOAuthCallback();
   </script>
   <script src="./js/page-tracker.js"></script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
 </body>
 </html>

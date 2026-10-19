@@ -1,6 +1,7 @@
 const dataStore = require('../data-store');
 const authService = require('../services/auth');
 const emailService = require('../services/email');
+const loginSession = require('../services/login-session');
 const { parseBody, parseOptionalJsonBody } = require('../utils/parsers');
 const { sendJson, sendError, mapErrorToStatus } = require('../middleware/error-handler');
 const { authenticate, authenticateBearer } = require('../middleware/auth');
@@ -23,6 +24,12 @@ const MEDIA_SESSION_REFRESH_AFTER_SECONDS = 600;
  * @param {http.IncomingMessage} req - HTTP request object
  * @returns {string} Client IP address
  */
+function readDeviceId(req, body) {
+  const header = req.headers?.['x-linglish-device'];
+  const value = Array.isArray(header) ? header[0] : header;
+  return value || body?.device_id || body?.deviceId || null;
+}
+
 function getClientIp(req) {
   const forwarded = req.headers['x-forwarded-for'];
   return Array.isArray(forwarded)
@@ -288,7 +295,10 @@ async function registerAuthRoutes(pathname, req, res, url) {
     try {
       const user = await authService.register(body);
       logWithTs(`[Auth] Register success account=${account} ip=${clientIp} user=${user.username || user.id}`);
-      const token = authService.createAccessTokenForUser(user);
+      const issued = await authService.issueLoginCredentials(user, {
+        deviceId: readDeviceId(req, body),
+        provider: 'password',
+      });
       let emailVerification = null;
       try {
         const onboardingFields = normalizeOnboardingProfileFields(body);
@@ -321,9 +331,7 @@ async function registerAuthRoutes(pathname, req, res, url) {
       return sendJson(res, 201, {
         ...user,
         user,
-        access_token: token,
-        refresh_token: token,
-        user_id: user.id,
+        ...issued,
         is_new: true,
         email_verification: emailVerification,
       });
@@ -351,7 +359,7 @@ async function registerAuthRoutes(pathname, req, res, url) {
     logWithTs(`[Auth] Login attempt account=${account} ip=${clientIp}`);
 
     try {
-      const tokens = await authService.login(body);
+      const tokens = await authService.login(body, { deviceId: readDeviceId(req, body) });
       logWithTs(`[Auth] Login success account=${account} ip=${clientIp} elapsed=${Date.now() - attemptStarted}ms user_id=${tokens.user_id}`);
       try {
         await dataStore.recordLoginSession(tokens.user_id, clientIp, req.headers['user-agent'] || null);
@@ -471,91 +479,60 @@ async function registerAuthRoutes(pathname, req, res, url) {
     }
   }
 
-  // POST /auth/guest - 游客登录
+  // POST /auth/guest - 游客登录已关闭，避免未注册用户占用账号
   if (pathname === '/auth/guest' && req.method === 'POST') {
-    const clientIp = getClientIp(req);
-    let guestMetadataDiscarded = false;
-    const body = await parseOptionalJsonBody(req, {
-      maxBytes: GUEST_METADATA_MAX_BYTES,
-      timeoutMs: GUEST_METADATA_TIMEOUT_MS,
-      onDiscard: () => { guestMetadataDiscarded = true; },
-    });
-    if (guestMetadataDiscarded) {
-      res.shouldKeepAlive = false;
-      if (!res.headersSent && typeof res.setHeader === 'function') {
-        res.setHeader('Connection', 'close');
-      }
-    }
-    const visitorId = normalizeVisitorId(body?.visitor_id || body?.properties?.visitor_id);
-    logWithTs(`[Auth] Guest login attempt ip=${clientIp}`);
+    return sendError(res, 403, 'GUEST_LOGIN_DISABLED');
+  }
 
+  // POST /auth/refresh - exchange the device session for a new 1-hour access credential
+  if (pathname === '/auth/refresh' && req.method === 'POST') {
+    let body = {};
     try {
-      // 生成临时游客账号
-      const randomId = Math.random().toString(36).substring(2, 10);
-      const guestEmail = `guest_${randomId}@temp.linglish.local`;
-      const guestUsername = `游客${randomId}`;
-
-      // 创建游客用户（通过特殊email格式识别）
-      const guestUser = await authService.register({
-        email: guestEmail,
-        username: guestUsername,
-        password: randomId + '_temp_password'
-      });
-
-      // 自动登录游客
-      const tokens = await authService.login({
-        email: guestEmail,
-        password: randomId + '_temp_password'
-      });
-
-      logWithTs(`[Auth] Guest login success ip=${clientIp} user=${guestUsername} id=${guestUser.id}`);
-
-      // 记录游客登录
-      try {
-        await dataStore.recordLoginSession(tokens.user_id, clientIp, req.headers['user-agent'] || null);
-        await dataStore.createEvent({
-          user_id: tokens.user_id,
-          event_time: new Date().toISOString(),
-          event_name: 'guest_login',
-          properties: buildGuestLoginProperties({
-            ip: clientIp,
-            userAgent: req.headers['user-agent'] || null,
-            visitorId,
-          }),
-          source: 'web',
-        });
-      } catch (e) {
-        warnWithTs('[Auth] Failed to record guest login:' + (e?.message || e));
-      }
-
-      return sendJson(res, 200, {
-        ...tokens,
-        is_guest: true,
-        guest_id: randomId
-      });
+      body = await parseBody(req);
     } catch (err) {
-      errorWithTs(`[Auth] Guest login failed ip=${clientIp} reason=${err?.message || err}`);
-      return sendError(res, 500, 'GUEST_LOGIN_FAILED');
+      return sendError(res, 400, err.message || 'INVALID_JSON');
+    }
+    try {
+      const tokens = await authService.refreshLogin(body.refresh_token, readDeviceId(req, body));
+      return sendJson(res, 200, tokens);
+    } catch (err) {
+      const status = err?.message === 'INVALID_TOKEN' || err?.message === 'GOOGLE_AUTHORIZATION_REVOKED'
+        ? 401
+        : mapErrorToStatus(err, 401);
+      return sendError(res, status, err.message || 'TOKEN_EXPIRED');
     }
   }
 
-  // POST /auth/logout
+  // POST /auth/logout — idempotent. An expired access credential can still revoke its session.
   if (pathname === '/auth/logout' && req.method === 'POST') {
     const clientIp = getClientIp(req);
+    let body = {};
     try {
-      const user = await authenticate(req);
-      await dataStore.recordLogoutSession(user.id);
-      await dataStore.createEvent({
-        user_id: user.id,
-        event_time: new Date().toISOString(),
-        event_name: 'user_logout',
-        properties: { ip: clientIp, user_agent: req.headers['user-agent'] || null },
-        source: 'web',
-      });
+      body = await parseBody(req);
+    } catch (_) {
+      body = {};
+    }
+    try {
+      const bearer = (req.headers?.authorization || '').replace(/^Bearer\s+/i, '').trim();
+      const payload = authService.decodeToken(bearer) || authService.decodeToken(body.refresh_token);
+      if (payload?.sid) await loginSession.revoke(payload.sid);
+      if (payload?.sub) {
+        try {
+          await dataStore.recordLogoutSession(payload.sub);
+          await dataStore.createEvent({
+            user_id: payload.sub,
+            event_time: new Date().toISOString(),
+            event_name: 'user_logout',
+            properties: { ip: clientIp, user_agent: req.headers['user-agent'] || null },
+            source: 'web',
+          });
+        } catch (err) {
+          warnWithTs('[Auth] Failed to record logout:' + (err?.message || err));
+        }
+      }
       return sendJson(res, 200, { ok: true });
     } catch (err) {
-      const status = mapErrorToStatus(err, 400);
-      return sendError(res, status, err.message);
+      return sendJson(res, 200, { ok: true });
     }
   }
 

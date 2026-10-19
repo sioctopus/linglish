@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/tts-voice.js?v=1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>linglish - 词汇表</title>
   <link rel="stylesheet" href="./mobile-styles.css">
   <script src="./auth-helpers.js"></script>
   <script src="./guest-check.js"></script>
-  <script src="./mobile-auth.js"></script>
+  <script src="./mobile-auth.js?v=20261019"></script>
   <style>
     .vocab-header {
       position: sticky;
@@ -489,6 +492,7 @@
       margin-top: 8px;
     }
   </style>
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
 </head>
 
 <body>
@@ -576,23 +580,23 @@
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <a href="mobile-today.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">🎯</span></div>
+      <div class="nav-icon" data-lx-icon="today"></div>
       <span>今日</span>
     </a>
     <a href="mobile-explore.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">🌍</span></div>
+      <div class="nav-icon" data-lx-icon="explore"></div>
       <span>探索世界</span>
     </a>
     <a href="mobile-power.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">⚡</span></div>
+      <div class="nav-icon" data-lx-icon="power"></div>
       <span>能量站</span>
     </a>
     <a href="mobile-arena.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">🎪</span></div>
+      <div class="nav-icon" data-lx-icon="arena"></div>
       <span>实战场</span>
     </a>
     <a href="mobile-treasure.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">🪴</span></div>
+      <div class="nav-icon" data-lx-icon="growth"></div>
       <span>成长中心</span>
     </a>
   </nav>
@@ -1012,7 +1016,7 @@
               text: text,
               lang: 'en',
               provider: 'edge',
-              voice: 'en-US-AriaNeural'  // 专业清晰的女声
+              voice: (window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural')
             })
           });
           if (res.ok) {
@@ -1055,5 +1059,7 @@
     loadData();
   </script>
   <script src="./js/page-tracker.js"></script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+  <script src="./js/icons.js?v=1"></script>
 </body>
 </html>

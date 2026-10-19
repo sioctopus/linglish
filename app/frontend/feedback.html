@@ -1,20 +1,57 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
   <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>用户反馈 - linglish</title>
     <link rel="stylesheet" href="./styles.css" />
     <script src="./auth-helpers.js"></script>
-    <script src="./i18n.js"></script>
+    <script src="./i18n.js?v=20261019"></script>
     <style>
       :root { --border: rgba(148,163,184,.25); --surface:#ffffff; --muted:#64748b; --accent:#0ea5e9; }
       body { margin:0; font-family: Inter, system-ui, sans-serif; background: #f6f7fb; }
       .wrap { max-width: 960px; margin: 0 auto; padding: 1rem; }
       .top { display:flex; align-items:center; justify-content:space-between; padding:.8rem 0; }
-      .panel { background:#fff; border:1px solid var(--border); border-radius:12px; box-shadow:0 10px 24px rgba(0,0,0,.06); }
-      .form { padding:1rem; }
-      .form h2 { margin:.2rem 0 1rem; }
+      .nav-pills { display:flex; gap:8px; align-items:center; }
+      .nav-pills .btn {
+        display:inline-flex;
+        align-items:center;
+        gap:6px;
+        padding:8px 14px;
+        font-size:14px;
+        font-weight:600;
+        line-height:20px;
+        color:#0f172a;
+        text-decoration:none;
+        background:#fff;
+        border:1px solid #e2e8f0;
+      }
+      .ui-icon {
+        width:16px;
+        height:16px;
+        flex:0 0 16px;
+        display:block;
+        stroke:currentColor;
+        fill:none;
+        stroke-width:1.75;
+        stroke-linecap:round;
+        stroke-linejoin:round;
+      }
+      .panel { background:#fff; border:1px solid var(--border); border-radius:24px; box-shadow:0 4px 90px rgba(0,0,0,.04); }
+      .form { padding:1.25rem 1.5rem; }
+      .form h2 {
+        display:flex;
+        align-items:center;
+        gap:8px;
+        margin:0 0 1rem;
+        font-size:20px;
+        font-weight:600;
+        line-height:28px;
+        color:#0f172a;
+      }
+      .form h2 .ui-icon { width:18px; height:18px; flex-basis:18px; color:#0f766e; }
       .form-row { margin:.6rem 0; }
       .form-row select, .form-row textarea { width:100%; border:1px solid var(--border); border-radius:10px; padding:.6rem .7rem; font-size:1rem; }
       .form-row input[type="file"] { width:100%; }
@@ -40,15 +77,21 @@
   <body>
     <div class="wrap">
       <div class="top">
-        <div style="display:flex; gap:.5rem; align-items:center;">
-          <a class="btn" id="back-home">🏠 <span data-i18n="nav.home">返回首页</span></a>
-          <a class="btn" href="./video-reader-desktop.html">🎬 <span data-i18n="nav.videos">视频</span></a>
+        <div class="nav-pills">
+          <a class="btn" id="back-home">
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z"/></svg>
+            <span data-i18n="nav.home">返回首页</span>
+          </a>
+          <a class="btn" href="./video-reader-desktop.html">
+            <svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="12" rx="2"/><path d="M10.2 9.2v5.6l4.8-2.8-4.8-2.8z" fill="currentColor" stroke="none"/></svg>
+            <span data-i18n="nav.videos">视频</span>
+          </a>
         </div>
         <div class="btn" id="logout" style="display:none;" data-i18n="nav.logout">退出</div>
       </div>
 
       <div class="panel form">
-        <h2>💬 提交反馈</h2>
+        <h2><svg class="ui-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6.5h12a2 2 0 0 1 2 2v6a2 2 0 0 1-2 2H10l-4 3v-3H6a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z"/></svg>提交反馈</h2>
         <div class="form-row">
           <select id="fb-category">
             <option value="bug">问题/故障</option>
@@ -225,5 +268,6 @@
       if (typeof i18n !== 'undefined') i18n.init();
       loadMyFeedback();
     </script>
-  </body>
+  <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+</body>
   </html>

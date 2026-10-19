@@ -159,24 +159,114 @@
 
     // 一局连连看里同一个词会被念很多次,不缓存就是几十次 TTS 生成请求。
     const audioUrls = new Map();
+    let speakGeneration = 0;
+    let locallyPaused = false;
+    let onSpeakIdle = null;
+
+    function synthesisHost() {
+      const host = typeof window !== 'undefined' ? window : null;
+      if (!host || !host.speechSynthesis || typeof host.SpeechSynthesisUtterance !== 'function') {
+        return null;
+      }
+      return host;
+    }
+
+    function noteIdle(generation) {
+      if (generation === speakGeneration && !locallyPaused && onSpeakIdle) onSpeakIdle();
+    }
+
+    function setSpeakIdle(fn) {
+      onSpeakIdle = typeof fn === 'function' ? fn : null;
+    }
+
+    function speakLocally(text) {
+      const host = synthesisHost();
+      if (!host) return false;
+      locallyPaused = false;
+      const generation = ++speakGeneration;
+      host.speechSynthesis.cancel();
+      const utter = new host.SpeechSynthesisUtterance(String(text));
+      utter.lang = 'en-US';
+      utter.rate = 0.92;
+      utter.onend = function () { noteIdle(generation); };
+      host.speechSynthesis.speak(utter);
+      return true;
+    }
+
+    function audioIsPaused() {
+      return Boolean(audio && typeof audio.paused === 'function' && audio.paused());
+    }
+
+    function audioIsPlaying() {
+      return Boolean(audio && typeof audio.playing === 'function' && audio.playing());
+    }
+
+    async function playAudio(text) {
+      if (!audio) return false;
+      if (!audioUrls.has(text)) {
+        const body = await postJson('/tts/generate', { text, lang: 'en' });
+        if (body && body.audioUrl) audioUrls.set(text, body.audioUrl);
+      }
+      if (!audioUrls.has(text)) return false;
+      const generation = ++speakGeneration;
+      locallyPaused = false;
+      if (typeof audio.setEnded === 'function') {
+        audio.setEnded(function () { noteIdle(generation); });
+      }
+      await audio.play(audioUrls.get(text));
+      return true;
+    }
 
     async function speak(text) {
-      if (!text || !audio) return false;
+      if (!text) return false;
+      // 必须在点击当下落地发音。先等服务器再播，手势过期后浏览器会静音。
+      if (speakLocally(text)) return true;
       try {
-        if (!audioUrls.has(text)) {
-          const body = await postJson('/tts/generate', { text, lang: 'en' });
-          if (!body || !body.audioUrl) return false;
-          audioUrls.set(text, body.audioUrl);
-        }
-        await audio.play(audioUrls.get(text));
-        return true;
+        return await playAudio(text);
       } catch (_) {
-        // 发音失败不该打断游戏,词卡上仍有拼写和中文。
         return false;
       }
     }
 
-    return { fetchReviewQueue, submitReview, addWord, logSession, flushRetryQueue, speak, track };
+    // 空格:正在念就暂停,暂停中就续上,没在念就从头播放。
+    async function toggleSpeak(text) {
+      const host = synthesisHost();
+      if (host) {
+        const synth = host.speechSynthesis;
+        if (locallyPaused) {
+          locallyPaused = false;
+          synth.resume();
+          return 'playing';
+        }
+        if (synth.speaking || synth.pending) {
+          locallyPaused = true;
+          synth.pause();
+          return 'paused';
+        }
+      } else if (audioIsPaused()) {
+        locallyPaused = false;
+        if (typeof audio.resume === 'function') await audio.resume();
+        return 'playing';
+      } else if (audioIsPlaying()) {
+        locallyPaused = true;
+        if (typeof audio.pause === 'function') audio.pause();
+        return 'paused';
+      }
+      const started = await speak(text);
+      return started ? 'playing' : 'idle';
+    }
+
+    return {
+      fetchReviewQueue,
+      submitReview,
+      addWord,
+      logSession,
+      flushRetryQueue,
+      speak,
+      toggleSpeak,
+      setSpeakIdle,
+      track,
+    };
   }
 
   return { createApiClient, RETRY_QUEUE_KEY, STATS_TYPE };

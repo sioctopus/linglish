@@ -17,7 +17,8 @@
           "spot": [
             35,
             14
-          ]
+          ],
+          "photo": "/images/game/photos/school.jpg?v=6"
         },
         {
           "lemma": "classroom",
@@ -27,7 +28,8 @@
           "spot": [
             22,
             61
-          ]
+          ],
+          "photo": "/images/game/photos/classroom.jpg?v=6"
         },
         {
           "lemma": "desk",
@@ -37,7 +39,8 @@
           "spot": [
             15,
             67
-          ]
+          ],
+          "photo": "/images/game/photos/desk.jpg?v=6"
         },
         {
           "lemma": "chair",
@@ -47,7 +50,8 @@
           "spot": [
             23,
             67
-          ]
+          ],
+          "photo": "/images/game/photos/chair.jpg?v=6"
         },
         {
           "lemma": "door",
@@ -57,7 +61,8 @@
           "spot": [
             35,
             66
-          ]
+          ],
+          "photo": "/images/game/photos/door.jpg?v=6"
         },
         {
           "lemma": "window",
@@ -67,7 +72,8 @@
           "spot": [
             21,
             55
-          ]
+          ],
+          "photo": "/images/game/photos/window.jpg?v=6"
         },
         {
           "lemma": "floor",
@@ -77,7 +83,8 @@
           "spot": [
             15,
             74.5
-          ]
+          ],
+          "photo": "/images/game/photos/floor.jpg?v=6"
         },
         {
           "lemma": "wall",
@@ -87,7 +94,8 @@
           "spot": [
             5.5,
             58
-          ]
+          ],
+          "photo": "/images/game/photos/wall.jpg?v=6"
         },
         {
           "lemma": "board",
@@ -97,7 +105,8 @@
           "spot": [
             12,
             55
-          ]
+          ],
+          "photo": "/images/game/photos/board.jpg?v=6"
         },
         {
           "lemma": "library",
@@ -107,7 +116,8 @@
           "spot": [
             12.6,
             35
-          ]
+          ],
+          "photo": "/images/game/photos/library.jpg?v=6"
         },
         {
           "lemma": "playground",
@@ -117,7 +127,8 @@
           "spot": [
             84,
             73
-          ]
+          ],
+          "photo": "/images/game/photos/playground.jpg?v=6"
         },
         {
           "lemma": "gate",
@@ -127,7 +138,8 @@
           "spot": [
             96,
             75
-          ]
+          ],
+          "photo": "/images/game/photos/gate.jpg?v=6"
         },
         {
           "lemma": "office",
@@ -137,7 +149,8 @@
           "spot": [
             27,
             37
-          ]
+          ],
+          "photo": "/images/game/photos/office.jpg?v=6"
         },
         {
           "lemma": "hall",
@@ -147,7 +160,8 @@
           "spot": [
             44,
             62
-          ]
+          ],
+          "photo": "/images/game/photos/hall.jpg?v=6"
         },
         {
           "lemma": "stairs",
@@ -157,7 +171,8 @@
           "spot": [
             47,
             72.5
-          ]
+          ],
+          "photo": "/images/game/photos/stairs.jpg?v=6"
         },
         {
           "lemma": "garden",
@@ -167,7 +182,8 @@
           "spot": [
             73,
             80
-          ]
+          ],
+          "photo": "/images/game/photos/garden.jpg?v=6"
         },
         {
           "lemma": "gym",
@@ -177,7 +193,8 @@
           "spot": [
             57,
             61
-          ]
+          ],
+          "photo": "/images/game/photos/gym.jpg?v=6"
         },
         {
           "lemma": "lab",
@@ -187,7 +204,8 @@
           "spot": [
             42,
             35
-          ]
+          ],
+          "photo": "/images/game/photos/lab.jpg?v=6"
         },
         {
           "lemma": "canteen",
@@ -197,7 +215,8 @@
           "spot": [
             57,
             37
-          ]
+          ],
+          "photo": "/images/game/photos/canteen.jpg?v=6"
         },
         {
           "lemma": "seat",
@@ -207,7 +226,8 @@
           "spot": [
             30,
             69
-          ]
+          ],
+          "photo": "/images/game/photos/seat.jpg?v=6"
         },
         {
           "lemma": "shelf",
@@ -217,7 +237,8 @@
           "spot": [
             31,
             57
-          ]
+          ],
+          "photo": "/images/game/photos/shelf.jpg?v=6"
         },
         {
           "lemma": "clock",
@@ -227,7 +248,8 @@
           "spot": [
             47.5,
             52
-          ]
+          ],
+          "photo": "/images/game/photos/clock.jpg?v=6"
         },
         {
           "lemma": "light",
@@ -237,7 +259,8 @@
           "spot": [
             34.7,
             53
-          ]
+          ],
+          "photo": "/images/game/photos/light.jpg?v=6"
         },
         {
           "lemma": "flag",
@@ -247,7 +270,8 @@
           "spot": [
             65.5,
             4
-          ]
+          ],
+          "photo": "/images/game/photos/flag.jpg?v=6"
         },
         {
           "lemma": "bell",
@@ -257,7 +281,8 @@
           "spot": [
             43.7,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/bell.jpg?v=6"
         },
         {
           "lemma": "map",
@@ -267,7 +292,8 @@
           "spot": [
             26.6,
             55
-          ]
+          ],
+          "photo": "/images/game/photos/map.jpg?v=6"
         },
         {
           "lemma": "picture",
@@ -277,7 +303,8 @@
           "spot": [
             30.9,
             54
-          ]
+          ],
+          "photo": "/images/game/photos/picture.jpg?v=6"
         },
         {
           "lemma": "corner",
@@ -287,7 +314,8 @@
           "spot": [
             6.5,
             76
-          ]
+          ],
+          "photo": "/images/game/photos/corner.jpg?v=6"
         },
         {
           "lemma": "room",
@@ -297,7 +325,8 @@
           "spot": [
             39,
             25
-          ]
+          ],
+          "photo": "/images/game/photos/room.jpg?v=6"
         },
         {
           "lemma": "building",
@@ -307,7 +336,8 @@
           "spot": [
             8,
             21
-          ]
+          ],
+          "photo": "/images/game/photos/building.jpg?v=6"
         }
       ]
     },
@@ -325,7 +355,8 @@
           "spot": [
             36.8,
             64.5
-          ]
+          ],
+          "photo": "/images/game/photos/pen.jpg?v=6"
         },
         {
           "lemma": "pencil",
@@ -335,7 +366,8 @@
           "spot": [
             15.5,
             63.5
-          ]
+          ],
+          "photo": "/images/game/photos/pencil.jpg?v=6"
         },
         {
           "lemma": "book",
@@ -345,7 +377,8 @@
           "spot": [
             18,
             46
-          ]
+          ],
+          "photo": "/images/game/photos/book.jpg?v=6"
         },
         {
           "lemma": "bag",
@@ -355,7 +388,8 @@
           "spot": [
             13,
             85
-          ]
+          ],
+          "photo": "/images/game/photos/bag.jpg?v=6"
         },
         {
           "lemma": "ruler",
@@ -365,7 +399,8 @@
           "spot": [
             16.6,
             74
-          ]
+          ],
+          "photo": "/images/game/photos/ruler.jpg?v=6"
         },
         {
           "lemma": "eraser",
@@ -375,7 +410,8 @@
           "spot": [
             32.5,
             74
-          ]
+          ],
+          "photo": "/images/game/photos/eraser.jpg?v=6"
         },
         {
           "lemma": "crayon",
@@ -385,7 +421,8 @@
           "spot": [
             76.5,
             63
-          ]
+          ],
+          "photo": "/images/game/photos/crayon.jpg?v=6"
         },
         {
           "lemma": "brush",
@@ -395,7 +432,8 @@
           "spot": [
             91.5,
             62
-          ]
+          ],
+          "photo": "/images/game/photos/brush.jpg?v=6"
         },
         {
           "lemma": "glue",
@@ -405,7 +443,8 @@
           "spot": [
             70,
             72.5
-          ]
+          ],
+          "photo": "/images/game/photos/glue.jpg?v=6"
         },
         {
           "lemma": "tape",
@@ -415,7 +454,8 @@
           "spot": [
             78,
             73
-          ]
+          ],
+          "photo": "/images/game/photos/tape.jpg?v=6"
         },
         {
           "lemma": "paper",
@@ -425,7 +465,8 @@
           "spot": [
             48,
             46
-          ]
+          ],
+          "photo": "/images/game/photos/paper.jpg?v=6"
         },
         {
           "lemma": "notebook",
@@ -435,7 +476,8 @@
           "spot": [
             36,
             46
-          ]
+          ],
+          "photo": "/images/game/photos/notebook.jpg?v=6"
         },
         {
           "lemma": "folder",
@@ -445,7 +487,8 @@
           "spot": [
             61.5,
             46
-          ]
+          ],
+          "photo": "/images/game/photos/folder.jpg?v=6"
         },
         {
           "lemma": "sharpener",
@@ -455,7 +498,8 @@
           "spot": [
             42.5,
             73.5
-          ]
+          ],
+          "photo": "/images/game/photos/sharpener.jpg?v=6"
         },
         {
           "lemma": "marker",
@@ -465,7 +509,8 @@
           "spot": [
             58.5,
             63.5
-          ]
+          ],
+          "photo": "/images/game/photos/marker.jpg?v=6"
         },
         {
           "lemma": "scissors",
@@ -475,7 +520,8 @@
           "spot": [
             61.5,
             72.5
-          ]
+          ],
+          "photo": "/images/game/photos/scissors.jpg?v=6"
         },
         {
           "lemma": "clip",
@@ -485,7 +531,8 @@
           "spot": [
             52,
             74
-          ]
+          ],
+          "photo": "/images/game/photos/clip.jpg?v=6"
         },
         {
           "lemma": "stamp",
@@ -495,7 +542,8 @@
           "spot": [
             88,
             72
-          ]
+          ],
+          "photo": "/images/game/photos/stamp.jpg?v=6"
         },
         {
           "lemma": "card",
@@ -505,7 +553,8 @@
           "spot": [
             35,
             14
-          ]
+          ],
+          "photo": "/images/game/photos/card.jpg?v=6"
         },
         {
           "lemma": "box",
@@ -515,13 +564,15 @@
           "spot": [
             94,
             20
-          ]
+          ],
+          "photo": "/images/game/photos/box.jpg?v=6"
         },
         {
           "lemma": "bottle",
           "zh": "瓶子",
           "ipa": "/ˈbɒtl/",
-          "emoji": "🍼"
+          "emoji": "🍼",
+          "photo": "/images/game/photos/bottle.jpg?v=6"
         },
         {
           "lemma": "cup",
@@ -531,7 +582,8 @@
           "spot": [
             75,
             45
-          ]
+          ],
+          "photo": "/images/game/photos/cup.jpg?v=6"
         },
         {
           "lemma": "towel",
@@ -541,7 +593,8 @@
           "spot": [
             90,
             46
-          ]
+          ],
+          "photo": "/images/game/photos/towel.jpg?v=6"
         },
         {
           "lemma": "key",
@@ -551,7 +604,8 @@
           "spot": [
             57,
             16
-          ]
+          ],
+          "photo": "/images/game/photos/key.jpg?v=6"
         },
         {
           "lemma": "watch",
@@ -561,7 +615,8 @@
           "spot": [
             70,
             15
-          ]
+          ],
+          "photo": "/images/game/photos/watch.jpg?v=6"
         },
         {
           "lemma": "phone",
@@ -571,7 +626,8 @@
           "spot": [
             47,
             15
-          ]
+          ],
+          "photo": "/images/game/photos/phone.jpg?v=6"
         },
         {
           "lemma": "screen",
@@ -581,7 +637,8 @@
           "spot": [
             17,
             15
-          ]
+          ],
+          "photo": "/images/game/photos/screen.jpg?v=6"
         },
         {
           "lemma": "button",
@@ -591,7 +648,8 @@
           "spot": [
             29,
             85
-          ]
+          ],
+          "photo": "/images/game/photos/button.jpg?v=6"
         },
         {
           "lemma": "string",
@@ -601,7 +659,8 @@
           "spot": [
             42,
             85
-          ]
+          ],
+          "photo": "/images/game/photos/string.jpg?v=6"
         },
         {
           "lemma": "bin",
@@ -611,7 +670,8 @@
           "spot": [
             84,
             20
-          ]
+          ],
+          "photo": "/images/game/photos/bin.jpg?v=6"
         }
       ]
     },
@@ -629,7 +689,8 @@
           "spot": [
             17.5,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/one.jpg?v=6"
         },
         {
           "lemma": "two",
@@ -639,7 +700,8 @@
           "spot": [
             25.5,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/two.jpg?v=6"
         },
         {
           "lemma": "three",
@@ -649,7 +711,8 @@
           "spot": [
             33.5,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/three.jpg?v=6"
         },
         {
           "lemma": "four",
@@ -659,7 +722,8 @@
           "spot": [
             41.5,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/four.jpg?v=6"
         },
         {
           "lemma": "five",
@@ -669,7 +733,8 @@
           "spot": [
             49.5,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/five.jpg?v=6"
         },
         {
           "lemma": "six",
@@ -679,7 +744,8 @@
           "spot": [
             57.5,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/six.jpg?v=6"
         },
         {
           "lemma": "seven",
@@ -689,7 +755,8 @@
           "spot": [
             65.5,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/seven.jpg?v=6"
         },
         {
           "lemma": "eight",
@@ -699,7 +766,8 @@
           "spot": [
             73.5,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/eight.jpg?v=6"
         },
         {
           "lemma": "nine",
@@ -709,7 +777,8 @@
           "spot": [
             81.5,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/nine.jpg?v=6"
         },
         {
           "lemma": "ten",
@@ -719,7 +788,8 @@
           "spot": [
             90,
             51
-          ]
+          ],
+          "photo": "/images/game/photos/ten.jpg?v=6"
         },
         {
           "lemma": "eleven",
@@ -729,7 +799,8 @@
           "spot": [
             15,
             34.5
-          ]
+          ],
+          "photo": "/images/game/photos/eleven.jpg?v=6"
         },
         {
           "lemma": "twelve",
@@ -739,7 +810,8 @@
           "spot": [
             31,
             27.5
-          ]
+          ],
+          "photo": "/images/game/photos/twelve.jpg?v=6"
         },
         {
           "lemma": "thirteen",
@@ -749,7 +821,8 @@
           "spot": [
             47.5,
             22.5
-          ]
+          ],
+          "photo": "/images/game/photos/thirteen.jpg?v=6"
         },
         {
           "lemma": "fifteen",
@@ -759,7 +832,8 @@
           "spot": [
             61,
             18
-          ]
+          ],
+          "photo": "/images/game/photos/fifteen.jpg?v=6"
         },
         {
           "lemma": "twenty",
@@ -769,7 +843,8 @@
           "spot": [
             80,
             20
-          ]
+          ],
+          "photo": "/images/game/photos/twenty.jpg?v=6"
         },
         {
           "lemma": "thirty",
@@ -779,7 +854,8 @@
           "spot": [
             86,
             17
-          ]
+          ],
+          "photo": "/images/game/photos/thirty.jpg?v=6"
         },
         {
           "lemma": "fifty",
@@ -789,7 +865,8 @@
           "spot": [
             92,
             21
-          ]
+          ],
+          "photo": "/images/game/photos/fifty.jpg?v=6"
         },
         {
           "lemma": "hundred",
@@ -799,7 +876,8 @@
           "spot": [
             42,
             72
-          ]
+          ],
+          "photo": "/images/game/photos/hundred.jpg?v=6"
         },
         {
           "lemma": "first",
@@ -809,7 +887,8 @@
           "spot": [
             8.6,
             76
-          ]
+          ],
+          "photo": "/images/game/photos/first.jpg?v=6"
         },
         {
           "lemma": "second",
@@ -819,7 +898,8 @@
           "spot": [
             17,
             78
-          ]
+          ],
+          "photo": "/images/game/photos/second.jpg?v=6"
         },
         {
           "lemma": "third",
@@ -829,7 +909,8 @@
           "spot": [
             25,
             79
-          ]
+          ],
+          "photo": "/images/game/photos/third.jpg?v=6"
         },
         {
           "lemma": "half",
@@ -839,7 +920,8 @@
           "spot": [
             59,
             75
-          ]
+          ],
+          "photo": "/images/game/photos/half.jpg?v=6"
         },
         {
           "lemma": "many",
@@ -849,7 +931,8 @@
           "spot": [
             77.5,
             78
-          ]
+          ],
+          "photo": "/images/game/photos/many.jpg?v=6"
         },
         {
           "lemma": "few",
@@ -859,31 +942,36 @@
           "spot": [
             93.5,
             80
-          ]
+          ],
+          "photo": "/images/game/photos/few.jpg?v=6"
         },
         {
           "lemma": "more",
           "zh": "更多",
           "ipa": "/mɔː/",
-          "emoji": "➕"
+          "emoji": "➕",
+          "photo": "/images/game/photos/more.jpg?v=6"
         },
         {
           "lemma": "less",
           "zh": "更少",
           "ipa": "/les/",
-          "emoji": "➖"
+          "emoji": "➖",
+          "photo": "/images/game/photos/less.jpg?v=6"
         },
         {
           "lemma": "all",
           "zh": "全部",
           "ipa": "/ɔːl/",
-          "emoji": "💯"
+          "emoji": "💯",
+          "photo": "/images/game/photos/all.jpg?v=6"
         },
         {
           "lemma": "some",
           "zh": "一些",
           "ipa": "/sʌm/",
-          "emoji": "🍕"
+          "emoji": "🍕",
+          "photo": "/images/game/photos/some.jpg?v=6"
         },
         {
           "lemma": "number",
@@ -893,7 +981,8 @@
           "spot": [
             37,
             88
-          ]
+          ],
+          "photo": "/images/game/photos/number.jpg?v=6"
         },
         {
           "lemma": "count",
@@ -903,7 +992,8 @@
           "spot": [
             18.5,
             90
-          ]
+          ],
+          "photo": "/images/game/photos/count.jpg?v=6"
         }
       ]
     },
@@ -921,7 +1011,8 @@
           "spot": [
             54.7,
             26.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-red.jpg?v=6"
         },
         {
           "lemma": "blue",
@@ -931,7 +1022,8 @@
           "spot": [
             54.7,
             46.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-blue.jpg?v=6"
         },
         {
           "lemma": "green",
@@ -941,7 +1033,8 @@
           "spot": [
             54.7,
             41.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-green.jpg?v=6"
         },
         {
           "lemma": "yellow",
@@ -951,7 +1044,8 @@
           "spot": [
             54.7,
             36.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-yellow.jpg?v=6"
         },
         {
           "lemma": "orange",
@@ -961,7 +1055,8 @@
           "spot": [
             54.7,
             31.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-orange.jpg?v=6"
         },
         {
           "lemma": "purple",
@@ -971,7 +1066,8 @@
           "spot": [
             54.7,
             51.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-purple.jpg?v=6"
         },
         {
           "lemma": "pink",
@@ -981,7 +1077,8 @@
           "spot": [
             83,
             27
-          ]
+          ],
+          "photo": "/images/game/photos/color-pink.jpg?v=6"
         },
         {
           "lemma": "brown",
@@ -991,7 +1088,8 @@
           "spot": [
             77,
             22.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-brown.jpg?v=6"
         },
         {
           "lemma": "black",
@@ -1001,7 +1099,8 @@
           "spot": [
             75,
             19.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-black.jpg?v=6"
         },
         {
           "lemma": "white",
@@ -1011,7 +1110,8 @@
           "spot": [
             79.5,
             17.3
-          ]
+          ],
+          "photo": "/images/game/photos/color-white.jpg?v=6"
         },
         {
           "lemma": "grey",
@@ -1021,7 +1121,8 @@
           "spot": [
             84,
             18.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-gray.jpg?v=6"
         },
         {
           "lemma": "gold",
@@ -1031,7 +1132,8 @@
           "spot": [
             74.5,
             25.7
-          ]
+          ],
+          "photo": "/images/game/photos/color-gold.jpg?v=6"
         },
         {
           "lemma": "silver",
@@ -1041,7 +1143,8 @@
           "spot": [
             78.5,
             28.3
-          ]
+          ],
+          "photo": "/images/game/photos/color-silver.jpg?v=6"
         },
         {
           "lemma": "color",
@@ -1051,7 +1154,8 @@
           "spot": [
             77.5,
             23
-          ]
+          ],
+          "photo": "/images/game/photos/color-color.jpg?v=6"
         },
         {
           "lemma": "bright",
@@ -1229,7 +1333,8 @@
           "spot": [
             10.7,
             37.5
-          ]
+          ],
+          "photo": "/images/game/photos/read.jpg?v=6"
         },
         {
           "lemma": "write",
@@ -1239,7 +1344,8 @@
           "spot": [
             25.7,
             36.7
-          ]
+          ],
+          "photo": "/images/game/photos/write.jpg?v=6"
         },
         {
           "lemma": "draw",
@@ -1249,7 +1355,8 @@
           "spot": [
             41,
             37.5
-          ]
+          ],
+          "photo": "/images/game/photos/draw.jpg?v=6"
         },
         {
           "lemma": "sing",
@@ -1259,7 +1366,8 @@
           "spot": [
             74.5,
             76
-          ]
+          ],
+          "photo": "/images/game/photos/sing.jpg?v=6"
         },
         {
           "lemma": "dance",
@@ -1269,25 +1377,29 @@
           "spot": [
             87.5,
             78
-          ]
+          ],
+          "photo": "/images/game/photos/dance.jpg?v=6"
         },
         {
           "lemma": "listen",
           "zh": "听",
           "ipa": "/ˈlɪsn/",
-          "emoji": "👂"
+          "emoji": "👂",
+          "photo": "/images/game/photos/listen.jpg?v=6"
         },
         {
           "lemma": "speak",
           "zh": "说",
           "ipa": "/spiːk/",
-          "emoji": "🗣️"
+          "emoji": "🗣️",
+          "photo": "/images/game/photos/speak.jpg?v=6"
         },
         {
           "lemma": "learn",
           "zh": "学",
           "ipa": "/lɜːn/",
-          "emoji": "🎓"
+          "emoji": "🎓",
+          "photo": "/images/game/photos/learn.jpg?v=6"
         },
         {
           "lemma": "teach",
@@ -1297,13 +1409,15 @@
           "spot": [
             91.5,
             35.5
-          ]
+          ],
+          "photo": "/images/game/photos/teach.jpg?v=6"
         },
         {
           "lemma": "study",
           "zh": "学习",
           "ipa": "/ˈstʌdi/",
-          "emoji": "📚"
+          "emoji": "📚",
+          "photo": "/images/game/photos/study.jpg?v=6"
         },
         {
           "lemma": "spell",
@@ -1313,7 +1427,8 @@
           "spot": [
             84,
             95
-          ]
+          ],
+          "photo": "/images/game/photos/spell.jpg?v=6"
         },
         {
           "lemma": "ask",
@@ -1323,7 +1438,8 @@
           "spot": [
             60.7,
             33
-          ]
+          ],
+          "photo": "/images/game/photos/ask.jpg?v=6"
         },
         {
           "lemma": "answer",
@@ -1333,19 +1449,22 @@
           "spot": [
             77.7,
             33
-          ]
+          ],
+          "photo": "/images/game/photos/answer.jpg?v=6"
         },
         {
           "lemma": "open",
           "zh": "打开",
           "ipa": "/ˈəʊpən/",
-          "emoji": "🔓"
+          "emoji": "🔓",
+          "photo": "/images/game/photos/open.jpg?v=6"
         },
         {
           "lemma": "close",
           "zh": "关上",
           "ipa": "/kləʊz/",
-          "emoji": "🔒"
+          "emoji": "🔒",
+          "photo": "/images/game/photos/close.jpg?v=6"
         },
         {
           "lemma": "stand",
@@ -1355,13 +1474,15 @@
           "spot": [
             8.2,
             80
-          ]
+          ],
+          "photo": "/images/game/photos/stand.jpg?v=6"
         },
         {
           "lemma": "sit",
           "zh": "坐",
           "ipa": "/sɪt/",
-          "emoji": "🪑"
+          "emoji": "🪑",
+          "photo": "/images/game/photos/sit.jpg?v=6"
         },
         {
           "lemma": "walk",
@@ -1371,7 +1492,8 @@
           "spot": [
             19.5,
             80.8
-          ]
+          ],
+          "photo": "/images/game/photos/walk.jpg?v=6"
         },
         {
           "lemma": "run",
@@ -1381,7 +1503,8 @@
           "spot": [
             31.5,
             79
-          ]
+          ],
+          "photo": "/images/game/photos/run.jpg?v=6"
         },
         {
           "lemma": "jump",
@@ -1391,7 +1514,8 @@
           "spot": [
             44,
             76
-          ]
+          ],
+          "photo": "/images/game/photos/jump.jpg?v=6"
         },
         {
           "lemma": "play",
@@ -1401,19 +1525,22 @@
           "spot": [
             59,
             80
-          ]
+          ],
+          "photo": "/images/game/photos/play.jpg?v=6"
         },
         {
           "lemma": "help",
           "zh": "帮助",
           "ipa": "/help/",
-          "emoji": "🤝"
+          "emoji": "🤝",
+          "photo": "/images/game/photos/help.jpg?v=6"
         },
         {
           "lemma": "share",
           "zh": "分享",
           "ipa": "/ʃeə/",
-          "emoji": "🤲"
+          "emoji": "🤲",
+          "photo": "/images/game/photos/share.jpg?v=6"
         },
         {
           "lemma": "math",
@@ -1423,7 +1550,8 @@
           "spot": [
             12,
             12
-          ]
+          ],
+          "photo": "/images/game/photos/math.jpg?v=6"
         },
         {
           "lemma": "english",
@@ -1433,7 +1561,8 @@
           "spot": [
             30,
             12
-          ]
+          ],
+          "photo": "/images/game/photos/english.jpg?v=6"
         },
         {
           "lemma": "music",
@@ -1443,7 +1572,8 @@
           "spot": [
             48,
             12
-          ]
+          ],
+          "photo": "/images/game/photos/music.jpg?v=6"
         },
         {
           "lemma": "art",
@@ -1453,7 +1583,8 @@
           "spot": [
             66,
             12
-          ]
+          ],
+          "photo": "/images/game/photos/art.jpg?v=6"
         },
         {
           "lemma": "science",
@@ -1463,13 +1594,15 @@
           "spot": [
             84,
             12
-          ]
+          ],
+          "photo": "/images/game/photos/science.jpg?v=6"
         },
         {
           "lemma": "lesson",
           "zh": "课",
           "ipa": "/ˈlesn/",
-          "emoji": "🛎️"
+          "emoji": "🛎️",
+          "photo": "/images/game/photos/lesson.jpg?v=6"
         },
         {
           "lemma": "homework",
@@ -1479,7 +1612,8 @@
           "spot": [
             12.5,
             95.5
-          ]
+          ],
+          "photo": "/images/game/photos/homework.jpg?v=6"
         }
       ]
     },
@@ -1497,7 +1631,8 @@
           "spot": [
             10,
             71.5
-          ]
+          ],
+          "photo": "/images/game/photos/teacher.jpg?v=6"
         },
         {
           "lemma": "student",
@@ -1507,7 +1642,8 @@
           "spot": [
             26.5,
             74
-          ]
+          ],
+          "photo": "/images/game/photos/student.jpg?v=6"
         },
         {
           "lemma": "friend",
@@ -1517,7 +1653,8 @@
           "spot": [
             40,
             76.7
-          ]
+          ],
+          "photo": "/images/game/photos/friend.jpg?v=6"
         },
         {
           "lemma": "boy",
@@ -1527,7 +1664,8 @@
           "spot": [
             36.5,
             74
-          ]
+          ],
+          "photo": "/images/game/photos/boy.jpg?v=6"
         },
         {
           "lemma": "girl",
@@ -1537,7 +1675,8 @@
           "spot": [
             43.5,
             74
-          ]
+          ],
+          "photo": "/images/game/photos/girl.jpg?v=6"
         },
         {
           "lemma": "class",
@@ -1547,7 +1686,8 @@
           "spot": [
             36,
             91.3
-          ]
+          ],
+          "photo": "/images/game/photos/class.jpg?v=6"
         },
         {
           "lemma": "group",
@@ -1557,7 +1697,8 @@
           "spot": [
             63,
             75
-          ]
+          ],
+          "photo": "/images/game/photos/group.jpg?v=6"
         },
         {
           "lemma": "team",
@@ -1567,7 +1708,8 @@
           "spot": [
             85.7,
             76.7
-          ]
+          ],
+          "photo": "/images/game/photos/team.jpg?v=6"
         },
         {
           "lemma": "name",
@@ -1577,7 +1719,8 @@
           "spot": [
             13.5,
             91.7
-          ]
+          ],
+          "photo": "/images/game/photos/name.jpg?v=6"
         },
         {
           "lemma": "morning",
@@ -1587,7 +1730,8 @@
           "spot": [
             12.5,
             20
-          ]
+          ],
+          "photo": "/images/game/photos/morning.jpg?v=6"
         },
         {
           "lemma": "afternoon",
@@ -1597,7 +1741,8 @@
           "spot": [
             37.5,
             13.7
-          ]
+          ],
+          "photo": "/images/game/photos/afternoon.jpg?v=6"
         },
         {
           "lemma": "evening",
@@ -1607,7 +1752,8 @@
           "spot": [
             62.5,
             23.3
-          ]
+          ],
+          "photo": "/images/game/photos/evening.jpg?v=6"
         },
         {
           "lemma": "night",
@@ -1617,7 +1763,8 @@
           "spot": [
             89,
             18.3
-          ]
+          ],
+          "photo": "/images/game/photos/night.jpg?v=6"
         },
         {
           "lemma": "today",
@@ -1627,19 +1774,22 @@
           "spot": [
             13,
             47.5
-          ]
+          ],
+          "photo": "/images/game/photos/today.jpg?v=6"
         },
         {
           "lemma": "tomorrow",
           "zh": "明天",
           "ipa": "/təˈmɒrəʊ/",
-          "emoji": "🌄"
+          "emoji": "🌄",
+          "photo": "/images/game/photos/tomorrow.jpg?v=6"
         },
         {
           "lemma": "yesterday",
           "zh": "昨天",
           "ipa": "/ˈjestədeɪ/",
-          "emoji": "🌃"
+          "emoji": "🌃",
+          "photo": "/images/game/photos/yesterday.jpg?v=6"
         },
         {
           "lemma": "week",
@@ -1649,7 +1799,8 @@
           "spot": [
             17,
             55.7
-          ]
+          ],
+          "photo": "/images/game/photos/week.jpg?v=6"
         },
         {
           "lemma": "month",
@@ -1659,7 +1810,8 @@
           "spot": [
             10,
             55.7
-          ]
+          ],
+          "photo": "/images/game/photos/month.jpg?v=6"
         },
         {
           "lemma": "year",
@@ -1669,13 +1821,15 @@
           "spot": [
             87.5,
             43.3
-          ]
+          ],
+          "photo": "/images/game/photos/year.jpg?v=6"
         },
         {
           "lemma": "day",
           "zh": "天",
           "ipa": "/deɪ/",
-          "emoji": "🌤️"
+          "emoji": "🌤️",
+          "photo": "/images/game/photos/day.jpg?v=6"
         },
         {
           "lemma": "time",
@@ -1685,7 +1839,8 @@
           "spot": [
             50,
             31.3
-          ]
+          ],
+          "photo": "/images/game/photos/time.jpg?v=6"
         },
         {
           "lemma": "hour",
@@ -1695,7 +1850,8 @@
           "spot": [
             57,
             93.7
-          ]
+          ],
+          "photo": "/images/game/photos/hour.jpg?v=6"
         },
         {
           "lemma": "minute",
@@ -1705,49 +1861,57 @@
           "spot": [
             67.5,
             93.7
-          ]
+          ],
+          "photo": "/images/game/photos/minute.jpg?v=6"
         },
         {
           "lemma": "early",
           "zh": "早的",
           "ipa": "/ˈɜːli/",
-          "emoji": "🐓"
+          "emoji": "🐓",
+          "photo": "/images/game/photos/early.jpg?v=6"
         },
         {
           "lemma": "late",
           "zh": "晚的",
           "ipa": "/leɪt/",
-          "emoji": "🦉"
+          "emoji": "🦉",
+          "photo": "/images/game/photos/late.jpg?v=6"
         },
         {
           "lemma": "now",
           "zh": "现在",
           "ipa": "/naʊ/",
-          "emoji": "👇"
+          "emoji": "👇",
+          "photo": "/images/game/photos/now.jpg?v=6"
         },
         {
           "lemma": "soon",
           "zh": "很快",
           "ipa": "/suːn/",
-          "emoji": "🔜"
+          "emoji": "🔜",
+          "photo": "/images/game/photos/soon.jpg?v=6"
         },
         {
           "lemma": "again",
           "zh": "再次",
           "ipa": "/əˈɡen/",
-          "emoji": "🔁"
+          "emoji": "🔁",
+          "photo": "/images/game/photos/again.jpg?v=6"
         },
         {
           "lemma": "always",
           "zh": "总是",
           "ipa": "/ˈɔːlweɪz/",
-          "emoji": "♾️"
+          "emoji": "♾️",
+          "photo": "/images/game/photos/always.jpg?v=6"
         },
         {
           "lemma": "never",
           "zh": "从不",
           "ipa": "/ˈnevə/",
-          "emoji": "🚫"
+          "emoji": "🚫",
+          "photo": "/images/game/photos/never.jpg?v=6"
         }
       ]
     }

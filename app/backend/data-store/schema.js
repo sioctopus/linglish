@@ -10,8 +10,20 @@ async function safeAlter(sql, context = '') {
   }
 }
 
+// Privacy columns must exist before content routes can serve user documents.
+// Legacy articles retain public visibility; all new user imports set private explicitly.
+async function ensureDocumentPrivacySchema(query = pool.query.bind(pool)) {
+  await query(`ALTER TABLE articles
+    ADD COLUMN IF NOT EXISTS pdf_path TEXT,
+    ADD COLUMN IF NOT EXISTS owner_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'public',
+    ADD COLUMN IF NOT EXISTS note_image_path TEXT`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_articles_owner_user ON articles(owner_user_id)`);
+}
+
 async function ensureAuxTables() {
   if (dbUnavailable()) return;
+  await ensureDocumentPrivacySchema();
   // Users: add admin flag and last login IP for auditability
   await safeAlter(`
     ALTER TABLE users
@@ -349,6 +361,17 @@ async function ensureAuxTables() {
     ADD COLUMN IF NOT EXISTS default_user_character TEXT,
     ADD COLUMN IF NOT EXISTS total_segments INTEGER DEFAULT 0
   `, 'video_resources.roleplay');
+
+  // Listing and saving videos both reference these columns. Without them the
+  // catalog query throws and the practice page falls back to an empty folder.
+  await safeAlter(`
+    ALTER TABLE video_resources
+    ADD COLUMN IF NOT EXISTS video_type VARCHAR(16) DEFAULT 'local',
+    ADD COLUMN IF NOT EXISTS youtube_video_id TEXT,
+    ADD COLUMN IF NOT EXISTS local_video_path TEXT,
+    ADD COLUMN IF NOT EXISTS local_video_status VARCHAR(32) DEFAULT 'not_downloaded',
+    ADD COLUMN IF NOT EXISTS manual_order INTEGER
+  `, 'video_resources.youtube_and_order');
 
   await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_video_resources_roleplay_enabled
@@ -757,6 +780,25 @@ async function ensureAuxTables() {
   await pool.query(`
     CREATE INDEX IF NOT EXISTS idx_login_sessions_user_time
     ON user_login_sessions (user_id, login_at DESC)
+  `);
+
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS auth_device_sessions (
+      id TEXT PRIMARY KEY,
+      user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      device_id TEXT NOT NULL,
+      provider VARCHAR(32) NOT NULL DEFAULT 'password',
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      absolute_expires_at TIMESTAMP NOT NULL,
+      sliding_expires_at TIMESTAMP NOT NULL,
+      revoked_at TIMESTAMP,
+      last_google_check_at TIMESTAMP,
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_auth_device_sessions_user
+    ON auth_device_sessions (user_id, revoked_at)
   `);
 
   await pool.query(`
@@ -1283,8 +1325,37 @@ async function ensureAuxTables() {
       created_at TIMESTAMP NOT NULL DEFAULT NOW()
     )
   `);
+
+  // ===== Teacher / blogger workbench documents =====
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS workbench_documents (
+      id BIGSERIAL PRIMARY KEY,
+      user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      title TEXT NOT NULL,
+      role TEXT NOT NULL DEFAULT 'teacher',
+      template_id TEXT NOT NULL DEFAULT 'intensive-note',
+      source_text TEXT NOT NULL,
+      annotated JSONB NOT NULL DEFAULT '{}'::jsonb,
+      styles JSONB NOT NULL DEFAULT '{}'::jsonb,
+      share_token TEXT UNIQUE,
+      share_expires_at TIMESTAMP,
+      practice_article_id INTEGER REFERENCES articles(id) ON DELETE SET NULL,
+      created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMP NOT NULL DEFAULT NOW()
+    )
+  `);
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_workbench_documents_user
+    ON workbench_documents(user_id, updated_at DESC)
+  `);
+  await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_workbench_documents_share
+    ON workbench_documents(share_token)
+    WHERE share_token IS NOT NULL
+  `);
 }
 
 module.exports = {
   ensureAuxTables,
+  ensureDocumentPrivacySchema,
 };

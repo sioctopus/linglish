@@ -142,7 +142,8 @@
       armFallback();
 
       // Check cache
-      let audioUrl = this.audioCache.get(text);
+      const selectedVoice = window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural';
+      let audioUrl = this.audioCache.get(selectedVoice + '\n' + text);
       if (audioUrl) {
         try {
           await this.playAudio(audioUrl);
@@ -156,12 +157,7 @@
 
       // Generate TTS
       try {
-        let selectedVoice = 'en-US-AriaNeural';
-        try {
-          selectedVoice = localStorage.getItem('linglish_tts_voice') || selectedVoice;
-        } catch (_) { }
-
-        const voiceLang = selectedVoice.startsWith('en-') ? 'en' : (selectedVoice.startsWith('zh-') ? 'zh-CN' : 'en');
+        const voiceLang = 'en';
 
         const res = await fetch(`${API_BASE}/tts/generate`, {
           method: 'POST',
@@ -173,14 +169,14 @@
             text: text,
             lang: voiceLang,
             provider: 'edge',
-            voice: 'en-US-AriaNeural'
+            voice: selectedVoice
           })
         });
 
         if (res.ok) {
           const data = await res.json();
           if (data.audioUrl) {
-            this.audioCache.set(text, data.audioUrl);
+            this.audioCache.set(selectedVoice + '\n' + text, data.audioUrl);
             try {
               await this.playAudio(data.audioUrl);
               played = true;

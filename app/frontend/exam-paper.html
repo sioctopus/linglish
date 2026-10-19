@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>网页试卷 — Linglish</title>
+  <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles/tokens.css?v=1">
+  <style>
+    :root {
+      --paper-bg: #f5f7f9;
+      --ink: #1a2b3b;
+      --muted: #64748b;
+      --line: #e8eef2;
+      --teal: #0f766e;
+      --teal-soft: #ecfdf8;
+      --teal-line: #cce8e3;
+      --chip: #eef2f5;
+      --card-radius: 16px;
+      --shadow: 0 2px 16px rgba(15, 23, 42, 0.04);
+    }
+    body {
+      margin: 0;
+      background: var(--paper-bg);
+      color: var(--ink);
+      font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+      line-height: 1.7;
+    }
+    .nav {
+      max-width: 1180px;
+      margin: 14px auto 0;
+      padding: 0 20px;
+      height: 56px;
+      box-sizing: border-box;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #fff;
+      border-radius: var(--card-radius);
+      box-shadow: var(--shadow);
+    }
+    body.focusing .nav { display: none; }
+    .brand { color: var(--ink); font-weight: 700; text-decoration: none; font-size: 18px; }
+    .nav-links { display: flex; gap: 20px; align-items: center; }
+    .nav a.back { color: var(--teal); text-decoration: none; font-weight: 600; font-size: 14px; }
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 14px 16px 48px;
+      display: grid;
+      grid-template-columns: 220px minmax(0, 1fr);
+      gap: 14px;
+      align-items: start;
+    }
+    body.focusing main {
+      padding-top: 20px;
+      grid-template-columns: 72px minmax(0, 1fr);
+    }
+    .index {
+      position: sticky;
+      top: 14px;
+      max-height: calc(100vh - 28px);
+      overflow: auto;
+      background: #fff;
+      border-radius: var(--card-radius);
+      padding: 14px 10px 16px;
+      box-shadow: var(--shadow);
+      scrollbar-width: thin;
+      scrollbar-color: #cbd5e1 transparent;
+    }
+    .index::-webkit-scrollbar { width: 4px; }
+    .index::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    .index-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin: 0 4px 10px;
+    }
+    .index h2 { margin: 0; font-size: 16px; line-height: 24px; border: 0; padding: 0; color: var(--ink); }
+    .index-toggle {
+      border: 1px solid var(--teal);
+      background: #fff;
+      color: var(--teal);
+      border-radius: 999px;
+      padding: 6px 12px;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    main.index-closed { grid-template-columns: 72px minmax(0, 1fr); }
+    main.index-closed .index-body { display: none; }
+    main.index-closed .index {
+      padding: 14px 8px;
+      overflow: hidden;
+      display: flex;
+      justify-content: center;
+    }
+    main.index-closed .index-head { justify-content: center; margin: 0; width: 100%; }
+    main.index-closed .index h2 { display: none; }
+    .part-name, .section-name, .q-chip {
+      font: inherit;
+      cursor: pointer;
+      text-align: left;
+    }
+    .part-name, .section-name {
+      display: block;
+      width: 100%;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      border-radius: 8px;
+      padding: 6px 8px;
+    }
+    .part-name { font-weight: 800; font-size: 14px; }
+    .section-name { color: var(--teal); font-weight: 700; font-size: 13px; padding-left: 14px; }
+    .part-name:hover, .section-name:hover { background: var(--teal-soft); }
+    .q-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      padding: 2px 6px 12px 12px;
+    }
+    .q-chip {
+      width: 100%;
+      aspect-ratio: 1;
+      max-width: 34px;
+      max-height: 34px;
+      border: 0;
+      background: var(--chip);
+      border-radius: 999px;
+      color: var(--ink);
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      justify-self: center;
+    }
+    .q-chip:hover { background: #e2e8f0; }
+    .q-chip.active { background: #0d9488; color: #fff; }
+    .board { min-width: 0; }
+    .paper {
+      background: #fff;
+      border-radius: var(--card-radius);
+      padding: 36px 40px 32px;
+      box-shadow: var(--shadow);
+    }
+    .paper[hidden] { display: none; }
+    .focus {
+      min-height: calc(100vh - 80px);
+      background: #fff;
+      border-radius: 20px;
+      padding: 28px 36px 28px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      box-sizing: border-box;
+    }
+    .focus[hidden] { display: none; }
+    .focus-kicker { margin: 0; color: var(--muted); font-size: 14px; }
+    .focus-prompt { margin: 10px 0 0; font-weight: 700; color: var(--ink); }
+    .passage-box {
+      margin-top: 16px;
+      max-height: 28vh;
+      overflow: auto;
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 8px 14px;
+    }
+    .big-question {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+      margin-top: 28px;
+    }
+    .big-question .horn {
+      width: 48px;
+      height: 48px;
+      margin-top: 4px;
+      background: #0d9488;
+      color: #fff;
+    }
+    .big-question .horn svg { width: 22px; height: 22px; }
+    .big-stem {
+      margin: 0;
+      font-size: 32px;
+      line-height: 42px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+    .choice-list { display: flex; flex-direction: column; gap: 12px; margin-top: 28px; }
+    .choice-card {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      padding: 14px 18px;
+      font-size: 20px;
+      line-height: 30px;
+      background: #fff;
+    }
+    .choice-card.correct { background: var(--teal-soft); border-color: #0d9488; }
+    .zh-line { display: block; margin-top: 4px; color: #64748b; font-size: 16px; line-height: 24px; font-weight: 500; }
+    .choice-card .tag { margin-left: auto; color: var(--teal); font-weight: 800; font-size: 14px; }
+    .choice-card .horn {
+      width: 32px;
+      height: 32px;
+      margin-top: 0;
+      background: var(--teal-soft);
+      color: var(--teal);
+    }
+    .reveal {
+      margin-top: 16px;
+      background: var(--teal-soft);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+    .reveal[hidden] { display: none; }
+    h1 {
+      margin: 0;
+      text-align: center;
+      font-size: 30px;
+      line-height: 40px;
+      font-weight: 700;
+      color: var(--ink);
+      letter-spacing: 0.02em;
+    }
+    .subtitle {
+      margin: 10px 0 0;
+      text-align: center;
+      color: var(--ink);
+      font-size: 15px;
+      font-weight: 500;
+    }
+    .meta {
+      margin: 6px 0 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .notes {
+      margin-top: 28px;
+      background: var(--teal-soft);
+      border-radius: 12px;
+      padding: 16px 20px;
+    }
+    .notes strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--ink);
+    }
+    .notes ol { margin: 8px 0 0; padding-left: 22px; }
+    .notes li { margin: 2px 0; }
+    h2 {
+      margin: 36px 0 10px;
+      font-size: 20px;
+      line-height: 28px;
+      font-weight: 800;
+      color: var(--ink);
+      border-bottom: 1px solid var(--teal-line);
+      padding-bottom: 10px;
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 16px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .info, .prompt, .note { color: #334155; margin: 8px 0; }
+    .prompt { font-weight: 600; }
+    .passage, .choices, .question, .answer { margin: 16px 0; }
+    .passage {
+      background: #f8fafc;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .line, .option, .choice, .answer-line, .list-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      margin: 8px 0;
+    }
+    .option { padding-left: 42px; margin: 4px 0; }
+    .stem { font-weight: 600; }
+    .q-num { color: var(--ink); margin-right: 4px; font-weight: 700; }
+    .horn {
+      flex: none;
+      width: 28px;
+      height: 28px;
+      border: 0;
+      background: var(--teal-soft);
+      color: var(--teal);
+      border-radius: 999px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      margin-top: 2px;
+    }
+    .horn[hidden] { display: none; }
+    .horn.playing { background: #0d9488; color: #fff; }
+    .horn svg { width: 14px; height: 14px; fill: currentColor; }
+    .copy { flex: 1; min-width: 0; }
+    .actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+    .focus .actions { margin-top: auto; padding-top: 28px; }
+    .btn-primary, .btn-outline {
+      border-radius: 999px;
+      padding: 12px 18px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-primary {
+      border: 0;
+      color: #fff;
+      background: linear-gradient(90deg, #0d9488, #2dd4bf);
+    }
+    .btn-primary:disabled { opacity: 0.45; cursor: default; }
+    .btn-outline { border: 1px solid #e2e8f0; background: #fff; color: var(--ink); }
+    .answers { margin-top: 12px; }
+    .answers[hidden] { display: none; }
+    .status { color: var(--muted); min-height: 24px; font-size: 14px; }
+    .focus .status { margin-top: 14px; }
+    .blank { color: var(--muted); }
+    @media (max-width: 860px) {
+      main, main.index-closed, body.focusing main { grid-template-columns: 1fr; }
+      .index { position: static; max-height: 240px; }
+      main.index-closed .index { max-height: none; }
+      .paper, .focus { padding: 22px 16px; min-height: auto; }
+      h1 { font-size: 24px; line-height: 32px; }
+      .big-stem { font-size: 24px; line-height: 32px; }
+      .nav { height: auto; padding: 12px 16px; }
+      .q-row { grid-template-columns: repeat(6, 1fr); }
+      .option { padding-left: 38px; }
+      body.focusing .nav { display: flex; }
+    }
+  </style>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/nav-back.js?v=1"></script>
+</head>
+<body>
+  <nav class="nav">
+    <a class="brand" href="./index-desktop.html">Linglish</a>
+    <div class="nav-links">
+      <a class="back" id="original-link" href="./pdf-reader.html" hidden>查看原页</a>
+      <a class="back" href="./document-import.html">返回导入</a>
+      <a class="back" data-nav="back" href="./index-desktop.html">返回</a>
+    </div>
+  </nav>
+  <main>
+    <aside class="index" id="index"></aside>
+    <div class="board">
+      <article class="paper" id="paper">
+        <p class="status">正在打开试卷…</p>
+      </article>
+      <section class="focus" id="focus" hidden></section>
+    </div>
+  </main>
+  <script>
+    const speaks = [];
+    let currentAudio = null;
+    let playingButton = null;
+    let questions = [];
+    let answerKey = {};
+    let focusIndex = -1;
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>"']/g, (ch) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[ch]));
+    }
+
+    function horn(text) {
+      const speak = String(text || '').trim();
+      if (!speak) return '';
+      const index = speaks.push(speak) - 1;
+      return `<button class="horn" type="button" data-speak="${index}" aria-label="朗读这一段"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10v4h4l5 4V6L7 10H3zm13.5 2a4.5 4.5 0 0 0-2.5-4.03v8.06A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z"/></svg></button>`;
+    }
+
+    function line(text, speak, extraClass) {
+      return `<div class="line ${extraClass || ''}">${horn(speak || text)}<div class="copy">${escapeHtml(text).replace(/\n/g, '<br>')}</div></div>`;
+    }
+
+    function shortTitle(text) {
+      const match = String(text || '').match(/第[一二三四五六七八九十0-9]+(?:部分|节)/);
+      return match ? match[0] : String(text || '');
+    }
+
+    function optionLetter(text) {
+      const match = String(text || '').match(/^\s*([A-E])[.、．\s]/i);
+      return match ? match[1].toUpperCase() : '';
+    }
+
+    function splitInlineOptions(stem) {
+      const parts = String(stem || '').split(/\s+(?=[A-E][.、．]\s*)/);
+      if (parts.length < 2 || !/^[A-E][.、．]/.test(parts[1])) return { stem, options: [] };
+      const lead = parts[0].trim();
+      return {
+        stem: /^[A-E][.、．]/.test(lead) ? '' : lead,
+        options: parts.slice(lead && !/^[A-E][.、．]/.test(lead) ? 1 : 0).map((item) => item.trim()).filter(Boolean),
+      };
+    }
+
+    function splitSubtitle(subtitle) {
+      const lines = String(subtitle || '').split(/\n+/).map((item) => item.trim()).filter(Boolean);
+      if (!lines.length) return { subtitle: '', meta: '' };
+      if (lines.length === 1) {
+        const parts = lines[0].split(/\s*[·|]\s*/);
+        if (parts.length >= 2 && /时量|满分|共\d|分钟/.test(parts.slice(1).join('·'))) {
+          return { subtitle: parts[0], meta: parts.slice(1).join(' · ') };
+        }
+        return { subtitle: lines[0], meta: '' };
+      }
+      return { subtitle: lines[0], meta: lines.slice(1).join(' · ') };
+    }
+
+    function buildAnswerKey(blocks) {
+      const key = {};
+      const text = (blocks || [])
+        .filter((block) => block.type === 'answer')
+        .flatMap((block) => (block.lines || []).map((item) => item.text))
+        .join('\n');
+      const rangeRe = /(\d+)\s*[-–~到至]\s*(\d+)\s*([A-Ea-e]+)/g;
+      let match = rangeRe.exec(text);
+      while (match) {
+        const from = Number(match[1]);
+        const to = Number(match[2]);
+        const letters = match[3].toUpperCase();
+        for (let n = from, offset = 0; n <= to && offset < letters.length; n += 1, offset += 1) {
+          key[String(n)] = { letter: letters[offset], text: '' };
+        }
+        match = rangeRe.exec(text);
+      }
+      const rest = text.replace(rangeRe, '\n');
+      const singleRe = /(\d{1,3})[.、]\s*([\s\S]*?)(?=\n\s*\d{1,3}[.、]|\s+\d{1,3}[.、]|$)/g;
+      match = singleRe.exec(rest);
+      while (match) {
+        const number = match[1];
+        const value = match[2].replace(/\s+/g, ' ').trim();
+        if (value && !(key[number] && key[number].letter)) key[number] = { letter: '', text: value };
+        match = singleRe.exec(rest);
+      }
+      return key;
+    }
+
+    function collectQuestions(paper) {
+      const list = [];
+      let part = '';
+      let section = '';
+      let prompt = '';
+      let passage = null;
+      for (const block of paper.blocks || []) {
+        if (block.type === 'heading' && block.text === '参考答案') break;
+        if (block.type === 'heading' && block.level === 2) {
+          part = block.text;
+          section = '';
+          prompt = '';
+          passage = null;
+          continue;
+        }
+        if (block.type === 'heading') {
+          section = block.text;
+          prompt = '';
+          passage = null;
+          continue;
+        }
+        if (block.type === 'prompt') {
+          prompt = block.text;
+          continue;
+        }
+        if (block.type === 'passage') {
+          passage = block;
+          continue;
+        }
+        if (block.type !== 'question') continue;
+        let stem = block.stem || '';
+        let options = (block.options || []).slice();
+        if (!options.length) {
+          const split = splitInlineOptions(stem);
+          if (split.options.length >= 2) {
+            stem = split.stem;
+            options = split.options;
+          }
+        }
+        list.push({
+          index: list.length,
+          number: String(block.number),
+          stem,
+          options,
+          part,
+          section,
+          prompt,
+          passage,
+        });
+      }
+      return list;
+    }
+
+    function renderIndex() {
+      const parts = [];
+      questions.forEach((question) => {
+        let part = parts.find((item) => item.title === question.part);
+        if (!part) {
+          part = { title: question.part || '试卷', sections: [] };
+          parts.push(part);
+        }
+        let section = part.sections.find((item) => item.title === question.section);
+        if (!section) {
+          section = { title: question.section || '', items: [] };
+          part.sections.push(section);
+        }
+        section.items.push(question);
+      });
+      const open = !document.querySelector('main').classList.contains('index-closed');
+      document.getElementById('index').innerHTML = `<div class="index-head"><h2>索引</h2><button class="index-toggle" id="index-toggle" type="button" aria-expanded="${open ? 'true' : 'false'}">${open ? '收起' : '展开'}</button></div><div class="index-body">${parts.map((part) => `
+        <button class="part-name" type="button" data-jump="${part.sections[0].items[0].index}">${escapeHtml(shortTitle(part.title) || part.title)}</button>
+        ${part.sections.map((section) => `
+          ${section.title ? `<button class="section-name" type="button" data-jump="${section.items[0].index}">${escapeHtml(shortTitle(section.title))}</button>` : ''}
+          <div class="q-row">${section.items.map((question) => `<button class="q-chip" type="button" data-jump="${question.index}">${escapeHtml(question.number)}</button>`).join('')}</div>
+        `).join('')}
+      `).join('')}</div>`;
+    }
+
+    function markIndex() {
+      document.querySelectorAll('.q-chip[data-jump]').forEach((button) => {
+        button.classList.toggle('active', focusIndex >= 0 && Number(button.dataset.jump) === focusIndex);
+      });
+      const active = document.querySelector('.q-chip.active');
+      if (active) active.scrollIntoView({ block: 'nearest' });
+    }
+
+    function renderPaper(article, paper) {
+      questions = collectQuestions(paper);
+      answerKey = buildAnswerKey(paper.blocks);
+      const parts = [];
+      const split = splitSubtitle(paper.subtitle);
+      parts.push(`<h1>${escapeHtml(paper.title || article.title || '试卷')}</h1>`);
+      if (split.subtitle) parts.push(`<p class="subtitle">${escapeHtml(split.subtitle)}</p>`);
+      const metaBits = [];
+      if (split.meta) metaBits.push(split.meta);
+      if (questions.length && !/共\s*\d+\s*小?题/.test(split.meta)) {
+        metaBits.push(`共${questions.length}小题`);
+      }
+      if (metaBits.length) parts.push(`<p class="meta">${escapeHtml(metaBits.join(' · '))}</p>`);
+      if (paper.notes && paper.notes.length) {
+        parts.push(`<div class="notes"><strong>注意事项</strong><ol>${paper.notes.map((item) => `<li>${escapeHtml(item)}</li>`).join('')}</ol></div>`);
+      }
+      const answerHtml = [];
+      for (const block of paper.blocks || []) {
+        if (block.type === 'heading') {
+          const tag = block.level === 3 ? 'h3' : 'h2';
+          const html = `<${tag}>${escapeHtml(block.text)}</${tag}>`;
+          if (block.text === '参考答案') answerHtml.push(html);
+          else parts.push(html);
+          continue;
+        }
+        if (block.type === 'info') {
+          parts.push(`<p class="info">${escapeHtml(block.text)}</p>`);
+          continue;
+        }
+        if (block.type === 'prompt' || block.type === 'note') {
+          parts.push(line(block.text, block.text, block.type));
+          continue;
+        }
+        if (block.type === 'list') {
+          parts.push(`<div>${(block.items || []).map((item) => `<div class="list-item"><div class="copy">${escapeHtml(item)}</div></div>`).join('')}</div>`);
+          continue;
+        }
+        if (block.type === 'passage') {
+          parts.push(`<section class="passage">${(block.paragraphs || []).map((item) => line(item.text, item.speak || item.text)).join('')}</section>`);
+          continue;
+        }
+        if (block.type === 'question') {
+          const found = questions.find((item) => item.number === String(block.number) && !item.used);
+          if (found) found.used = true;
+          const stemSpeak = [block.number ? `${block.number}.` : '', block.stem].filter(Boolean).join(' ');
+          const stem = `<div class="line stem">${horn(stemSpeak)}<div class="copy"><span class="q-num">${escapeHtml(block.number)}.</span> ${escapeHtml(block.stem)}</div></div>`;
+          const options = (block.options || []).map((option) => `<div class="option"><div class="copy">${escapeHtml(option)}</div></div>`).join('');
+          parts.push(`<section class="question" data-q="${found ? found.index : ''}">${stem}${options}</section>`);
+          continue;
+        }
+        if (block.type === 'choices') {
+          parts.push(`<section class="choices">${(block.items || []).map((item) => `<div class="option"><div class="copy">${escapeHtml(item)}</div></div>`).join('')}</section>`);
+          continue;
+        }
+        if (block.type === 'answer') {
+          answerHtml.push(`<section class="answer">${(block.lines || []).map((item) => line(item.text, item.speak || item.text, 'answer-line')).join('')}</section>`);
+        }
+      }
+      const pdfPath = String(article.pdf_path || '');
+      parts.push(`<div class="actions"><button class="btn-primary" id="toggle-answers" type="button">显示参考答案</button></div>`);
+      parts.push(`<div class="answers" id="answers" hidden>${answerHtml.join('') || '<p class="info">这份试卷还没有参考答案。</p>'}</div>`);
+      parts.push('<p class="status" id="status">左侧索引可以进入某一节、某一题。进入后这一题会铺满屏幕。</p>');
+      renderIndex();
+      document.getElementById('paper').innerHTML = parts.join('');
+      document.title = `${paper.title || article.title || '网页试卷'} — Linglish`;
+      if (pdfPath.startsWith('/pdfs/') && !pdfPath.includes('..')) {
+        const link = document.getElementById('original-link');
+        link.hidden = false;
+        link.href = `./pdf-reader.html?path=${encodeURIComponent(pdfPath)}`;
+      }
+      document.getElementById('toggle-answers').addEventListener('click', () => {
+        const box = document.getElementById('answers');
+        const open = box.hidden;
+        box.hidden = !open;
+        document.getElementById('toggle-answers').textContent = open ? '收起参考答案' : '显示参考答案';
+      });
+      document.getElementById('paper').addEventListener('click', (event) => {
+        const button = event.target.closest('[data-speak]');
+        if (button) {
+          speak(speaks[Number(button.dataset.speak)], button);
+          return;
+        }
+        const question = event.target.closest('[data-q]');
+        if (question && question.dataset.q !== '') openFocus(Number(question.dataset.q));
+      });
+      document.getElementById('index').addEventListener('click', (event) => {
+        if (event.target.closest('#index-toggle')) {
+          const closed = document.querySelector('main').classList.toggle('index-closed');
+          const button = document.getElementById('index-toggle');
+          button.textContent = closed ? '展开' : '收起';
+          button.setAttribute('aria-expanded', closed ? 'false' : 'true');
+          return;
+        }
+        const button = event.target.closest('[data-jump]');
+        if (!button) return;
+        openFocus(Number(button.dataset.jump));
+      });
+      document.getElementById('focus').addEventListener('click', (event) => {
+        const speakButton = event.target.closest('[data-speak]');
+        if (speakButton) {
+          speak(speaks[Number(speakButton.dataset.speak)], speakButton);
+          return;
+        }
+        if (event.target.closest('#show-translate')) toggleTranslate();
+        if (event.target.closest('#show-answer')) toggleAnswer();
+        if (event.target.closest('#next-question')) openFocus(focusIndex + 1);
+        if (event.target.closest('#back-paper')) closeFocus();
+      });
+    }
+
+    function answerFor(question) {
+      return answerKey[String(question.number)] || null;
+    }
+
+    function renderFocus() {
+      const question = questions[focusIndex];
+      const box = document.getElementById('focus');
+      if (!question) {
+        box.hidden = true;
+        document.body.classList.remove('focusing');
+        return;
+      }
+      const passage = question.passage
+        ? `<div class="passage-box">${(question.passage.paragraphs || []).map((item) => line(item.text, item.speak || item.text)).join('')}</div>`
+        : '';
+      const stemText = question.stem || '看上面这段材料，完成这一题。';
+      const stemSpeak = question.stem || (question.passage && question.passage.paragraphs || []).map((item) => item.speak || item.text).join(' ');
+      const options = question.options.map((option) => `
+        <div class="choice-card" data-letter="${escapeHtml(optionLetter(option))}">
+          ${horn(option)}
+          <div class="copy">${escapeHtml(option)}</div>
+        </div>`).join('');
+      box.innerHTML = `
+        <p class="focus-kicker">${escapeHtml([question.part, question.section].filter(Boolean).map(shortTitle).join(' · ') || '试题')} · 第 ${escapeHtml(question.number)} 题</p>
+        ${question.prompt ? `<p class="focus-prompt">${escapeHtml(question.prompt)}</p>` : ''}
+        ${passage}
+        <div class="big-question">
+          ${horn(stemSpeak)}
+          <p class="big-stem"><span class="q-num">${escapeHtml(question.number)}.</span> ${escapeHtml(stemText)}</p>
+        </div>
+        <div class="choice-list">${options}</div>
+        <div class="reveal" id="reveal" hidden></div>
+        <div class="actions">
+          <button class="btn-outline" id="show-translate" type="button">翻译</button>
+          <button class="btn-outline" id="show-answer" type="button">答案</button>
+          <button class="btn-outline" id="back-paper" type="button">返回全卷</button>
+          <a class="btn-outline" data-nav="back" href="./index-desktop.html">返回</a>
+          <button class="btn-primary" id="next-question" type="button" ${focusIndex + 1 >= questions.length ? 'disabled' : ''}>下一题</button>
+        </div>
+        <p class="status">可以朗读题目，也可以点每个选项听一遍。</p>`;
+      box.hidden = false;
+      document.getElementById('paper').hidden = true;
+      document.body.classList.add('focusing');
+      document.querySelector('main').classList.add('index-closed');
+      const toggle = document.getElementById('index-toggle');
+      if (toggle) {
+        toggle.textContent = '展开';
+        toggle.setAttribute('aria-expanded', 'false');
+      }
+      markIndex();
+    }
+
+    const translationCache = new Map();
+
+    async function translateText(text) {
+      const value = String(text || '').trim();
+      if (!value) return '';
+      if (translationCache.has(value)) return translationCache.get(value);
+      const token = readToken();
+      if (!token) throw new Error('请先登录后再翻译。');
+      const response = await fetch('/dictionary/translate-text', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: 'Bearer ' + token,
+        },
+        body: JSON.stringify({ text: value }),
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok || !data.translation) throw new Error(data.message || '翻译暂不可用');
+      translationCache.set(value, data.translation);
+      return data.translation;
+    }
+
+    async function toggleTranslate() {
+      const button = document.getElementById('show-translate');
+      if (!button) return;
+      const shown = document.querySelector('#focus .zh-line');
+      if (shown) {
+        document.querySelectorAll('#focus .zh-line').forEach((item) => item.remove());
+        button.textContent = '翻译';
+        setStatus('翻译已收起。');
+        return;
+      }
+      button.disabled = true;
+      button.textContent = '正在翻译…';
+      try {
+        const pieces = [];
+        const stem = document.querySelector('#focus .big-stem');
+        if (stem) pieces.push(stem);
+        document.querySelectorAll('#focus .passage-box .copy, #focus .choice-card .copy').forEach((item) => pieces.push(item));
+        for (const piece of pieces) {
+          const raw = piece.classList.contains('big-stem')
+            ? piece.textContent.replace(/^\s*\d+\.\s*/, '')
+            : ((piece.childNodes[0] && piece.childNodes[0].nodeType === 3) ? piece.childNodes[0].textContent : piece.textContent);
+          const source = String(raw || '').replace(/\s+/g, ' ').trim();
+          if (!source) continue;
+          const chinese = await translateText(source);
+          if (chinese) piece.insertAdjacentHTML('beforeend', `<span class="zh-line">${escapeHtml(chinese)}</span>`);
+        }
+        button.textContent = '收起翻译';
+        setStatus('翻译已显示在英文下面。');
+      } catch (err) {
+        document.querySelectorAll('#focus .zh-line').forEach((item) => item.remove());
+        button.textContent = '翻译';
+        setStatus(err.message || '翻译暂不可用');
+      }
+      button.disabled = false;
+    }
+
+    function toggleAnswer() {
+      const question = questions[focusIndex];
+      const reveal = document.getElementById('reveal');
+      const button = document.getElementById('show-answer');
+      if (!question || !reveal || !button) return;
+      if (!reveal.hidden) {
+        reveal.hidden = true;
+        button.textContent = '答案';
+        document.querySelectorAll('.choice-card').forEach((card) => {
+          card.classList.remove('correct');
+          const tag = card.querySelector('.tag');
+          if (tag) tag.remove();
+        });
+        setStatus('答案已收起。');
+        return;
+      }
+      const answer = answerFor(question);
+      if (!answer || (!answer.letter && !answer.text)) {
+        reveal.hidden = false;
+        reveal.innerHTML = '<div class="copy">这题没有收录标准答案。</div>';
+        button.textContent = '收起答案';
+        return;
+      }
+      let spoken = '';
+      if (answer.letter) {
+        const card = document.querySelector(`.choice-card[data-letter="${answer.letter}"]`);
+        const optionText = card ? card.querySelector('.copy').textContent : answer.letter;
+        if (card) {
+          card.classList.add('correct');
+          card.insertAdjacentHTML('beforeend', '<span class="tag">正确答案</span>');
+        }
+        spoken = `正确答案是 ${optionText}`;
+      } else {
+        spoken = `第${question.number}题的答案是 ${answer.text}`;
+      }
+      reveal.hidden = false;
+      reveal.innerHTML = line(spoken, spoken);
+      button.textContent = '收起答案';
+      setStatus(spoken);
+    }
+
+    function openFocus(index) {
+      if (!Number.isInteger(index) || index < 0 || index >= questions.length) return;
+      stopSpeaking();
+      focusIndex = index;
+      renderFocus();
+      document.getElementById('focus').scrollIntoView({ block: 'start' });
+    }
+
+    function closeFocus() {
+      stopSpeaking();
+      focusIndex = -1;
+      document.getElementById('focus').hidden = true;
+      document.getElementById('paper').hidden = false;
+      document.body.classList.remove('focusing');
+      markIndex();
+      setStatus('已返回全卷。左侧索引可再进入某一题。');
+    }
+
+    function readToken() {
+      return window.AuthManager ? window.AuthManager.getToken() || '' : '';
+    }
+
+    function setStatus(text) {
+      const focus = document.getElementById('focus');
+      const status = focus && !focus.hidden
+        ? focus.querySelector('.status')
+        : document.querySelector('#paper .status');
+      if (status) status.textContent = text;
+    }
+
+    function stopSpeaking() {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio = null;
+      }
+      if (window.speechSynthesis) window.speechSynthesis.cancel();
+      if (playingButton) playingButton.classList.remove('playing');
+      playingButton = null;
+    }
+
+    function speakBrowser(text) {
+      return new Promise((resolve) => {
+        let done = false;
+        const finish = () => { if (!done) { done = true; resolve(); } };
+        setTimeout(finish, Math.min(20000, 900 + String(text || '').length * 70));
+        if (!window.speechSynthesis) {
+          finish();
+          return;
+        }
+        const utterance = new SpeechSynthesisUtterance(text);
+        const chinese = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+        const english = (text.match(/[A-Za-z]/g) || []).length;
+        utterance.lang = chinese > english ? 'zh-CN' : 'en-US';
+        utterance.rate = 0.92;
+        utterance.onend = finish;
+        utterance.onerror = finish;
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(utterance);
+      });
+    }
+
+    function playUrl(url) {
+      return new Promise((resolve) => {
+        let done = false;
+        const finish = () => { if (!done) { done = true; resolve(); } };
+        const audio = new Audio(url);
+        currentAudio = audio;
+        audio.onended = finish;
+        audio.onerror = finish;
+        setTimeout(finish, 20000);
+        audio.play().catch(finish);
+      });
+    }
+
+    async function speak(text, button) {
+      const value = String(text || '').trim();
+      if (!value) return;
+      stopSpeaking();
+      playingButton = button;
+      button.classList.add('playing');
+      setStatus('正在朗读…');
+      const chinese = (value.match(/[\u4e00-\u9fff]/g) || []).length;
+      const english = (value.match(/[A-Za-z]/g) || []).length;
+      const lang = chinese > english ? 'zh-CN' : 'en';
+      const voice = lang === 'zh-CN' ? 'zh-CN-XiaoxiaoNeural' : 'en-US-AriaNeural';
+      const token = readToken();
+      let played = false;
+      if (token) {
+        try {
+          const response = await fetch('/tts/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ text: value, lang, provider: 'edge', voice }),
+          });
+          const data = await response.json().catch(() => ({}));
+          if (response.ok && data.audioUrl) {
+            await playUrl(data.audioUrl);
+            played = true;
+          }
+        } catch (_) {}
+      }
+      if (!played) await speakBrowser(value);
+      if (playingButton === button) button.classList.remove('playing');
+      playingButton = null;
+      setStatus('朗读结束。可以点下一段，或打开参考答案继续讲。');
+    }
+
+    function tagNames(article) {
+      const tags = Array.isArray(article.tags) ? article.tags : String(article.tags || '').split(/[,{}]/);
+      return tags.map((tag) => String(tag).trim());
+    }
+
+    async function loadPaper() {
+      const id = new URLSearchParams(location.search).get('id');
+      if (!id) {
+        document.getElementById('paper').innerHTML = '<p class="status">没有指定试卷。</p>';
+        return;
+      }
+      try {
+        const response = await fetch('/articles');
+        const data = await response.json();
+        const article = (data.items || []).find((item) => String(item.id) === String(id));
+        if (!article) throw new Error('找不到这份试卷');
+        let paper = null;
+        try { paper = JSON.parse(article.content || ''); } catch (_) { paper = null; }
+        if (!paper || paper.kind !== 'exam-paper') {
+          document.getElementById('paper').innerHTML = '<p class="status">这份文档还不是网页试卷。请在导入页重新上传试卷，或上传已经生成的试卷网页。</p>';
+          return;
+        }
+        if (!tagNames(article).includes('exam') && paper.kind !== 'exam-paper') return;
+        renderPaper(article, paper);
+      } catch (err) {
+        document.getElementById('paper').innerHTML = `<p class="status">${escapeHtml(err.message || '试卷打开失败')}</p>`;
+      }
+    }
+
+    loadPaper();
+  </script>
+</body>
+</html>

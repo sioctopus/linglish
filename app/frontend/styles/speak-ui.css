@@ -1,0 +1,198 @@
+/* Shared Speak-like surface. Load after page styles. */
+
+:root {
+  --lx-primary: #0f766e;
+  --lx-primary-strong: #0b5f59;
+  --lx-paper: #f8fafc;
+  --lx-sky: #0ea5e9;
+  --lx-sky-strong: #0284c7;
+  --lx-sky-soft: #e0f2fe;
+  --lx-grad-brand: linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%);
+  --lx-grad-fresh: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%);
+  --lx-grad-ai: linear-gradient(120deg, #0f766e 0%, #0ea5e9 60%, #2dd4bf 100%);
+  --lx-shadow-brand: 0 8px 24px rgba(15, 118, 110, 0.18);
+  --teal: #0d9488;
+  --teal-strong: #0f766e;
+  --brand: #0d9488;
+  --brand-strong: #0f766e;
+  --accent: #0ea5e9;
+  --accent-1: #0ea5e9;
+  --accent-2: #2dd4bf;
+  --primary: #0f766e;
+  --primary-strong: #0b5f59;
+  --green: #0d9488;
+  --green-strong: #0f766e;
+}
+
+html,
+body {
+  background: #f8fafc !important;
+  color: #0f172a;
+  font-family: Manrope, "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+}
+
+h1,
+h2,
+h3,
+.brand,
+.logo {
+  font-family: Manrope, "PingFang SC", "Noto Sans SC", sans-serif;
+}
+
+body > header.topbar,
+body > .topbar,
+body > .navbar {
+  position: sticky;
+  top: 12px;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  width: min(1180px, calc(100% - 24px));
+  min-height: 64px;
+  height: auto;
+  margin: 12px auto 0;
+  padding: 0 12px 0 18px;
+  border: 1px solid rgba(23, 25, 31, 0.05) !important;
+  border-radius: 999px;
+  background: #ffffff !important;
+  color: #0f172a !important;
+  box-shadow: 0 10px 30px rgba(23, 25, 31, 0.08);
+  backdrop-filter: none;
+}
+
+.nav-link,
+.topbar nav a,
+.navbar .nav-link {
+  color: #3f4450 !important;
+  font-weight: 700;
+}
+
+.brand-mark,
+.logo-mark {
+  background: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%) !important;
+  color: #ffffff !important;
+  border-radius: 11px !important;
+  box-shadow: none !important;
+}
+
+.btn,
+a.btn,
+button.btn,
+.btn-outline,
+.btn-primary,
+.btn-secondary {
+  border-radius: 999px !important;
+}
+
+.btn-primary,
+a.btn-primary,
+button.btn-primary,
+.navbar .btn-primary {
+  background: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.btn-primary:hover,
+a.btn-primary:hover,
+button.btn-primary:hover {
+  background: linear-gradient(135deg, #0f766e 0%, #14b8a6 100%) !important;
+}
+
+.btn-secondary,
+a.btn-secondary,
+button.btn-secondary,
+.btn-outline {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #d9dde6 !important;
+  box-shadow: none !important;
+}
+
+.topbar .btn,
+.topbar .btn-secondary,
+.navbar .btn-primary,
+header.topbar .btn {
+  background: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%) !important;
+  color: #ffffff !important;
+  border-color: transparent !important;
+}
+
+.footer,
+body > footer {
+  background: #f8fafc !important;
+  color: #6d7280 !important;
+}
+
+.footer a,
+footer a {
+  color: #4b5160 !important;
+}
+
+.plan,
+.plan-featured,
+.proof-item,
+.faq-item {
+  border-radius: 24px !important;
+}
+
+.plan {
+  border: 1px solid #e7e9ef !important;
+  box-shadow: 0 12px 32px rgba(23, 25, 31, 0.05);
+}
+
+.plan-featured {
+  border-color: #0d9488 !important;
+}
+
+.popular {
+  color: #0f766e !important;
+  background: #ccfbf1 !important;
+}
+
+.advisor-result {
+  background: #f0fdfa !important;
+  color: #0f172a !important;
+}
+
+.advisor-result h3,
+.advisor-result p,
+.advisor-result li {
+  color: #0f172a !important;
+}
+
+.advisor-result small {
+  color: #0f766e !important;
+}
+
+.advisor-metric div {
+  background: #ffffff !important;
+}
+
+.advisor-metric strong {
+  color: #0f172a !important;
+}
+
+.advisor-metric span {
+  color: #64748b !important;
+}
+
+.eyebrow,
+.kicker,
+.section-kicker,
+.plan-kicker {
+  color: #0f766e;
+}
+
+@media (max-width: 720px) {
+  body > header.topbar,
+  body > .topbar,
+  body > .navbar {
+    width: calc(100% - 16px);
+    border-radius: 28px;
+    align-items: center;
+    flex-direction: row;
+    gap: 8px;
+  }
+}

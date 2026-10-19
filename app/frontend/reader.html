@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/tts-voice.js?v=1"></script>
     <meta charset="UTF-8" />
     <script>
       // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
@@ -322,10 +325,12 @@
       }
 
       .article-content {
-        line-height: 1.8;
-        font-size: 1.1rem;
-        color: #333;
-        white-space: pre-wrap;
+        max-width: 42rem;
+        line-height: 1.75;
+        font-size: 1.25rem;
+        color: #0f172a;
+        font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+        white-space: normal;
       }
 
       .article-content.highlight-reading {
@@ -334,8 +339,9 @@
 
       .article-content .sentence {
         cursor: pointer;
-        padding: 2px;
-        border-radius: 3px;
+        margin: 0 0 0.95rem;
+        padding: 0.1rem 0.2rem;
+        border-radius: 6px;
       }
 
       .article-content .sentence:hover {
@@ -343,8 +349,16 @@
       }
 
       .article-content .sentence.playing {
-        background: #ffeb3b;
-        font-weight: 500;
+        background: #f0fdfa;
+        outline: 2px solid #0d9488;
+        font-weight: 600;
+      }
+
+      .subtitle-label {
+        margin: 0 0 0.75rem;
+        color: #0f766e;
+        font-size: 0.9rem;
+        font-weight: 700;
       }
 
       .tts-controls {
@@ -413,7 +427,7 @@
         <p>Interactive Book Reading</p>
       </div>
       <div>
-        <a href="./index.html" style="color: white; text-decoration: none; margin-right: 1rem;">← Back to App</a>
+        <a href="./index.html" data-nav="back" style="color: white; text-decoration: none; margin-right: 1rem;">Back</a>
         <span id="user-email" style="color: white; margin-right: 1rem;"></span>
       </div>
     </header>
@@ -454,6 +468,7 @@
 
         <div class="article-meta" id="article-meta"></div>
 
+        <p class="subtitle-label" id="subtitle-label">朗读字幕</p>
         <div class="article-content" id="article-content"></div>
 
         <div class="tts-controls">
@@ -475,7 +490,25 @@
       let currentArticles = [];
       let currentArticleIndex = -1;
       let currentSentences = [];
+      let currentSubtitleLines = [];
       let isReading = false;
+
+      function escapeHtml(value) {
+        return String(value || '').replace(/[&<>"']/g, (ch) => ({
+          '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[ch]));
+      }
+
+      function subtitleLines(text) {
+        const raw = String(text || '').trim();
+        if (!raw) return [];
+        const explicit = raw.split(/\n+/).map(line => line.trim()).filter(Boolean);
+        const source = explicit.length > 1 ? explicit : (raw.match(/[^.!?]+[.!?]+(?:["']+)?|[^.!?]+$/g) || [raw]);
+        const cues = source
+          .map(line => line.replace(/\s+/g, ' ').trim())
+          .filter(line => ((line.match(/[A-Za-z]/g) || []).length >= 6));
+        return cues.length ? cues : [raw];
+      }
 
       // Check authentication
       console.log('[Auth] Token available:', Boolean(token));
@@ -518,6 +551,7 @@
             return;
           }
 
+          const requestedId = new URLSearchParams(window.location.search).get('id');
           bookList.innerHTML = currentArticles
             .map((article, index) => `
               <div class="book-card" onclick="event.target.classList.contains('delete-book-btn') ? null : loadArticle(${index})">
@@ -532,6 +566,11 @@
               </div>
             `)
             .join('');
+
+          if (requestedId) {
+            const requestedIndex = currentArticles.findIndex(article => String(article.id) === String(requestedId));
+            if (requestedIndex >= 0) loadArticle(requestedIndex);
+          }
 
         } catch (err) {
           console.error('Failed to load books:', err);
@@ -593,14 +632,24 @@
         document.getElementById('article-title').textContent = article.title;
 
         const meta = document.getElementById('article-meta');
+        const pdfPath = String(article.pdf_path || '');
+        const pageLink = pdfPath.startsWith('/pdfs/') && !pdfPath.includes('..')
+          ? `<a href="./pdf-reader.html?path=${encodeURIComponent(pdfPath)}">查看原页</a>`
+          : '';
         meta.innerHTML = `
           <span>📊 Level: ${article.level || 'N/A'}</span>
           <span>📝 ${article.word_count || 0} words</span>
-          ${article.tags ? `<span>🏷️ ${article.tags.join(', ')}</span>` : ''}
+          ${article.tags ? `<span>🏷️ ${escapeHtml((Array.isArray(article.tags) ? article.tags : String(article.tags).split(',')).join(', '))}</span>` : ''}
+          ${pageLink}
         `;
 
+        currentSubtitleLines = subtitleLines(article.content || '');
         const content = document.getElementById('article-content');
-        content.textContent = article.content || 'No content available.';
+        content.innerHTML = currentSubtitleLines.map((line, index) => (
+          `<p class="sentence" data-index="${index}">${escapeHtml(line)}</p>`
+        )).join('');
+        const label = document.getElementById('subtitle-label');
+        if (label) label.textContent = `朗读字幕 · ${currentSubtitleLines.length} 句`;
 
         // Show reading area
         document.getElementById('reading-area').style.display = 'block';
@@ -620,33 +669,42 @@
 
       // Read aloud functionality
       async function readAloud() {
-        const text = document.getElementById('article-content').textContent;
         const lang = document.getElementById('tts-lang').value;
         const slow = document.getElementById('slow-speech').checked;
+        const lines = currentSubtitleLines.length
+          ? currentSubtitleLines
+          : [document.getElementById('article-content').textContent];
 
-        if (!text || text.trim().length === 0) {
+        if (!lines.length || !String(lines[0] || '').trim()) {
           alert('No content to read');
           return;
         }
 
-        // Split into chunks (Google TTS limit: 200 chars)
-        const chunks = splitTextIntoChunks(text, 200);
+        const chunks = lines.flatMap(line => splitTextIntoChunks(line, 200));
+        const chunkLines = [];
+        lines.forEach((line, lineIndex) => {
+          splitTextIntoChunks(line, 200).forEach(() => chunkLines.push(lineIndex));
+        });
 
         document.getElementById('read-btn').disabled = true;
         document.getElementById('stop-btn').disabled = false;
-        document.getElementById('tts-status').textContent = `Reading ${chunks.length} segments...`;
+        document.getElementById('tts-status').textContent = `准备朗读 ${lines.length} 句字幕`;
 
         isReading = true;
 
         for (let i = 0; i < chunks.length && isReading; i++) {
           const chunk = chunks[i];
+          const lineIndex = chunkLines[i];
+          document.querySelectorAll('.article-content .sentence').forEach((node, index) => {
+            node.classList.toggle('playing', index === lineIndex);
+            if (index === lineIndex) node.scrollIntoView({ block: 'center', behavior: 'smooth' });
+          });
 
           try {
-            document.getElementById('tts-status').textContent = `Reading segment ${i + 1}/${chunks.length}...`;
+            document.getElementById('tts-status').textContent = `正在朗读第 ${lineIndex + 1}/${lines.length} 句`;
 
             // Respect global voice selection
-            let selectedVoice = 'en-US-AriaNeural';
-            try { selectedVoice = localStorage.getItem('linglish_tts_voice') || selectedVoice; } catch(_) {}
+            const selectedVoice = window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural';
             const voiceLang = selectedVoice.startsWith('en-') ? 'en' : (selectedVoice.startsWith('zh-') ? 'zh-CN' : lang);
             const response = await fetch(`${API_BASE}/tts/generate`, {
               method: 'POST',
@@ -654,7 +712,7 @@
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${token}`
               },
-              body: JSON.stringify({ text: chunk, lang: voiceLang, slow, provider: 'edge', voice: 'en-US-AriaNeural' })
+              body: JSON.stringify({ text: chunk, lang: voiceLang, slow, provider: 'edge', voice: selectedVoice })
             });
 
             const { audioUrl } = await response.json();
@@ -678,7 +736,7 @@
 
         document.getElementById('read-btn').disabled = false;
         document.getElementById('stop-btn').disabled = true;
-        document.getElementById('tts-status').textContent = 'Finished reading.';
+        document.getElementById('tts-status').textContent = '朗读结束';
         isReading = false;
       }
 
@@ -691,7 +749,8 @@
 
         document.getElementById('read-btn').disabled = false;
         document.getElementById('stop-btn').disabled = true;
-        document.getElementById('tts-status').textContent = 'Stopped.';
+        document.querySelectorAll('.article-content .sentence').forEach(node => node.classList.remove('playing'));
+        document.getElementById('tts-status').textContent = '已停止';
       }
 
       // Split text into chunks
@@ -742,5 +801,6 @@
       loadUserInfo();
       loadBooks();
     </script>
-  </body>
+  <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+</body>
 </html>

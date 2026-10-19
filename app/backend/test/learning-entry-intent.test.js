@@ -59,39 +59,39 @@ function entryHarness() {
 }
 function destination(entry) { return new URL(entry.href, 'https://www.example.com/'); }
 
-test('all three first-screen choices work before recommendations load', () => {
+test('the mobile first screen opens one sentence instead of a mode menu', () => {
   const { entries } = entryHarness();
-  assert.equal(entries.size, 3);
+  assert.equal(entries.size, 1);
   const practice = destination(entries.get('learning-entry-shadowing'));
-  assert.equal(practice.pathname, '/practice-session.html');
+  assert.equal(practice.pathname, '/video-reader.html');
   assert.equal(practice.searchParams.get('mode'), 'shadowing');
-  assert.equal(destination(entries.get('learning-entry-listening')).pathname, '/mobile-explore.html');
-  assert.equal(destination(entries.get('learning-entry-game')).pathname, '/game.html');
-  assert.ok(todayHtml.indexOf('id="learning-entry-title"') < todayHtml.indexOf('class="today-hero'));
+  assert.equal(practice.searchParams.get('focus'), 'first_lesson');
+  assert.equal(entries.get('learning-entry-listening'), undefined);
+  assert.equal(entries.get('learning-entry-game'), undefined);
+  assert.ok(todayHtml.indexOf('id="learning-entry-shadowing"') < todayHtml.indexOf('id="learning-details"'));
+  assert.ok(todayHtml.indexOf('id="learning-details"') < todayHtml.indexOf('href="./game.html"'));
 });
 
-test('a recommendation goes straight to the chosen activity without changing it', () => {
+test('a recommendation stays on the same shadowing sentence', () => {
   const { entries, update } = entryHarness();
   update({ id: 162 });
   const practice = destination(entries.get('learning-entry-shadowing'));
-  const listening = destination(entries.get('learning-entry-listening'));
-  assert.equal(practice.pathname, '/practice-session.html');
+  assert.equal(practice.pathname, '/video-reader.html');
   assert.equal(practice.searchParams.get('mode'), 'shadowing');
+  assert.equal(practice.searchParams.get('focus'), 'first_lesson');
   assert.equal(practice.searchParams.get('videoId'), '162');
-  assert.equal(listening.pathname, '/video-reader.html');
-  assert.equal(listening.searchParams.get('videoId'), '162');
-  assert.equal(destination(entries.get('learning-entry-game')).pathname, '/game.html');
 });
 
-test('missing recommendations retain a working activity choice and video IDs stay encoded', () => {
+test('missing recommendations retain shadowing and video IDs stay encoded', () => {
   const { entries, update } = entryHarness();
   update({ id: '162&mode=dialogue' });
   const practice = destination(entries.get('learning-entry-shadowing'));
   assert.equal(practice.searchParams.get('videoId'), '162&mode=dialogue');
   assert.equal(practice.searchParams.get('mode'), 'shadowing');
+  assert.equal(practice.searchParams.get('focus'), 'first_lesson');
   update(null);
   assert.equal(destination(entries.get('learning-entry-shadowing')).searchParams.has('videoId'), false);
-  assert.equal(destination(entries.get('learning-entry-listening')).pathname, '/mobile-explore.html');
+  assert.equal(destination(entries.get('learning-entry-shadowing')).pathname, '/video-reader.html');
 });
 
 const desktopToday = read('today.html');
@@ -113,21 +113,21 @@ function desktopEntryHarness(plan, video) {
   return { entries, render: context.renderHero };
 }
 
-test('desktop first-screen choices are available without a plan or sign-in', () => {
-  const { entries } = desktopEntryHarness(null, null);
-  assert.equal(entries.size, 3);
-  assert.equal(destination(entries.get('learning-entry-shadowing')).searchParams.get('mode'), 'shadowing');
-  assert.equal(destination(entries.get('learning-entry-listening')).pathname, '/video-reader-desktop.html');
-  assert.equal(destination(entries.get('learning-entry-game')).pathname, '/game.html');
+test('desktop today opens on one sentence, with game and import after practice', () => {
+  assert.match(desktopToday, /id="first-lesson-start"[^>]*href="\.\/video-reader-desktop\.html\?from=today_first_lesson&focus=first_lesson"/);
+  assert.match(desktopToday, /开始说这一句/);
+  assert.doesNotMatch(desktopToday, /id="learning-entry-game"/);
+  assert.doesNotMatch(desktopToday, /id="learning-entry-listening"/);
+  assert.doesNotMatch(desktopToday, /今天想怎么学/);
+  assert.ok(desktopToday.indexOf('id="first-lesson-start"') < desktopToday.indexOf('id="day-end"'));
+  assert.ok(desktopToday.indexOf('id="day-end"') < desktopToday.indexOf('href="./game.html"'));
+  assert.ok(desktopToday.indexOf('id="day-end"') < desktopToday.indexOf('href="./youtube-import.html"'));
 });
 
-test('loading a desktop plan cannot turn the shadowing choice into review or listening', () => {
-  const { entries, render } = desktopEntryHarness({ primaryAction: { href: './video-vocabulary-desktop.html' } }, { id: 162 });
-  render();
-  const shadowing = destination(entries.get('learning-entry-shadowing'));
-  assert.equal(shadowing.pathname, '/practice-session-desktop.html');
-  assert.equal(shadowing.searchParams.get('mode'), 'shadowing');
-  assert.equal(shadowing.searchParams.get('videoId'), '162');
-  assert.equal(destination(entries.get('learning-entry-listening')).pathname, '/video-reader-desktop.html');
-  assert.equal(destination(entries.get('learning-entry-game')).pathname, '/game.html');
+test('a desktop plan cannot replace the next sentence with review or a mode menu', () => {
+  const { entries } = desktopEntryHarness({ primaryAction: { href: './video-vocabulary-desktop.html' } }, { id: 162 });
+  assert.equal(entries.size, 0);
+  const start = desktopToday.match(/id="first-lesson-start"[^>]*href="([^"]+)"/);
+  assert.ok(start);
+  assert.equal(new URL(start[1], 'https://www.example.com/').searchParams.get('focus'), 'first_lesson');
 });

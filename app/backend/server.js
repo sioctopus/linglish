@@ -118,7 +118,7 @@ const SECURITY_HEADERS = {
 
 const JSON_HEADERS = {
   'Content-Type': 'application/json',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Linglish-Device',
   'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,DELETE,OPTIONS',
 };
 
@@ -160,6 +160,7 @@ const { registerAiVocabRoutes } = require('./routes/ai-vocab');
 const { shouldBypassExpensiveRateLimit } = require('./middleware/ai-auth');
 const { registerVideoRoutes } = require('./routes/videos');
 const { registerYouTubeRoutes } = require('./routes/youtube');
+const { registerMediaLibraryRoutes } = require('./routes/media-library');
 const { registerYouTubeProxyRoutes } = require('./routes/youtube-proxy');
 const { registerAdminUsersRoutes } = require('./routes/admin/users');
 const { registerAdminTranslationsRoutes, registerAdminWordsRoutes } = require('./routes/admin/translations');
@@ -175,8 +176,8 @@ const { registerTtsRoutes } = require('./routes/tts');
 const { registerDictionaryRoutes } = require('./routes/dictionary-api');
 const { registerFeedbackRoutes } = require('./routes/feedback');
 const { registerTagRoutes } = require('./routes/tags');
-// Temporarily disabled due to pdf-parse module issues
-// const { registerPdfRoutes } = require('./routes/pdf');
+const { registerDocumentRoutes } = require('./routes/documents');
+const { registerWorkbenchRoutes } = require('./routes/workbench');
 const { registerQuestsRoutes } = require('./routes/quests');
 const { registerRetentionRoutes } = require('./routes/retention');
 const { registerCommunityRoutes } = require('./routes/community');
@@ -185,6 +186,7 @@ const { registerLearningPlanRoutes } = require('./routes/learning-plan');
 const { registerStreakRoutes } = require('./routes/streak');
 const { registerLeagueRoutes } = require('./routes/league');
 const { registerWordDeepRoutes } = require('./routes/word-deep');
+const { registerCoachingRoutes } = require('./routes/coaching');
 const { registerSeoRoutes } = require('./routes/seo');
 const { registerSubscriptionRoutes } = require('./routes/subscription');
 const { registerHealthRoutes } = require('./routes/health');
@@ -239,7 +241,13 @@ async function handleRequest(req, res) {
     pathname === '/video-resources/upload' ||
     pathname === '/video-resources/youtube' ||
     pathname === '/feedback/upload' ||
-    pathname.startsWith('/pdf/')
+    pathname === '/documents/import' ||
+    pathname === '/class-notes' ||
+    /^\/documents\/\d+\/subtitles$/.test(pathname) ||
+    pathname === '/ocr/extract' ||
+    pathname.startsWith('/pdf/') ||
+    pathname === '/api/workbench' ||
+    pathname === '/api/workbench/annotate'
   ) {
     rateLimitPassed = uploadRateLimiter(req, res);
   } else if (pathname.startsWith('/pronunciation/')) {
@@ -261,6 +269,7 @@ async function handleRequest(req, res) {
     pathname.startsWith('/training/') ||
     pathname === '/events' ||
     pathname.startsWith('/video-resources') ||
+    pathname.startsWith('/media/') ||
     pathname.startsWith('/practice/') ||
     pathname.startsWith('/admin/')
   ) {
@@ -289,6 +298,7 @@ async function handleRequest(req, res) {
     if (await registerVocabularyRoutes(pathname, req, res, url)) return;
     if (await registerAiVocabRoutes(pathname, req, res, url)) return;
     if (await registerVideoRoutes(pathname, req, res, url)) return;
+    if (await registerMediaLibraryRoutes(pathname, req, res, url)) return;
     if (await registerYouTubeRoutes(pathname, req, res, url)) return;
     if (await registerYouTubeProxyRoutes(pathname, req, res, url)) return;
     if (await registerAdminUsersRoutes(pathname, req, res, url)) return;
@@ -310,8 +320,12 @@ async function handleRequest(req, res) {
     if (await registerDictionaryRoutes(pathname, req, res, url)) return;
     if (await registerFeedbackRoutes(pathname, req, res, url)) return;
     if (await registerTagRoutes(pathname, req, res, url)) return;
-    // Temporarily disabled due to pdf-parse module issues
-    // if (await registerPdfRoutes(pathname, req, res, url)) return;
+    if (await registerDocumentRoutes(pathname, req, res)) return;
+    if (await registerWorkbenchRoutes(pathname, req, res)) return;
+    if (pathname === '/ocr/extract') {
+      const { registerPdfRoutes } = require('./routes/pdf');
+      if (await registerPdfRoutes(pathname, req, res, url)) return;
+    }
     if (await registerQuestsRoutes(pathname, req, res, url, { questRouteMatch, questRunsRouteMatch })) return;
     if (await registerRetentionRoutes(pathname, req, res, url)) return;
     if (await registerCommunityRoutes(pathname, req, res, url)) return;
@@ -319,6 +333,7 @@ async function handleRequest(req, res) {
     if (await registerStreakRoutes(pathname, req, res, url)) return;
     if (await registerLeagueRoutes(pathname, req, res, url)) return;
     if (await registerWordDeepRoutes(pathname, req, res, url)) return;
+    if (await registerCoachingRoutes(pathname, req, res, url)) return;
     if (await registerSeoRoutes(pathname, req, res, url)) return;
     if (await registerSubscriptionRoutes(pathname, req, res, url)) return;
     if (await registerStaticRoutes(pathname, req, res, url)) return;

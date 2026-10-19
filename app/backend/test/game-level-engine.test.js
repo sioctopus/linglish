@@ -231,3 +231,30 @@ test('replaying an early level does not pull currentLevel backwards', async () =
   const outcome = await engine.finishLevel(graded, ahead);
   assert.equal(outcome.progress.currentLevel, 5);
 });
+
+test('daily challenge finish stamps the date without advancing levels', async () => {
+  const daily = require(path.resolve(__dirname, '../../frontend/js/game/daily-challenge.js'));
+  const { engine, progressStore } = build();
+  const base = { ...progressStore.load(), currentLevel: 3 };
+  const session = {
+    levelId: 'daily',
+    chapter: 1,
+    level: 3,
+    isBoss: false,
+    isDaily: true,
+    newWords: [{ lemma: 'school' }, { lemma: 'desk' }],
+    reviewWords: [],
+    results: [
+      { lemma: 'school', gameType: 'speaking', isCorrect: true },
+      { lemma: 'desk', gameType: 'quiz', isCorrect: true },
+    ],
+    boss: null,
+    startedAt: Date.now(),
+  };
+  const outcome = await engine.finishLevel(session, base);
+  assert.equal(outcome.isDaily, true);
+  assert.equal(outcome.progress.currentLevel, 3);
+  assert.equal(outcome.unlockedPart, null);
+  assert.equal(outcome.progress.lastDailyDate, daily.todayKey());
+  assert.equal(outcome.stars, 0);
+});

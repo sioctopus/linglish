@@ -1,13 +1,15 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>排行榜 - Linglish</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap">
-  <link rel="stylesheet" href="./styles/tokens.css?v=1">
+  <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <style>
     * {
       margin: 0;
@@ -622,6 +624,7 @@
 <body>
   <div class="container">
     <div class="header">
+      <a data-nav="back" href="./index-desktop.html" style="color:#0f766e;font-weight:700;text-decoration:none;">返回</a>
       <h1>🏆 排行榜</h1>
       <p>与全球学习者竞技，成为顶尖英语达人！</p>
     </div>
@@ -1092,5 +1095,6 @@
       return labels[difficulty] || difficulty;
     }
   </script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
 </body>
 </html>

@@ -13,6 +13,7 @@ const { handleFileUpload, cleanupFile } = require('../upload-handler');
 const youtubeDownloader = require('../services/yt-dlp-downloader');
 const geoIPService = require('../services/geo-ip');
 const vocabularyV2 = require('../services/vocabulary-v2');
+const { canonicalLevel } = require('../services/video-level');
 const { getUploadLimits, hasActivePaidEntitlement, isGuestAccount } = require('../services/entitlements');
 const { mergeIncompleteSegments, normalizeSegmentsTiming } = require('../utils/segment-merger');
 const { convertAudioToWav, ffmpegAvailable: audioFfmpegAvailable } = require('../utils/audio-utils');
@@ -1548,8 +1549,9 @@ async function registerVideoRoutes(pathname, req, res) {
 
       // Helper function to filter videos by difficulty
       function filterByDifficulty(videos, targetDifficulty) {
-        if (!targetDifficulty) return videos;
-        return videos.filter(video => video.difficulty_level === targetDifficulty);
+        const target = canonicalLevel(targetDifficulty);
+        if (!target) return videos;
+        return videos.filter(video => canonicalLevel(video.difficulty_level) === target);
       }
 
       if (mine === '1' || mine.toLowerCase() === 'true') {
@@ -1799,7 +1801,7 @@ async function registerVideoRoutes(pathname, req, res) {
         tags: tags,
         category: fields.category || null,
         collection_name: collectionName,
-        difficulty_level: fields.difficulty_level || null,
+        difficulty_level: null,
         is_public: user.is_admin && fields.is_public !== undefined
           ? (fields.is_public === 'true' || fields.is_public === true)
           : false,
@@ -1965,6 +1967,11 @@ async function registerVideoRoutes(pathname, req, res) {
                 if (defaultUserCharacter) {
                   console.log('[Transcription] Default user character:', defaultUserCharacter);
                 }
+
+                await updateVideoDifficultyFromTranscript(
+                  resource.id,
+                  segments && segments.length ? segments : updatedVideo.transcript
+                );
               }
             } catch (err) {
               console.warn('[Transcription] Failed to update metadata:', err.message);
@@ -2330,7 +2337,7 @@ async function registerVideoRoutes(pathname, req, res) {
         tags: tags,
         category: body.category || null,
         collection_name: collectionName,
-        difficulty_level: body.difficulty_level || null,
+        difficulty_level: null,
         is_public: user.is_admin && body.is_public !== undefined
           ? (body.is_public === true || body.is_public === 'true')
           : false,
@@ -2678,7 +2685,7 @@ async function registerVideoRoutes(pathname, req, res) {
 
       if (Object.prototype.hasOwnProperty.call(body, 'difficulty_level')) {
         if (typeof body.difficulty_level === 'string' || body.difficulty_level === null) {
-          const validLevels = ['beginner', 'intermediate', 'advanced'];
+          const validLevels = ['a1', 'a2', 'b1', 'b2', 'c1', 'c2', 'beginner', 'intermediate', 'advanced'];
           const level = body.difficulty_level ? body.difficulty_level.toLowerCase().trim() : null;
           if (level && !validLevels.includes(level)) {
             return sendError(res, 400, `Difficulty level must be one of: ${validLevels.join(', ')}`);

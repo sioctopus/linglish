@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
     // IMPORTANT: This must be the first script to catch extension errors
@@ -145,6 +147,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>网络视频上传 - Linglish</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <style>
     * {
       margin: 0;
@@ -153,8 +159,9 @@
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: var(--lx-font-body);
+      background: var(--lx-grad-hero);
+      color: var(--lx-ink-900);
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -163,125 +170,174 @@
     }
 
     .container {
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-      max-width: 800px;
+      background: #fff;
+      border: 1px solid var(--lx-line);
+      border-radius: 24px;
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+      max-width: 640px;
       width: 100%;
-      padding: 40px;
+      padding: 22px 24px 18px;
+    }
+
+    .page-head {
+      text-align: center;
+      margin-bottom: 16px;
+    }
+
+    .page-mark {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 8px;
+      border-radius: 14px;
+      background: var(--lx-teal-50);
+      color: var(--lx-primary);
+      display: grid;
+      place-items: center;
     }
 
     h1 {
-      font-size: 32px;
-      color: #333;
-      margin-bottom: 10px;
-      text-align: center;
+      font-size: 1.35rem;
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--lx-ink-900);
     }
 
     .subtitle {
-      color: #666;
+      color: var(--lx-ink-500);
       text-align: center;
-      margin-bottom: 40px;
-      font-size: 16px;
+      margin-top: 4px;
+      font-size: 0.82rem;
+      line-height: 1.4;
     }
 
     .form-group {
-      margin-bottom: 30px;
+      margin-bottom: 12px;
     }
 
     label {
       display: block;
       font-weight: 600;
-      color: #333;
-      margin-bottom: 10px;
-      font-size: 14px;
+      color: var(--lx-ink-900);
+      margin-bottom: 6px;
+      font-size: 0.8rem;
     }
 
     input[type="text"],
     select {
       width: 100%;
-      padding: 15px;
-      border: 2px solid #e0e0e0;
+      padding: 0.55rem 0.75rem;
+      border: 1px solid var(--lx-line);
       border-radius: 10px;
-      font-size: 16px;
-      transition: all 0.3s;
+      font-size: 0.92rem;
+      font-family: inherit;
+      color: var(--lx-ink-900);
+      background: var(--lx-paper);
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
     }
 
     input[type="text"]:focus,
     select:focus {
       outline: none;
-      border-color: #667eea;
-      box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+      border-color: var(--lx-teal-600);
+      background: #fff;
+      box-shadow: 0 0 0 3px rgba(13, 148, 136, 0.15);
     }
 
     .mode-selection {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin-bottom: 30px;
+      gap: 10px;
     }
 
     .mode-card {
-      border: 2px solid #e0e0e0;
-      border-radius: 15px;
-      padding: 25px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      border: 1px solid var(--lx-line);
+      border-radius: 14px;
+      padding: 10px 12px;
       cursor: pointer;
-      transition: all 0.3s;
-      text-align: center;
+      transition: border-color 0.2s, background 0.2s;
+      text-align: left;
+      background: #fff;
     }
 
     .mode-card:hover {
-      border-color: #667eea;
-      box-shadow: 0 5px 15px rgba(14, 165, 233, 0.2);
+      border-color: var(--lx-teal-300);
+      background: var(--lx-teal-50);
     }
 
     .mode-card.selected {
-      border-color: #667eea;
-      background: linear-gradient(135deg, rgba(14, 165, 233, 0.1) 0%, rgba(45, 212, 191, 0.1) 100%);
+      border-color: var(--lx-primary);
+      background: var(--lx-teal-50);
     }
 
     .mode-icon {
-      font-size: 48px;
-      margin-bottom: 15px;
+      width: 32px;
+      height: 32px;
+      border-radius: 10px;
+      background: var(--lx-paper);
+      color: var(--lx-ink-500);
+      display: grid;
+      place-items: center;
+      flex: none;
+    }
+
+    .mode-card.selected .mode-icon {
+      background: #fff;
+      color: var(--lx-primary);
+    }
+
+    .mode-icon svg {
+      display: block;
     }
 
     .mode-title {
-      font-size: 18px;
-      font-weight: 600;
-      color: #333;
-      margin-bottom: 10px;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--lx-ink-900);
+      margin-bottom: 2px;
+      line-height: 1.3;
     }
 
     .mode-description {
-      font-size: 14px;
-      color: #666;
-      line-height: 1.5;
+      font-size: 0.72rem;
+      color: var(--lx-ink-500);
+      line-height: 1.35;
+    }
+
+    .field-hint {
+      font-size: 0.75rem;
+      line-height: 1.45;
+      color: var(--lx-ink-500);
     }
 
     .button-group {
       display: flex;
-      gap: 15px;
+      gap: 10px;
+      margin-top: 2px;
     }
 
-    button {
+    .button-group button {
       flex: 1;
-      padding: 15px 30px;
-      font-size: 16px;
-      font-weight: 600;
-      border: none;
-      border-radius: 10px;
+      padding: 0.68rem 1rem;
+      font-size: 0.95rem;
+      font-weight: 700;
+      font-family: inherit;
+      border-radius: 999px;
       cursor: pointer;
-      transition: all 0.3s;
+      transition: transform 0.2s, box-shadow 0.2s, background 0.2s, border-color 0.2s;
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
+      border: none;
+      background: var(--lx-grad-fresh);
+      color: #fff;
     }
 
     .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 20px rgba(14, 165, 233, 0.3);
+      transform: translateY(-1px);
+      box-shadow: var(--lx-shadow-brand);
     }
 
     .btn-primary:disabled {
@@ -290,12 +346,41 @@
     }
 
     .btn-secondary {
-      background: #f5f5f5;
-      color: #666;
+      background: #fff;
+      color: var(--lx-ink-900);
+      border: 1px solid var(--lx-line);
     }
 
     .btn-secondary:hover {
-      background: #e0e0e0;
+      background: var(--lx-teal-50);
+      border-color: var(--lx-teal-300);
+    }
+
+    .tag-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tag-btn {
+      padding: 0.28rem 0.65rem;
+      border: 1px solid var(--lx-line);
+      border-radius: 999px;
+      background: var(--lx-paper);
+      color: var(--lx-ink-900);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      font-size: 0.8rem;
+      font-family: inherit;
+      font-weight: 600;
+    }
+
+    .tag-btn.selected {
+      background: var(--lx-primary);
+      border-color: var(--lx-primary);
+      color: #fff;
     }
 
     .loading {
@@ -309,13 +394,13 @@
     }
 
     .spinner {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #667eea;
+      border: 3px solid var(--lx-teal-100);
+      border-top: 3px solid var(--lx-primary);
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
+      width: 36px;
+      height: 36px;
       animation: spin 1s linear infinite;
-      margin: 0 auto 20px;
+      margin: 0 auto 12px;
     }
 
     @keyframes spin {
@@ -376,7 +461,7 @@
 
     @media (max-width: 600px) {
       .container {
-        padding: 30px 20px;
+        padding: 18px 14px 14px;
       }
 
       .mode-selection {
@@ -391,8 +476,16 @@
 </head>
 <body>
   <div class="container">
-    <h1>🎥 网络视频上传</h1>
-    <p class="subtitle">粘贴网络视频链接，开始英语听写练习</p>
+    <div class="page-head">
+      <div class="page-mark" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="6" width="18" height="14" rx="2"></rect>
+          <path d="M10 10.5v5l4.5-2.5-4.5-2.5z" fill="currentColor" stroke="none"></path>
+        </svg>
+      </div>
+      <h1>网络视频上传</h1>
+      <p class="subtitle">粘贴网络视频链接，开始英语听写练习</p>
+    </div>
 
     <div class="error" id="error"></div>
     <div class="success" id="success"></div>
@@ -423,21 +516,36 @@
         <label>选择模式</label>
         <div class="mode-selection">
           <div class="mode-card selected" data-mode="temporary">
-            <div class="mode-icon">⚡</div>
-            <div class="mode-title">临时观看</div>
-            <div class="mode-description">
-              直接播放网络视频<br>
-              不下载，不占用服务器空间<br>
-              适合快速练习
+            <div class="mode-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M10 8.8v6.4l5.4-3.2L10 8.8z" fill="currentColor" stroke="none"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="mode-title">临时观看</div>
+              <div class="mode-description">
+                直接播放网络视频<br>
+                不下载，不占用服务器空间<br>
+                适合快速练习
+              </div>
             </div>
           </div>
           <div class="mode-card" data-mode="permanent">
-            <div class="mode-icon">💾</div>
-            <div class="mode-title">下载保存</div>
-            <div class="mode-description">
-              下载到本地服务器<br>
-              支持离线观看和录音练习<br>
-              适合长期学习
+            <div class="mode-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 4v10"></path>
+                <path d="M8.5 10.5L12 14l3.5-3.5"></path>
+                <path d="M5 19h14"></path>
+              </svg>
+            </div>
+            <div>
+              <div class="mode-title">下载保存</div>
+              <div class="mode-description">
+                下载到本地服务器<br>
+                支持离线观看和录音练习<br>
+                适合长期学习
+              </div>
             </div>
           </div>
         </div>
@@ -458,12 +566,17 @@
         </select>
       </div>
 
+      <div class="form-group">
+        <label>难度级别</label>
+        <div class="field-hint">不用自己选。字幕出来后，系统按用词和句子自动标成 A1、A2、B1、B2、C1 或 C2。</div>
+      </div>
+
       <!-- 下载保存模式时显示的额外选项 -->
       <div id="save-options" style="display: none;">
         <div class="form-group">
           <label>视频标签 <span style="color: #ef4444;">*</span></label>
-          <div class="tag-selector-hint" style="font-size: 0.85rem; color: #64748b; margin-bottom: 0.5rem;">请至少选择一个标签</div>
-          <div id="tag-options" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+          <div class="field-hint" style="margin-bottom: 6px;">请至少选择一个标签</div>
+          <div id="tag-options" class="tag-options"></div>
         </div>
 
         <div class="form-group">
@@ -475,17 +588,7 @@
             maxlength="120"
             placeholder="例如：小猪佩奇 / Friends S01"
           />
-          <div class="tag-selector-hint" style="font-size: 0.85rem; color: #64748b; margin-top: 0.5rem;">同一系列的多集视频可以归到同一个合集里</div>
-        </div>
-
-        <div class="form-group">
-          <label for="difficulty-level">难度级别 <span style="color: #ef4444;">*</span></label>
-          <select id="difficulty-level" name="difficulty_level">
-            <option value="">请选择难度级别</option>
-            <option value="beginner">🌱 Beginner - 初级</option>
-            <option value="intermediate">🌿 Intermediate - 中级</option>
-            <option value="advanced">🌳 Advanced - 高级</option>
-          </select>
+          <div class="field-hint" style="margin-top: 4px;">同一系列的多集视频可以归到同一个合集里</div>
         </div>
       </div>
 
@@ -518,7 +621,6 @@
     let selectedTags = new Set();
     const saveOptionsDiv = document.getElementById('save-options');
     const tagOptionsDiv = document.getElementById('tag-options');
-    const difficultySelect = document.getElementById('difficulty-level');
     const collectionNameInput = document.getElementById('collection-name');
 
     // 初始化标签选项
@@ -558,37 +660,21 @@
       }
 
       tagOptionsDiv.innerHTML = tags.map(tag => `
-        <button type="button" class="tag-btn" data-tag-id="${tag.id}" style="
-          padding: 0.5rem 1rem;
-          border: 2px solid #e2e8f0;
-          border-radius: 20px;
-          background: white;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 0.3rem;
-          font-size: 0.9rem;
-          transition: all 0.2s;
-        ">
+        <button type="button" class="tag-btn" data-tag-id="${tag.id}">
           <span>${tag.icon}</span>
           <span>${tag.name}</span>
         </button>
       `).join('');
 
-      // 绑定点击事件
       tagOptionsDiv.querySelectorAll('.tag-btn').forEach(btn => {
         btn.addEventListener('click', () => {
           const tagId = btn.dataset.tagId;
           if (selectedTags.has(tagId)) {
             selectedTags.delete(tagId);
-            btn.style.background = 'white';
-            btn.style.borderColor = '#e2e8f0';
-            btn.style.color = '#1e293b';
+            btn.classList.remove('selected');
           } else {
             selectedTags.add(tagId);
-            btn.style.background = 'linear-gradient(135deg, #0ea5e9, #2dd4bf)';
-            btn.style.borderColor = '#0ea5e9';
-            btn.style.color = 'white';
+            btn.classList.add('selected');
           }
         });
       });
@@ -725,14 +811,8 @@
         return;
       }
 
-      // 下载保存模式需要验证标签和难度级别
+      // 下载保存模式需要验证标签。难度由字幕自动判定。
       if (selectedMode === 'permanent') {
-        const difficulty = difficultySelect?.value;
-        if (!difficulty) {
-          showError('请选择视频难度级别');
-          difficultySelect?.focus();
-          return;
-        }
         if (selectedTags.size === 0) {
           showError('请至少选择一个视频标签');
           tagOptionsDiv?.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -761,7 +841,6 @@
         // 构建请求数据
         const requestData = { url, language, mode: selectedMode };
         if (selectedMode === 'permanent') {
-          requestData.difficulty_level = difficultySelect?.value;
           requestData.tags = Array.from(selectedTags);
           const collectionName = (collectionNameInput?.value || '').trim();
           if (collectionName) requestData.collection_name = collectionName;

@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
@@ -119,10 +121,11 @@
   <link rel="stylesheet" href="./css/practice-session/animations.css">
 
   <!-- Shared Scripts -->
-  <script src="./mobile-auth.js"></script>
-  <script src="./i18n.js"></script>
+  <script src="./mobile-auth.js?v=20261019"></script>
+  <script src="./i18n.js?v=20261019"></script>
   <script src="./auth-helpers.js"></script>
   <script src="./feedback.js"></script>
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
 </head>
 <body>
   <!-- Desktop Header -->
@@ -249,15 +252,11 @@
       <span>收藏</span>
     </a>
     <a href="mobile-arena.html" class="nav-item active">
-      <div class="nav-icon">
-        <span class="nav-emoji">🎪</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="arena"></div>
       <span>实战场</span>
     </a>
     <a href="mobile-treasure.html" class="nav-item">
-      <div class="nav-icon">
-        <span class="nav-emoji">🪴</span>
-      </div>
+      <div class="nav-icon" data-lx-icon="growth"></div>
       <span>成长中心</span>
     </a>
   </nav>
@@ -316,5 +315,6 @@
 
   <!-- Practice Session Main Module (ES6) -->
   <script type="module" src="./js/practice-session/main.js"></script>
+  <script src="./js/icons.js?v=1"></script>
 </body>
 </html>

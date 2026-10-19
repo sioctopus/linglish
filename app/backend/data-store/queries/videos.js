@@ -458,18 +458,20 @@ async function listVideoResourcesByUploaderLite(userId) {
 async function getDifficultyStats() {
   await init();
   if (dbUnavailable()) {
-    return { beginner: 0, intermediate: 0, advanced: 0, unset: 0 };
+    return { a1: 0, a2: 0, b1: 0, b2: 0, c1: 0, c2: 0, unset: 0 };
   }
   const { rows } = await pool.query(
     `SELECT difficulty_level, COUNT(*)::int AS count
      FROM video_resources
      GROUP BY difficulty_level`
   );
-  const stats = { beginner: 0, intermediate: 0, advanced: 0, unset: 0 };
+  const legacy = { beginner: 'a1', intermediate: 'b1', advanced: 'c1' };
+  const stats = { a1: 0, a2: 0, b1: 0, b2: 0, c1: 0, c2: 0, unset: 0 };
   for (const row of rows) {
-    const key = row.difficulty_level || 'unset';
+    const raw = String(row.difficulty_level || '').trim().toLowerCase();
+    const key = legacy[raw] || raw;
     if (Object.prototype.hasOwnProperty.call(stats, key)) {
-      stats[key] = row.count;
+      stats[key] += row.count;
     } else {
       stats.unset += row.count;
     }
@@ -532,21 +534,44 @@ async function deleteVideoResource(id) {
   return rows[0] || null;
 }
 
-async function getArticles() {
+function articleAccessSql(alias, ownerParam, adminParam) {
+  return `(${alias}.owner_user_id = ${ownerParam} OR ${adminParam}::boolean OR (
+    COALESCE(${alias}.visibility, 'public') = 'public'
+    AND (${alias}.source_type IS DISTINCT FROM 'workbench-practice' OR EXISTS (
+      SELECT 1 FROM workbench_documents shared
+      WHERE shared.practice_article_id = ${alias}.id
+        AND shared.user_id = ${alias}.owner_user_id
+        AND shared.share_token IS NOT NULL
+        AND (shared.share_expires_at IS NULL OR shared.share_expires_at > NOW())
+    ))
+  ))`;
+}
+
+function articleViewer(user) {
+  const id = Number(user?.id);
+  return [Number.isSafeInteger(id) && id > 0 ? id : null, user?.is_admin === true];
+}
+
+async function getArticles(user = null) {
   await init();
   const { rows } = await pool.query(
-    `SELECT id, title, content, level, tags, audio_url, word_count, difficulty_score, source_type, pdf_path
-     FROM articles
-     ORDER BY id ASC`,
+    `SELECT a.id, a.title, a.content, a.level, a.tags, a.audio_url, a.word_count,
+            a.difficulty_score, a.source_type, a.pdf_path, a.note_image_path,
+            a.owner_user_id, a.visibility
+     FROM articles a
+     WHERE ${articleAccessSql('a', '$1', '$2')}
+     ORDER BY a.id ASC`,
+    articleViewer(user)
   );
   return rows;
 }
 
-async function getArticleById(id) {
+async function getArticleById(id, user = null) {
   await init();
   const { rows } = await pool.query(
-    `SELECT * FROM articles WHERE id = $1 LIMIT 1`,
-    [id]
+    `SELECT a.* FROM articles a WHERE a.id = $1
+     AND ${articleAccessSql('a', '$2', '$3')} LIMIT 1`,
+    [id, ...articleViewer(user)]
   );
   return rows[0] || null;
 }
@@ -560,42 +585,30 @@ async function deleteArticle(id) {
   return rows[0] || null;
 }
 
-async function getMediaByArticle(articleId) {
+async function getMediaByArticle(articleId, user = null) {
   await init();
-  if (articleId) {
-    const { rows } = await pool.query(
-      `SELECT id, article_id, kind, url, duration_sec
-       FROM media_assets
-       WHERE article_id = $1
-       ORDER BY id ASC`,
-      [articleId],
-    );
-    return rows;
-  }
   const { rows } = await pool.query(
-    `SELECT id, article_id, kind, url, duration_sec
-     FROM media_assets
-     ORDER BY id ASC`,
+    `SELECT m.id, m.article_id, m.kind, m.url, m.duration_sec
+     FROM media_assets m LEFT JOIN articles a ON a.id = m.article_id
+     WHERE ($1::bigint IS NULL OR m.article_id = $1)
+       AND (a.id IS NULL OR ${articleAccessSql('a', '$2', '$3')})
+     ORDER BY m.id ASC`,
+    [articleId || null, ...articleViewer(user)]
   );
   return rows;
 }
 
-async function getSegmentsByMedia(mediaId) {
+async function getSegmentsByMedia(mediaId, user = null) {
   await init();
-  if (mediaId) {
-    const { rows } = await pool.query(
-      `SELECT id, media_id, start_ms, end_ms, text
-       FROM audio_segments
-       WHERE media_id = $1
-       ORDER BY start_ms ASC`,
-      [mediaId],
-    );
-    return rows;
-  }
   const { rows } = await pool.query(
-    `SELECT id, media_id, start_ms, end_ms, text
-     FROM audio_segments
-     ORDER BY media_id ASC, start_ms ASC`,
+    `SELECT s.id, s.media_id, s.start_ms, s.end_ms, s.text
+     FROM audio_segments s
+     JOIN media_assets m ON m.id = s.media_id
+     LEFT JOIN articles a ON a.id = m.article_id
+     WHERE ($1::bigint IS NULL OR s.media_id = $1)
+       AND (a.id IS NULL OR ${articleAccessSql('a', '$2', '$3')})
+     ORDER BY s.media_id ASC, s.start_ms ASC`,
+    [mediaId || null, ...articleViewer(user)]
   );
   return rows;
 }

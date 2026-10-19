@@ -17,7 +17,7 @@
   --lx-sky: #0ea5e9;              /* accent-1: 链接、信息 */
   --lx-sky-strong: #0284c7;
   --lx-sky-soft: #e0f2fe;
-  --lx-mint: #2dd4bf;             /* accent-2: 装饰、渐变末端 */
+  --lx-mint: #8aa2ff;             /* accent-2: 装饰、渐变末端 */
   --lx-gold: #f7b733;
   --lx-amber: #b45309;
   --lx-rose: #be123c;
@@ -69,6 +69,17 @@
   --lx-radius-xl: 24px;
   --lx-radius-pill: 999px;
 
+  /* ---------- Focus / fullscreen inset (视频学习 · AI 陪练 · 实战场) ----------
+     Outer frame from screen edge to content; match the red-box guide (~24px).
+     Column gutter between stage and transcript/script rail. */
+  --lx-focus-inset: 24px;
+  --lx-focus-gap: 16px;
+
+  /* Focus player window — one stage size for 视频学习 / AI陪练 / 实战场.
+     Larger than non-focus (60dvh/620px); never fills the column or crowds controls. */
+  --lx-focus-player-max-h: min(68dvh, 680px, calc(100dvh - 210px));
+  --lx-focus-player-width: min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9));
+
   /* ---------- Motion ---------- */
   --lx-ease: cubic-bezier(0.4, 0, 0.2, 1);
   --lx-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -86,6 +97,14 @@
   --lx-text-body: 1rem;
   --lx-text-sm: 0.875rem;
   --lx-text-xs: 0.75rem;
+
+  /* ---------- Icons (pair with styles/icons.css + js/icons.js) ---------- */
+  --lx-icon-xs: 14px;
+  --lx-icon-sm: 16px;
+  --lx-icon-md: 20px;
+  --lx-icon-lg: 24px;
+  --lx-icon-xl: 28px;
+  --lx-icon-stroke: 2;
 }
 
 /* ---------- Shared base behaviors ---------- */

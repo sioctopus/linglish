@@ -22,10 +22,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap">
-  <link rel="stylesheet" href="./styles/tokens.css?v=1">
+  <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml" sizes="any">
-  <script src="./js/auth-manager.js?v=1"></script>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
@@ -1396,6 +1397,12 @@
             <td>SRS + 错句复练</td>
             <td>按班级/团队查看</td>
           </tr>
+          <tr>
+            <td>视频带教</td>
+            <td>不可用</td>
+            <td>三排字幕、查词、讲解、跟读</td>
+            <td>含带教模式</td>
+          </tr>
         </tbody>
       </table>
     </section>
@@ -1745,7 +1752,12 @@
 
     const loginLink = document.getElementById('login-link');
     if (loginLink) {
-      loginLink.href = authUrl();
+      if (readToken()) {
+        loginLink.textContent = '进入训练';
+        loginLink.href = 'today.html?from=pricing_nav';
+      } else {
+        loginLink.href = authUrl();
+      }
     }
 
     async function handleUpgrade() {
@@ -2038,5 +2050,6 @@
     document.getElementById('team-lead-form')?.addEventListener('submit', submitTeamLead);
     postPricingEvent('pricing_page_view');
   </script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
 </body>
 </html>

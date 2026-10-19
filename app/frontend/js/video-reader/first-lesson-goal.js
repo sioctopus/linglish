@@ -70,7 +70,7 @@
     return `./video-reader${mobile ? '' : '-desktop'}.html?focus=first_lesson&from=today_goal_resume&videoId=${record.videoId}`;
   }
   function createCard(container, options) {
-    if (!container) return { update() {}, hide() {}, setState() {}, feedback() {} };
+    if (!container) return { update() {}, hide() {}, setState() {}, feedback() {}, settle() {} };
     const doc = container.ownerDocument;
     container.classList.add('first-lesson-goal');
     const status = doc.createElement('div');
@@ -88,37 +88,76 @@
     const record = doc.createElement('button');
     record.type = 'button'; record.textContent = '跟读这句';
     record.className = 'goal-primary';
+    const again = doc.createElement('button');
+    again.type = 'button'; again.textContent = '再来一句'; again.className = 'goal-primary'; again.hidden = true;
+    const stop = doc.createElement('a');
+    stop.textContent = '今天到这';
+    stop.href = options.mobile ? './mobile-today.html#learning-details' : './today.html?from=first_lesson_complete#day-end';
+    stop.hidden = true;
     const back = doc.createElement('a');
     back.textContent = '回到今日计划'; back.href = options.mobile ? './mobile-today.html' : './today.html';
-    actions.append(listen, record, back);
+    back.hidden = true;
+    actions.append(listen, record, again, stop, back);
     const feedback = doc.createElement('p');
     feedback.className = 'goal-feedback';
     feedback.setAttribute('role', 'status');
-    container.replaceChildren(status, actions, feedback);
+    container.replaceChildren(feedback, status, actions);
     let current = null;
     let busy = 'idle';
+    let settled = false;
     listen.addEventListener('click', () => { if (current && busy === 'idle') options.listen(current.nextIndex); });
     record.addEventListener('click', () => { if (current) options.record(current.nextIndex); });
+    again.addEventListener('click', () => { if (typeof options.next === 'function') options.next(current); });
     function setState(value) {
       busy = value;
       listen.disabled = value !== 'idle';
       record.disabled = value === 'requesting' || value === 'evaluating';
       record.textContent = { recording: '完成录音', requesting: '正在请求麦克风…', evaluating: '正在评估…' }[value] || '跟读这句';
     }
+    function dayHref() {
+      const lines = Math.max(1, Number(current && current.completedCount) || 1);
+      return options.mobile
+        ? `./mobile-today.html?from=first_lesson_complete&lines=${lines}#learning-details`
+        : `./today.html?from=first_lesson_complete&lines=${lines}#day-end`;
+    }
+    function showChoices(note) {
+      settled = true;
+      stop.href = dayHref();
+      feedback.textContent = note || '这句说完了。';
+      title.hidden = true;
+      detail.hidden = true;
+      meter.hidden = true;
+      listen.hidden = true;
+      record.hidden = true;
+      back.hidden = true;
+      again.hidden = false;
+      stop.hidden = false;
+    }
     function update(goal) {
       current = goal;
+      settled = false;
       container.hidden = !goal;
       if (!goal) return;
-      title.textContent = goal.complete ? `小目标完成 · ${goal.total} 句已开口` : `今天先练 ${goal.total} 句 · ${goal.completedCount}/${goal.total}`;
-      detail.textContent = goal.complete
-        ? (goal.saved ? '已保存在此浏览器。下次从「今日」接着练；整段视频进度另计。' : '本次已完成。浏览器未能保存进度，请勿关闭页面。')
-        : '先听，再跟读；收到通过的评估才计数。不必一次练完整段视频。';
+      title.hidden = false;
+      detail.hidden = false;
+      meter.hidden = false;
+      again.hidden = true;
+      stop.hidden = true;
+      title.textContent = goal.complete ? '这几句已经说完。' : '先听，再开口说这一句。';
+      detail.textContent = goal.complete ? '' : '听完就跟读。说完这一句，再决定要不要下一句。';
+      detail.hidden = goal.complete;
       meter.max = goal.total; meter.value = goal.completedCount;
-      if (goal.complete) feedback.textContent = '';
-      listen.hidden = goal.complete; record.hidden = goal.complete; back.hidden = !goal.complete;
+      meter.hidden = goal.complete;
+      feedback.textContent = '';
+      listen.hidden = goal.complete; record.hidden = goal.complete; back.hidden = true;
+      if (goal.complete) showChoices('这几句已经说完。');
       setState(busy);
     }
-    return { update, setState, hide: () => update(null), feedback: text => { feedback.textContent = current?.complete ? '' : (text || ''); } };
+    return {
+      update, setState, hide: () => update(null),
+      feedback: text => { if (!settled) feedback.textContent = text || ''; },
+      settle: text => { if (current) showChoices(text); },
+    };
   }
   function renderResume(container, options) {
     if (!container) return;
@@ -137,5 +176,10 @@
     link.addEventListener('click', () => options.emit?.('first_lesson_goal_resume', { video_resource_id: goal.videoId, completed: goal.complete === true }));
     container.append(title, detail, link);
   }
-  return { createStore, createCard, renderResume, resumeHref };
+  function sentenceResult(success, missed) {
+    const words = (Array.isArray(missed) ? missed : []).filter(word => typeof word === 'string' && word).slice(0, 4);
+    if (words.length) return `这句漏了 ${words.join('、')}。`;
+    return success ? '这句说出来了。' : '这句还没对上。再听一次。';
+  }
+  return { createStore, createCard, renderResume, resumeHref, sentenceResult };
 });

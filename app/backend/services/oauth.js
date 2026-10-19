@@ -78,17 +78,18 @@ async function verifyOAuthState(state, provider, options = {}) {
   return rows[0];
 }
 
-async function registerOAuthBootstrapJti(jti, expiresAtSeconds) {
+async function registerOAuthBootstrapJti(jti, expiresAtSeconds, extra = {}) {
   if (typeof jti !== 'string' || !/^[a-f0-9]{32}$/.test(jti)) {
     throw new Error('INVALID_OAUTH_BOOTSTRAP');
   }
   if (!Number.isInteger(expiresAtSeconds) || expiresAtSeconds <= 0) {
     throw new Error('INVALID_OAUTH_BOOTSTRAP');
   }
+  const provider = extra.provider === 'wechat' ? 'wechat' : 'google';
   await dataStore.query(
     `INSERT INTO oauth_states (state, provider, redirect_url, extra_data, expires_at)
-     VALUES ($1, $2, NULL, '{}'::jsonb, to_timestamp($3))`,
-    [jti, OAUTH_BOOTSTRAP_PROVIDER, expiresAtSeconds]
+     VALUES ($1, $2, NULL, $3::jsonb, to_timestamp($4))`,
+    [jti, OAUTH_BOOTSTRAP_PROVIDER, JSON.stringify({ provider }), expiresAtSeconds]
   );
   return true;
 }
@@ -100,11 +101,13 @@ async function consumeOAuthBootstrapJti(jti) {
   const { rows } = await dataStore.query(
     `DELETE FROM oauth_states
      WHERE state = $1 AND provider = $2 AND expires_at >= NOW()
-     RETURNING state`,
+     RETURNING extra_data`,
     [jti, OAUTH_BOOTSTRAP_PROVIDER]
   );
   if (rows.length !== 1) throw new Error('OAUTH_BOOTSTRAP_REPLAYED');
-  return true;
+  const extra = rows[0].extra_data;
+  const parsed = typeof extra === 'string' ? JSON.parse(extra) : (extra || {});
+  return { provider: parsed.provider === 'wechat' ? 'wechat' : 'google' };
 }
 
 /**
@@ -126,7 +129,7 @@ function buildGoogleAuthUrl(state) {
     scope: 'openid email profile',
     state: state,
     access_type: 'offline',
-    prompt: 'consent'
+    include_granted_scopes: 'true',
   });
 
   return `https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`;
@@ -228,6 +231,84 @@ async function findUserByEmail(email) {
   return dataStore.findUserByEmail(email);
 }
 
+function wechatConfig() {
+  const redirectUri = process.env.WECHAT_CALLBACK_URL || '/auth/oauth/wechat/callback';
+  const baseUrl = process.env.FRONTEND_BASE_URL || '';
+  const callbackUrl = redirectUri.startsWith('http') ? redirectUri : `${baseUrl}${redirectUri}`;
+  return {
+    appId: process.env.WECHAT_APP_ID || '',
+    appSecret: process.env.WECHAT_APP_SECRET || '',
+    callbackUrl,
+    enabled: process.env.ENABLE_WECHAT_OAUTH === 'true',
+  };
+}
+
+function isWechatEnabled() {
+  return wechatConfig().enabled;
+}
+
+function isWechatConfigured() {
+  const config = wechatConfig();
+  return config.enabled && !!(config.appId && config.appSecret);
+}
+
+function buildWechatAuthUrl(state, config = wechatConfig()) {
+  const params = new URLSearchParams({
+    appid: config.appId,
+    redirect_uri: config.callbackUrl,
+    response_type: 'code',
+    scope: 'snsapi_login',
+    state: state,
+  });
+  return `https://open.weixin.qq.com/connect/qrconnect?${params.toString()}#wechat_redirect`;
+}
+
+async function exchangeWechatCode(code) {
+  const config = wechatConfig();
+  const url = new URL('https://api.weixin.qq.com/sns/oauth2/access_token');
+  url.searchParams.set('appid', config.appId);
+  url.searchParams.set('secret', config.appSecret);
+  url.searchParams.set('code', code);
+  url.searchParams.set('grant_type', 'authorization_code');
+  const response = await fetch(url);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.errcode) {
+    console.error('[OAuth] WeChat token exchange failed:', data.errcode || response.status);
+    throw new Error('WECHAT_TOKEN_EXCHANGE_FAILED');
+  }
+  return {
+    accessToken: data.access_token,
+    openid: data.openid,
+    unionid: data.unionid || null,
+    expiresIn: data.expires_in,
+  };
+}
+
+async function getWechatUserProfile(accessToken, openid) {
+  const url = new URL('https://api.weixin.qq.com/sns/userinfo');
+  url.searchParams.set('access_token', accessToken);
+  url.searchParams.set('openid', openid);
+  url.searchParams.set('lang', 'zh_CN');
+  const response = await fetch(url);
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.errcode) {
+    console.error('[OAuth] WeChat profile fetch failed:', data.errcode || response.status);
+    throw new Error('WECHAT_PROFILE_FETCH_FAILED');
+  }
+  const providerUserId = String(data.unionid || data.openid || openid || '').trim();
+  if (!providerUserId) throw new Error('WECHAT_PROFILE_FETCH_FAILED');
+  const nickname = String(data.nickname || '').trim();
+  return {
+    id: providerUserId,
+    openid: data.openid || openid,
+    unionid: data.unionid || null,
+    email: `wx_${providerUserId}@wechat.linglish.local`,
+    name: nickname || `微信用户${providerUserId.slice(-6)}`,
+    picture: data.headimgurl || null,
+    verified: true,
+  };
+}
+
 /**
  * Create new user from OAuth profile (no password)
  * @param {object} profile - OAuth profile
@@ -235,7 +316,9 @@ async function findUserByEmail(email) {
  * @returns {Promise<object>} - Created user
  */
 async function createOAuthUser(profile, provider) {
-  const username = profile.name || profile.email.split('@')[0];
+  const suffix = String(profile.id || '').replace(/[^A-Za-z0-9]/g, '').slice(-6);
+  const baseName = String(profile.name || profile.email.split('@')[0] || 'user').replace(/\s+/g, '').slice(0, 24);
+  const username = suffix ? `${baseName}${suffix}` : baseName;
 
   const { rows } = await dataStore.query(
     `INSERT INTO users (email, username, password_hash, level, status, registration_method, created_at, updated_at)
@@ -293,7 +376,19 @@ async function linkOAuthAccount(userId, provider, profile) {
  * @param {object} profile - User profile from provider
  * @returns {Promise<{user: object, isNewUser: boolean}>}
  */
-async function handleOAuthLogin(provider, profile) {
+async function handleOAuthLogin(provider, profile, options = {}) {
+  const linkUserId = options.linkUserId ? String(options.linkUserId) : '';
+  if (linkUserId) {
+    const linked = await findUserByOAuth(provider, profile.id);
+    if (linked && String(linked.id) !== linkUserId) {
+      throw new Error('WECHAT_ALREADY_LINKED');
+    }
+    const account = await dataStore.findUserById(linkUserId);
+    if (!account) throw new Error('USER_NOT_FOUND');
+    if (!linked) await linkOAuthAccount(account.id, provider, profile);
+    return { user: account, isNewUser: false };
+  }
+
   // 1. Check if OAuth account already linked
   let user = await findUserByOAuth(provider, profile.id);
 
@@ -386,6 +481,85 @@ async function cleanupExpiredStates() {
  * Check if Google OAuth is configured
  * @returns {boolean}
  */
+function googleTokenKey() {
+  const secret = process.env.AUTH_TOKEN_SECRET || process.env.JWT_SECRET || 'linglish-development-token-secret';
+  return crypto.createHash('sha256').update(String(secret)).digest();
+}
+
+function encryptGoogleSecret(plain) {
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', googleTokenKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(String(plain), 'utf8'), cipher.final()]);
+  const tag = cipher.getAuthTag();
+  return Buffer.concat([iv, tag, encrypted]).toString('base64url');
+}
+
+function decryptGoogleSecret(encoded) {
+  const buf = Buffer.from(String(encoded), 'base64url');
+  const iv = buf.subarray(0, 12);
+  const tag = buf.subarray(12, 28);
+  const encrypted = buf.subarray(28);
+  const decipher = crypto.createDecipheriv('aes-256-gcm', googleTokenKey(), iv);
+  decipher.setAuthTag(tag);
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString('utf8');
+}
+
+async function saveGoogleRefreshToken(userId, refreshToken) {
+  if (!userId || !refreshToken) return false;
+  await dataStore.query(
+    `UPDATE user_oauth_accounts
+     SET refresh_token_encrypted = $1, updated_at = NOW()
+     WHERE user_id = $2 AND provider = 'google'`,
+    [encryptGoogleSecret(refreshToken), userId]
+  );
+  return true;
+}
+
+async function probeStoredGoogleGrant(userId) {
+  let encrypted = null;
+  try {
+    const { rows } = await dataStore.query(
+      `SELECT refresh_token_encrypted
+       FROM user_oauth_accounts
+       WHERE user_id = $1 AND provider = 'google'
+       LIMIT 1`,
+      [userId]
+    );
+    encrypted = rows[0]?.refresh_token_encrypted || null;
+  } catch (err) {
+    console.warn('[OAuth] Google grant lookup failed:', err?.message || err);
+    return 'unknown';
+  }
+  if (!encrypted) return 'unknown';
+  let refreshToken = null;
+  try {
+    refreshToken = decryptGoogleSecret(encrypted);
+  } catch (err) {
+    console.warn('[OAuth] Google grant could not be read:', err?.message || err);
+    return 'unknown';
+  }
+  if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET || !refreshToken) return 'unknown';
+  try {
+    const response = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: GOOGLE_CLIENT_ID,
+        client_secret: GOOGLE_CLIENT_SECRET,
+        refresh_token: refreshToken,
+        grant_type: 'refresh_token',
+      }),
+    });
+    const data = await response.json().catch(() => ({}));
+    if (response.ok && data.access_token) return 'valid';
+    if (data.error === 'invalid_grant') return 'revoked';
+    return 'unknown';
+  } catch (err) {
+    console.warn('[OAuth] Google grant probe failed:', err?.message || err);
+    return 'unknown';
+  }
+}
+
 function isGoogleConfigured() {
   return GOOGLE_OAUTH_ENABLED && !!(GOOGLE_CLIENT_ID && GOOGLE_CLIENT_SECRET);
 }
@@ -405,6 +579,12 @@ module.exports = {
   getGoogleUserProfile,
   isGoogleConfigured,
   isGoogleEnabled: () => GOOGLE_OAUTH_ENABLED,
+  wechatConfig,
+  isWechatConfigured,
+  isWechatEnabled,
+  buildWechatAuthUrl,
+  exchangeWechatCode,
+  getWechatUserProfile,
 
   // User management
   findUserByOAuth,
@@ -414,6 +594,8 @@ module.exports = {
   handleOAuthLogin,
   getUserOAuthProviders,
   unlinkOAuthProvider,
+  saveGoogleRefreshToken,
+  probeStoredGoogleGrant,
 
   // Constants
   SUPPORTED_PROVIDERS

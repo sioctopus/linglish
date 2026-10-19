@@ -28,7 +28,21 @@ const CLEAN_PUBLIC_PAGES = new Map([
   ['/interview', 'interview.html'],
   ['/workplace', 'workplace.html'],
   ['/shadowing', 'shadowing.html'],
+  ['/workbench', 'workbench.html'],
+  ['/teacher', 'workbench.html'],
 ]);
+
+function safePdfFilename(pathname) {
+  const raw = String(pathname || '').replace(/^\/pdfs\//, '');
+  let filename = raw;
+  try {
+    filename = decodeURIComponent(raw);
+  } catch (_) {
+    return null;
+  }
+  if (!filename || filename !== path.basename(filename) || filename.includes('\0')) return null;
+  return filename;
+}
 
 /**
  * Get MIME type for a file based on extension
@@ -345,6 +359,7 @@ async function registerStaticRoutes(pathname, req, res, url) {
       icpText: (process.env.FRONTEND_ICP_TEXT || '').trim(),
       enableNetworkUpload: process.env.FRONTEND_ENABLE_NETWORK_UPLOAD !== 'false',
       enableGoogleOAuth: process.env.FRONTEND_ENABLE_GOOGLE_OAUTH !== 'false',
+      enableWechatOAuth: process.env.FRONTEND_ENABLE_WECHAT_OAUTH === 'true',
       waveformSegmentationEnabled: envBool('FRONTEND_WAVEFORM_SEGMENTATION_ENABLED'),
       waveformSegmentationMinDurationSec: envNumber('FRONTEND_WAVEFORM_SEGMENTATION_MIN_DURATION_SEC'),
       waveformSegmentationMinWords: envNumber('FRONTEND_WAVEFORM_SEGMENTATION_MIN_WORDS'),
@@ -368,7 +383,11 @@ async function registerStaticRoutes(pathname, req, res, url) {
   // GET /static/*
   if ((req.method === 'GET' || req.method === 'HEAD') && pathname.startsWith('/static/')) {
     const relPath = pathname.replace(/^\/static\//, '');
-    const target = path.join(STATIC_DIR, relPath);
+    const target = path.resolve(STATIC_DIR, relPath);
+    if (!target.startsWith(`${STATIC_DIR}${path.sep}`)) return sendError(res, 404, 'Not Found');
+    // Protected media must use its authenticated route, never an alternate static URL.
+    const topDirectory = path.relative(STATIC_DIR, target).split(path.sep)[0];
+    if (['videos', 'recordings'].includes(topDirectory)) return sendError(res, 404, 'Not Found');
     const served = await serveStatic(res, target, req);
     if (!served) {
       return sendError(res, 404, 'Not Found');
@@ -390,6 +409,7 @@ async function registerStaticRoutes(pathname, req, res, url) {
     ['/interview.html', '/interview'],
     ['/workplace.html', '/workplace'],
     ['/shadowing.html', '/shadowing'],
+    ['/workbench.html', '/workbench'],
   ]);
   if ((req.method === 'GET' || req.method === 'HEAD') && legacyRedirects.has(pathname)) {
     const query = url.search || '';
@@ -600,17 +620,48 @@ async function registerStaticRoutes(pathname, req, res, url) {
     return true;
   }
 
+  // Uploaded class-note images are private and use the same owner checks as their article.
+  if (pathname.startsWith('/note-images/') && (req.method === 'GET' || req.method === 'HEAD')) {
+    res.setHeader('Cache-Control', 'private, no-store');
+    const raw = pathname.replace(/^\/note-images\//, '');
+    let filename = raw;
+    try { filename = decodeURIComponent(raw); } catch (_) { filename = ''; }
+    if (!/^note-[a-z0-9.-]+$/i.test(filename) || filename !== path.basename(filename)) {
+      return sendError(res, 404, 'Not Found');
+    }
+    const ext = path.extname(filename).toLowerCase();
+    if (!['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(ext)) return sendError(res, 404, 'Not Found');
+    try {
+      const access = await authorizeMediaRequest(req, url, async () => false);
+      if (!access.mode) return sendError(res, access.deniedShare ? 403 : 401, 'Unauthorized');
+      const articles = await dataStore.getArticles(access.user);
+      if (!articles.some(article => article.note_image_path === `/note-images/${filename}`)) {
+        return sendError(res, 404, 'Not Found');
+      }
+      const filePath = path.join(__dirname, '../note-images', filename);
+      const served = await serveStatic(res, filePath, req, { cacheControl: 'private, no-store' });
+      if (!served) return sendError(res, 404, 'Not Found');
+      return true;
+    } catch (err) {
+      const status = err?.status === 503 ? 503 : 401;
+      return sendError(res, status, status === 503 ? 'Service unavailable' : 'Unauthorized');
+    }
+  }
+
   // GET /pdfs/* (PDF file serving)
-  if (pathname.startsWith('/pdfs/') && req.method === 'GET') {
+  if (pathname.startsWith('/pdfs/') && (req.method === 'GET' || req.method === 'HEAD')) {
     res.setHeader('Cache-Control', 'private, no-store');
     try {
       const access = await authorizeMediaRequest(req, url, async () => false);
       if (!access.mode) return sendError(res, access.deniedShare ? 403 : 401, 'Unauthorized');
 
-      const filename = pathname.replace('/pdfs/', '');
+      const filename = safePdfFilename(pathname);
+      if (!filename) {
+        return sendError(res, 403, 'Access denied - PDF not in database');
+      }
 
       // Verify PDF exists in database (security check)
-      const articles = await dataStore.getArticles();
+      const articles = await dataStore.getArticles(access.user);
       const pdfExists = articles.some(article =>
         article.pdf_path && article.pdf_path === `/pdfs/${filename}`
       );
@@ -638,7 +689,8 @@ async function registerStaticRoutes(pathname, req, res, url) {
   if (req.method === 'GET' || req.method === 'HEAD') {
     // Normalize to prevent absolute path from escaping FRONTEND_DIR
     const rel = pathname === '/' ? 'landing.html' : pathname.replace(/^\/+/, '');
-    const filePath = path.join(FRONTEND_DIR, rel);
+    const filePath = path.resolve(FRONTEND_DIR, rel);
+    if (!filePath.startsWith(`${FRONTEND_DIR}${path.sep}`)) return sendError(res, 404, 'Not Found');
     if (rel.toLowerCase().endsWith('.html') && !INDEXABLE_FRONTEND_PAGES.has(rel)) {
       res.setHeader('X-Robots-Tag', 'noindex, follow');
     }

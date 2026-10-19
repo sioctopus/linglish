@@ -3,6 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
+  <script src="./js/tts-voice.js?v=1"></script>
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: data: blob:; media-src 'self' https: data: blob:; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https: data: https://fonts.gstatic.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; script-src 'self' https: 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; script-src-elem 'self' https: 'unsafe-inline' https://static.cloudflareinsights.com;">
   <script>
@@ -118,15 +119,20 @@
     (function () {
       try {
         const params = new URLSearchParams(window.location.search || '');
-        const quickFirstLesson = params.get('quick') === '1' || params.get('from') === 'today_first_lesson';
-        const forceDesktop = params.get('desktop') === '1';
+        const from = params.get('from') || '';
+        const mode = params.get('mode') || '';
+        const fromToday = from === 'today' || from === 'today_first_lesson' || from === 'mobile_today_choice';
+        const quickFirstLesson = params.get('quick') === '1' || from === 'today_first_lesson';
+        const forceDesktop = params.get('desktop') === '1' || params.get('stay') === '1';
+        const otherMode = mode === 'dialogue' || mode === 'arena';
         const isCompactViewport = window.matchMedia && window.matchMedia('(max-width: 768px)').matches;
-        if (!forceDesktop && quickFirstLesson && isCompactViewport) {
-          params.set('from', 'today');
+        if (!forceDesktop && !otherMode && (fromToday || (quickFirstLesson && isCompactViewport))) {
+          params.set('from', 'today_first_lesson');
+          params.set('focus', 'first_lesson');
           params.set('mode', 'shadowing');
-          if (!params.has('lines')) params.set('lines', '3');
           params.delete('desktop');
-          window.location.replace(`./practice-session.html?${params.toString()}`);
+          params.delete('lines');
+          window.location.replace(`./video-reader-desktop.html?${params.toString()}`);
         }
       } catch (_) { }
     })();
@@ -143,12 +149,24 @@
       rel="stylesheet">
   </noscript>
   <title>跟读与对话练习（桌面版） - Linglish</title>
+  <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest-desktop.json">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Linglish">
+  <link rel="stylesheet" href="/css/install-desktop.css?v=3">
+  <script src="/js/install-desktop.js?v=3" defer></script>
+  <link rel="stylesheet" href="./styles/tokens.css?v=20261018-focus-player">
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
+  <script src="./js/icons.js?v=1"></script>
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./shared/dictionary.css?v=20251113">
   <script defer src="./global-ui.js"></script>
-  <script defer src="./js/auth-manager.js"></script>
+  <script defer src="./js/auth-manager.js?v=20261019"></script>
   <script defer src="./js/storage-helper.js"></script>
-  <script defer src="./i18n.js"></script>
+  <script defer src="./i18n.js?v=20261019"></script>
   <script defer src="./guest-check.js"></script>
   <script defer src="./auth-helpers.js"></script>
   <script defer src="./shared/dictionary-render.js?v=1765726957"></script>
@@ -159,9 +177,12 @@
   <script defer src="./js/practice/practice-utils.js?v=20260110"></script>
   <script defer src="./js/practice/shadowing-mode.js?v=20260110"></script>
   <script src="./js/practice/original-audio-replay.js?v=20261014"></script>
+  <script src="./js/workbench/import-bridge.js?v=20261019"></script>
   <script src="./js/practice/pronunciation-coach-ui.js?v=20260821"></script>
   <script src="./js/practice/pronunciation-profile-ui.js?v=20260821-6"></script>
-  <link rel="stylesheet" href="./styles/practice-session-desktop.css?v=20260727-1">
+  <link rel="stylesheet" href="./styles/practice-session-desktop.css?v=20261019-intensive-note">
+  <link rel="stylesheet" href="./css/subtitle-study.css?v=20261019-study2">
+  <link rel="stylesheet" href="./css/study-switch.css?v=20261017-nav">
   <link rel="stylesheet" href="./styles/pronunciation-coach.css?v=20260821-2">
   <style>
     :root {
@@ -1581,6 +1602,16 @@
 
   </script>
   <script src="./js/media-session.js"></script>
+  <script type="speculationrules">
+  {
+    "prerender": [{
+      "source": "document",
+      "where": { "selector_matches": "a[data-study='video']" },
+      "eagerness": "immediate"
+    }]
+  }
+  </script>
+  <script src="./js/nav-back.js?v=1"></script>
 </head>
 
 <body>
@@ -1617,98 +1648,7 @@
               <span data-i18n="nav.home">主页</span>
             </a>
           </div>
-          <!-- 语音选择器 -->
-          <div class="voice-selector" style="position: relative; display: inline-block; margin-right: 0.5rem;">
-            <button id="voice-btn-practice"
-              style="padding: 0.4rem 0.8rem; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;">
-              <span>🔊</span>
-              <span id="current-voice-practice">晓晓</span>
-            </button>
-            <div id="voice-dropdown-practice"
-              style="position: absolute; top: calc(100% + 0.5rem); right: 0; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 0.5rem; min-width: 180px; display: none; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.15); max-height: 400px; overflow-y: auto;">
-              <!-- 英文语音组 -->
-              <div class="voice-group-label">English</div>
-              <div class="voice-option" data-voice="en-US-AriaNeural" data-name="Aria">
-                <span>👩</span>
-                <span>Aria (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-US-JennyNeural" data-name="Jenny">
-                <span>👩</span>
-                <span>Jenny (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-US-GuyNeural" data-name="Guy">
-                <span>👨</span>
-                <span>Guy (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-US-DavisNeural" data-name="Davis">
-                <span>👨</span>
-                <span>Davis (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-US-AmberNeural" data-name="Amber">
-                <span>👩</span>
-                <span>Amber (US)</span>
-              </div>
-              <div class="voice-option" data-voice="en-GB-SoniaNeural" data-name="Sonia">
-                <span>👩</span>
-                <span>Sonia (UK)</span>
-              </div>
-              <div class="voice-option" data-voice="en-GB-RyanNeural" data-name="Ryan">
-                <span>👨</span>
-                <span>Ryan (UK)</span>
-              </div>
-              <div class="voice-option" data-voice="en-AU-NatashaNeural" data-name="Natasha">
-                <span>👩</span>
-                <span>Natasha (AU)</span>
-              </div>
-              <div class="voice-option" data-voice="en-AU-WilliamNeural" data-name="William">
-                <span>👨</span>
-                <span>William (AU)</span>
-              </div>
-              <!-- 分隔线 -->
-              <div class="dropdown-divider"></div>
-              <!-- 中文语音组 -->
-              <div class="voice-group-label">中文</div>
-              <div class="voice-option active" data-voice="en-US-AriaNeural" data-name="Aria">
-                <span>👩</span>
-                <span>晓晓 (女声)</span>
-              </div>
-              <div class="voice-option" data-voice="zh-CN-YunxiNeural" data-name="云希">
-                <span>👨</span>
-                <span>云希 (男声)</span>
-              </div>
-              <div class="voice-option" data-voice="zh-CN-YunyangNeural" data-name="云扬">
-                <span>📰</span>
-                <span>云扬 (男声新闻)</span>
-              </div>
-              <div class="voice-option" data-voice="zh-CN-XiaoyiNeural" data-name="晓伊">
-                <span>👧</span>
-                <span>晓伊 (女声)</span>
-              </div>
-              <div class="voice-option" data-voice="zh-CN-YunjianNeural" data-name="云健">
-                <span>💼</span>
-                <span>云健 (男声)</span>
-              </div>
-            </div>
-          </div>
-          <!-- 语言选择器 -->
-          <div class="lang-selector" style="position: relative; display: inline-block;">
-            <button id="lang-btn-practice"
-              style="padding: 0.4rem 0.8rem; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;">
-              <span>🌐</span>
-              <span id="current-lang-practice">中文</span>
-            </button>
-            <div id="lang-dropdown-practice"
-              style="position: absolute; top: calc(100% + 0.5rem); right: 0; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 0.5rem; min-width: 120px; display: none; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-              <div class="lang-option active" data-lang="zh">
-                <span>🇨🇳</span>
-                <span>中文</span>
-              </div>
-              <div class="lang-option" data-lang="en">
-                <span>🇺🇸</span>
-                <span>English</span>
-              </div>
-            </div>
-          </div>
+          <!-- 语言选择器已放到与视频学习相同的顶栏 -->
         </div>
         <div style="margin-top: 10px;">
           <div style="position: relative;">
@@ -1772,60 +1712,61 @@
     </div>
   </div>
 
-  <!-- Back Header - 隐藏以节省空间 -->
-  <div class="back-header" style="justify-content:flex-start; gap:12px;">
-    <a href="./index-desktop.html" class="back-btn" style="padding-left:0.7rem; padding-right:0.9rem;" title="返回主页">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-        stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
-        <path d="M3 12l9-9 9 9" />
-        <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-      </svg>
-      <span data-i18n="nav.home">主页</span>
-    </a>
-    <a href="./index-desktop.html?from=practice" class="back-btn" id="back-to-onboarding"
-      style="padding-left:0.7rem; padding-right:0.9rem; display:none;" title="返回入门测试">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-        stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
-        <path d="M15 18l-6-6 6-6" />
-      </svg>
-      <span>返回入门测试</span>
-    </a>
-  </div>
-
-  <!-- Practice Banner -->
-  <div class="practice-banner">
-    <h2>🎭 实战场练习</h2>
-  </div>
-
-  <div class="mode-top-bar" id="mode-top-bar" data-workspace-position="top">
-    <div class="mode-top-row">
-      <div class="mode-top-title">练习模式</div>
-      <button class="theme-toggle" id="theme-toggle" title="切换主题">
+  <div class="topbar">
+    <div class="brand">
+      <h1 data-i18n="video.desktop_title">linglish · 视频学习（桌面版）</h1>
+    </div>
+    <div class="nav">
+      <div class="daily-goal" id="daily-goal">
+        <div class="daily-goal-label" id="daily-goal-label">今日目标：0/3视频</div>
+        <div class="daily-goal-bar"><span id="daily-goal-fill"></span></div>
+      </div>
+      <nav class="study-switch" id="study-switch" aria-label="学习板块">
+        <a href="./video-reader-desktop.html" data-study="video">视频学习</a>
+        <a href="./practice-session-desktop.html?mode=shadowing" data-study="coach">AI陪练</a>
+        <a href="./practice-session-desktop.html?mode=dialogue" data-study="arena">实战场</a>
+      </nav>
+      <button class="theme-toggle" id="theme-toggle" title="切换主题" type="button">
         <span class="icon-sun">☀️</span>
         <span class="icon-moon">🌙</span>
       </button>
-    </div>
-    <div class="mode-tabs mode-tabs-compact">
-      <button class="mode-tab active" data-mode="shadowing" title="跟读：跟随视频朗读，提升语音语调">
-        <span class="mode-icon">👥</span>
-        <span class="mode-label">跟读</span>
-      </button>
-      <button class="mode-tab" data-mode="dialogue" title="对话：扮演角色，系统在你的台词前停顿">
-        <span class="mode-icon">🎭</span>
-        <span class="mode-label">对话</span>
-      </button>
-    </div>
-    <div class="mode-top-hint" id="mode-top-hint">跟读：跟随视频朗读，提升语音语调</div>
-    <div class="focus-essential-controls" role="toolbar" aria-label="练习核心控制">
-      <button type="button" id="focus-play-btn" title="播放 / 暂停（空格）">⏯ <span>播放 / 暂停</span></button>
-      <button type="button" id="focus-prev-btn" title="上一句（←）">⏮ <span>上一句</span></button>
-      <button type="button" id="focus-replay-btn" title="重播当前句">↻ <span>重播</span></button>
-      <button type="button" id="focus-next-btn" title="下一句（→）">⏭ <span>下一句</span></button>
+      <div class="lang-selector">
+        <button class="pill" id="lang-btn-practice" type="button">
+          <span>🌐</span>
+          <span id="current-lang-practice">中文</span>
+        </button>
+        <div class="lang-dropdown" id="lang-dropdown-practice">
+          <div class="lang-option active" data-lang="zh"><span>🇨🇳</span><span>中文</span></div>
+          <div class="lang-option" data-lang="en"><span>🇺🇸</span><span>English</span></div>
+        </div>
+      </div>
+      <a href="./membership.html" id="vip-badge" class="vip-badge" hidden>
+        <span class="vip-icon" data-lx-icon="crown" data-lx-class="lx-icon--sm"></span>
+        <span class="vip-text">VIP</span>
+      </a>
+      <a class="pill" data-nav="back" href="./video-reader-desktop.html" title="返回上一页">
+        <span data-lx-icon="back" data-lx-size="16" data-lx-class="lx-icon--sm"></span>
+        <span data-i18n="nav.back">返回</span>
+      </a>
+      <a class="pill" data-nav="home" href="./index-desktop.html" title="首页">
+        <span data-lx-icon="home" data-lx-size="14" data-lx-class="lx-icon--sm"></span>
+        <span data-i18n="nav.home">首页</span>
+      </a>
+      <a class="pill pill-browser" href="#" data-library="videos" title="浏览视频库"><span data-lx-icon="video" data-lx-class="lx-icon--sm"></span><span data-i18n="nav.library">视频库</span></a>
+      <a class="pill pill-browser" href="#" data-library="channels" title="浏览频道库"><span data-lx-icon="channel" data-lx-class="lx-icon--sm"></span><span>频道库</span></a>
+      <a class="pill" href="#" data-library="podcasts" title="浏览播客"><span data-lx-icon="mic" data-lx-class="lx-icon--sm"></span><span>播客</span></a>
+      <a class="pill" href="./youtube-import.html" title="网络上传"><span data-lx-icon="upload" data-lx-class="lx-icon--sm"></span><span data-i18n="nav.youtube">网络上传</span></a>
+      <a class="pill" href="./video-upload.html"><span data-lx-icon="upload" data-lx-class="lx-icon--sm"></span> <span data-i18n="nav.upload">本地上传</span></a>
+      <a class="pill" href="./feedback.html"><span data-lx-icon="message" data-lx-class="lx-icon--sm"></span> <span data-i18n="nav.feedback">反馈</span></a>
+      <a class="pill primary" href="./video-reader-desktop.html#vocabulary"><span data-lx-icon="book" data-lx-class="lx-icon--sm"></span> <span data-i18n="nav.vocabulary">词汇</span></a>
+      <a href="./index-desktop.html?from=practice" class="pill" id="back-to-onboarding" hidden>返回入门测试</a>
     </div>
   </div>
+  <script>document.getElementById('pageLoader')?.remove();</script>
 
   <!-- Practice Grid Layout -->
   <div class="practice-grid">
+    <div class="practice-stage-spacer" aria-hidden="true"></div>
     <!-- Left Column: Video & Controls -->
     <div class="practice-left">
 
@@ -1860,8 +1801,39 @@
         </div>
       </div>
 
-      <!-- Start Practice Button Container (Moved here for convenience) -->
-      <div class="start-practice-container" style="margin-top: 16px;">
+      <div id="subtitle-study-host"></div>
+
+      <div class="practice-transport">
+        <div class="mode-top-bar" id="mode-top-bar" data-workspace-position="top">
+          <span class="practice-focus-badge" id="practice-focus-badge" hidden aria-live="polite">● 专注中</span>
+          <div class="mode-tabs mode-tabs-compact">
+            <button class="mode-tab active" data-mode="shadowing" title="跟读：跟随视频朗读，提升语音语调">
+              <span class="mode-icon">👥</span>
+              <span class="mode-label">跟读</span>
+            </button>
+            <button class="mode-tab" data-mode="dialogue" title="对话：扮演角色，系统在你的台词前停顿">
+              <span class="mode-icon">🎭</span>
+              <span class="mode-label">对话</span>
+            </button>
+          </div>
+          <div class="focus-essential-controls" role="toolbar" aria-label="练习核心控制">
+            <button type="button" id="focus-play-btn" title="播放 / 暂停（空格）">播放</button>
+            <button type="button" id="focus-prev-btn" title="上一句（←）">上一句</button>
+            <button type="button" id="focus-replay-btn" title="重播当前句">重播</button>
+            <button type="button" id="focus-next-btn" title="下一句（→）">下一句</button>
+          </div>
+          <p class="stage-hint" id="mode-top-hint">跟读：跟随视频朗读，提升语音语调</p>
+          <button type="button" class="practice-focus-exit" id="practice-focus-exit" hidden title="退出专注（Esc）">退出专注</button>
+          <button class="start-practice-btn" id="start-practice-btn">
+            <span class="btn-icon">🚀</span>
+            <span class="btn-text">开始练习</span>
+          </button>
+          <button class="mode-collapse-btn" id="practice-study-toggle" type="button" title="拆句学习" aria-pressed="false">拆句学</button>
+          <button class="mode-collapse-btn" id="mode-explain-toggle" type="button">展开</button>
+        </div>
+      </div>
+
+      <div class="start-practice-container">
         <div class="quick-first-lesson-banner" id="quick-first-lesson-banner">
           <p class="quick-first-lesson-title">3 分钟首课</p>
           <p class="quick-first-lesson-copy">完成最多 3 句跟读，就能回到今日训练看到下一步建议。</p>
@@ -1871,18 +1843,10 @@
             <div class="quick-first-lesson-step"><strong>3. 回到 Today</strong>保存首课进度。</div>
           </div>
         </div>
-        <button class="start-practice-btn" id="start-practice-btn" style="width: 100%; margin: 0;">
-          <span class="btn-icon">🚀</span>
-          <span class="btn-text">开始练习</span>
-        </button>
       </div>
 
       <!-- Mode Selector Card -->
-      <div class="card mode-selector-card" id="practice-mode-selector">
-        <div class="card-header">
-          <h3>模式说明</h3>
-          <button class="mode-collapse-btn" id="mode-explain-toggle" type="button">收起</button>
-        </div>
+      <div class="card mode-selector-card collapsed" id="practice-mode-selector">
         <div class="mode-demo-grid">
           <div class="mode-demo-card" data-demo="shadowing">
             <div class="mode-demo-video demo-shadowing">
@@ -2039,26 +2003,25 @@
           <!-- 对话模式控件 -->
           <div class="dialogue-controls mode-panel" id="dialogue-controls" style="display: none;">
             <div class="dialogue-onboard-card" id="dialogue-onboard-card">
-              <div class="dialogue-onboard-title">🎯 对话练习 3 步上手</div>
-              <div class="dialogue-onboard-steps">
+              <div class="dialogue-onboard-steps" aria-label="对话三步">
                 <div class="dialogue-onboard-step">
                   <span class="step-dot">1</span>
-                  <span>选择你的角色</span>
+                  <span>选角色</span>
                 </div>
                 <div class="dialogue-onboard-step">
                   <span class="step-dot">2</span>
-                  <span>点击麦克风开始录音</span>
+                  <span>开麦</span>
                 </div>
                 <div class="dialogue-onboard-step">
                   <span class="step-dot">3</span>
-                  <span>录音完成自动评分+回放</span>
+                  <span>评分</span>
                 </div>
               </div>
             </div>
             <!-- 对话设置折叠容器 - 初始展开供用户选择角色，练习开始后自动收起 -->
             <div class="dialogue-setup-header"
               style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-              <h3 class="section-title" style="margin: 0; font-size: 15px;">🎭 对话设置 & 进度</h3>
+              <h3 class="section-title" style="margin: 0; font-size: 12px;">设置</h3>
               <button id="toggle-setup-btn" class="btn-text-icon"
                 style="background: none; border: none; cursor: pointer; color: #64748b; font-size: 13px; display: flex; align-items: center; gap: 4px;">
                 <span>收起</span>
@@ -2069,11 +2032,11 @@
             <div id="dialogue-setup-container" class="dialogue-setup-container">
               <!-- 角色选择区域 -->
               <div class="role-selection-section" id="role-selection-section">
-                <h3 class="section-title" style="font-size: 16px; margin-bottom: 12px;">选择你的角色</h3>
+                <h3 class="section-title" style="font-size: 12px; margin-bottom: 0;">角色</h3>
                 <div class="role-buttons-container" id="role-buttons-container">
                   <!-- 角色按钮将通过JS动态生成 -->
                 </div>
-                <p class="role-hint">💡 系统会根据台词数量、难度与你的练习记录推荐角色。</p>
+                <p class="role-hint">按台词推荐</p>
                 <div class="role-preview-panel" id="role-preview-panel" style="display: none;">
                   <div class="role-preview-header">
                     <div class="role-preview-title">
@@ -2107,8 +2070,10 @@
                       </label>
                     </div>
                     <div class="setting-row">
-                      <button id="role-rotate-btn" class="setting-btn" title="交换轮替起点">↻ 交换起点</button>
-                      <button id="role-rename-btn" class="setting-btn" title="重命名角色">✏️ 重命名</button>
+                      <div class="capsule-group">
+                        <button id="role-rotate-btn" class="setting-btn" title="交换轮替起点">交换起点</button>
+                        <button id="role-rename-btn" class="setting-btn" title="重命名角色">重命名</button>
+                      </div>
                     </div>
                     <div class="setting-row">
                       <label>麦克风:</label>
@@ -2211,12 +2176,14 @@
             style="margin-top: 16px; padding: 0; background: transparent; border: none; box-shadow: none;">
             <!-- 播放模式 -->
             <div class="audio-mode-toggle" id="audio-mode-toggle">
-              <span class="mode-section-label">播放模式:</span>
-              <button class="audio-mode-btn active" data-mode="original" title="播放原声">🎬 原声</button>
-              <button class="audio-mode-btn" data-mode="my-voice" title="播放我的配音">🎤 我的配音</button>
-              <button class="audio-mode-btn" data-mode="mixed" title="我配音+其他原声">🎭 对话</button>
+              <span class="mode-section-label">播放</span>
+              <div class="capsule-group">
+                <button class="audio-mode-btn active" data-mode="original" title="播放原声">原声</button>
+                <button class="audio-mode-btn" data-mode="my-voice" title="播放我的配音">配音</button>
+                <button class="audio-mode-btn" data-mode="mixed" title="我配音+其他原声">对话</button>
+              </div>
               <button class="audio-mode-btn" id="clear-recordings-btn" title="删除所有录音并重新录制"
-                style="margin-left: 12px; background: #fee; border-color: #fbb; color: #c33;">🗑️ 清除录音</button>
+                style="background: #fee; border-color: #fbb; color: #c33;">清除</button>
               <span class="recording-indicator" id="recording-indicator" hidden>✓ 已录制 <span id="recorded-count">0</span>
                 句</span>
               <span class="practice-progress-chip" id="practice-progress" title="本场完成进度" hidden>✅ 0/0</span>
@@ -2285,6 +2252,17 @@
     <!-- Right Column: Lines -->
     <div class="practice-right">
       <div class="card lines-card">
+        <header class="script-head">
+          <div class="script-head-row">
+            <button class="practice-focus-toggle" id="practice-focus-toggle" type="button" title="专注模式" aria-pressed="false">
+              <svg class="focus-toggle__icon focus-toggle__icon--off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 16a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h3z"/><path d="M3 16a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H3z"/></svg>
+              <svg class="focus-toggle__icon focus-toggle__icon--on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M6.5 19.5c1.2-3.2 3.1-4.75 5.5-4.75s4.3 1.55 5.5 4.75"/><path d="M12 11.75v2.5"/><path d="M9.75 12.5 12 14.25l2.25-1.75"/></svg>
+              <span class="practice-focus-toggle__label">专注</span>
+            </button>
+            <button type="button" class="practice-intensive-note-btn" id="practice-intensive-note" title="把当前练习句做成 9:16 精读笔记卡">做成精读笔记</button>
+            <p class="practice-script-hint" id="practice-script-hint">点「专注」进入沉浸练习；点列表里的句子可以跳过去。</p>
+          </div>
+        </header>
         <!-- Lines Container -->
         <div class="lines-container" style="background: transparent; padding: 0;">
           <div class="practice-current-line" id="practice-current-line" hidden></div>
@@ -2678,9 +2656,9 @@
         : (meta.description || '');
 
       const hintEl = document.getElementById('mode-top-hint');
-      if (hintEl) hintEl.textContent = (quickMode
-        ? '首课：听一句 → 跟读一句 → 回到今日训练'
-        : (meta.hint || meta.description || '')) + ' · 空格播放/暂停 · ←/→切换句子 · 单击字幕定位，双击单词查词';
+      if (hintEl) hintEl.textContent = quickMode
+        ? '首课：听一句，跟读一句，再回到今日训练。'
+        : (meta.hint || meta.description || '');
 
       // Update quick steps
       const stepsEl = document.getElementById('mode-quick-steps');
@@ -2726,8 +2704,18 @@
       renderPracticeLines();
     }
 
+    function syncPracticeModeUrl(mode, historyMode) {
+      if (historyMode === 'skip') return;
+      try {
+        const url = new URL(window.location.href);
+        if (url.searchParams.get('mode') === mode) return;
+        url.searchParams.set('mode', mode);
+        history.pushState({ studyMode: mode }, '', url);
+      } catch (_) {}
+    }
+
     // Switch practice mode
-    function switchPracticeMode(mode) {
+    function switchPracticeMode(mode, options) {
       if (isQuickFirstLesson()) {
         mode = 'shadowing';
       }
@@ -2737,6 +2725,10 @@
       if (mode !== 'dialogue') {
         setDialogueFocusLayout(false);
       }
+      if (mode !== 'shadowing' && document.body.classList.contains('immersive-active')) {
+        document.body.classList.remove('immersive-active');
+      }
+      syncPracticeFocusChrome();
       if (!isShareMode() && !isQuickFirstLesson()) {
         savePracticeModePreference(mode);
       }
@@ -2752,25 +2744,39 @@
 
       applyModeMeta(mode);
       applyModeVisualState(mode);
+      const studySwitch = document.getElementById('study-switch');
+      if (studySwitch) {
+        const current = mode === 'dialogue' ? 'arena' : 'coach';
+        studySwitch.querySelectorAll('[data-study]').forEach((link) => {
+          if (link.dataset.study === current) link.setAttribute('aria-current', 'page');
+          else link.removeAttribute('aria-current');
+        });
+      }
+      const brandTitle = document.getElementById('coach-brand-title');
+      const brandNote = document.getElementById('coach-brand-note');
+      if (brandTitle) brandTitle.textContent = mode === 'dialogue' ? '实战场' : 'AI陪练';
+      if (brandNote) brandNote.textContent = mode === 'dialogue' ? '选一段内容，扮演着说' : '选一段内容，听一句跟着说';
 
       const shadowingControls = document.getElementById('shadowing-controls');
       const dialogueControls = document.getElementById('dialogue-controls');
-      document.body.classList.add('mode-transitioning');
-      setTimeout(() => document.body.classList.remove('mode-transitioning'), 280);
+      document.body.classList.remove('mode-transitioning');
 
       if (shadowingControls && dialogueControls) {
-        if (mode === 'shadowing') {
-          shadowingControls.style.display = 'block';
-          requestAnimationFrame(() => shadowingControls.classList.add('active'));
-          dialogueControls.classList.remove('active');
-          setTimeout(() => { dialogueControls.style.display = 'none'; }, 220);
-        } else {
-          dialogueControls.style.display = 'block';
-          requestAnimationFrame(() => dialogueControls.classList.add('active'));
-          shadowingControls.classList.remove('active');
-          setTimeout(() => { shadowingControls.style.display = 'none'; }, 220);
-        }
+        const showShadowing = mode === 'shadowing';
+        shadowingControls.style.display = showShadowing ? 'block' : 'none';
+        dialogueControls.style.display = showShadowing ? 'none' : 'block';
+        shadowingControls.classList.toggle('active', showShadowing);
+        dialogueControls.classList.toggle('active', !showShadowing);
       }
+
+      const controlsContainer = document.getElementById('desktop-controls-container');
+      if (controlsContainer) controlsContainer.style.display = 'block';
+      const startLabel = document.querySelector('#start-practice-btn .btn-text');
+      const startButton = document.getElementById('start-practice-btn');
+      if (startLabel && startButton && !startButton.hidden) {
+        startLabel.textContent = mode === 'dialogue' ? '开始对话' : '开始跟读';
+      }
+      syncPracticeModeUrl(mode, options && options.history);
 
       // Reset states based on mode
       if (mode === 'shadowing') {
@@ -2788,6 +2794,8 @@
         }
       }
     }
+
+    window.switchPracticeMode = switchPracticeMode;
 
     function applyQuickFirstLessonUI() {
       if (!isQuickFirstLesson()) return;
@@ -2939,6 +2947,10 @@
           if (modeSelector) {
             modeSelector.style.display = 'none';
           }
+          ['start-practice-btn', 'mode-top-hint', 'mode-explain-toggle'].forEach((id) => {
+            const el = document.getElementById(id);
+            if (el) el.hidden = true;
+          });
 
           // 🎯 Hide the start button container itself
           const startContainer = document.querySelector('.start-practice-container');
@@ -3098,8 +3110,10 @@
       if (oldStart) oldStart.style.display = 'none';
       if (oldPause) oldPause.style.display = 'block';
 
-      // Enable Immersive Mode
+      // Enable Immersive Mode (unified practice focus chrome + fullscreen like video learning)
       document.body.classList.add('immersive-active');
+      if (typeof syncPracticeFocusChrome === 'function') syncPracticeFocusChrome();
+      if (typeof requestPracticeFullscreen === 'function') requestPracticeFullscreen();
 
       // 🔧 关键：在用户点击事件的同步上下文中立即触发 play()
       // 这样浏览器才会认可这是用户手势触发的播放
@@ -3183,8 +3197,10 @@
       if (oldStart) oldStart.style.display = 'block';
       if (oldPause) oldPause.style.display = 'none';
 
-      // Disable Immersive Mode
+      // Disable Immersive Mode (unified practice focus chrome + leave fullscreen)
       document.body.classList.remove('immersive-active');
+      if (typeof syncPracticeFocusChrome === 'function') syncPracticeFocusChrome();
+      if (typeof exitPracticeFullscreen === 'function') exitPracticeFullscreen();
 
       // Clear any waiting timeout/interval
       if (shadowingWaitingTimeout) {
@@ -6779,13 +6795,13 @@
     }
 
     function ensureToken() {
-      if (isShareMode()) return;
+      if (isShareMode()) return true;
       const token = refreshAuthToken();
       if (!token) {
-        alert('请先登录后再进入练习页面');
-        window.location.href = './index.html';
-        throw new Error('Missing auth token');
+        updatePracticeFeedback('登录后就能跟读这一句，进度也会留下来。', '#0f766e');
+        return false;
       }
+      return true;
     }
 
     function buildRecordingUrl(rawPath, updatedAt) {
@@ -6837,7 +6853,7 @@
       return baseUrl;
     }
 
-    async function setProtectedMediaSource(element, rawPath, updatedAt) {
+    async function authorizeProtectedMediaSource(element, rawPath, updatedAt) {
       const source = buildProtectedUrl(rawPath, updatedAt);
       if (!source) throw new Error('MEDIA_SOURCE_REQUIRED');
       if (source.startsWith('data:') || source.startsWith('blob:') || isShareMode()) {
@@ -6852,6 +6868,17 @@
         mode: mediaState.mode,
         legacyToken: accountToken,
       });
+    }
+
+    async function setProtectedMediaSource(element, rawPath, updatedAt) {
+      try {
+        return await authorizeProtectedMediaSource(element, rawPath, updatedAt);
+      } catch (error) {
+        if (window.LinglishMediaSession) {
+          try { await window.LinglishMediaSession.clear(); } catch (_) { }
+        }
+        return authorizeProtectedMediaSource(element, rawPath, updatedAt);
+      }
     }
 
     window.LinglishMediaSession?.bindLifecycle({
@@ -9076,6 +9103,7 @@
       if (state.lastPronunciationEval && state.lastPronunciationEval.score != null) {
         const lastEval = state.lastPronunciationEval;
         const feedback = generatePronunciationFeedback(lastEval.score, lastEval.words || []);
+        updatePracticeFeedback(feedback.text, '#0f766e');
         showPronunciationFeedbackModal({
           score: lastEval.score,
           referenceText: lastEval.referenceText || '',
@@ -9127,6 +9155,7 @@
         console.log(`[评分] 显示详细反馈，准确度: ${Math.round(evalResult.score * 100)}%`);
 
         const feedback = generatePronunciationFeedback(evalResult.score, evalResult.words || []);
+        updatePracticeFeedback(feedback.text, '#0f766e');
         updateAutoStatus(feedback.emoji, feedback.text);
 
         // 显示反馈模态框（评分越高自动关闭越快）
@@ -9188,40 +9217,16 @@
 
     // 生成发音反馈
     function generatePronunciationFeedback(score, words = []) {
-      if (score >= 0.9) {
-        return { emoji: '✅', text: '太棒了！发音非常标准！', type: 'success', details: null };
-      }
-      if (score >= 0.8) {
-        return { emoji: '👍', text: '不错！继续加油！', type: 'success', details: null };
-      }
-
-      const missingWords = words.filter(w => w.type === 'missing').map(w => w.word);
-      const extraWords = words.filter(w => w.type === 'extra').map(w => w.word);
-
-      // 生成针对性改进建议
-      let detailText = '';
-      const tips = [];
-
-      if (missingWords.length > 0) {
-        tips.push(`⚠️ 注意发音: ${missingWords.slice(0, 3).join(', ')}`);
-      }
-      if (extraWords.length > 0) {
-        tips.push(`💬 多读了: ${extraWords.slice(0, 2).join(', ')}`);
-      }
-
-      // 根据评分添加通用建议
-      if (score < 0.5) {
-        tips.push('💡 建议: 放慢语速，仔细模仿原声');
-      } else if (score < 0.7) {
-        tips.push('🎯 技巧: 注意单词之间的连读');
-      }
-
-      detailText = tips.join(' | ');
-
-      if (score >= 0.5) {
-        return { emoji: '⚠️', text: '需要改进', type: 'warning', details: detailText || '注意每个单词的发音' };
-      }
-      return { emoji: '🔄', text: '再试一次', type: 'retry', details: detailText || '慢慢来，仔细听原声' };
+      const missing = words.filter(w => w.type === 'missing').map(w => w.word).slice(0, 3);
+      const extra = words.filter(w => w.type === 'extra').map(w => w.word).slice(0, 2);
+      let text = '意思接近了。注意词和词连在一起的地方，再跟一遍。';
+      if (score >= 0.9) text = '这一句说清楚了，可以跟下一句。';
+      else if (score >= 0.8) text = '大体说对了。再跟一遍，把没咬清的词放慢。';
+      else if (missing.length) text = `这句里 ${missing.join('、')} 没说出来。先听原句，再只跟这几个词。`;
+      else if (extra.length) text = `多说了 ${extra.join('、')}。对着原句再跟一遍。`;
+      else if (score < 0.5) text = '先把这一句听完，放慢，再跟着说一遍。';
+      const type = score >= 0.8 ? 'success' : 'warning';
+      return { emoji: score >= 0.8 ? '✓' : '听', text, type, details: text };
     }
 
     function getCurrentSentenceForPlayback() {
@@ -10292,8 +10297,8 @@
 
       if (!state.currentSegments.length) {
         const li = document.createElement('li');
-        li.className = 'line-item';
-        li.textContent = '暂无字幕数据';
+        li.className = 'script-empty';
+        li.textContent = '这段视频还没有字幕。换一段有字幕的视频，就能逐句跟读。';
         practiceLineList.appendChild(li);
         practiceLineEls = [];
         lastHighlightedArrayIndex = -2;
@@ -11661,11 +11666,20 @@
     // 当前过滤状态
     let currentTagFilter = null;
     let currentCollectionFilter = null;
-    let currentDifficultyFilter = null; // 难度筛选: null=全部, 'beginner', 'intermediate', 'advanced'
+    let currentDifficultyFilter = null; // 难度筛选: null=全部, beginner=A1–A2, intermediate=B1–B2, advanced=C1–C2
+
+    function coarseDifficulty(raw) {
+      const value = String(raw || '').trim().toLowerCase();
+      if (['beginner', 'a1', 'a2'].includes(value)) return 'beginner';
+      if (['intermediate', 'b1', 'b2'].includes(value)) return 'intermediate';
+      if (['advanced', 'c1', 'c2'].includes(value)) return 'advanced';
+      return null;
+    }
     let showFavoritesOnly = false;
     let currentSearchQuery = '';
     let tagFiltersExpanded = false;
     let allVideoList = [];
+    let practiceCatalog = [];
 
     async function showVideoSelectModal(videoList, defaultLevel = null) {
       const modal = document.getElementById('video-select-modal');
@@ -11822,16 +11836,16 @@
 
       const videos = allVideoList || [];
       const stats = {
-        beginner: videos.filter(v => v.difficulty_level === 'beginner').length,
-        intermediate: videos.filter(v => v.difficulty_level === 'intermediate').length,
-        advanced: videos.filter(v => v.difficulty_level === 'advanced').length
+        beginner: videos.filter(v => coarseDifficulty(v.difficulty_level) === 'beginner').length,
+        intermediate: videos.filter(v => coarseDifficulty(v.difficulty_level) === 'intermediate').length,
+        advanced: videos.filter(v => coarseDifficulty(v.difficulty_level) === 'advanced').length
       };
 
       const levels = [
         { key: null, label: '全部', count: videos.length },
-        { key: 'beginner', label: '🌱 入门', count: stats.beginner },
-        { key: 'intermediate', label: '🌿 进阶', count: stats.intermediate },
-        { key: 'advanced', label: '🌳 高级', count: stats.advanced }
+        { key: 'beginner', label: 'A1–A2', count: stats.beginner },
+        { key: 'intermediate', label: 'B1–B2', count: stats.intermediate },
+        { key: 'advanced', label: 'C1–C2', count: stats.advanced }
       ];
 
       container.innerHTML = levels.map(level => {
@@ -11863,7 +11877,7 @@
     // 获取当前难度筛选后的视频列表
     function getDifficultyFilteredVideos() {
       if (!currentDifficultyFilter) return allVideoList;
-      return allVideoList.filter(v => v.difficulty_level === currentDifficultyFilter);
+      return allVideoList.filter(v => coarseDifficulty(v.difficulty_level) === currentDifficultyFilter);
     }
 
     // 清除筛选的辅助函数（用于空状态按钮）
@@ -12178,14 +12192,14 @@
           emptyState = {
             icon: '🏷️',
             title: `"${tagName}" 下暂无视频`,
-            desc: currentDifficultyFilter ? `当前难度：${currentDifficultyFilter === 'beginner' ? '入门' : currentDifficultyFilter === 'intermediate' ? '进阶' : '高级'}` : '',
+            desc: currentDifficultyFilter ? `当前难度：${currentDifficultyFilter === 'beginner' ? 'A1–A2' : currentDifficultyFilter === 'intermediate' ? 'B1–B2' : 'C1–C2'}` : '',
             actions: [
               { text: '清除标签筛选', primary: false, onclick: 'clearTagFilter()' },
               { text: '查看全部视频', primary: true, onclick: 'clearAllFilters()' }
             ]
           };
         } else if (currentDifficultyFilter) {
-          const levelNames = { beginner: '🌱 入门', intermediate: '🌿 进阶', advanced: '🌳 高级' };
+          const levelNames = { beginner: 'A1–A2', intermediate: 'B1–B2', advanced: 'C1–C2' };
           emptyState = {
             icon: '📊',
             title: `${levelNames[currentDifficultyFilter] || currentDifficultyFilter} 级别暂无视频`,
@@ -12586,7 +12600,43 @@
       }
     }
 
+    async function loadExternalCoachMedia(media) {
+      const modal = document.getElementById('video-select-modal');
+      if (modal) modal.style.display = 'none';
+      state.videoId = media.id || 'external';
+      window.LinglishStudyVideoId = '';
+      window.LinglishStudyMedia = media;
+      document.querySelector('.video-player-container')?.classList.remove('is-empty');
+      state.currentSegments = Array.isArray(media.cues) ? media.cues.map((cue, index) => ({
+        index: cue.index != null ? cue.index : index,
+        text: cue.text || '',
+        start: Number(cue.start) || 0,
+        end: Number(cue.end) || 0,
+      })).filter((cue) => cue.text && cue.end >= cue.start) : [];
+      state.videoData = { id: state.videoId, title: media.title || '播客' };
+      if (videoPlayer && media.audioUrl) {
+        videoPlayer.poster = media.image || '';
+        videoPlayer.src = media.audioUrl;
+        videoPlayer.load();
+      }
+      const overlayCaption = document.querySelector('#play-overlay > div > div:last-child');
+      if (overlayCaption) overlayCaption.textContent = media.title || '点击播放';
+      rebuildSegmentRoleMap();
+      renderPracticeLines();
+      renderPracticeCurrentLine();
+      updatePracticeFeedback(media.title ? `正在陪练：${media.title}` : '');
+    }
+
     async function loadVideoData() {
+      if (pageParams.get('source') === 'external') {
+        let media = null;
+        try { media = JSON.parse(sessionStorage.getItem('linglish.coach.media') || 'null'); } catch (_) { media = null; }
+        if (!media || !media.audioUrl) {
+          throw new Error('没有找到刚选的内容，请重新从视频库、频道库或播客里选一条。');
+        }
+        await loadExternalCoachMedia(media);
+        return;
+      }
       if (isShareMode()) {
         await loadShareVideoData(getShareToken());
         return;
@@ -12601,7 +12651,8 @@
         defaultLevel = pageParams.get('level') || null;
       }
       defaultLevel = (defaultLevel || '').toString().trim().toLowerCase();
-      if (!['beginner', 'intermediate', 'advanced'].includes(defaultLevel)) defaultLevel = null;
+      if (!coarseDifficulty(defaultLevel)) defaultLevel = null;
+      else defaultLevel = coarseDifficulty(defaultLevel);
 
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
 
@@ -12634,6 +12685,7 @@
         console.warn('Failed to load video list:', err);
         videoListFailed = true;
       }
+      practiceCatalog = videoList;
 
       // 视频列表加载失败且无法继续时，明确报错（由 init 错误处理统一展示重试入口）
       if (videoListFailed && !videoList.length && !requestedId) {
@@ -12669,10 +12721,15 @@
       }
 
       if (!chosen) {
-        throw new Error('No videos available');
+        const emptyError = new Error('还没有可练习的视频');
+        emptyError.code = 'empty';
+        throw emptyError;
       }
 
       state.videoId = chosen.id;
+      window.LinglishStudyVideoId = /^\d+$/.test(String(chosen.id)) ? String(chosen.id) : '';
+      window.LinglishStudyMedia = null;
+      document.querySelector('.video-player-container')?.classList.remove('is-empty');
       audioModeManager.cleanup(videoPlayer);
       // 录音列表与字幕/详情数据互不依赖——并行加载
       const recordingsPromise = (async () => {
@@ -13212,6 +13269,7 @@
       }
 
       state.videoId = chosen.id;
+      document.querySelector('.video-player-container')?.classList.remove('is-empty');
       state.videoData = chosen;
       state.serverRecordings = Array.isArray(payload?.recordings) ? payload.recordings : [];
       audioModeManager.cleanup(videoPlayer);
@@ -13377,6 +13435,9 @@
       });
 
       videoPlayer.addEventListener('loadedmetadata', () => {
+        const startSec = Number(new URLSearchParams(window.location.search).get('startSec'));
+        if (!Number.isFinite(startSec) || startSec <= 0) return;
+        try { videoPlayer.currentTime = startSec; } catch (_) { }
       });
 
       videoPlayer.addEventListener('canplay', () => {
@@ -13607,25 +13668,6 @@
 
         // 初始化语音选择器
         (function initVoiceSelector() {
-          const currentVoiceEl = document.getElementById('current-voice-practice');
-          const voiceBtn = document.getElementById('voice-btn-practice');
-          const voiceDropdown = document.getElementById('voice-dropdown-practice');
-
-          // 从localStorage加载当前选择的语音
-          const getSelectedVoice = () => {
-            try {
-              return localStorage.getItem('linglish_tts_voice') || 'en-US-AriaNeural';
-            } catch (_) {
-              return 'en-US-AriaNeural';
-            }
-          };
-
-          const savedVoice = getSelectedVoice();
-          const savedVoiceOption = document.querySelector(`#voice-dropdown-practice .voice-option[data-voice="${savedVoice}"]`);
-          if (savedVoiceOption && currentVoiceEl) {
-            currentVoiceEl.textContent = savedVoiceOption.dataset.name || '晓晓';
-          }
-
           // Haptic Feedback Helper
           function triggerHaptic() {
             if (navigator.vibrate) {
@@ -13747,68 +13789,74 @@
             observer.observe(autoControls, { attributes: true, childList: true, subtree: true });
           }
 
-          // 更新活动状态
-          const voiceOptions = document.querySelectorAll('#voice-dropdown-practice .voice-option');
-          voiceOptions.forEach(opt => {
-            const isActive = opt.dataset.voice === savedVoice;
-            opt.classList.toggle('active', isActive);
-            opt.style.background = isActive ? '#0ea5e9' : '';
-            opt.style.color = isActive ? 'white' : '#0f172a';
-          });
-
-          // 点击按钮显示/隐藏下拉菜单
-          voiceBtn?.addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (voiceDropdown) {
-              voiceDropdown.style.display = voiceDropdown.style.display === 'none' ? 'block' : 'none';
-            }
-          });
-
-          // 点击页面其他地方关闭下拉菜单
-          document.addEventListener('click', () => {
-            if (voiceDropdown) voiceDropdown.style.display = 'none';
-          });
-
-          // 阻止点击下拉菜单内部时关闭
-          voiceDropdown?.addEventListener('click', (e) => {
-            e.stopPropagation();
-          });
-
-          // 选择语音选项
-          document.querySelectorAll('#voice-dropdown-practice .voice-option').forEach(option => {
-            option.addEventListener('click', () => {
-              const voice = option.dataset.voice;
-              const voiceName = option.dataset.name;
-              if (voice) {
-                // 保存到localStorage
-                try {
-                  localStorage.setItem('linglish_tts_voice', voice);
-                } catch (_) { }
-
-                // 更新显示
-                if (currentVoiceEl) currentVoiceEl.textContent = voiceName || '晓晓';
-
-                // 更新活动状态
-                document.querySelectorAll('#voice-dropdown-practice .voice-option').forEach(opt => {
-                  const isActive = opt.dataset.voice === voice;
-                  opt.classList.toggle('active', isActive);
-                  opt.style.background = isActive ? '#0ea5e9' : '';
-                  opt.style.color = isActive ? 'white' : '#0f172a';
-                });
-
-                // 关闭下拉菜单
-                if (voiceDropdown) voiceDropdown.style.display = 'none';
-
-                // 显示提示（如果有toast函数）
-                if (typeof showToast === 'function') {
-                  showToast(`已切换到 ${voiceName} 语音`);
-                }
-              }
-            });
-          });
         })();
 
         ensureToken();
+
+        const libraries = document.querySelector('.topbar');
+        libraries?.addEventListener('click', (event) => {
+          const choice = event.target.closest('[data-library]');
+          if (!choice) return;
+          event.preventDefault();
+          const library = choice.dataset.library;
+          if (library === 'saved') {
+            showVideoSelectModal(practiceCatalog.length ? practiceCatalog : allVideoList, null);
+            return;
+          }
+          const mode = currentPracticeMode === 'dialogue' ? 'dialogue' : 'shadowing';
+          const next = new URLSearchParams({ library, returnTo: 'coach', mode });
+          window.location.href = `./video-reader-desktop.html?${next.toString()}`;
+        });
+
+        function renderCoachMembership(user) {
+          const badge = document.getElementById('vip-badge');
+          if (!badge || !user) return;
+          const email = String(user.email || '');
+          const guest = user.is_guest || user.isGuest || /^guest_.*@temp\.linglish\.local$/i.test(email);
+          if (guest) {
+            badge.hidden = true;
+            return;
+          }
+          const type = String(user.membership_type || 'free').toLowerCase();
+          const names = { svip: 'SVIP', vip: 'VIP', family: '家庭版', free: '免费' };
+          const level = names[type] || '会员';
+          const text = badge.querySelector('.vip-text');
+          if (text) text.textContent = user.is_admin ? `${level} · 管理员` : `${level} 会员`;
+          const known = ['vip', 'svip', 'family', 'free'];
+          badge.className = 'vip-badge ' + (known.includes(type) ? type : 'free');
+          badge.hidden = false;
+        }
+
+        const authToken = refreshAuthToken();
+        if (authToken) {
+          fetch('/users/me', { headers: { Authorization: `Bearer ${authToken}` } })
+            .then((res) => res.ok ? res.json() : null)
+            .then((user) => renderCoachMembership(user))
+            .catch(() => {});
+        }
+
+        const dailyGoalLabel = document.getElementById('daily-goal-label');
+        const dailyGoalFill = document.getElementById('daily-goal-fill');
+        if (dailyGoalLabel && dailyGoalFill) {
+          let completed = 0;
+          try {
+            const email = localStorage.getItem('userEmail') || sessionStorage.getItem('userEmail') || 'anon';
+            const raw = localStorage.getItem(`video_progress_${email}`);
+            const entries = raw ? Object.values(JSON.parse(raw)) : [];
+            const now = new Date();
+            completed = entries.filter((entry) => {
+              const percent = Number(entry && entry.percent || 0);
+              const updated = new Date(Number(entry && entry.updatedAt || 0));
+              return percent >= 90
+                && updated.getFullYear() === now.getFullYear()
+                && updated.getMonth() === now.getMonth()
+                && updated.getDate() === now.getDate();
+            }).length;
+          } catch (_) {}
+          completed = Math.min(3, completed);
+          dailyGoalLabel.textContent = `今日目标：${completed}/3视频`;
+          dailyGoalFill.style.width = `${Math.round((completed / 3) * 100)}%`;
+        }
 
         // 如果有videoId参数或share参数，隐藏选择模态框
         const params = new URLSearchParams(window.location.search);
@@ -13938,15 +13986,23 @@
 
     // 加载失败：在台词区域展示错误 + 重试按钮
     function showPracticeLoadError(err) {
-      updatePracticeFeedback(err.message || '加载练习页面失败，请稍后再试。', '#dc2626');
+      const empty = err && (err.code === 'empty' || err.message === '还没有可练习的视频');
+      updatePracticeFeedback(err.message || '加载练习页面失败，请稍后再试。', empty ? '#64748b' : '#dc2626');
       if (practiceArmBtn) practiceArmBtn.disabled = true;
+      if (empty) {
+        document.querySelector('.video-player-container')?.classList.add('is-empty');
+        const caption = document.querySelector('#play-overlay > div > div:last-child');
+        if (caption) caption.textContent = '选好片段后从这里播放原声';
+      }
       const lineList = document.getElementById('practice-line-list');
       if (!lineList) return;
       lineList.innerHTML = '';
       const li = document.createElement('li');
-      li.className = 'practice-load-error';
+      li.className = empty ? 'practice-load-error is-empty' : 'practice-load-error';
       const msg = document.createElement('p');
-      msg.textContent = err.message || '加载失败，请检查网络后重试。';
+      msg.textContent = empty
+        ? '还没有可练习的视频。准备好之后，先听原声，再跟着说。'
+        : (err.message || '加载失败，请检查网络后重试。');
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.textContent = '重新加载';
@@ -14529,6 +14585,7 @@
      */
     function startAutoDialogueFlow() {
       setDialogueFocusLayout(true);
+      if (typeof requestPracticeFullscreen === 'function') requestPracticeFullscreen();
 
       // 重置到第一个用户句子
       const userSentences = dialoguePracticeState.sentences.filter(s => s.isUserRole);
@@ -14645,11 +14702,141 @@
       }
 
       document.body.classList.toggle('dialogue-focus-layout', Boolean(active));
+      syncPracticeFocusChrome();
       if (!active) return;
       const practiceGrid = document.querySelector('.practice-grid');
       if (practiceGrid && !isElementVisibleInViewport(practiceGrid)) {
         practiceGrid.scrollIntoView({ behavior: 'auto', block: 'start' });
       }
+    }
+
+    /** AI 陪练 / 实战场共享：开练自动专注，可 Esc 或「退出专注」回来。 */
+    function isPracticeFocusActive() {
+      return document.body.classList.contains('dialogue-focus-layout')
+        || document.body.classList.contains('immersive-active');
+    }
+
+    function syncPracticeFocusChrome() {
+      const active = isPracticeFocusActive();
+      document.body.classList.toggle('practice-focus-active', active);
+      const badge = document.getElementById('practice-focus-badge');
+      const exitBtn = document.getElementById('practice-focus-exit');
+      const toggleBtn = document.getElementById('practice-focus-toggle');
+      const toggleLabel = toggleBtn && toggleBtn.querySelector('.practice-focus-toggle__label');
+      const scriptHint = document.getElementById('practice-script-hint');
+      const hint = document.getElementById('mode-top-hint');
+      if (badge) badge.hidden = !active;
+      if (exitBtn) exitBtn.hidden = !active;
+      if (toggleBtn) {
+        toggleBtn.classList.toggle('is-active', active);
+        toggleBtn.setAttribute('aria-pressed', String(active));
+      }
+      if (toggleLabel) toggleLabel.textContent = active ? '专注中' : '专注';
+      if (scriptHint) {
+        scriptHint.textContent = active
+          ? '专注中 · Esc 或再点「专注中」退出 · 点句子可跳转'
+          : '点「专注」进入沉浸练习；点列表里的句子可以跳过去。';
+      }
+      if (!hint) return;
+      if (active) {
+        if (!hint.dataset.prevHint) hint.dataset.prevHint = hint.textContent || '';
+        hint.textContent = currentPracticeMode === 'dialogue'
+          ? '对话专注中 · Esc 退出专注 · 空格播放/暂停 · ←/→ 换句'
+          : '跟读专注中 · Esc 退出专注 · 空格播放/暂停 · ←/→ 换句';
+      } else if (hint.dataset.prevHint != null) {
+        hint.textContent = hint.dataset.prevHint;
+        delete hint.dataset.prevHint;
+      }
+    }
+
+    function requestPracticeFullscreen() {
+      const root = document.documentElement;
+      const request = root.requestFullscreen || root.webkitRequestFullscreen;
+      if (!request || document.fullscreenElement || document.webkitFullscreenElement) return;
+      Promise.resolve(request.call(root)).catch(() => { });
+    }
+
+    function exitPracticeFullscreen() {
+      if (!(document.fullscreenElement || document.webkitFullscreenElement)) return;
+      const exit = document.exitFullscreen || document.webkitExitFullscreen;
+      if (exit) Promise.resolve(exit.call(document)).catch(() => { });
+    }
+
+    function enterPracticeFocus(options = {}) {
+      const { fullscreen = true } = options;
+      if (isPracticeFocusActive()) {
+        syncPracticeFocusChrome();
+        if (fullscreen) requestPracticeFullscreen();
+        return true;
+      }
+      if (currentPracticeMode === 'dialogue') {
+        setDialogueFocusLayout(true);
+      } else {
+        // AI 陪练：进入沉浸专注（不强制自动开播，由播放键控制）
+        document.body.classList.add('immersive-active');
+        syncPracticeFocusChrome();
+      }
+      if (fullscreen) requestPracticeFullscreen();
+      return true;
+    }
+
+    function exitPracticeFocus(options = {}) {
+      const { fullscreen = true } = options;
+      if (state.isRecording || dialoguePracticeState?.isPreparingRecording) {
+        try { updatePracticeFeedback('录音中，结束后可退出专注', '#0f766e'); } catch (_) { }
+        return false;
+      }
+      if (document.body.classList.contains('immersive-active')) {
+        if (typeof shadowingAutoMode !== 'undefined' && shadowingAutoMode) {
+          pauseAutoShadowing();
+        } else {
+          document.body.classList.remove('immersive-active');
+        }
+      }
+      if (document.body.classList.contains('dialogue-focus-layout')) {
+        try { if (unifiedPlayer && typeof unifiedPlayer.pause === 'function') unifiedPlayer.pause(); } catch (_) { }
+        if (dialogueMonitorInterval) {
+          clearInterval(dialogueMonitorInterval);
+          dialogueMonitorInterval = null;
+        }
+        setDialogueFocusLayout(false);
+      }
+      syncPracticeFocusChrome();
+      if (fullscreen) exitPracticeFullscreen();
+      return true;
+    }
+
+    function togglePracticeFocus() {
+      if (isPracticeFocusActive()) return exitPracticeFocus();
+      return enterPracticeFocus();
+    }
+
+    document.addEventListener('fullscreenchange', () => {
+      if (!(document.fullscreenElement || document.webkitFullscreenElement) && isPracticeFocusActive()) {
+        // Esc 退出浏览器全屏时，同步退出专注（与视频学习一致）
+        exitPracticeFocus({ fullscreen: false });
+      }
+    });
+
+    function handlePracticeFocusEscape() {
+      if (currentPracticeMode === 'dialogue') {
+        const asrSection = document.getElementById('asr-comparison-section');
+        const asrActions = document.querySelector('.asr-actions');
+        const reviewOpen = asrSection
+          && asrSection.style.display !== 'none'
+          && asrActions
+          && asrActions.style.display !== 'none'
+          && !state.isRecording;
+        if (reviewOpen) {
+          cancelAsrPractice();
+          return true;
+        }
+      }
+      if (isPracticeFocusActive()) {
+        exitPracticeFocus();
+        return true;
+      }
+      return false;
     }
 
     /**
@@ -15674,6 +15861,7 @@
       const focusPlayBtn = document.getElementById('focus-play-btn');
       const focusReplayBtn = document.getElementById('focus-replay-btn');
       const focusNextBtn = document.getElementById('focus-next-btn');
+      const practiceFocusExitBtn = document.getElementById('practice-focus-exit');
       if (focusPrevBtn) {
         focusPrevBtn.onclick = handleFocusPrevSentence;
       }
@@ -15693,6 +15881,46 @@
           replayOriginalSentence(sentence).catch(() => notifyCompareMessage('原声播放失败'));
         };
       }
+      if (practiceFocusExitBtn) {
+        practiceFocusExitBtn.onclick = () => exitPracticeFocus();
+      }
+      const practiceFocusToggleBtn = document.getElementById('practice-focus-toggle');
+      if (practiceFocusToggleBtn) {
+        practiceFocusToggleBtn.onclick = () => togglePracticeFocus();
+      }
+      const practiceIntensiveNoteBtn = document.getElementById('practice-intensive-note');
+      if (practiceIntensiveNoteBtn) {
+        practiceIntensiveNoteBtn.addEventListener('click', () => {
+          if (!window.WorkbenchImport) {
+            showToast('精读笔记组件未加载', 'warn');
+            return;
+          }
+          const fromPractice = state.practiceLines?.[state.practiceIndex]?.text;
+          const segIdx = Number.isInteger(state.autoSegmentCursor)
+            ? state.autoSegmentCursor
+            : state.currentSegmentIndex;
+          const fromSeg = Array.isArray(state.currentSegments) && Number.isInteger(segIdx)
+            ? state.currentSegments[segIdx]?.text
+            : '';
+          const fromDom = practiceCurrentLine && !practiceCurrentLine.hidden
+            ? practiceCurrentLine.querySelector('.practice-current-text')?.innerText
+            : '';
+          const text = String(fromPractice || fromSeg || fromDom || '').trim();
+          const title = String(document.getElementById('current-title')?.textContent
+            || document.getElementById('coach-brand-title')?.textContent
+            || '陪练精读').trim();
+          const ok = window.WorkbenchImport.openIntensiveNote({
+            text,
+            title: /陪练|实战|Linglish/.test(title) ? title : title,
+            template: 'intensive-note',
+            orient: 'story',
+            source: 'practice-session',
+            onEmpty: () => showToast('请先选中一句练习字幕', 'warn'),
+          });
+          if (ok) showToast('已打开精读笔记', 'success');
+        });
+      }
+      syncPracticeFocusChrome();
 
       // 播放我的录音
       const playMyRecordingBtn = document.getElementById('play-my-recording-btn');
@@ -16597,6 +16825,11 @@
       }
 
       const key = e.key.toLowerCase();
+      if (key === 'escape') {
+        e.preventDefault();
+        handlePracticeFocusEscape();
+        return;
+      }
       if (key === ' ' || key === 'arrowleft' || key === 'arrowright') {
         e.preventDefault();
         if (e.repeat) return;
@@ -16631,11 +16864,6 @@
             && asrActions3 && asrActions3.style.display !== 'none') {
             retryBtn.click();
           }
-          break;
-
-        case 'escape': // Esc键：取消练习（与 ✕ 按钮同一路径：不评分、继续下一句）
-          e.preventDefault();
-          cancelAsrPractice();
           break;
 
         case 'p': // P键：播放我的录音
@@ -16705,70 +16933,10 @@
       // 隐藏页面加载指示器
       function hidePageLoader() {
         const loader = document.getElementById('pageLoader');
-        if (loader) {
-          loader.classList.add('hidden');
-          setTimeout(() => loader.remove(), 400);
-        }
+        if (loader) loader.remove();
       }
 
-      // 为主要元素添加入场动画
-      function addEntryAnimations() {
-        // 返回头部
-        const backHeader = document.querySelector('.back-header');
-        if (backHeader) {
-          backHeader.classList.add('animate-in');
-        }
-
-        // Banner
-        const banner = document.querySelector('.practice-banner');
-        if (banner) {
-          banner.classList.add('animate-in', 'animate-delay-1');
-        }
-
-        // 视频容器
-        const videoContainer = document.querySelector('.video-player-container');
-        if (videoContainer) {
-          videoContainer.classList.add('animate-in-left', 'animate-delay-2');
-        }
-
-        // 模式选择器
-        const modeSelector = document.querySelector('.practice-mode-selector');
-        if (modeSelector) {
-          modeSelector.classList.add('animate-in-left', 'animate-delay-3');
-        }
-
-        // 字幕列表
-        const lineList = document.querySelector('.practice-line-list-container');
-        if (lineList) {
-          lineList.classList.add('animate-in-right', 'animate-delay-2');
-        }
-
-        // 模式选择卡片逐个动画
-        const modeTabs = document.querySelectorAll('.mode-tab');
-        modeTabs.forEach((tab, index) => {
-          tab.classList.add('animate-in-scale');
-          tab.style.animationDelay = `${0.1 + index * 0.05}s`;
-        });
-      }
-
-      // 页面加载完成后执行
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-          addEntryAnimations();
-          setTimeout(hidePageLoader, 300);
-        });
-      } else {
-        addEntryAnimations();
-        setTimeout(hidePageLoader, 300);
-      }
-
-      // window.onload 作为备选
-      window.addEventListener('load', () => {
-        setTimeout(hidePageLoader, 100);
-      });
-
-      // 超时兜底：即使脚本异常导致事件未触发，也不让用户卡在 loader 上
-      setTimeout(hidePageLoader, 12000);
+      hidePageLoader();
     })();
   </script>
 
@@ -16795,6 +16963,13 @@
     });
   </script>
   <script src="./js/page-tracker.js"></script>
+  <script src="./js/study-switch.js?v=20261017-mode-switch"></script>
+  <script src="./js/subtitle-study.js?v=20261019-study"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      if (window.GuestCheck && GuestCheck.isGuest()) GuestCheck.showGuestBanner();
+    });
+  </script>
 
   <!-- Video Tag Selector Overlay -->
   <div class="video-tag-selector-overlay" id="video-tag-selector-overlay">

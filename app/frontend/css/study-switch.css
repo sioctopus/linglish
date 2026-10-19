@@ -1,0 +1,128 @@
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 80ms;
+  animation-timing-function: ease-out;
+}
+
+body > .topbar {
+  view-transition-name: study-topbar;
+}
+
+.study-switch {
+  display: inline-flex;
+  align-items: center;
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f1f5f9;
+}
+
+.study-switch a {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 10px;
+  border-radius: 999px;
+  color: #475569;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.study-switch a[aria-current="page"] {
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
+  color: #ffffff;
+}
+
+.coach-source {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.coach-source > button,
+.coach-source-menu button {
+  font: inherit;
+  cursor: pointer;
+}
+
+.coach-source > button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #d9dde6;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #334155;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.coach-source-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 40;
+  display: flex;
+  flex-direction: column;
+  min-width: 148px;
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.12);
+}
+
+.coach-source-menu[hidden] {
+  display: none !important;
+}
+
+.coach-source-menu button {
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #334155;
+  padding: 8px 10px;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.coach-source-menu button:hover {
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.coach-frame .practice-banner {
+  display: none !important;
+}
+
+body[data-theme="dark"] .study-switch {
+  background: #0f172a;
+  border-color: #334155;
+}
+
+body[data-theme="dark"] .study-switch a {
+  color: #cbd5e1;
+}
+
+body[data-theme="dark"] .study-switch a[aria-current="page"] {
+  color: #ffffff;
+}
+
+body[data-theme="dark"] .coach-source > button,
+body[data-theme="dark"] .coach-source-menu {
+  background: #0f172a;
+  border-color: #334155;
+  color: #e2e8f0;
+}
+
+body[data-theme="dark"] .coach-source-menu button {
+  color: #e2e8f0;
+}

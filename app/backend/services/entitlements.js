@@ -7,6 +7,7 @@ const BLOCKED_SUBSCRIPTION_STATUSES = new Set(['expired', 'paused', 'unpaid']);
 const TIER_ALIASES = {
   pro: 'vip',
   premium: 'vip',
+  basic: 'vip',
 };
 
 const TIER_FEATURES = {
@@ -18,6 +19,7 @@ const TIER_FEATURES = {
     dailyAiScores: 3,
     dailyDeepWordGenerations: 5,
     canAccessPremiumContent: false,
+    canUseCoaching: false,
   },
   vip: {
     tier: 'vip',
@@ -27,6 +29,7 @@ const TIER_FEATURES = {
     dailyAiScores: 50,
     dailyDeepWordGenerations: 80,
     canAccessPremiumContent: true,
+    canUseCoaching: true,
   },
   family: {
     tier: 'family',
@@ -36,6 +39,7 @@ const TIER_FEATURES = {
     dailyAiScores: 50,
     dailyDeepWordGenerations: 80,
     canAccessPremiumContent: true,
+    canUseCoaching: true,
   },
   svip: {
     tier: 'svip',
@@ -45,6 +49,7 @@ const TIER_FEATURES = {
     dailyAiScores: 150,
     dailyDeepWordGenerations: 200,
     canAccessPremiumContent: true,
+    canUseCoaching: true,
   },
   admin: {
     tier: 'admin',
@@ -54,6 +59,7 @@ const TIER_FEATURES = {
     dailyAiScores: Infinity,
     dailyDeepWordGenerations: Infinity,
     canAccessPremiumContent: true,
+    canUseCoaching: true,
   },
 };
 
@@ -135,6 +141,12 @@ function getEntitlement(user, options = {}) {
 
 function hasActivePaidEntitlement(user, options = {}) {
   return getEntitlement(user, options).isPremiumActive;
+}
+
+function canUseCoaching(user, options = {}) {
+  const entitlement = getEntitlement(user, options);
+  const features = TIER_FEATURES[entitlement.effectiveTier] || TIER_FEATURES.free;
+  return Boolean(entitlement.isActive && features.canUseCoaching);
 }
 
 function getUploadLimits(user, options = {}) {
@@ -221,6 +233,7 @@ module.exports = {
   BLOCKED_SUBSCRIPTION_STATUSES,
   GRACE_SUBSCRIPTION_STATUSES,
   buildQuotaPaywall,
+  canUseCoaching,
   getEntitlement,
   getUsageLimits,
   getUploadLimits,

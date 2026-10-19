@@ -57,12 +57,18 @@ class AuthManager {
    * 检查用户是否已登录
    */
   isAuthenticated() {
-    // 检查 localStorage 和 sessionStorage
-    this.authToken =
-      this.safeGet(localStorage, 'authToken') ||
-      this.safeGet(sessionStorage, 'authToken') ||
-      this.safeGet(localStorage, 'linglish_token') ||
-      this.safeGet(sessionStorage, 'linglish_token');
+    this.authToken = null;
+    if (window.AuthManager && typeof window.AuthManager.getToken === 'function') {
+      const managed = window.AuthManager.getToken();
+      if (managed) this.authToken = managed;
+    }
+    if (!this.authToken) {
+      this.authToken =
+        this.safeGet(localStorage, 'authToken') ||
+        this.safeGet(sessionStorage, 'authToken') ||
+        this.safeGet(localStorage, 'linglish_token') ||
+        this.safeGet(sessionStorage, 'linglish_token');
+    }
 
     this.userEmail = this.safeGet(localStorage, 'userEmail') || this.safeGet(sessionStorage, 'userEmail');
 
@@ -208,9 +214,12 @@ class AuthManager {
 const authManager = new AuthManager();
 
 // 页面加载时自动检查认证
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
   // 如果当前页面不是登录页面，则检查认证
   if (!window.location.href.includes('mobile-auth.html')) {
+    if (window.AuthManager && window.AuthManager.ready && typeof window.AuthManager.ready.then === 'function') {
+      try { await window.AuthManager.ready; } catch (_) { }
+    }
     authManager.requireAuth();
   }
 });

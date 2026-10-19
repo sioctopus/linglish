@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
@@ -111,6 +113,7 @@
   <link rel="stylesheet" href="./mobile-styles.css">
   <script src="./guest-check.js"></script>
   <script src="./auth-helpers.js"></script>
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
 </head>
 <body>
   <!-- Top Navigation Bar -->
@@ -206,23 +209,23 @@
   <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <a href="mobile-today.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">🎯</span></div>
+      <div class="nav-icon" data-lx-icon="today"></div>
       <span>今日</span>
     </a>
     <a href="mobile-explore.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">🌍</span></div>
+      <div class="nav-icon" data-lx-icon="explore"></div>
       <span>探索世界</span>
     </a>
     <a href="mobile-power.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">⚡</span></div>
+      <div class="nav-icon" data-lx-icon="power"></div>
       <span>能量站</span>
     </a>
     <a href="mobile-arena.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">🎪</span></div>
+      <div class="nav-icon" data-lx-icon="arena"></div>
       <span>实战场</span>
     </a>
     <a href="mobile-treasure.html" class="nav-item">
-      <div class="nav-icon"><span class="nav-emoji">🪴</span></div>
+      <div class="nav-icon" data-lx-icon="growth"></div>
       <span>成长中心</span>
     </a>
   </nav>
@@ -307,5 +310,7 @@
     })();
   </script>
   <script src="./js/page-tracker.js"></script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+  <script src="./js/icons.js?v=1"></script>
 </body>
 </html>

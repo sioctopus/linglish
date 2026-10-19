@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { toCompleteSentences, toDisplayedSentences } = require('../../frontend/js/video-reader/sentence-segments');
+const { toCompleteSentences, toDisplayedSentences, toDisplayedParagraphs } = require('../../frontend/js/video-reader/sentence-segments');
 
 test('joins ASR fragments into one complete sentence', () => {
   const result = toCompleteSentences([
@@ -73,6 +73,47 @@ test('display contract preserves raw source identity through coarse splitting an
   ]);
   assert.deepEqual(result.map((segment) => segment.source_indices), [[0, 1], [2], [2]]);
   assert.deepEqual(result.map((segment) => segment.index), [0, 1, 2]);
+});
+
+test('a long spoken sentence stays whole instead of stopping at a word cap', () => {
+  const words = Array.from({ length: 36 }, (_, index) => `word${index}`);
+  words[35] = 'done.';
+  const result = toCompleteSentences([
+    { start: 0, end: 4, text: words.slice(0, 12).join(' ') },
+    { start: 4.2, end: 8, text: words.slice(12, 24).join(' ') },
+    { start: 8.2, end: 12, text: words.slice(24).join(' ') },
+  ]);
+
+  assert.equal(result.length, 1);
+  assert.equal(result[0].text, words.join(' '));
+});
+
+test('titles and decimals stay inside the sentence', () => {
+  const result = toCompleteSentences([
+    { start: 0, end: 3, text: 'Mr. Smith paid 3.14 dollars. He left.' },
+  ]);
+
+  assert.deepEqual(result.map((segment) => segment.text), [
+    'Mr. Smith paid 3.14 dollars.',
+    'He left.',
+  ]);
+});
+
+test('nearby sentences become one readable paragraph and a pause starts the next', () => {
+  const result = toDisplayedParagraphs([
+    { start: 0, end: 2, text: 'My name is Sarah.' },
+    { start: 2.2, end: 4, text: 'I am 35 years old.' },
+    { start: 4.3, end: 6.5, text: 'I live in London.' },
+    { start: 9, end: 11, text: 'Today we start the next topic.' },
+  ]);
+
+  assert.deepEqual(result.map((segment) => segment.text), [
+    'My name is Sarah. I am 35 years old. I live in London.',
+    'Today we start the next topic.',
+  ]);
+  assert.equal(result[0].start, 0);
+  assert.equal(result[0].end, 6.5);
+  assert.deepEqual(result[0].source_indices, [0, 1, 2]);
 });
 
 test('explicit provider identity is preserved on each deterministic split sentence', () => {

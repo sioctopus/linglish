@@ -5,7 +5,10 @@
   <script src="./js/video-reader/device-router.js?v=1"></script>
   <script>window.VideoReaderDeviceRouter && window.VideoReaderDeviceRouter.redirectIfNeeded(window);</script>
   <script src="/env.js"></script>
-  <script src="./js/auth-manager.js"></script>
+  <script src="./js/auth-manager.js?v=20261019"></script>
+<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/tts-voice.js?v=1"></script>
+  <script src="./js/workbench/import-bridge.js?v=20261019"></script>
   <script src="./js/visitor-context.js?v=1"></script>
   <script src="./js/storage-helper.js"></script>
   <script>
@@ -234,6 +237,13 @@
   <link rel="alternate icon" href="/favicon.ico">
   <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest-desktop.json">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Linglish">
+  <link rel="stylesheet" href="/css/install-desktop.css?v=3">
+  <script src="/js/install-desktop.js?v=3" defer></script>
   <script>
     // Filter noisy extension + Cloudflare beacon errors (does not affect app logic)
     // IMPORTANT: This must be the first script to catch extension/ETP/CORS noise
@@ -358,26 +368,31 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
 
+  <link rel="stylesheet" href="./styles/tokens.css?v=20261018-focus-player">
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
+  <script src="./js/icons.js?v=1"></script>
   <link rel="stylesheet" href="./styles.css?v=1" />
-  <script src="./i18n.js?v=1"></script>
+  <script src="./i18n.js?v=20261019"></script>
   <script src="./global-ui.js?v=20250108"></script>
   <script src="./guest-check.js?v=1"></script>
   <script src="./auth-helpers.js?v=1"></script>
   <script src="./feedback.js?v=1"></script>
   <script src="./js/app/lazy-loader.js?v=1"></script>
   <script src="./video-tag-system.js?v=20251223"></script>
-  <script src="./js/video-reader/library-filter.js?v=1"></script>
-  <script src="./js/video-reader/video-metadata-editor.js?v=1"></script>
+  <script src="./js/video-reader/library-filter.js?v=20261019"></script>
+  <script src="./js/video-reader/video-metadata-editor.js?v=20261019"></script>
   <script src="./js/video-reader/video-browser-scope-sync.js?v=1"></script>
   <script src="./js/video-reader/today-recommendation-session.js?v=1"></script>
   <script src="./js/video-recommendation-client.js?v=20260925"></script>
-  <script src="./js/video-reader/sentence-segments.js?v=20260727"></script>
+  <script src="./js/video-reader/sentence-segments.js?v=20261019"></script>
   <script src="./js/video-reader/reader-layout-state.js?v=20261014"></script>
   <script src="./js/video-reader/video-selection-guard.js?v=20260803"></script>
   <script src="./js/video-reader/first-lesson-focus.js?v=20260822"></script>
   <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-  <script src="./js/video-reader/first-lesson-goal.js?v=20260922"></script>
+  <script src="./js/video-reader/first-lesson-goal.js?v=20261015"></script>
   <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=20260922">
+    <script src="./js/video-reader/missed-words.js?v=20261015"></script>
+    <script src="./js/video-reader/sentence-assist.js?v=20261015"></script>
   <script src="./js/video-reader/first-lesson-practice.js?v=20260822"></script>
   <script src="./js/video-reader/first-lesson-readiness.js?v=20260808"></script>
   <script>
@@ -389,7 +404,10 @@
     try { window.__DEBUG_LOGS = /[?&]debug=1\b/.test(location.search || ''); } catch (_) { window.__DEBUG_LOGS = false; }
   </script>
   <link rel="stylesheet" href="./shared/dictionary.css?v=20260224f" />
-  <link rel="stylesheet" href="./styles/video-reader-pro.css?v=20260727-1" />
+  <link rel="stylesheet" href="./styles/video-reader-pro.css?v=20261017-center2" />
+  <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=20261018-note-save" />
+  <link rel="stylesheet" href="./css/subtitle-study.css?v=20261019-study2" />
+  <link rel="stylesheet" href="./css/study-switch.css?v=20261017-nav" />
   <script src="./shared/dictionary-render.js?v=1765726957"></script>
   <script src="./shared/dictionary-lookup.js?v=1734439600"></script>
   <style>
@@ -408,13 +426,16 @@
       --surface-hover: rgba(241, 245, 249, 0.9);
       --surface-elevated: rgba(255, 255, 255, 0.95);
 
-      /* Brand colors */
-      --brand: #0ea5e9;
-      --brand-strong: #0284c7;
+      /* Brand colors — Linglish teal primary (ui-spec / tokens.css) */
+      --brand: #0d9488;
+      --brand-strong: #0f766e;
       --brand-glow: rgba(15, 118, 110, 0.25);
       --accent: #2dd4bf;
       --accent-strong: #0d9488;
-      --accent-glow: rgba(249, 115, 22, 0.2);
+      --accent-glow: rgba(14, 165, 233, 0.2);
+      /* Focus inset — keep in sync with styles/tokens.css */
+      --lx-focus-inset: 24px;
+      --lx-focus-gap: 16px;
 
       /* Text colors for light theme */
       --text-primary: #0f172a;
@@ -424,7 +445,7 @@
 
       /* Borders and effects */
       --border: rgba(148, 163, 184, 0.3);
-      --border-highlight: rgba(14, 165, 233, 0.4);
+      --border-highlight: rgba(13, 148, 136, 0.4);
       --radius-sm: 8px;
       --radius-md: 12px;
       --radius-lg: 20px;
@@ -442,8 +463,8 @@
 
       /* Component backgrounds */
       --input-bg: rgba(255, 255, 255, 0.9);
-      --button-soft-bg: rgba(14, 165, 233, 0.08);
-      --button-soft-hover: rgba(14, 165, 233, 0.14);
+      --button-soft-bg: rgba(15, 118, 110, 0.08);
+      --button-soft-hover: rgba(15, 118, 110, 0.14);
       --card-bg: rgba(255, 255, 255, 0.85);
       --modal-bg: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(248, 250, 252, 0.98) 100%);
       --toast-bg: linear-gradient(135deg, rgba(15, 23, 42, 0.95) 0%, rgba(30, 41, 59, 0.95) 100%);
@@ -453,7 +474,7 @@
       --player-card-bg: transparent;
       --player-card-border: transparent;
       --player-card-shadow: none;
-      --player-tips-bg: rgba(14, 165, 233, 0.06);
+      --player-tips-bg: rgba(15, 118, 110, 0.06);
 
       /* Vocabulary colors */
       --vocab-mastered: #059669;
@@ -553,16 +574,7 @@
 
     /* ========== 页面加载动画 ========== */
     .page-loader {
-      position: fixed;
-      inset: 0;
-      background: var(--page);
-      z-index: 9999;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 1.5rem;
-      transition: opacity 0.4s ease, visibility 0.4s ease;
+      display: none !important;
     }
 
     .page-loader.hidden {
@@ -699,13 +711,13 @@
       --surface-hover: rgba(51, 65, 85, 0.6);
       --surface-elevated: rgba(51, 65, 85, 0.9);
 
-      /* Brand colors for dark */
-      --brand: #38bdf8;
-      --brand-strong: #0ea5e9;
-      --brand-glow: rgba(20, 184, 166, 0.4);
+      /* Brand colors for dark — keep teal primary */
+      --brand: #2dd4bf;
+      --brand-strong: #14b8a6;
+      --brand-glow: rgba(45, 212, 191, 0.4);
       --accent: #5eead4;
       --accent-strong: #2dd4bf;
-      --accent-glow: rgba(249, 115, 22, 0.35);
+      --accent-glow: rgba(14, 165, 233, 0.35);
 
       /* Text colors for dark theme */
       --text-primary: #f1f5f9;
@@ -1007,7 +1019,7 @@
       z-index: 1;
       max-width: 1920px;
       margin: 0 auto;
-      padding: 0.5rem 1rem 2.5rem;
+      padding: 0 1rem 2.5rem;
     }
 
     .shell {
@@ -1019,6 +1031,18 @@
 
     .shell.sidebar-collapsed {
       grid-template-columns: 0px 1fr 380px;
+    }
+
+    .shell.vocab-view {
+      grid-template-columns: minmax(0, 1fr) !important;
+    }
+
+    .shell.vocab-view .sidebar {
+      display: none !important;
+    }
+
+    .shell.vocab-view .transcript {
+      display: none !important;
     }
 
     body.focus-mode .shell {
@@ -1054,17 +1078,13 @@
       transition: all 0.4s var(--ease-out);
       max-height: calc(100vh - 90px);
       position: relative;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
     }
 
     .sidebar::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 100px;
-      background: linear-gradient(180deg, rgba(14, 165, 233, 0.05) 0%, transparent 100%);
-      pointer-events: none;
+      content: none;
     }
 
     .sidebar-collapsed .sidebar {
@@ -1083,6 +1103,87 @@
     }
 
     /* Search bar */
+    .video-intro {
+      display: flex;
+      flex: 1;
+      flex-direction: column;
+      gap: 0.55rem;
+      min-height: 0;
+      padding: 1.05rem 1.2rem 1.35rem;
+      overflow: auto;
+      background: transparent;
+    }
+
+    .intro-back {
+      align-self: flex-start;
+      border: 0;
+      background: transparent;
+      color: #4b5563;
+      font: inherit;
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+      padding: 0.1rem 0;
+    }
+
+    .intro-thumb {
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #e7e2d8;
+    }
+
+    .intro-title {
+      margin: 0.45rem 0 0;
+      font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif !important;
+      font-size: 1rem;
+      line-height: 1.45;
+      font-weight: 500 !important;
+      letter-spacing: 0 !important;
+      color: #4b5563 !important;
+    }
+
+    .intro-meta {
+      margin: 0.28rem 0 0;
+      color: #4b5563;
+      font-size: 0.78rem;
+      line-height: 1.5;
+    }
+
+    .intro-meta:empty {
+      display: none;
+    }
+
+    .intro-about-label {
+      margin: 1.05rem 0 0;
+      font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif !important;
+      font-size: 0.92rem;
+      line-height: 1.4;
+      font-weight: 500 !important;
+      letter-spacing: 0 !important;
+      color: #4b5563 !important;
+    }
+
+    .intro-about {
+      margin-top: 0.35rem;
+      color: #4b5563;
+      font-size: 0.84rem;
+      font-weight: 400;
+      line-height: 1.75;
+      white-space: pre-wrap;
+      text-wrap: pretty;
+    }
+
+    .sidebar .search,
+    .sidebar .difficulty-filter-section,
+    .sidebar .scene-filter-section,
+    .sidebar .today-reco-card,
+    .sidebar .tag-filter-section,
+    .sidebar .list {
+      display: none !important;
+    }
+
     .sidebar .search {
       padding: 0.85rem;
       border-bottom: 1px solid var(--border);
@@ -1416,13 +1517,33 @@
 
     .transcript .header {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.85rem 1rem;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      padding: 0.55rem 0.7rem 0.5rem;
       border-bottom: 1px solid var(--border);
       background: var(--section-header-bg);
       position: relative;
       z-index: 2;
+    }
+
+    .transcript .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      flex-wrap: nowrap;
+      gap: 0.4rem;
+      min-width: 0;
+    }
+
+    .transcript .header-top #subtitle-study-toggle {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .transcript .header-top .mode-toggle {
+      margin-left: auto;
+      flex: 0 0 auto;
     }
 
     .transcript .header h3 {
@@ -1433,19 +1554,47 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      white-space: nowrap;
+      flex: 0 0 auto;
     }
 
     .transcript .tools {
+      display: none;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    html[data-learning-focus="first-lesson"] .transcript .tools {
       display: flex;
-      gap: 0.5rem;
+    }
+
+    .transcript .tools .pill {
+      flex: 0 0 auto;
+      height: 32px;
+      padding: 0 0.7rem;
+      white-space: nowrap;
+      line-height: 1;
+      font-size: 0.78rem;
     }
 
     .transcript .content {
+      flex: 1 1 auto;
+      min-height: 0;
       padding: 0.6rem;
       overflow: auto;
-      max-height: calc(100vh - 200px);
+      max-height: none;
       scroll-behavior: auto;
       position: relative;
+    }
+
+    .transcript-hint {
+      flex: 0 0 auto;
+      margin: 0;
+      padding: 8px 16px 12px;
+      font-size: 12px;
+      color: var(--muted);
+      background: #f7f6f3;
     }
 
     .transcript .content::-webkit-scrollbar {
@@ -1471,11 +1620,14 @@
 
     .transcript .mode-toggle button {
       border: none;
-      padding: 0.35rem 0.75rem;
+      height: 30px;
+      padding: 0 0.72rem;
       background: transparent;
       cursor: pointer;
-      font-size: 0.82rem;
+      font-size: 0.8rem;
       font-weight: 500;
+      line-height: 1;
+      white-space: nowrap;
       color: var(--text-muted);
       transition: all 0.2s var(--ease-out);
     }
@@ -1622,6 +1774,62 @@
       background: var(--vocab-learning-bg);
       border-radius: 4px;
       text-decoration-color: var(--vocab-learning) !important;
+    }
+
+    .word.word-missing {
+      color: #8a4b00 !important;
+      font-weight: 700 !important;
+      background: #fff4e5;
+      border-radius: 4px;
+      box-shadow: inset 0 -2px 0 #e6a23c;
+    }
+
+    .word.word-lookup {
+      background: #e7f6f2;
+      border-radius: 4px;
+      outline: 2px solid #0f766e;
+      outline-offset: 1px;
+    }
+
+    .subtitle-assist {
+      padding: 0.75rem 0.9rem;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid rgba(15, 118, 110, 0.28);
+    }
+
+    .subtitle-assist[hidden] { display: none; }
+
+    .subtitle-assist .assist-head,
+    .subtitle-assist .assist-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .subtitle-assist .assist-head button,
+    .subtitle-assist .assist-actions button {
+      margin-left: auto;
+      border: 0;
+      border-radius: 999px;
+      padding: 0.35rem 0.75rem;
+      background: #0f766e;
+      color: #fff;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .subtitle-assist .assist-head button { margin-left: auto; background: transparent; color: #0f766e; }
+
+    .subtitle-assist .assist-gloss { margin: 0.35rem 0 0.6rem; }
+
+    .subtitle-assist .assist-chunks { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+    .subtitle-assist .assist-chunk {
+      padding: 0.25rem 0.5rem;
+      border-radius: 8px;
+      background: #f4fbf8;
+      border-bottom: 2px solid #0f766e;
     }
 
     .word.word-encountered {
@@ -2005,6 +2213,12 @@
       background: linear-gradient(135deg, #c084fc 0%, #a855f7 100%);
       color: white;
       box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    }
+
+    .vip-badge.free {
+      background: #f1f5f9;
+      color: #334155;
+      box-shadow: none;
     }
 
     .vip-icon {
@@ -2528,6 +2742,17 @@
       color: #475569;
     }
 
+    .subtitle-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex: none;
+    }
+
+    .subtitle-actions .pill {
+      white-space: nowrap;
+    }
+
     .subtitle-text {
       font-size: 1.05rem;
       font-weight: 600;
@@ -2549,69 +2774,6 @@
 
     .subtitle-text .word:hover {
       background: rgba(14, 165, 233, 0.15);
-    }
-
-    .next-video-card {
-      padding: 1rem 1.2rem;
-      border-radius: 18px;
-      border: 1px solid var(--border);
-      background: rgba(15, 23, 42, 0.04);
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    .next-video-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .next-label {
-      font-weight: 700;
-      color: var(--text-secondary);
-    }
-
-    .next-video-body {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      flex-wrap: wrap;
-    }
-
-    .next-video-title {
-      font-size: 1.05rem;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 0.2rem;
-    }
-
-    .next-video-meta {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-    }
-
-    .next-video-card {
-      transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
-    }
-
-    .next-video-card.is-ended {
-      border-color: var(--accent, #0f766e);
-      box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.14), 0 12px 28px rgba(15, 23, 42, 0.10);
-      transform: translateY(-2px);
-    }
-
-    @media (prefers-reduced-motion: reduce) {
-      .next-video-card,
-      .next-video-card.is-ended {
-        transition: none;
-        transform: none;
-      }
     }
 
     /* ===== Vocabulary Stats ===== */
@@ -4338,6 +4500,30 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
     }
 
+    [data-theme="dark"] {
+      --page: radial-gradient(at 0% 0%, rgba(45, 212, 191, 0.16) 0px, transparent 46%),
+        radial-gradient(at 100% 100%, rgba(15, 23, 42, 0.45) 0px, transparent 52%),
+        #0b1220;
+      --surface: rgba(15, 23, 42, 0.9);
+      --surface-glass: rgba(15, 23, 42, 0.72);
+      --surface-strong: rgba(15, 23, 42, 0.96);
+      --text-main: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+
+    [data-theme="dark"] html,
+    [data-theme="dark"] body {
+      background: var(--page) !important;
+      color: #e2e8f0;
+    }
+
+    [data-theme="dark"] .topbar {
+      background: rgba(15, 23, 42, 0.94) !important;
+      border-bottom-color: rgba(148, 163, 184, 0.16);
+      box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+      color: #e2e8f0;
+    }
+
     /* --- Layout & Cards --- */
     .app-container {
       max-width: 1600px;
@@ -4488,6 +4674,7 @@
     .vb-head-row {
       display: flex; align-items: center; gap: 1rem;
       margin-bottom: 0.75rem;
+      flex-wrap: wrap;
     }
     .vb-title {
       margin: 0; font-size: 1.2rem; font-weight: 700;
@@ -4496,9 +4683,10 @@
       letter-spacing: 0.02em;
     }
     .vb-search-wrap {
-      flex: 1; position: relative;
+      flex: 1 1 220px; position: relative;
       display: flex; align-items: center;
       max-width: 720px; margin: 0 auto;
+      min-width: 180px;
     }
     .vb-search-icon {
       position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
@@ -4536,6 +4724,48 @@
     .vb-head-actions {
       display: flex; align-items: center; gap: 0.75rem;
       white-space: nowrap;
+      flex: 0 0 auto;
+      margin-left: auto;
+    }
+    .vb-view-switch {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      padding: 3px;
+      border-radius: 12px;
+      background: rgba(148, 163, 184, 0.16);
+      gap: 2px;
+    }
+    .vb-filter-pop {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      z-index: 8;
+      width: min(520px, 78vw);
+      padding: 0.85rem 0.95rem;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 16px;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.14);
+    }
+    .vb-filter-pop[hidden] { display: none !important; }
+    .vb-filter-pop .vb-chip-rows { gap: 0.55rem; }
+    .vb-view-btn {
+      border: 0;
+      background: transparent;
+      height: 30px;
+      padding: 0 0.8rem;
+      border-radius: 9px;
+      font: inherit;
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #475569;
+      cursor: pointer;
+    }
+    .vb-view-btn.active {
+      background: #fff;
+      color: #0f172a;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.08);
     }
     .vb-stats {
       font-size: 0.82rem; color: var(--text-muted, #64748b);
@@ -4555,6 +4785,7 @@
     .vb-close:hover { background: rgba(248, 113, 113, 0.22); color: #dc2626; transform: rotate(90deg); }
 
     .vb-chip-rows { display: flex; flex-direction: column; gap: 0.45rem; }
+    .vb-chip-rows[hidden] { display: none !important; }
     .vb-chip-row {
       display: flex; align-items: center; gap: 0.6rem;
       overflow-x: auto;
@@ -5164,7 +5395,29 @@
        Keep video, complete subtitles and core controls together.
        ========================================================= */
     @media (min-width: 1180px) {
+      body:not(.focus-mode) {
+        height: 100dvh;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+      }
+
+      body:not(.focus-mode) > .layout {
+        flex: 1 1 auto;
+        align-self: stretch;
+        width: 100%;
+        min-height: 0;
+        height: auto;
+        overflow: hidden;
+        padding-bottom: 12px;
+        display: flex;
+        flex-direction: column;
+      }
+
       .shell {
+        height: 100%;
+        min-height: 0;
+        align-items: stretch;
         grid-template-columns: minmax(250px, 280px) minmax(0, 1fr) minmax(380px, 420px);
         gap: 14px;
       }
@@ -5176,45 +5429,281 @@
       .transcript {
         min-width: 380px;
         max-width: none;
+        min-height: 0;
+        height: 100%;
+      }
+
+      .panel.sidebar,
+      .panel.main,
+      .panel.transcript {
+        align-self: stretch;
+        height: 100%;
+        min-height: 0;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        max-height: none;
+      }
+
+      .main .player-wrap {
+        flex: 1 1 auto;
+        width: 100%;
+        min-height: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
       }
 
       .player {
-        /* Height-aware width keeps the stage at a true 16:9 instead of
-           clamping height while the width continues stretching. */
+        flex: 0 0 auto;
         width: min(100%, calc(min(60vh, 620px) * 16 / 9));
         width: min(100%, calc(min(60dvh, 620px) * 16 / 9));
-        max-height: none;
-        margin-inline: auto;
+        max-width: 100%;
+        height: auto;
+        max-height: min(60vh, 620px);
+        max-height: min(60dvh, 620px);
+        aspect-ratio: 16 / 9;
+        margin: 12px auto 0;
+      }
+
+      .main .player-wrap > .vrp-control-dock,
+      .main .player-wrap > .caption-bar {
+        width: min(100%, calc(min(60vh, 620px) * 16 / 9));
+        width: min(100%, calc(min(60dvh, 620px) * 16 / 9));
+        flex: 0 0 auto;
       }
 
       body.focus-mode .player {
-        width: min(100%, calc(min(62vh, 700px) * 16 / 9));
-        width: min(100%, calc(min(62dvh, 700px) * 16 / 9));
-        max-height: none;
+        /* Shared focus player window — tokens.css --lx-focus-player-* */
+        width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9)));
+        max-height: var(--lx-focus-player-max-h, min(68dvh, 680px, calc(100dvh - 210px)));
         margin-inline: auto;
+      }
+
+      body.focus-mode .main .player-wrap > .vrp-control-dock,
+      body.focus-mode .main .player-wrap > .caption-bar {
+        width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9)));
       }
     }
 
     .panel.main {
       padding: 0 !important;
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    #player:not([src]) {
+      display: none !important;
+    }
+
+    .panel.sidebar,
+    .panel.transcript {
+      border: 0 !important;
+      box-shadow: none !important;
     }
 
     .panel.transcript {
+      display: flex;
+      flex-direction: column;
+      align-self: stretch;
       padding: 0 !important;
+      background: transparent !important;
+    }
+
+    .transcript .header {
+      flex: 0 0 auto;
+      background: transparent;
     }
 
     .main > .content {
-      padding: 0.55rem 0.75rem 1rem;
+      flex: 1 1 auto;
+      padding: 0 0.75rem 1rem;
+      max-height: none;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
 
-    .player-wrap {
-      gap: 0.55rem;
+    .main .player-wrap {
+      gap: 0.7rem;
+      padding: 0 0.15rem 0;
+      background: transparent !important;
+      border: 0 !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
 
-    .video-controls {
-      min-height: 42px;
-      margin: 0;
-      gap: 10px;
+    .main .player {
+      border: 0 !important;
+      border-radius: 16px !important;
+      background: #000 !important;
+      box-shadow: none !important;
+      overflow: hidden;
+    }
+
+    .transcript .header .video-controls {
+      display: none;
+    }
+
+    .video-controls-main,
+    .video-controls-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      min-width: 0;
+    }
+
+    .transcript .video-controls-main,
+    .transcript .video-controls-actions {
+      flex: 0 1 auto;
+      width: auto;
+      min-width: 0;
+      justify-content: flex-start;
+    }
+
+    .transcript .video-controls-main,
+    .transcript #open-source,
+    .transcript #scroll-active,
+    .transcript #subtitle-locate-btn {
+      display: none !important;
+    }
+
+    .transcript .header-top #focus-toggle {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      height: 32px;
+      padding: 0 0.75rem;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #0f766e;
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      box-shadow: none;
+    }
+
+    .transcript .header-top #focus-toggle:hover {
+      background: #ccfbf1;
+      border-color: #5eead4;
+      color: #0f766e;
+    }
+
+    .transcript .header-top #focus-toggle.is-active,
+    body.focus-mode .transcript .header-top #focus-toggle {
+      color: #fff;
+      background: linear-gradient(135deg, #0d9488, #2dd4bf);
+      border-color: transparent;
+    }
+
+    .transcript .header-top #focus-toggle .focus-toggle__icon {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 auto;
+    }
+
+    .transcript .header-top #focus-toggle .focus-toggle__icon--on {
+      display: none;
+    }
+
+    .transcript .header-top #focus-toggle.is-active .focus-toggle__icon--off,
+    body.focus-mode .transcript .header-top #focus-toggle .focus-toggle__icon--off {
+      display: none;
+    }
+
+    .transcript .header-top #focus-toggle.is-active .focus-toggle__icon--on,
+    body.focus-mode .transcript .header-top #focus-toggle .focus-toggle__icon--on {
+      display: block;
+    }
+
+    .transcript .header-top .header-action-icon {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 auto;
+    }
+
+    .transcript .video-controls-actions #import-words,
+    .transcript .video-controls-actions #open-vocab-tab {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .transcript .video-controls-actions {
+      flex-wrap: nowrap;
+      width: auto;
+      align-items: center;
+    }
+
+    .transcript .video-controls-actions #import-words,
+    .transcript .video-controls-actions #open-vocab-tab {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .transcript .header-top #import-words,
+    .transcript .header-top #open-vocab-tab {
+      height: 32px;
+      padding: 0 0.75rem !important;
+      border-radius: 999px !important;
+      font-size: 0.78rem;
+      font-weight: 600;
+      line-height: 1;
+      color: #0f766e !important;
+      background: #f0fdfa !important;
+      border: 1px solid #99f6e4 !important;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    .transcript .header-top #import-words:hover:not(:disabled),
+    .transcript .header-top #open-vocab-tab:hover {
+      background: #ccfbf1 !important;
+      border-color: #5eead4 !important;
+      color: #0f766e !important;
+      transform: none !important;
+      filter: none;
+      box-shadow: none !important;
+    }
+
+    .transcript .header-top #import-words:disabled {
+      opacity: 0.55;
+      cursor: not-allowed;
+      box-shadow: none !important;
+      transform: none !important;
+    }
+
+    .transcript .video-controls .title {
+      flex: 1 1 auto;
+      min-width: 0;
+      overflow: hidden;
+      font-size: 0.82rem;
+      font-weight: 650;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .transcript .video-controls .btn {
+      padding: 0.32rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      box-shadow: none;
+    }
+
+    .transcript .header .video-controls .btn.primary {
+      color: #334155 !important;
+      background: #fff !important;
+      border: 1px solid #e7e9ef !important;
+      box-shadow: none !important;
     }
 
     .subtitle-dock {
@@ -5228,24 +5717,89 @@
     }
 
     .transcript .content {
-      padding: 0.75rem;
-      max-height: calc(100dvh - 150px);
+      flex: 1 1 auto;
+      min-height: 0;
+      padding: 0.85rem 1rem 1.2rem;
+      max-height: none;
+      background: transparent;
     }
 
     .transcript .seg {
-      margin-bottom: 0.72rem;
-      padding: 0.9rem 0.95rem;
-      border-radius: 14px;
+      margin: 0 0 0.95rem;
+      padding: 0.15rem 0.1rem;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
+      transform: none;
+    }
+
+    .transcript .seg::before,
+    .transcript .seg:hover::before,
+    .transcript .seg.active::before {
+      display: none;
+    }
+
+    .transcript .seg:hover,
+    .transcript .seg:active,
+    .transcript .seg.active {
+      transform: none;
+    }
+
+    .transcript .seg .time {
+      display: none;
     }
 
     .transcript .seg .text {
-      font-size: 0.98rem;
-      line-height: 1.62;
+      margin: 0;
+      font-size: 1.05rem;
+      line-height: 1.75;
+      font-weight: 500;
+      color: #4b5160;
+      white-space: normal;
+      overflow: visible;
+    }
+
+    .transcript .seg .translation {
+      margin-top: 0.35rem;
+      padding: 0;
+      border: 0;
+      color: #6d7280;
+      font-size: 0.92rem;
+    }
+
+    .transcript .seg.active {
+      padding: 0.85rem 0.95rem;
+      border: 1px solid #ccfbf1;
+      border-radius: 16px;
+      background: #fff;
+      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+    }
+
+    .transcript .seg.active .text {
+      color: #0f172a;
+      font-weight: 650;
+    }
+
+    .transcript .seg .word,
+    .transcript .seg .word.word-mastered,
+    .transcript .seg .word.word-learning,
+    .transcript .seg .word.word-missing,
+    .transcript .seg .word.word-encountered,
+    .transcript .seg .word.owned {
+      color: inherit !important;
+      background: none !important;
+      font-weight: inherit !important;
+      box-shadow: none !important;
+      text-decoration: none !important;
+      padding: 0;
+      margin: 0;
+      border-radius: 0;
     }
 
     body.focus-mode .shell {
-      grid-template-columns: 0 minmax(0, 1fr) minmax(360px, 430px);
-      gap: 12px;
+      grid-template-columns: 0 minmax(0, 1fr) minmax(520px, 48vw);
+      gap: var(--lx-focus-gap, 16px);
     }
 
     body.focus-mode .sidebar {
@@ -5255,36 +5809,45 @@
     }
 
     body.focus-mode .transcript {
-      min-width: 360px;
+      min-width: 520px;
       max-width: none;
       opacity: 1;
       transform: none;
       pointer-events: auto;
     }
 
+    body.focus-mode .transcript .content {
+      padding: 1rem 1.35rem 1.5rem;
+      background: #f8fafc;
+    }
+
+    body.focus-mode .transcript .seg .text {
+      font-size: 1.12rem;
+      line-height: 1.8;
+      color: #334155;
+    }
+
+    body.focus-mode .transcript .seg.active {
+      padding: 1rem 1.15rem;
+      border-color: #99f6e4;
+      background: #ffffff;
+    }
+
+    body.focus-mode .transcript .mode-toggle button.active {
+      background: linear-gradient(135deg, #0d9488, #2dd4bf);
+      color: #fff;
+    }
+
     body.focus-mode #video-meta {
       display: none;
     }
 
-    body.focus-mode .video-controls > div:last-child .btn:not(#focus-toggle) {
-      display: none;
-    }
-
-    body.focus-mode .video-controls {
-      position: sticky;
-      top: 0;
-      z-index: 16;
-      padding: 0.3rem 0.35rem;
-      border-radius: 12px;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(12px);
-    }
-
-    body.focus-mode .next-video-card {
+    body.focus-mode .video-controls-actions .btn:not(#focus-toggle):not(#import-words):not(#open-vocab-tab) {
       display: none;
     }
 
     html[data-learning-focus="first-lesson"] #open-video-browser,
+    html[data-learning-focus="first-lesson"] #open-channel-browser,
     html[data-learning-focus="first-lesson"] #nav-youtube-upload,
     html[data-learning-focus="first-lesson"] a[href="./video-upload.html"],
     html[data-learning-focus="first-lesson"] #today-reco-card,
@@ -5304,11 +5867,11 @@
 
     @media (max-width: 1179px) {
       body.focus-mode .shell {
-        grid-template-columns: 0 minmax(0, 1fr) minmax(320px, 38vw);
+        grid-template-columns: 0 minmax(0, 1fr) minmax(420px, 44vw);
       }
 
       body.focus-mode .transcript {
-        min-width: 320px;
+        min-width: 420px;
         opacity: 1;
         transform: none;
         pointer-events: auto;
@@ -5325,9 +5888,638 @@
         min-width: 0;
       }
     }
+
+    .player-wrap > .video-meta-panel,
+    .player-wrap > .subtitle-dock {
+      display: none !important;
+    }
+
+    .player video,
+    .player #youtube-player,
+    .player iframe {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      width: 100% !important;
+      height: 100% !important;
+      border: 0;
+      display: block;
+      background: #000;
+    }
+    .caption-bar {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      margin-top: 8px;
+      padding: 10px 14px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid #e7e9ef;
+    }
+
+    .sentence-path {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .sentence-path-label {
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .sentence-path button {
+      height: 32px;
+      padding: 0 12px;
+      border: 1px solid #99f6e4;
+      border-radius: 999px;
+      background: #f0fdfa;
+      color: #0f766e;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .sentence-path button:hover {
+      background: #ccfbf1;
+    }
+
+    .caption-bar:has(.coach-dock[data-open="true"]) {
+      display: block;
+    }
+
+    .caption-bar:has(.coach-dock[data-open="true"]) .lyric-stage {
+      display: none !important;
+    }
+
+    .lyric-stage {
+      position: static;
+      display: grid;
+      grid-template-rows: 1.35em auto 1.35em;
+      align-items: center;
+      justify-items: center;
+      gap: 6px;
+      min-height: 5.1em;
+      padding: 0;
+      overflow: visible;
+      background: transparent;
+      pointer-events: none;
+    }
+    .lyric-stage[hidden] { display: none !important; }
+    .lyric-line {
+      width: 100%;
+      max-width: 920px;
+      border: 0;
+      background: transparent;
+      color: #6d7280;
+      font: 600 0.92rem/1.35 "Segoe UI", "PingFang SC", sans-serif;
+      text-align: center;
+      text-shadow: none;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+      pointer-events: auto;
+      padding: 0;
+    }
+    .lyric-line.is-current {
+      color: #17191f;
+      font-size: clamp(1.05rem, 1.6vw, 1.28rem);
+      font-weight: 750;
+      line-height: 1.55;
+      white-space: normal;
+      overflow: visible;
+      text-overflow: unset;
+    }
+    .lyric-line.is-prev,
+    .lyric-line.is-next { font-weight: 500; color: #8b909a; }
+    .lyric-line.is-empty { visibility: hidden; }
+    .lyric-line .word,
+    .lyric-line .word.word-mastered,
+    .lyric-line .word.word-learning,
+    .lyric-line .word.word-missing,
+    .lyric-line .word.word-encountered {
+      color: inherit !important;
+      background: none !important;
+      font-weight: inherit !important;
+      box-shadow: none !important;
+      text-decoration: none !important;
+    }
+
+    .caption-bar .coach-dock {
+      position: static;
+      left: auto;
+      right: auto;
+      bottom: auto;
+      z-index: 1;
+      padding: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #17191f;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .caption-bar .coach-dock[data-open="true"] {
+      gap: 8px;
+    }
+
+    .caption-bar .coach-status {
+      color: #6d7280;
+    }
+
+    .caption-bar .coach-rows {
+      text-align: center;
+    }
+
+    .caption-bar .coach-row {
+      color: #8b909a;
+      text-align: center;
+    }
+
+    .caption-bar .coach-row.is-current {
+      color: #17191f;
+    }
+
+    .caption-bar .coach-word {
+      color: inherit;
+    }
+
+    [data-theme="dark"] .sidebar,
+    [data-theme="dark"] .video-intro,
+    [data-theme="dark"] .panel.main,
+    [data-theme="dark"] .panel.transcript,
+    [data-theme="dark"] .transcript .header,
+    [data-theme="dark"] .transcript .content,
+    [data-theme="dark"] .transcript-hint {
+      background: transparent !important;
+      color: #e2e8f0;
+    }
+
+    [data-theme="dark"] .intro-back,
+    [data-theme="dark"] .intro-title,
+    [data-theme="dark"] .intro-meta,
+    [data-theme="dark"] .intro-about-label,
+    [data-theme="dark"] .intro-about {
+      color: #cbd5e1 !important;
+    }
+
+    [data-theme="dark"] .panel.transcript,
+    [data-theme="dark"] .transcript .header,
+    [data-theme="dark"] .transcript .content,
+    [data-theme="dark"] .transcript-hint {
+      color: #e2e8f0;
+      border-color: transparent !important;
+    }
+
+    [data-theme="dark"] .transcript .seg .text,
+    [data-theme="dark"] .transcript .seg.active .text {
+      color: #e2e8f0;
+    }
+
+    [data-theme="dark"] .transcript .seg .translation {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] .transcript .seg.active {
+      background: #1e293b;
+      border-color: rgba(45, 212, 191, 0.28);
+    }
+
+    [data-theme="dark"] .caption-bar {
+      background: #1e293b;
+      border-color: rgba(148, 163, 184, 0.22);
+    }
+
+    [data-theme="dark"] .lyric-line,
+    [data-theme="dark"] .lyric-line.is-prev,
+    [data-theme="dark"] .lyric-line.is-next,
+    [data-theme="dark"] .caption-bar .coach-status,
+    [data-theme="dark"] .caption-bar .coach-row {
+      color: #94a3b8;
+    }
+
+    [data-theme="dark"] .lyric-line.is-current,
+    [data-theme="dark"] .caption-bar .coach-dock,
+    [data-theme="dark"] .caption-bar .coach-row.is-current {
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .transcript .header-top #focus-toggle,
+    [data-theme="dark"] .transcript .header-top #import-words,
+    [data-theme="dark"] .transcript .header-top #open-vocab-tab {
+      background: rgba(45, 212, 191, 0.12) !important;
+      color: #5eead4 !important;
+      border-color: rgba(45, 212, 191, 0.35) !important;
+    }
+
+    .caption-bar .coach-actions {
+      justify-content: center;
+    }
+
+    .caption-bar .coach-action {
+      border-color: #e7e9ef;
+      background: #fff;
+      color: #17191f;
+    }
+
+    .caption-bar .coach-panel {
+      max-height: 180px;
+      background: #f8fafc;
+      color: #17191f;
+    }
+    .lyric-stage.is-shifting .lyric-line {
+      animation: lyricRise 0.36s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes lyricRise {
+      from { transform: translateY(12px); opacity: 0.35; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .vb-add-btn,
+    .vb-filter-toggle,
+    .lib-dialog-cancel,
+    .lib-menu button {
+      font: inherit;
+    }
+    .vb-add-btn,
+    .vb-filter-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      height: 36px;
+      padding: 0 0.85rem;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      color: #0f172a;
+      font-size: 0.9rem;
+      font-weight: 650;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .vb-filter-toggle[hidden],
+    .vb-add-btn[hidden],
+    #vb-scope-row[hidden] { display: none; }
+    .vb-add-btn:hover,
+    .vb-filter-toggle:hover { border-color: #cbd5e1; background: #f8fafc; }
+    .vb-add-wrap { position: relative; }
+    .vb-add-menu {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: 230px;
+      padding: 0.4rem;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
+      z-index: 5;
+    }
+    .vb-add-menu[hidden] { display: none !important; }
+    .vb-add-menu button {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2px;
+      width: 100%;
+      padding: 0.7rem 0.75rem;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      text-align: left;
+      cursor: pointer;
+    }
+    .vb-add-menu button:hover { background: #f8fafc; }
+    .vb-add-menu strong { font-size: 0.92rem; color: #0f172a; }
+    .vb-add-menu span { font-size: 0.78rem; color: #64748b; }
+
+    .vb-channel-hero {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+      margin-bottom: 1.2rem;
+    }
+    .vb-channel-hero[hidden] { display: none !important; }
+    .vb-back {
+      width: 36px;
+      height: 36px;
+      border-radius: 999px;
+      border: 0;
+      background: transparent;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+    .vb-channel-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-weight: 700;
+      font-size: 1.4rem;
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+    .vb-channel-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .vb-channel-copy { min-width: 0; flex: 1; }
+    .vb-channel-copy h3 { margin: 0 0 0.25rem; font-size: 1.35rem; }
+    .vb-channel-copy p { margin: 0; color: #64748b; font-size: 0.9rem; line-height: 1.45; }
+    .vb-sub {
+      height: 36px;
+      padding: 0 0.95rem;
+      border-radius: 999px;
+      border: 1px solid #e2e8f0;
+      background: #fff;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    .vb-shelf-name {
+      margin: 0.55rem 0 0;
+      color: #64748b;
+      font-size: 0.92rem;
+      font-weight: 500;
+    }
+    .vb-feed-card .vb-avatar,
+    .vb-feed-card .vb-card-tags,
+    .vb-feed-card .vb-level-badge { display: none; }
+    .vb-feed-card .vb-card-body {
+      display: block;
+      padding: 0.55rem 0.1rem 0;
+    }
+    .pod-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); }
+    .pod-card .vb-thumb-wrap { aspect-ratio: 1; border-radius: 16px; }
+    .pod-card .vb-shelf-name {
+      color: #334155;
+      font-size: 0.82rem;
+      text-align: center;
+    }
+
+    .lib-dialog[hidden] { display: none !important; }
+    .lib-dialog {
+      position: fixed;
+      inset: 0;
+      z-index: 10050;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(15, 23, 42, 0.28);
+      padding: 1rem;
+    }
+    .lib-dialog-card {
+      width: min(440px, 100%);
+      background: #fff;
+      border-radius: 16px;
+      padding: 1.15rem 1.2rem 1rem;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.2);
+    }
+    .lib-dialog-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .lib-dialog-head h3 { margin: 0; font-size: 1.15rem; }
+    .lib-dialog-x {
+      width: 32px; height: 32px; border: 0; background: transparent;
+      font-size: 1.2rem; cursor: pointer; color: #64748b;
+    }
+    .lib-dialog label { display: block; margin-bottom: 0.4rem; font-size: 0.9rem; }
+    .lib-dialog input {
+      width: 100%;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid #cbd5e1;
+      padding: 0 0.8rem;
+      font: inherit;
+    }
+    .lib-dialog-hint { margin: 0.45rem 0 0; color: #64748b; font-size: 0.82rem; line-height: 1.45; }
+    .lib-dialog-error { min-height: 1.2rem; margin: 0.45rem 0 0; color: #dc2626; font-size: 0.82rem; }
+    .lib-dialog-actions { display: flex; justify-content: flex-end; gap: 0.6rem; margin-top: 0.8rem; }
+    .lib-dialog-cancel, .lib-dialog-ok {
+      height: 36px; padding: 0 1rem; border-radius: 10px; cursor: pointer; font-weight: 650;
+    }
+    .lib-dialog-cancel { border: 1px solid #e2e8f0; background: #fff; }
+    .lib-dialog-ok { border: 0; background: #334155; color: #fff; }
+    .lib-dialog-ok:disabled { opacity: 0.6; cursor: wait; }
+    #podcast-search-results { max-height: 260px; overflow: auto; margin-top: 0.55rem; }
+    .pod-hit {
+      display: flex; gap: 0.65rem; align-items: center; width: 100%;
+      padding: 0.45rem; border: 0; background: transparent; cursor: pointer;
+      text-align: left; border-radius: 8px;
+    }
+    .pod-hit:hover { background: #f8fafc; }
+    .pod-hit img { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: #e2e8f0; }
+    .pod-hit strong, .pod-hit small { display: block; }
+    .pod-hit small { color: #64748b; font-size: 0.78rem; }
   </style>
   <script src="./js/media-session.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js" defer></script>
+<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+<style>
+  /* 桌面学习页导航项多，共享顶栏的 1180px 胶囊会把标题和按钮文字挤成两行。 */
+  body > .topbar {
+    width: min(1880px, calc(100% - 32px));
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px 16px;
+    min-height: 64px;
+    padding: 8px 12px 8px 20px;
+    flex-wrap: wrap;
+    border-radius: 28px;
+  }
+
+  body > .topbar .brand {
+    flex: 0 0 auto;
+    min-width: max-content;
+  }
+
+  body > .topbar .brand h1 {
+    white-space: nowrap;
+    font-size: 1.05rem;
+    line-height: 1.2;
+  }
+
+  body > .topbar .nav {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 0.4rem;
+  }
+
+  body > .topbar .pill,
+  body > .topbar .theme-toggle,
+  body > .topbar .daily-goal,
+  body > .topbar .lang-selector,
+  body > .topbar .vip-badge {
+    flex-shrink: 0;
+  }
+
+  body > .topbar .pill,
+  body > .topbar .daily-goal-label {
+    white-space: nowrap;
+  }
+
+  body > .topbar .pill {
+    height: 36px;
+    padding: 0 0.72rem;
+    gap: 0.28rem;
+    line-height: 1;
+    font-size: 0.8rem;
+  }
+
+  body > .topbar .lang-selector {
+    margin-right: 0 !important;
+  }
+
+  body > .topbar .daily-goal {
+    min-width: 148px;
+    padding: 0.28rem 0.65rem;
+    gap: 0.18rem;
+  }
+
+    body > .topbar .theme-toggle {
+      width: 36px;
+      height: 36px;
+      flex-basis: 36px;
+    }
+
+    body.focus-mode > .topbar {
+      display: none !important;
+    }
+
+    body.focus-mode .layout {
+      max-width: none;
+      margin: 0;
+      /* Unified focus inset — see tokens.css --lx-focus-inset / ui-spec. */
+      padding: var(--lx-focus-inset, 24px) !important;
+      box-sizing: border-box;
+      height: 100vh;
+      height: 100dvh;
+    }
+
+    body.focus-mode .shell {
+      height: 100%;
+      gap: var(--lx-focus-gap, 16px);
+      padding: 0;
+      /* Sidebar is display:none below, so only two tracks: main + transcript. */
+      grid-template-columns: minmax(0, 1.05fr) minmax(520px, 48vw);
+    }
+
+    body.focus-mode .sidebar {
+      display: none !important;
+    }
+
+    /* Main must stretch: media is absolutely positioned and needs a real height chain. */
+    body.focus-mode .panel.main {
+      align-self: stretch;
+      height: 100%;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body.focus-mode .main > .content {
+      flex: 1 1 auto;
+      min-height: 0;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    body.focus-mode .player-wrap {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.65rem;
+      overflow: auto;
+    }
+
+    body.focus-mode .player {
+      /* Shared focus player window — tokens.css --lx-focus-player-* */
+      width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9))) !important;
+      flex: 0 0 auto;
+      min-height: 0;
+      max-height: var(--lx-focus-player-max-h, min(68dvh, 680px, calc(100dvh - 210px)));
+      aspect-ratio: 16 / 9;
+      margin: 0 auto;
+    }
+
+    body.focus-mode .main .player-wrap > .vrp-control-dock,
+    body.focus-mode .main .player-wrap > .caption-bar {
+      width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9)));
+    }
+
+    body.focus-mode .player-wrap > .caption-bar,
+    body.focus-mode #caption-bar {
+      flex: 0 0 auto;
+    }
+
+    /* Paid members in focus mode skip the "带教模式已就绪" row and keep the three lyric lines. */
+    body.focus-mode #caption-bar,
+    body.focus-mode #caption-bar:has(.coach-dock[data-open="true"]) {
+      display: flex !important;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+    }
+
+    body.focus-mode #caption-bar .lyric-stage:not([hidden]),
+    body.focus-mode #caption-bar:has(.coach-dock[data-open="true"]) .lyric-stage:not([hidden]) {
+      display: grid !important;
+      order: 1;
+      width: 100%;
+    }
+
+    body.focus-mode #caption-bar #coach-slot {
+      order: 2;
+    }
+
+    body.focus-mode .coach-dock[data-allowed="true"] .coach-bar,
+    body.focus-mode .coach-dock[data-allowed="true"] .coach-rows {
+      display: none !important;
+    }
+
+    body.focus-mode .coach-dock[data-allowed="true"] .coach-actions {
+      display: flex !important;
+      padding-bottom: 0;
+    }
+
+  @media (max-width: 1280px) {
+    body > .topbar {
+      width: calc(100% - 16px);
+      gap: 10px;
+      padding-left: 14px;
+    }
+
+    body > .topbar .brand h1 {
+      font-size: 0.95rem;
+    }
+
+    body > .topbar .nav {
+      gap: 0.28rem;
+    }
+
+    body > .topbar .pill {
+      padding: 0 0.55rem;
+      font-size: 0.75rem;
+    }
+  }
+</style>
 </head>
 
 <body>
@@ -5337,7 +6529,7 @@
     <div class="loader-text">加载中...</div>
   </div>
 
-  <div class="topbar animate-in">
+  <div class="topbar">
     <div class="brand">
       <h1 data-i18n="video.desktop_title">linglish · 视频学习（桌面版）</h1>
     </div>
@@ -5346,6 +6538,11 @@
         <div class="daily-goal-label" id="daily-goal-label">今日目标：1/3视频</div>
         <div class="daily-goal-bar"><span id="daily-goal-fill"></span></div>
       </div>
+      <nav class="study-switch" id="study-switch" aria-label="学习板块">
+        <a href="./video-reader-desktop.html" data-study="video">视频学习</a>
+        <a href="./practice-session-desktop.html?mode=shadowing" data-study="coach">AI陪练</a>
+        <a href="./practice-session-desktop.html?mode=dialogue" data-study="arena">实战场</a>
+      </nav>
       <!-- Theme Toggle Button -->
       <button class="theme-toggle" id="theme-toggle" title="切换主题">
         <span class="icon-sun">☀️</span>
@@ -5371,38 +6568,39 @@
         </div>
       </div>
       <a href="./membership.html" id="vip-badge" class="vip-badge" hidden>
-        <span class="vip-icon">👑</span>
+        <span class="vip-icon" data-lx-icon="crown" data-lx-class="lx-icon--sm"></span>
         <span class="vip-text">VIP</span>
       </a>
       <a class="pill" href="#" id="back-to-list" title="返回视频列表" style="padding-left: 0.7rem; padding-right: 0.9rem;">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-          stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
-          <path d="M19 12H5" />
-          <path d="M12 19l-7-7 7-7" />
-        </svg>
+        <span data-lx-icon="back" data-lx-size="16" data-lx-class="lx-icon--sm"></span>
         <span data-i18n="nav.back">返回</span>
       </a>
-      <a class="pill" href="./index-desktop.html" title="返回首页" style="padding-left: 0.7rem; padding-right: 0.9rem;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-          stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
+      <a class="pill" data-nav="home" href="./index-desktop.html" title="首页" style="padding-left: 0.7rem; padding-right: 0.9rem;">
+        <span data-lx-icon="home" data-lx-size="14" data-lx-class="lx-icon--sm"></span>
         <span data-i18n="nav.home">首页</span>
       </a>
       <a class="pill pill-browser" href="#" id="open-video-browser" title="浏览视频库" style="padding-left: 0.8rem; padding-right: 0.95rem;">
-        <span>📺</span>
+        <span data-lx-icon="video" data-lx-class="lx-icon--sm"></span>
         <span data-i18n="nav.library">视频库</span>
       </a>
+      <a class="pill pill-browser" href="#" id="open-channel-browser" title="浏览官方频道库" style="padding-left: 0.8rem; padding-right: 0.95rem;">
+        <span data-lx-icon="channel" data-lx-class="lx-icon--sm"></span>
+        <span>频道库</span>
+      </a>
+      <a class="pill" href="#" id="open-podcast-browser" title="浏览播客">
+        <span data-lx-icon="mic" data-lx-class="lx-icon--sm"></span>
+        <span>播客</span>
+      </a>
       <a class="pill" href="./youtube-import.html" title="网络上传" id="nav-youtube-upload">
-        <span>🎥</span>
+        <span data-lx-icon="upload" data-lx-class="lx-icon--sm"></span>
         <span data-i18n="nav.youtube">网络上传</span>
       </a>
-      <a class="pill" href="./video-upload.html">⤴️ <span data-i18n="nav.upload">上传视频</span></a>
-      <a class="pill" href="./feedback.html">💬 <span data-i18n="nav.feedback">反馈</span></a>
-      <a class="pill primary" id="goto-vocab" href="#vocabulary">📚 <span data-i18n="nav.vocabulary">词汇表</span></a>
+      <a class="pill" href="./video-upload.html"><span data-lx-icon="upload" data-lx-class="lx-icon--sm"></span> <span data-i18n="nav.upload">上传视频</span></a>
+      <a class="pill" href="./feedback.html"><span data-lx-icon="message" data-lx-class="lx-icon--sm"></span> <span data-i18n="nav.feedback">反馈</span></a>
+      <a class="pill primary" id="goto-vocab" href="#vocabulary"><span data-lx-icon="book" data-lx-class="lx-icon--sm"></span> <span data-i18n="nav.vocabulary">词汇表</span></a>
     </div>
   </div>
+  <script>document.getElementById('pageLoader')?.remove();</script>
 
   <!-- ============ YouTube-style Video Library Browser ============ -->
   <div class="vb-modal" id="video-browser-modal" hidden aria-hidden="true" role="dialog" aria-labelledby="vb-title">
@@ -5410,76 +6608,185 @@
     <div class="vb-shell" role="document">
       <header class="vb-head">
         <div class="vb-head-row">
-          <h2 class="vb-title" id="vb-title">📺 视频库</h2>
+          <h2 class="vb-title" id="vb-title">精选视频</h2>
           <div class="vb-search-wrap">
             <span class="vb-search-icon">🔎</span>
             <input id="vb-search" type="search" class="vb-search-input" placeholder="搜索视频标题 / 合集 / 标签…" autocomplete="off">
             <button class="vb-search-clear" id="vb-search-clear" title="清除" type="button" hidden>✕</button>
           </div>
           <div class="vb-head-actions">
+            <button class="vb-filter-toggle" id="vb-filter-toggle" type="button" hidden>筛选</button>
+            <div class="vb-view-switch" role="tablist" aria-label="视频库、频道库或选择分类">
+              <button class="vb-view-btn active" id="vb-view-videos" type="button" data-vb-view="videos" role="tab" aria-selected="true">视频库</button>
+              <button class="vb-view-btn" id="vb-view-channels" type="button" data-vb-view="channels" role="tab" aria-selected="false">频道库</button>
+              <button class="vb-view-btn" id="vb-view-mine" type="button" data-vb-view="mine" role="tab" aria-selected="false">选择分类</button>
+              <div class="vb-filter-pop" id="vb-filter-pop" hidden>
+                <div class="vb-chip-rows" id="vb-chip-rows">
+                  <div class="vb-chip-row" id="vb-scope-row" aria-label="范围" hidden>
+                    <span class="vb-chip-label">📁 范围</span>
+                    <div class="vb-chips" id="vb-scope-chips">
+                      <button class="vb-chip active" data-scope="all">全部视频</button>
+                      <button class="vb-chip" data-scope="mine">我的视频</button>
+                    </div>
+                    <button class="vb-chip vb-clear-all" id="vb-clear-all-btn" type="button" hidden>✕ 清除全部筛选</button>
+                  </div>
+                  <div class="vb-chip-row" id="vb-diff-row" aria-label="难度">
+                    <span class="vb-chip-label">📊 难度</span>
+                    <div class="vb-chips" id="vb-diff-chips">
+                      <button class="vb-chip active" data-diff="">全部</button>
+                      <button class="vb-chip" data-diff="a1">A1</button>
+                      <button class="vb-chip" data-diff="a2">A2</button>
+                      <button class="vb-chip" data-diff="b1">B1</button>
+                      <button class="vb-chip" data-diff="b2">B2</button>
+                      <button class="vb-chip" data-diff="c1">C1</button>
+                      <button class="vb-chip" data-diff="c2">C2</button>
+                    </div>
+                  </div>
+                  <div class="vb-chip-row" id="vb-scene-row" aria-label="场景">
+                    <span class="vb-chip-label">🧭 场景</span>
+                    <div class="vb-chips" id="vb-scene-chips">
+                      <button class="vb-chip active" data-scene="">全部</button>
+                      <button class="vb-chip" data-scene="work">职场英语</button>
+                      <button class="vb-chip" data-scene="daily">日常对话</button>
+                      <button class="vb-chip" data-scene="interview">面试英语</button>
+                      <button class="vb-chip" data-scene="travel">旅行英语</button>
+                    </div>
+                  </div>
+                  <div class="vb-chip-row" id="vb-status-row" aria-label="状态">
+                    <span class="vb-chip-label">👁️ 状态</span>
+                    <div class="vb-chips" id="vb-status-chips">
+                      <button class="vb-chip active" data-status="">全部</button>
+                      <button class="vb-chip" data-status="unseen">未观看</button>
+                      <button class="vb-chip" data-status="in-progress">进行中</button>
+                      <button class="vb-chip" data-status="complete">已完成</button>
+                    </div>
+                  </div>
+                  <div class="vb-chip-row" id="vb-tag-row" aria-label="标签">
+                    <span class="vb-chip-label">🏷️ 标签</span>
+                    <div class="vb-chips" id="vb-tag-chips"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="vb-add-btn" id="vb-add-channel" type="button" hidden>+ 添加频道</button>
             <span class="vb-stats" id="vb-stats"></span>
             <button class="vb-close" id="vb-close-btn" type="button" title="关闭 (Esc)">✕</button>
           </div>
         </div>
-        <p style="margin:8px 0;color:var(--muted);font-size:13px;">精选内容可直接学习，无需导入；「我的视频」中可查看自己导入的内容。</p>
-        <div class="vb-chip-rows">
-          <div class="vb-chip-row" id="vb-scope-row" aria-label="范围">
-            <span class="vb-chip-label">📁 范围</span>
-            <div class="vb-chips" id="vb-scope-chips">
-              <button class="vb-chip active" data-scope="all">全部视频</button>
-              <button class="vb-chip" data-scope="mine">我的视频</button>
-            </div>
-            <button class="vb-chip vb-clear-all" id="vb-clear-all-btn" type="button" hidden>✕ 清除全部筛选</button>
-          </div>
-          <div class="vb-chip-row" id="vb-diff-row" aria-label="难度">
-            <span class="vb-chip-label">📊 难度</span>
-            <div class="vb-chips" id="vb-diff-chips">
-              <button class="vb-chip active" data-diff="">全部</button>
-              <button class="vb-chip" data-diff="beginner">🌱 入门</button>
-              <button class="vb-chip" data-diff="intermediate">🌿 进阶</button>
-              <button class="vb-chip" data-diff="advanced">🌳 高级</button>
-            </div>
-          </div>
-          <div class="vb-chip-row" id="vb-scene-row" aria-label="场景">
-            <span class="vb-chip-label">🧭 场景</span>
-            <div class="vb-chips" id="vb-scene-chips">
-              <button class="vb-chip active" data-scene="">全部</button>
-              <button class="vb-chip" data-scene="work">职场英语</button>
-              <button class="vb-chip" data-scene="daily">日常对话</button>
-              <button class="vb-chip" data-scene="interview">面试英语</button>
-              <button class="vb-chip" data-scene="travel">旅行英语</button>
-            </div>
-          </div>
-          <div class="vb-chip-row" id="vb-status-row" aria-label="状态">
-            <span class="vb-chip-label">👁️ 状态</span>
-            <div class="vb-chips" id="vb-status-chips">
-              <button class="vb-chip active" data-status="">全部</button>
-              <button class="vb-chip" data-status="unseen">未观看</button>
-              <button class="vb-chip" data-status="in-progress">进行中</button>
-              <button class="vb-chip" data-status="complete">已完成</button>
-            </div>
-          </div>
-          <div class="vb-chip-row" id="vb-tag-row" aria-label="标签">
-            <span class="vb-chip-label">🏷️ 标签</span>
-            <div class="vb-chips" id="vb-tag-chips"></div>
-          </div>
-        </div>
+        <p id="vb-hint" hidden style="margin:8px 0 0;color:var(--muted);font-size:13px;"></p>
       </header>
       <main class="vb-body" id="vb-body">
+        <section class="vb-channel-hero" id="vb-channel-hero" hidden>
+          <button class="vb-back" id="vb-channel-back" type="button" aria-label="返回频道列表">←</button>
+          <div class="vb-channel-avatar" id="vb-channel-avatar">V</div>
+          <div class="vb-channel-copy">
+            <h3 id="vb-channel-name">频道</h3>
+            <p id="vb-channel-desc"></p>
+          </div>
+          <button class="vb-sub" id="vb-channel-sub" type="button">已订阅</button>
+        </section>
         <div class="vb-grid" id="vb-grid"></div>
         <div class="vb-empty" id="vb-empty" hidden>
           <div class="vb-empty-emoji">🔍</div>
           <div class="vb-empty-title">没有找到匹配的视频</div>
           <div class="vb-empty-hint">试着清除筛选，或换个关键词</div>
           <button class="vb-btn" id="vb-reset-btn" type="button">清除全部筛选</button>
+          <button class="vb-btn" id="vb-channel-empty-add" type="button" hidden>添加 YouTube 频道</button>
         </div>
       </main>
+    </div>
+  </div>
+
+  <div class="vb-modal" id="podcast-browser-modal" hidden aria-hidden="true" role="dialog" aria-labelledby="pod-title">
+    <div class="vb-backdrop" data-pod-close></div>
+    <div class="vb-shell" role="document">
+      <header class="vb-head">
+        <div class="vb-head-row">
+          <h2 class="vb-title" id="pod-title">精选播客</h2>
+          <div class="vb-search-wrap">
+            <span class="vb-search-icon">🔎</span>
+            <input id="pod-search" type="search" class="vb-search-input" placeholder="在已添加的播客里搜索" autocomplete="off">
+          </div>
+          <div class="vb-head-actions">
+            <div class="vb-add-wrap">
+              <button class="vb-add-btn" id="pod-add-btn" type="button">+ 添加播客</button>
+              <div class="vb-add-menu" id="pod-add-menu" hidden>
+                <button type="button" id="pod-add-search"><strong>搜索播客</strong><span>按节目名称查找</span></button>
+                <button type="button" id="pod-add-rss"><strong>通过 RSS 链接添加</strong></button>
+              </div>
+            </div>
+            <button class="vb-close" id="pod-close-btn" type="button" title="关闭 (Esc)">✕</button>
+          </div>
+        </div>
+      </header>
+      <main class="vb-body" id="pod-body">
+        <section class="vb-channel-hero" id="pod-show-hero" hidden>
+          <button class="vb-back" id="pod-back" type="button" aria-label="返回播客列表">←</button>
+          <div class="vb-channel-avatar" id="pod-show-avatar"></div>
+          <div class="vb-channel-copy">
+            <h3 id="pod-show-name">播客</h3>
+            <p id="pod-show-desc"></p>
+          </div>
+          <button class="vb-sub" id="pod-unsubscribe" type="button">已订阅</button>
+        </section>
+        <div class="vb-grid pod-grid" id="pod-grid"></div>
+        <div class="vb-empty" id="pod-empty" hidden>
+          <div class="vb-empty-emoji">🎙️</div>
+          <div class="vb-empty-title">还没有播客</div>
+          <div class="vb-empty-hint">点右上角，按名称搜索或粘贴 RSS 链接</div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div class="lib-dialog" id="channel-dialog" hidden>
+    <div class="lib-dialog-card" role="dialog" aria-labelledby="channel-dialog-title">
+      <div class="lib-dialog-head">
+        <h3 id="channel-dialog-title">添加 YouTube 频道</h3>
+        <button class="lib-dialog-x" id="channel-dialog-x" type="button" aria-label="关闭">×</button>
+      </div>
+      <label for="channel-url">频道链接</label>
+      <input id="channel-url" type="text" placeholder="youtube.com/@channel" autocomplete="off">
+      <p class="lib-dialog-hint">读取大约需要十几秒。添加成功后，从「选择分类」进入。</p>
+      <p class="lib-dialog-error" id="channel-dialog-error"></p>
+      <div class="lib-dialog-actions">
+        <button class="lib-dialog-cancel" id="channel-cancel" type="button">取消</button>
+        <button class="lib-dialog-ok" id="channel-submit" type="button">添加</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="lib-dialog" id="podcast-dialog" hidden>
+    <div class="lib-dialog-card" role="dialog" aria-labelledby="podcast-dialog-title">
+      <div class="lib-dialog-head">
+        <h3 id="podcast-dialog-title">添加播客</h3>
+        <button class="lib-dialog-x" id="podcast-dialog-x" type="button" aria-label="关闭">×</button>
+      </div>
+      <label for="podcast-query" id="podcast-dialog-label">节目名称</label>
+      <input id="podcast-query" type="text" placeholder="例如 Spotlight English" autocomplete="off">
+      <div id="podcast-search-results"></div>
+      <p class="lib-dialog-error" id="podcast-dialog-error"></p>
+      <div class="lib-dialog-actions">
+        <button class="lib-dialog-cancel" id="podcast-cancel" type="button">取消</button>
+        <button class="lib-dialog-ok" id="podcast-submit" type="button">添加</button>
+      </div>
     </div>
   </div>
 
   <div class="layout">
     <div class="shell">
       <aside class="panel sidebar" id="video-sidebar">
+        <div class="video-intro" id="video-intro">
+          <button class="intro-back" id="intro-back" type="button">← 返回</button>
+          <img class="intro-thumb" id="intro-thumb" alt="" hidden>
+          <h2 class="intro-title" id="intro-title">还没有选择视频</h2>
+          <p class="intro-meta" id="intro-meta"></p>
+          <h3 class="intro-about-label">关于</h3>
+          <div class="intro-about" id="intro-about">打开顶部「视频库」，
+选中一个视频后，
+这里会显示封面、
+标题和简介。</div>
+        </div>
         <div class="search">
           <input id="video-search" type="search" placeholder="搜索..." data-i18n="video.search" />
           <button class="icon-btn" id="refresh-videos" title="刷新">🔄</button>
@@ -5491,9 +6798,12 @@
           <span class="difficulty-filter-title">📊</span>
           <div class="difficulty-filters" id="difficulty-filters">
             <button class="difficulty-chip active" data-difficulty="">全部</button>
-            <button class="difficulty-chip" data-difficulty="beginner">🌱 入门</button>
-            <button class="difficulty-chip" data-difficulty="intermediate">🌿 进阶</button>
-            <button class="difficulty-chip" data-difficulty="advanced">🌳 高级</button>
+            <button class="difficulty-chip" data-difficulty="a1">A1</button>
+            <button class="difficulty-chip" data-difficulty="a2">A2</button>
+            <button class="difficulty-chip" data-difficulty="b1">B1</button>
+            <button class="difficulty-chip" data-difficulty="b2">B2</button>
+            <button class="difficulty-chip" data-difficulty="c1">C1</button>
+            <button class="difficulty-chip" data-difficulty="c2">C2</button>
           </div>
         </div>
 
@@ -5550,21 +6860,9 @@
         <div class="content" id="view-video">
           <section id="first-lesson-goal" hidden aria-label="今日跟读小目标"></section>
           <div class="player-wrap">
-            <div class="video-controls">
-              <div style="display:flex; align-items:center; gap:0.5rem;">
-                <button class="btn soft" id="toggle-sidebar" type="button" title="展开视频列表"
-                  aria-controls="video-sidebar" aria-expanded="true" aria-label="展开或收起视频列表">☰</button>
-                <div class="title" id="current-title" data-i18n="video.select">请选择左侧视频</div>
-              </div>
-              <div style="display:flex; gap:0.5rem;">
-                <button class="btn soft" id="focus-toggle" title="专注模式">🎧 专注</button>
-                <button class="btn soft" id="open-source" disabled data-i18n="video.open_new">在新标签打开</button>
-                <button class="btn primary" id="import-words" disabled data-i18n="video.extract_words">重新提取词汇</button>
-              </div>
-            </div>
             <div class="player">
               <!-- HTML5 Video Player for local videos -->
-              <video id="player" controls style="width:100%; height:100%; background:#000; display:block;"></video>
+              <video id="player" controls style="width:100%; height:100%; background:#0b1220; display:none;"></video>
               <!-- YouTube Player container for YouTube videos -->
               <div id="youtube-player" style="width:100%; height:100%; background:#000; display:none;"></div>
               <!-- Friendly overlay (empty/loading/error) -->
@@ -5591,6 +6889,21 @@
                 </div>
               </div>
             </div>
+            <div class="caption-bar" id="caption-bar">
+              <div class="sentence-path" id="sentence-path">
+                <span class="sentence-path-label">今天先练这一句</span>
+                <button type="button" id="sentence-listen">听这一句</button>
+                <button type="button" id="sentence-shadow">跟读这一句</button>
+                <button type="button" id="sentence-review">复习这句的词</button>
+              </div>
+              <div class="lyric-stage" id="lyric-stage" hidden>
+                <button type="button" class="lyric-line is-prev subtitle-text" id="lyric-prev"></button>
+                <button type="button" class="lyric-line is-current subtitle-text" id="lyric-current"></button>
+                <button type="button" class="lyric-line is-next subtitle-text" id="lyric-next"></button>
+              </div>
+              <div id="coach-slot"></div>
+              <div id="subtitle-study-host"></div>
+            </div>
             <div class="video-meta-panel" id="video-meta">
               <div class="video-meta-top">
                 <div class="meta-left">
@@ -5601,7 +6914,7 @@
                 <div class="meta-right">
                   <span class="video-difficulty-tag" id="video-difficulty-tag">A1-初级</span>
                   <span class="video-progress-label" id="video-progress-label">已完成 0%</span>
-                  <button class="btn primary" id="extract-words-cta" disabled>从该视频提取词汇</button>
+                  <button class="btn primary" id="extract-words-cta" disabled>提取词汇</button>
                 </div>
               </div>
             </div>
@@ -5609,29 +6922,15 @@
               <div class="subtitle-dock-header">
                 <div class="subtitle-left">
                   <span class="subtitle-pill">字幕 × 词汇</span>
-                  <span class="subtitle-tip">点击字幕单词，直接查词并高亮</span>
+                  <span class="subtitle-tip">点这一句里的词，释义留在下面</span>
                 </div>
                 <div class="subtitle-actions">
-                  <button class="pill" id="first-lesson-record" type="button" aria-label="录制当前句并获取 AI 反馈">🎙 跟读当前句</button>
-                  <button class="pill" id="subtitle-locate-btn">定位当前字幕</button>
-                  <button class="pill" id="open-vocab-tab">查看词汇表</button>
+                  <button type="button" class="pill" id="subtitle-intensive-note" title="把当前字幕做成 9:16 精读笔记卡">做成精读笔记</button>
                 </div>
               </div>
               <div class="subtitle-text text" id="active-subtitle">选择视频后显示当前字幕</div>
+              <div id="subtitle-assist" class="subtitle-assist" hidden></div>
               <div class="subtitle-translation" id="active-translation" style="display:none;"></div>
-            </div>
-            <div class="next-video-card" id="next-video-card" hidden>
-              <div class="next-video-header">
-                <span class="next-label">推荐下一个视频</span>
-                <span class="next-reason" id="next-video-reason">根据当前学习难度推荐</span>
-              </div>
-              <div class="next-video-body">
-                <div>
-                  <div class="next-video-title" id="next-video-title">--</div>
-                  <div class="next-video-meta" id="next-video-meta">--</div>
-                </div>
-                <button class="btn primary" id="next-video-btn">开始播放 →</button>
-              </div>
             </div>
           </div>
         </div>
@@ -5666,17 +6965,42 @@
       </section>
       <aside class="panel transcript">
         <div class="header">
-          <h3 data-i18n="video.subtitle">字幕</h3>
-          <div class="tools">
+          <div class="header-top">
+            <button class="btn soft" id="subtitle-study-toggle" type="button" title="拆句学习" aria-pressed="false">拆句学</button>
+            <button class="btn soft" id="focus-toggle" type="button" title="专注模式" aria-pressed="false">
+              <svg class="focus-toggle__icon focus-toggle__icon--off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 16a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h3z"/><path d="M3 16a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H3z"/></svg>
+              <svg class="focus-toggle__icon focus-toggle__icon--on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M6.5 19.5c1.2-3.2 3.1-4.75 5.5-4.75s4.3 1.55 5.5 4.75"/><path d="M12 11.75v2.5"/><path d="M9.75 12.5 12 14.25l2.25-1.75"/></svg>
+              <span class="focus-toggle__label">专注</span>
+            </button>
+            <div class="video-controls-actions">
+              <button class="btn soft" id="open-source" disabled data-i18n="video.open_new">在新标签打开</button>
+              <button class="btn primary" id="import-words" disabled title="提取词汇并打开词汇表">
+                <span class="import-words-label">提取</span>
+              </button>
+              <button class="btn soft" id="open-vocab-tab" type="button" data-study-target="vocab" title="查看词汇表">
+                <span class="open-vocab-tab__label">查看</span>
+              </button>
+            </div>
             <div class="mode-toggle">
               <button id="mode-en" class="active">英文</button>
               <button id="mode-bilingual">双语</button>
             </div>
+          </div>
+          <div class="video-controls">
+            <div class="video-controls-main">
+              <button class="btn soft" id="toggle-sidebar" type="button" title="展开视频列表"
+                aria-controls="video-sidebar" aria-expanded="true" aria-label="展开或收起视频列表">☰</button>
+              <div class="title" id="current-title" data-i18n="video.select">请从视频库选择视频</div>
+            </div>
+          </div>
+          <div class="tools">
+            <button class="pill" id="first-lesson-record" type="button" aria-label="录制当前句并获取 AI 反馈">🎙 跟读当前句</button>
+            <button class="pill" id="subtitle-locate-btn">定位当前字幕</button>
             <button class="pill" id="scroll-active" data-i18n="video.locate">定位当前</button>
           </div>
         </div>
         <div class="content" id="transcript-list"></div>
-        <p style="margin:0;padding:8px 16px;font-size:12px;color:var(--muted);">单击字幕跳转 · 双击单词查词 · 空格播放/暂停 · ← / → 上一句/下一句</p>
+        <p class="transcript-hint">单击字幕跳转 · 双击单词查词 · 空格播放/暂停 · ← / → 上一句/下一句</p>
       </aside>
     </div>
   </div>
@@ -5809,6 +7133,7 @@
     </div>
   </div>
 
+  <script src="./js/video-reader/voice-slot.js?v=1"></script>
   <script>
     // Debug helper: enable via localStorage.setItem('linglish_debug','1')
     function debugLog() {
@@ -5862,8 +7187,7 @@
       localStorage.getItem('authToken') ||
       sessionStorage.getItem('authToken');
     if (!initialToken && !isGuest) {
-      showToast('请先登录', 'warn');
-      setTimeout(() => { window.location.href = './desktop-auth.html'; }, 1200);
+      showToast('登录后就能播放这一句，进度也会留下来', 'warn');
     }
 
     // ===== State =====
@@ -5932,6 +7256,7 @@
     const playerOverlayRefreshBtn = document.getElementById('player-overlay-refresh');
     const openSourceBtn = document.getElementById('open-source');
     const importWordsBtn = document.getElementById('import-words');
+    const openVocabTabBtn = document.getElementById('open-vocab-tab');
     const focusToggleBtn = document.getElementById('focus-toggle');
     const currentTitleEl = document.getElementById('current-title');
     const videoMetaEl = document.getElementById('video-meta');
@@ -5944,7 +7269,6 @@
     const activeSubtitleEl = document.getElementById('active-subtitle');
     const activeTranslationEl = document.getElementById('active-translation');
     const subtitleLocateBtn = document.getElementById('subtitle-locate-btn');
-    const openVocabTabBtn = document.getElementById('open-vocab-tab');
     const nextVideoCardEl = document.getElementById('next-video-card');
     const nextVideoTitleEl = document.getElementById('next-video-title');
     const nextVideoMetaEl = document.getElementById('next-video-meta');
@@ -5993,12 +7317,9 @@
       playerOverlayEl.classList.toggle('hidden', hide);
       playerOverlayEl.classList.toggle('loading', mode === 'loading');
       playerOverlayEl.classList.toggle('error', mode === 'error');
+      if (playerEl && !playerEl.getAttribute('src')) playerEl.style.display = 'none';
 
       if (hide) return;
-      if (mode === 'idle') {
-        playerOverlayEl.classList.add('hidden');
-        return;
-      }
 
       const titleKey = opts.titleKey;
       const descKey = opts.descKey;
@@ -6066,7 +7387,7 @@
           titleKey: 'video.overlay.empty_title',
           descKey: 'video.overlay.empty_desc',
           tips: [
-            tOverlay('video.overlay.tip_pick', '你可以在左侧视频列表选择喜欢的视频开始学习。'),
+            tOverlay('video.overlay.tip_pick', '打开顶部「视频库」，选一个视频开始学习。'),
             getUploadTip(),
           ]
         });
@@ -6095,7 +7416,7 @@
       titleKey: 'video.overlay.empty_title',
       descKey: 'video.overlay.empty_desc',
       tips: [
-        tOverlay('video.overlay.tip_pick', '你可以在左侧视频列表选择喜欢的视频开始学习。'),
+        tOverlay('video.overlay.tip_pick', '打开顶部「视频库」，选一个视频开始学习。'),
         getUploadTip(),
       ]
     });
@@ -6103,9 +7424,15 @@
     let nextVideoCandidate = null;
     let todayRecoCandidate = null;
     const difficultyLabels = {
-      beginner: 'A1-初级',
-      intermediate: 'B1-进阶',
-      advanced: 'C1-高级'
+      a1: 'A1',
+      a2: 'A2',
+      b1: 'B1',
+      b2: 'B2',
+      c1: 'C1',
+      c2: 'C2',
+      beginner: 'A1',
+      intermediate: 'B1',
+      advanced: 'C1'
     };
 
     function formatDifficultyLabel(level) {
@@ -6115,7 +7442,10 @@
 
     function normalizeDifficultyLevel(raw) {
       const v = String(raw || '').trim().toLowerCase();
-      return (v === 'beginner' || v === 'intermediate' || v === 'advanced') ? v : null;
+      if (v === 'beginner') return 'a1';
+      if (v === 'intermediate') return 'b1';
+      if (v === 'advanced') return 'c1';
+      return (v === 'a1' || v === 'a2' || v === 'b1' || v === 'b2' || v === 'c1' || v === 'c2') ? v : null;
     }
 
     function getPreferredLevelForRecommend() {
@@ -6228,7 +7558,44 @@
       return Number(state.currentVideo?.duration_sec || 0) || 0;
     }
 
+    function renderLyricStage(idx) {
+      const stage = document.getElementById('lyric-stage');
+      if (!stage) return;
+      const segs = Array.isArray(state.currentSegments) ? state.currentSegments : [];
+      if (idx < 0 || !segs[idx]) {
+        stage.hidden = true;
+        stage.dataset.idx = '';
+        return;
+      }
+      stage.hidden = false;
+      if (stage.dataset.idx !== String(idx)) {
+        stage.dataset.idx = String(idx);
+        stage.classList.remove('is-shifting');
+        void stage.offsetWidth;
+        stage.classList.add('is-shifting');
+      }
+      [['lyric-prev', idx - 1], ['lyric-current', idx], ['lyric-next', idx + 1]].forEach(([id, lineIdx]) => {
+        const el = document.getElementById(id);
+        const seg = segs[lineIdx];
+        if (!el) return;
+        if (!seg) {
+          el.hidden = false;
+          el.classList.add('is-empty');
+          el.innerHTML = '';
+          el.removeAttribute('data-index');
+          return;
+        }
+        el.hidden = false;
+        el.classList.remove('is-empty');
+        el.dataset.index = String(lineIdx);
+        el.dataset.start = String(seg.start_sec ?? seg.start ?? seg.startTime ?? 0);
+        el.dataset.end = String(seg.end_sec ?? seg.end ?? seg.endTime ?? '');
+        const text = seg.text || '';
+        el.innerHTML = id === 'lyric-current' ? wrapWordsToHTML(text, missedWordsForSegment(lineIdx)) : esc(text);
+      });
+    }
     function renderActiveSubtitle(idx) {
+      renderLyricStage(idx);
       if (!activeSubtitleEl) return;
       const segs = Array.isArray(state.currentSegments) ? state.currentSegments : [];
       const seg = idx >= 0 ? segs[idx] : null;
@@ -6241,10 +7608,11 @@
           activeTranslationEl.textContent = '';
           activeTranslationEl.style.display = 'none';
         }
+        syncSubtitleAssist(null);
         return;
       }
       const text = seg.text || '';
-      activeSubtitleEl.innerHTML = wrapWordsToHTML(text);
+      activeSubtitleEl.innerHTML = wrapWordsToHTML(text, missedWordsForSegment(idx));
       activeSubtitleEl.dataset.index = String(idx);
       activeSubtitleEl.dataset.start = String(seg.start_sec ?? seg.start ?? seg.startTime ?? '');
       activeSubtitleEl.dataset.end = String(seg.end_sec ?? seg.end ?? seg.endTime ?? '');
@@ -6257,6 +7625,21 @@
           activeTranslationEl.style.display = 'none';
         }
       }
+      syncSubtitleAssist(idx);
+    }
+
+    function syncSubtitleAssist(idx) {
+      const card = document.getElementById('subtitle-assist');
+      if (!card || card.hidden) return;
+      if (idx == null || String(idx) !== String(card.dataset.segment || '')) {
+        card.hidden = true;
+        return;
+      }
+      const word = String(card.dataset.word || '').toLowerCase();
+      activeSubtitleEl.querySelectorAll('.word').forEach((el) => {
+        const lemma = String(el.dataset.lemma || el.textContent || '').toLowerCase();
+        el.classList.toggle('word-lookup', Boolean(word) && lemma === word);
+      });
     }
 
     // 后端「下一个」推荐:按当前视频缓存,失败时保持本地候选
@@ -6272,6 +7655,7 @@
 
     function renderNextVideoCandidate(candidate, reason) {
       nextVideoCandidate = candidate;
+      if (!nextVideoCardEl) return;
       if (nextVideoTitleEl) nextVideoTitleEl.textContent = candidate.title || candidate.original_filename || `视频 ${candidate.id}`;
       if (nextVideoMetaEl) {
         const diff = formatDifficultyLabel(candidate.difficulty_level || candidate.level);
@@ -6420,11 +7804,25 @@
         locateBtn?.click();
       });
     }
-    if (openVocabTabBtn) {
-      openVocabTabBtn.addEventListener('click', () => {
-        location.hash = '#vocabulary';
-        setHashView('#vocabulary');
-        vocabStudyStart();
+    const subtitleIntensiveNoteBtn = document.getElementById('subtitle-intensive-note');
+    if (subtitleIntensiveNoteBtn) {
+      subtitleIntensiveNoteBtn.addEventListener('click', () => {
+        if (!window.WorkbenchImport) {
+          showToast('精读笔记组件未加载', 'warn');
+          return;
+        }
+        const text = String(activeSubtitleEl?.innerText || activeSubtitleEl?.textContent || '').trim();
+        const titleEl = document.getElementById('current-title');
+        const title = String(titleEl?.textContent || '').trim();
+        const ok = window.WorkbenchImport.openIntensiveNote({
+          text,
+          title: title && !/请从视频|选择视频/.test(title) ? title : '视频字幕精读',
+          template: 'intensive-note',
+          orient: 'story',
+          source: 'video-reader',
+          onEmpty: () => showToast('请先播放并定位到一句字幕', 'warn'),
+        });
+        if (ok) showToast('已打开精读笔记', 'success');
       });
     }
     if (nextVideoBtn) {
@@ -6464,13 +7862,98 @@
       });
     }
 
+    function rememberVideoWords(videoId, segments) {
+      if (!videoId) return;
+      const words = new Set();
+      (segments || []).forEach((seg) => {
+        const text = String(seg?.text || seg?.transcript || '').toLowerCase();
+        const found = text.match(/[a-z][a-z'-]*/g) || [];
+        found.forEach((word) => { if (word.length > 1) words.add(word); });
+      });
+      try {
+        sessionStorage.setItem(`linglish-video-words:${videoId}`, JSON.stringify(Array.from(words)));
+      } catch (_) { }
+    }
+
+    function currentStudySegment() {
+      const active = transcriptListEl && transcriptListEl.querySelector('.seg.active');
+      if (active) {
+        return {
+          start: Number(active.dataset.start || 0),
+          text: active.querySelector('.text')?.textContent || activeSubtitleEl?.textContent || '',
+        };
+      }
+      const seg = state.currentSegments && state.currentSegments[0];
+      if (!seg) return null;
+      return {
+        start: Number(seg.start_sec ?? seg.start ?? seg.startTime ?? 0),
+        text: String(seg.text || seg.transcript || ''),
+      };
+    }
+
+    function playStudySegment(segment) {
+      if (!segment) {
+        showToast('先选一个视频，再听这一句', 'warn');
+        return;
+      }
+      const start = Number.isFinite(segment.start) ? segment.start : 0;
+      if (currentPlayerType === 'youtube' && youtubePlayer && typeof youtubePlayer.seekTo === 'function') {
+        youtubePlayer.seekTo(start);
+        try { youtubePlayer.playVideo && youtubePlayer.playVideo(); } catch (_) { }
+        return;
+      }
+      if (playerEl) {
+        playerEl.currentTime = start;
+        playerEl.play().catch(() => {});
+      }
+    }
+
+    document.getElementById('sentence-listen')?.addEventListener('click', () => {
+      playStudySegment(currentStudySegment());
+    });
+    document.getElementById('sentence-shadow')?.addEventListener('click', () => {
+      const segment = currentStudySegment();
+      const video = state.currentVideo;
+      if (!video || !segment) {
+        showToast('先选一个视频，再跟读这一句', 'warn');
+        return;
+      }
+      const params = new URLSearchParams({
+        mode: 'shadowing',
+        videoId: String(video.id),
+        startSec: String(segment.start || 0),
+      });
+      window.location.href = `./practice-session-desktop.html?${params.toString()}`;
+    });
+    document.getElementById('sentence-review')?.addEventListener('click', () => {
+      const video = state.currentVideo;
+      const segment = currentStudySegment();
+      if (!video || !segment) {
+        showToast('先听这一句，再复习里面的词', 'warn');
+        return;
+      }
+      try {
+        const words = String(segment.text || '').toLowerCase().match(/[a-z][a-z'-]*/g) || [];
+        sessionStorage.setItem(`linglish-sentence-words:${video.id}`, JSON.stringify(words.filter((word) => word.length > 1)));
+      } catch (_) { }
+      location.hash = '#vocabulary';
+      setHashView('#vocabulary', { videoId: video.id, sentence: true });
+      vocabStudyStart();
+    });
+
     playerOverlayRefreshBtn?.addEventListener('click', () => {
       try { location.reload(); } catch (_) { }
     });
-    playerOverlayRetryBtn?.addEventListener('click', () => {
+    playerOverlayRetryBtn?.addEventListener('click', async () => {
       try {
+        if (playerOverlayRetryBtn.textContent === '去登录') {
+          window.location.href = './desktop-auth.html';
+          return;
+        }
         if (!state.currentVideo) return;
-        // Re-select current video to retry loading strategy.
+        if (window.LinglishMediaSession) {
+          try { await window.LinglishMediaSession.clear(); } catch (_) { }
+        }
         selectVideo(state.currentVideo);
       } catch (_) { }
     });
@@ -6516,7 +7999,12 @@
         videoSelectionGuard.isCurrent(activeLocalSelectionToken, currentId);
     };
     if (playerEl) {
-      playerEl.addEventListener('play', () => { if (!isActiveLocalSelection()) return; isVideoPlaying = true; updateShellCollapse(); });
+      playerEl.addEventListener('play', () => {
+        try { noteLearningVideoStarted(); } catch (_) { }
+        if (!isActiveLocalSelection()) return;
+        isVideoPlaying = true;
+        updateShellCollapse();
+      });
       playerEl.addEventListener('pause', () => { if (!isActiveLocalSelection()) return; isVideoPlaying = false; updateShellCollapse(); });
       playerEl.addEventListener('ended', () => { if (!isActiveLocalSelection()) return; isVideoPlaying = false; updateShellCollapse(); });
       // Loading UX: show overlay instead of pure black
@@ -6543,7 +8031,7 @@
             titleKey: 'video.overlay.empty_title',
             descKey: 'video.overlay.empty_desc',
             tips: [
-              tOverlay('video.overlay.tip_pick', '你可以在左侧视频列表选择喜欢的视频开始学习。'),
+              tOverlay('video.overlay.tip_pick', '打开顶部「视频库」，选一个视频开始学习。'),
               getUploadTip(),
             ]
           });
@@ -6580,6 +8068,7 @@
         }
       },
       play() {
+        stopSpokenAudio();
         if (currentPlayerType === 'youtube' && youtubePlayer) {
           youtubePlayer.play();
         } else {
@@ -6649,11 +8138,14 @@
       return params.get('v') || '20260102b';
     }
 
-    function syncVocabEmbed() {
+    function syncVocabEmbed(videoId, sentence) {
       if (!vocabEmbedFrame) return;
       const level = resolveVocabLevel();
       const v = resolveVocabVersion();
-      const next = `./video-vocabulary-desktop.html?level=${encodeURIComponent(level)}&v=${encodeURIComponent(v)}`;
+      const params = new URLSearchParams({ embed: '1', level, v });
+      if (videoId) params.set('videoId', String(videoId));
+      if (sentence) params.set('sentence', '1');
+      const next = `./video-vocabulary-desktop.html?${params.toString()}`;
       if (vocabEmbedFrame.getAttribute('src') !== next) {
         vocabEmbedFrame.setAttribute('src', next);
       }
@@ -7172,6 +8664,15 @@
         const context = createDesktopAssessmentContext({ index, segment });
         if (context) await firstLessonRecorderController.start(context);
       },
+      next: () => {
+        const selected = currentFirstLessonSegment();
+        const moved = selected && advanceDesktopFirstLesson({ displayIndex: selected.index });
+        if (!moved) {
+          location.href = './today.html?from=first_lesson_complete#day-end';
+          return;
+        }
+        firstLessonGoalCard.update(firstLessonGoal);
+      },
     });
 
     function clearDesktopFirstLessonState() {
@@ -7336,27 +8837,70 @@
       if (secs > 0) postEvent('vocab_study', { seconds: secs });
     }
 
-    function setHashView(hash) {
+    function syncStudySwitch(isVocab) {
+      if (!openVocabTabBtn) return;
+      const label = isVocab ? '返回' : '查看';
+      const labelEl = openVocabTabBtn.querySelector('.open-vocab-tab__label');
+      if (labelEl) labelEl.textContent = label;
+      openVocabTabBtn.title = isVocab ? '返回视频播放' : '查看这个视频记下的词';
+      openVocabTabBtn.setAttribute('aria-label', label);
+      openVocabTabBtn.dataset.studyTarget = isVocab ? 'video' : 'vocab';
+    }
+
+    let vocabFocusVideoId = null;
+    let vocabFocusSentence = false;
+    function setHashView(hash, opts) {
       const isVocab = hash === '#vocabulary';
+      const shell = document.querySelector('.shell');
+      if (shell) shell.classList.toggle('vocab-view', isVocab);
+      if (opts && Object.prototype.hasOwnProperty.call(opts, 'videoId')) {
+        vocabFocusVideoId = opts.videoId || null;
+        vocabFocusSentence = !!opts.sentence;
+      } else if (!isVocab) {
+        vocabFocusVideoId = null;
+        vocabFocusSentence = false;
+      }
       tabVideoBtn.classList.toggle('active', !isVocab);
       tabVocabBtn.classList.toggle('active', isVocab);
       viewVideoEl.style.display = isVocab ? 'none' : '';
       viewVocabEl.style.display = isVocab ? '' : 'none';
+      syncStudySwitch(isVocab);
       if (isVocab) {
-        syncVocabEmbed();
+        syncVocabEmbed(vocabFocusVideoId, vocabFocusSentence);
       }
     }
     window.addEventListener('hashchange', () => setHashView(location.hash));
     tabVideoBtn.addEventListener('click', () => { location.hash = ''; setHashView(''); vocabStudyStop(); });
     tabVocabBtn.addEventListener('click', () => { location.hash = '#vocabulary'; setHashView('#vocabulary'); vocabStudyStart(); });
-    gotoVocabLink.addEventListener('click', (e) => { e.preventDefault(); location.hash = '#vocabulary'; setHashView('#vocabulary'); });
+    gotoVocabLink.addEventListener('click', (e) => { e.preventDefault(); location.hash = '#vocabulary'; setHashView('#vocabulary', { videoId: null }); });
 
     // ===== User =====
+    function renderMembershipBadge() {
+      const badge = document.getElementById('vip-badge');
+      if (!badge) return;
+      const user = state.user;
+      const email = String(user?.email || '');
+      const guest = !user || user.is_guest || user.isGuest || /^guest_.*@temp\.linglish\.local$/i.test(email);
+      if (guest) {
+        badge.hidden = true;
+        return;
+      }
+      const type = String(user.membership_type || 'free').toLowerCase();
+      const names = { svip: 'SVIP', vip: 'VIP', family: '家庭版', free: '免费' };
+      const level = names[type] || '会员';
+      const text = badge.querySelector('.vip-text');
+      if (text) text.textContent = user.is_admin ? `${level} · 管理员` : `${level} 会员`;
+      badge.className = 'vip-badge ' + (type === 'vip' || type === 'svip' || type === 'family' || type === 'free' ? type : 'free');
+      badge.hidden = false;
+      badge.title = '进入会员中心，查看会员等级';
+    }
+
     async function loadUser() {
       try {
         const res = await fetch(`${API_BASE}/users/me`, { headers: headers() });
         if (res.ok) {
           state.user = await res.json();
+          renderMembershipBadge();
           debugLog('Loaded user:', state.user);
           // Sync user email to localStorage for TagSystem
           if (state.user && state.user.email) {
@@ -7685,15 +9229,21 @@
 
         // Render difficulty badge
         const difficultyConfig = {
-          beginner: { icon: '🌱', name: '入门', color: '#22c55e', bg: '#f0fdf4' },
-          intermediate: { icon: '🌿', name: '进阶', color: '#3b82f6', bg: '#eff6ff' },
-          advanced: { icon: '🌳', name: '高级', color: '#a855f7', bg: '#faf5ff' }
+          a1: { icon: 'A1', name: 'A1', color: '#15803d', bg: '#f0fdf4' },
+          a2: { icon: 'A2', name: 'A2', color: '#0f766e', bg: '#f0fdfa' },
+          b1: { icon: 'B1', name: 'B1', color: '#1d4ed8', bg: '#eff6ff' },
+          b2: { icon: 'B2', name: 'B2', color: '#6d28d9', bg: '#f5f3ff' },
+          c1: { icon: 'C1', name: 'C1', color: '#7e22ce', bg: '#faf5ff' },
+          c2: { icon: 'C2', name: 'C2', color: '#9f1239', bg: '#fff1f2' },
+          beginner: { icon: 'A1', name: 'A1', color: '#15803d', bg: '#f0fdf4' },
+          intermediate: { icon: 'B1', name: 'B1', color: '#1d4ed8', bg: '#eff6ff' },
+          advanced: { icon: 'C1', name: 'C1', color: '#7e22ce', bg: '#faf5ff' }
         };
-        const diffLevel = v.difficulty_level;
+        const diffLevel = String(v.difficulty_level || '').toLowerCase();
         const diffConfig = difficultyConfig[diffLevel];
         const diffBadgeHtml = diffConfig ? `
           <span class="video-badge" style="background:${diffConfig.bg}; color:${diffConfig.color}; border-color:${diffConfig.color}40;">
-            ${diffConfig.icon} ${diffConfig.name}
+            ${diffConfig.name}
           </span>
         ` : '';
 
@@ -7872,7 +9422,11 @@
     // ============================================================
     // YouTube-style Video Library Browser
     // ============================================================
-    const vbState = { status: '', scope: 'all' };
+    const vbState = { status: '', scope: 'all', channelKey: '', filtersOpen: false, libraryView: 'videos' };
+    const CHANNEL_STORE_KEY = 'linglish_channels_v1';
+    const PODCAST_STORE_KEY = 'linglish_podcasts_v1';
+    const podState = { feedUrl: '' };
+    let podcastDialogMode = 'search';
 
     // Build an SVG data URI with a per-card gradient + big initial + play icon.
     // IMPORTANT: encodeURIComponent does NOT encode apostrophes, so always use
@@ -7979,6 +9533,585 @@
       wrap.appendChild(frag);
     }
 
+    function readStore(key) {
+      try {
+        const data = JSON.parse(localStorage.getItem(key) || '[]');
+        return Array.isArray(data) ? data : [];
+      } catch (_) { return []; }
+    }
+    function writeStore(key, value) {
+      try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) { }
+    }
+    async function postMedia(path, body) {
+      const res = await fetch(`${API_BASE}/media/${path}`, {
+        method: 'POST',
+        headers: headers(),
+        body: JSON.stringify(body || {}),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok || data.success === false) throw new Error(data.error || '请求失败');
+      return data;
+    }
+    function parseDurationSec(value) {
+      const raw = String(value || '').trim();
+      if (!raw) return 0;
+      if (/^\d+(\.\d+)?$/.test(raw)) return Number(raw);
+      const parts = raw.split(':').map(Number);
+      if (parts.some((n) => !Number.isFinite(n))) return 0;
+      if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+      if (parts.length === 2) return parts[0] * 60 + parts[1];
+      return 0;
+    }
+    function feedMeta(v) {
+      const raw = v.published || v.created_at || v.uploaded_at || '';
+      const date = raw ? new Date(raw) : null;
+      const dateText = date && !Number.isNaN(date.getTime())
+        ? `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日`
+        : '';
+      const duration = Number(v.duration_sec) > 0 ? fmtSec(v.duration_sec) : '';
+      return [dateText, duration].filter(Boolean).join(' · ');
+    }
+    function materializeChannelVideo(channelTitle, item) {
+      const existing = (state.videos || []).find((v) => v.youtube_video_id && v.youtube_video_id === item.videoId);
+      if (existing) return existing;
+      return {
+        id: `yt:${item.videoId}`,
+        title: item.title,
+        original_filename: item.title,
+        youtube_video_id: item.videoId,
+        thumbnail_path: item.thumbnail,
+        collection_name: channelTitle,
+        published: item.published,
+        duration_sec: 0,
+        external_youtube: true,
+        language: 'en',
+      };
+    }
+    function isMemberVideo(video) {
+      const uid = state.user && state.user.id;
+      if (uid === null || uid === undefined || uid === '') return false;
+      return Boolean(video && video.uploader_id !== null && video.uploader_id !== undefined
+        && String(video.uploader_id) === String(uid));
+    }
+    function activeLibraryView() {
+      const key = String(vbState.channelKey || '');
+      if (key.startsWith('import:')) return vbState.libraryView === 'channels' ? 'channels' : 'mine';
+      if (key.startsWith('local:')) return 'channels';
+      if (vbState.libraryView === 'channels' || vbState.libraryView === 'mine') return vbState.libraryView;
+      return 'videos';
+    }
+    function syncLibraryChrome(filtering) {
+      const chips = document.getElementById('vb-chip-rows');
+      const hero = document.getElementById('vb-channel-hero');
+      const title = document.getElementById('vb-title');
+      const hint = document.getElementById('vb-hint');
+      const inChannel = Boolean(vbState.channelKey);
+      const view = activeLibraryView();
+      const inChannels = view === 'channels';
+      const inMine = view === 'mine';
+      const pop = document.getElementById('vb-filter-pop');
+      if (pop) pop.hidden = !inMine || inChannel || !vbState.filtersOpen;
+      if (chips) chips.hidden = false;
+      if (hero) hero.hidden = !inChannel;
+      if (title && !inChannel) {
+        title.textContent = inChannels ? '频道库' : (inMine ? '选择分类' : '精选视频');
+      }
+      if (hint) {
+        const picking = inMine && new URLSearchParams(location.search).get('returnTo') === 'coach';
+        hint.hidden = !picking;
+        if (picking) {
+          const label = new URLSearchParams(location.search).get('mode') === 'dialogue' ? '实战场' : 'AI陪练';
+          hint.textContent = `选中一条后，会进入${label}。`;
+        }
+      }
+      const filterBtn = document.getElementById('vb-filter-toggle');
+      if (filterBtn) filterBtn.hidden = true;
+      const addBtn = document.getElementById('vb-add-channel');
+      if (addBtn) addBtn.hidden = !inMine || inChannel;
+      const search = document.getElementById('vb-search');
+      if (search && document.activeElement !== search) {
+        search.placeholder = inChannels && !inChannel ? '搜索频道名称…' : '搜索视频标题 / 合集 / 标签…';
+      }
+      document.querySelectorAll('[data-vb-view]').forEach((btn) => {
+        const on = btn.dataset.vbView === view;
+        btn.classList.toggle('active', on);
+        btn.setAttribute('aria-selected', String(on));
+      });
+    }
+    function renderShelfCard(item, onOpen) {
+      const card = document.createElement('article');
+      card.className = 'vb-card';
+      card.tabIndex = 0;
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', item.title);
+      const initial = String(item.title || 'V').trim().charAt(0).toUpperCase() || 'V';
+      const fallback = item.square
+        ? vbBuildPlaceholder(item.title, initial).replace('width="480" height="270" viewBox="0 0 480 270"', 'width="480" height="480" viewBox="0 0 480 480"')
+        : vbBuildPlaceholder(item.title, initial);
+      card.innerHTML = `<div class="vb-thumb-wrap"><img class="vb-thumb" alt=""></div><h3 class="vb-shelf-name">${esc(item.title)}</h3>`;
+      const img = card.querySelector('img');
+      img.dataset.vbFallback = fallback;
+      img.onerror = function () { vbOnThumbError(this); };
+      img.src = item.thumb || fallback;
+      const open = () => onOpen(item);
+      card.addEventListener('click', open);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); open(); }
+      });
+      return card;
+    }
+    function renderFeedVideoCard(v, onPlay) {
+      const title = v.title || v.original_filename || '视频';
+      const channel = v.collection_name || v.showTitle || '视频';
+      const initial = String(channel).trim().charAt(0).toUpperCase() || 'V';
+      const fallback = vbBuildPlaceholder(`${channel}|${title}`, initial);
+      const card = document.createElement('article');
+      card.className = 'vb-card vb-feed-card';
+      card.tabIndex = 0;
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', `播放：${title}`);
+      const duration = Number(v.duration_sec) > 0 ? `<span class="vb-duration">${fmtSec(v.duration_sec)}</span>` : '';
+      card.innerHTML = `<div class="vb-thumb-wrap"><img class="vb-thumb" alt="">${duration}</div><div class="vb-card-body"><div class="vb-card-info"><h3 class="vb-card-title">${esc(title)}</h3><div class="vb-card-channel">${esc(feedMeta(v) || channel)}</div></div></div>`;
+      const img = card.querySelector('img');
+      img.dataset.vbFallback = fallback;
+      img.onerror = function () { vbOnThumbError(this); };
+      img.src = resolveThumbnail(v) || v.thumbnail_path || fallback;
+      const play = () => onPlay(v);
+      card.addEventListener('click', play);
+      card.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); play(); }
+      });
+      return card;
+    }
+    function findOpenChannel() {
+      const key = vbState.channelKey || '';
+      if (key.startsWith('import:')) {
+        return readStore(CHANNEL_STORE_KEY).find((ch) => ch.channelId === key.slice(7)) || null;
+      }
+      if (key.startsWith('local:')) {
+        const name = key.slice(6);
+        const list = (state.videos || []).filter((v) => !isMemberVideo(v) && (v.collection_name || v.collection || v.series || '精选') === name);
+        return { local: true, title: name, description: `本库收录 ${list.length} 个视频，点开就能学习。`, videos: list };
+      }
+      return null;
+    }
+    function importedChannelItems() {
+      return readStore(CHANNEL_STORE_KEY).map((ch) => ({
+        key: `import:${ch.channelId}`,
+        title: ch.title || 'YouTube 频道',
+        thumb: (ch.videos && ch.videos[0] && ch.videos[0].thumbnail) || '',
+      }));
+    }
+    function renderChannelShelf(grid, empty, stats, videos) {
+      const items = [];
+      const seen = new Set();
+      const groups = new Map();
+      (videos || []).forEach((video) => {
+        const name = video.collection_name || video.collection || video.series || '精选';
+        if (!groups.has(name)) groups.set(name, video);
+      });
+      groups.forEach((video, name) => {
+        if (seen.has(String(name).toLowerCase())) return;
+        items.push({ key: `local:${name}`, title: name, thumb: resolveThumbnail(video) || '' });
+      });
+      const query = ((document.getElementById('vb-search') || {}).value || '').trim().toLowerCase();
+      const visible = query
+        ? items.filter((item) => String(item.title || '').toLowerCase().includes(query))
+        : items;
+      if (stats) stats.textContent = `${visible.length} 个频道`;
+      if (!visible.length) {
+        grid.innerHTML = '';
+        if (empty) {
+          empty.hidden = false;
+          const title = empty.querySelector('.vb-empty-title');
+          const hint = empty.querySelector('.vb-empty-hint');
+          if (title) title.textContent = items.length ? '没有找到这个频道' : '还没有频道';
+          if (hint) hint.textContent = items.length ? '换个频道名称试试' : '';
+          const reset = empty.querySelector('#vb-reset-btn');
+          if (reset) reset.hidden = true;
+          const addEmpty = empty.querySelector('#vb-channel-empty-add');
+          if (addEmpty) addEmpty.hidden = true;
+        }
+        return;
+      }
+      const addWhenFilled = document.getElementById('vb-channel-empty-add');
+      if (addWhenFilled) addWhenFilled.hidden = true;
+      if (empty) empty.hidden = true;
+      const addEmpty = document.getElementById('vb-channel-empty-add');
+      if (addEmpty) addEmpty.hidden = true;
+      const frag = document.createDocumentFragment();
+      visible.forEach((item) => frag.appendChild(renderShelfCard(item, () => {
+        vbState.channelKey = item.key;
+        renderVideoBrowser();
+      })));
+      grid.innerHTML = '';
+      grid.appendChild(frag);
+    }
+    function renderChannelFeed(grid, empty, stats, q) {
+      const channel = findOpenChannel();
+      if (!channel) {
+        vbState.channelKey = '';
+        renderVideoBrowser();
+        return;
+      }
+      const nameEl = document.getElementById('vb-channel-name');
+      const descEl = document.getElementById('vb-channel-desc');
+      const avatar = document.getElementById('vb-channel-avatar');
+      const title = document.getElementById('vb-title');
+      if (nameEl) nameEl.textContent = channel.title || '频道';
+      if (descEl) descEl.textContent = channel.description || `来自 YouTube · ${(channel.videos || []).length} 个视频`;
+      if (title) title.textContent = channel.title || '频道';
+      if (avatar) {
+        const initial = String(channel.title || 'V').trim().charAt(0).toUpperCase() || 'V';
+        avatar.style.background = vbGetAvatarGradient(channel.title || 'V');
+        avatar.textContent = initial;
+      }
+      const subBtn = document.getElementById('vb-channel-sub');
+      if (subBtn) subBtn.hidden = !!channel.local;
+      let list = channel.local ? channel.videos : (channel.videos || []).map((item) => materializeChannelVideo(channel.title, item));
+      if (q) {
+        const query = q.toLowerCase();
+        list = list.filter((v) => String(v.title || v.original_filename || '').toLowerCase().includes(query));
+      }
+      if (stats) stats.textContent = `${list.length} 个视频`;
+      if (!list.length) {
+        grid.innerHTML = '';
+        if (empty) empty.hidden = false;
+        return;
+      }
+      if (empty) empty.hidden = true;
+      const frag = document.createDocumentFragment();
+      list.forEach((v) => frag.appendChild(renderFeedVideoCard(v, (video) => {
+        closeVideoBrowser();
+        selectVideo(video);
+      })));
+      grid.innerHTML = '';
+      grid.appendChild(frag);
+    }
+    function closeChannelDialog() {
+      const dialog = document.getElementById('channel-dialog');
+      if (dialog) dialog.hidden = true;
+    }
+    function openChannelDialog() {
+      const error = document.getElementById('channel-dialog-error');
+      if (error) error.textContent = '';
+      const dialog = document.getElementById('channel-dialog');
+      if (dialog) dialog.hidden = false;
+      setTimeout(() => document.getElementById('channel-url')?.focus(), 30);
+    }
+    async function submitChannelUrl() {
+      const input = document.getElementById('channel-url');
+      const error = document.getElementById('channel-dialog-error');
+      const button = document.getElementById('channel-submit');
+      const url = input ? input.value.trim() : '';
+      if (error) error.textContent = '';
+      if (!url) {
+        if (error) error.textContent = '请填写频道链接';
+        return;
+      }
+      if (button) {
+        button.disabled = true;
+        button.textContent = '正在读取…';
+      }
+      try {
+        const data = await postMedia('channels/preview', { url });
+        const channel = data.channel;
+        const list = readStore(CHANNEL_STORE_KEY).filter((item) => item.channelId !== channel.channelId);
+        list.unshift({
+          channelId: channel.channelId,
+          handle: channel.handle,
+          title: channel.title,
+          pageUrl: channel.pageUrl,
+          description: `来自 YouTube · ${channel.videos.length} 个视频`,
+          videos: channel.videos,
+        });
+        writeStore(CHANNEL_STORE_KEY, list.slice(0, 40));
+        closeChannelDialog();
+        if (input) input.value = '';
+        openVideoBrowser();
+        vbState.libraryView = 'channels';
+        vbState.channelKey = `import:${channel.channelId}`;
+        renderVideoBrowser();
+        showToast('频道已添加，可从顶部「频道」再次进入', 'info');
+      } catch (err) {
+        if (error) error.textContent = err.message || '添加失败';
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = '添加';
+        }
+      }
+    }
+    function rememberPodcast(podcast) {
+      const list = readStore(PODCAST_STORE_KEY).filter((item) => item.feedUrl !== podcast.feedUrl);
+      list.unshift({
+        feedUrl: podcast.feedUrl,
+        title: podcast.title,
+        author: podcast.author || '',
+        image: podcast.image || '',
+        description: podcast.description || podcast.author || '',
+        episodes: podcast.episodes || [],
+      });
+      writeStore(PODCAST_STORE_KEY, list.slice(0, 40));
+      return list[0];
+    }
+    function openPodcastBrowser() {
+      const modal = document.getElementById('podcast-browser-modal');
+      if (!modal) return;
+      modal.hidden = false;
+      modal.setAttribute('aria-hidden', 'false');
+      window.__podOpen = true;
+      renderPodcastBrowser();
+    }
+    function closePodcastBrowser() {
+      const modal = document.getElementById('podcast-browser-modal');
+      if (!modal) return;
+      modal.hidden = true;
+      modal.setAttribute('aria-hidden', 'true');
+      window.__podOpen = false;
+      const menu = document.getElementById('pod-add-menu');
+      if (menu) menu.hidden = true;
+    }
+    function renderPodcastBrowser() {
+      const grid = document.getElementById('pod-grid');
+      const empty = document.getElementById('pod-empty');
+      const hero = document.getElementById('pod-show-hero');
+      const search = document.getElementById('pod-search');
+      if (!grid) return;
+      const q = ((search && search.value) || '').trim().toLowerCase();
+      const shows = readStore(PODCAST_STORE_KEY);
+      const show = shows.find((item) => item.feedUrl === podState.feedUrl) || null;
+      if (hero) hero.hidden = !show;
+      if (!show) {
+        const visible = shows.filter((item) => !q || String(item.title || '').toLowerCase().includes(q) || String(item.author || '').toLowerCase().includes(q));
+        grid.classList.add('pod-grid');
+        if (!visible.length) {
+          grid.innerHTML = '';
+          if (empty) empty.hidden = false;
+          return;
+        }
+        if (empty) empty.hidden = true;
+        const frag = document.createDocumentFragment();
+        visible.forEach((item) => frag.appendChild(renderShelfCard({
+          title: item.title,
+          thumb: item.image,
+          feedUrl: item.feedUrl,
+          square: true,
+        }, (picked) => {
+          podState.feedUrl = picked.feedUrl;
+          renderPodcastBrowser();
+        })));
+        grid.innerHTML = '';
+        grid.appendChild(frag);
+        return;
+      }
+      const nameEl = document.getElementById('pod-show-name');
+      const descEl = document.getElementById('pod-show-desc');
+      const avatar = document.getElementById('pod-show-avatar');
+      if (nameEl) nameEl.textContent = show.title || '播客';
+      if (descEl) descEl.textContent = show.description || show.author || '';
+      if (avatar) {
+        avatar.textContent = '';
+        avatar.style.backgroundImage = '';
+        avatar.style.backgroundSize = 'cover';
+        if (/^https?:\/\//i.test(show.image || '')) {
+          avatar.style.backgroundImage = `url("${String(show.image).replace(/["\\)]/g, '')}")`;
+        } else {
+          avatar.textContent = String(show.title || 'P').trim().charAt(0).toUpperCase();
+        }
+      }
+      let episodes = show.episodes || [];
+      if (q) episodes = episodes.filter((ep) => String(ep.title || '').toLowerCase().includes(q));
+      grid.classList.remove('pod-grid');
+      if (!episodes.length) {
+        grid.innerHTML = '';
+        if (empty) empty.hidden = false;
+        return;
+      }
+      if (empty) empty.hidden = true;
+      const frag = document.createDocumentFragment();
+      episodes.forEach((episode) => {
+        const card = renderFeedVideoCard({
+          title: episode.title,
+          thumbnail_path: episode.image || show.image,
+          duration_sec: parseDurationSec(episode.duration),
+          published: episode.published,
+          showTitle: show.title,
+        }, () => playPodcastEpisode(show, episode));
+        frag.appendChild(card);
+      });
+      grid.innerHTML = '';
+      grid.appendChild(frag);
+    }
+    function closePodcastDialog() {
+      const dialog = document.getElementById('podcast-dialog');
+      if (dialog) dialog.hidden = true;
+    }
+    function openPodcastDialog(mode) {
+      podcastDialogMode = mode === 'rss' ? 'rss' : 'search';
+      const title = document.getElementById('podcast-dialog-title');
+      const label = document.getElementById('podcast-dialog-label');
+      const input = document.getElementById('podcast-query');
+      const results = document.getElementById('podcast-search-results');
+      const error = document.getElementById('podcast-dialog-error');
+      const submit = document.getElementById('podcast-submit');
+      if (title) title.textContent = podcastDialogMode === 'rss' ? '通过 RSS 链接添加' : '搜索播客';
+      if (label) label.textContent = podcastDialogMode === 'rss' ? 'RSS 链接' : '节目名称';
+      if (input) {
+        input.value = '';
+        input.placeholder = podcastDialogMode === 'rss' ? 'https://example.com/feed.xml' : '例如 Spotlight English';
+      }
+      if (results) results.innerHTML = '';
+      if (error) error.textContent = '';
+      if (submit) submit.textContent = podcastDialogMode === 'rss' ? '添加' : '搜索';
+      const menu = document.getElementById('pod-add-menu');
+      if (menu) menu.hidden = true;
+      const dialog = document.getElementById('podcast-dialog');
+      if (dialog) dialog.hidden = false;
+      setTimeout(() => input && input.focus(), 30);
+    }
+    async function subscribePodcastFeed(url) {
+      const data = await postMedia('podcasts/preview', { url });
+      const saved = rememberPodcast(data.podcast);
+      closePodcastDialog();
+      openPodcastBrowser();
+      podState.feedUrl = saved.feedUrl;
+      renderPodcastBrowser();
+      showToast('播客已添加', 'info');
+    }
+    async function submitPodcastDialog() {
+      const input = document.getElementById('podcast-query');
+      const error = document.getElementById('podcast-dialog-error');
+      const button = document.getElementById('podcast-submit');
+      const value = input ? input.value.trim() : '';
+      if (error) error.textContent = '';
+      if (!value) {
+        if (error) error.textContent = podcastDialogMode === 'rss' ? '请填写 RSS 链接' : '请输入节目名称';
+        return;
+      }
+      if (button) button.disabled = true;
+      try {
+        if (podcastDialogMode === 'rss') {
+          await subscribePodcastFeed(value);
+          return;
+        }
+        const data = await postMedia('podcasts/search', { query: value });
+        const results = document.getElementById('podcast-search-results');
+        const shows = data.podcasts || [];
+        if (!shows.length) {
+          if (error) error.textContent = '没有找到这个播客';
+          if (results) results.innerHTML = '';
+          return;
+        }
+        if (results) {
+          results.innerHTML = '';
+          shows.forEach((show) => {
+            const buttonEl = document.createElement('button');
+            buttonEl.type = 'button';
+            buttonEl.className = 'pod-hit';
+            buttonEl.innerHTML = `<img alt="" src="${esc(show.image)}"><span><strong>${esc(show.title)}</strong><small>${esc(show.author || '')}</small></span>`;
+            buttonEl.addEventListener('click', async () => {
+              buttonEl.disabled = true;
+              try { await subscribePodcastFeed(show.feedUrl); }
+              catch (err) { if (error) error.textContent = err.message || '添加失败'; }
+              finally { buttonEl.disabled = false; }
+            });
+            results.appendChild(buttonEl);
+          });
+        }
+      } catch (err) {
+        if (error) error.textContent = err.message || '添加失败';
+      } finally {
+        if (button) button.disabled = false;
+      }
+    }
+    async function playPodcastEpisode(show, episode) {
+      const id = `pod:${episode.id || episode.audioUrl}`;
+      const media = {
+        id,
+        title: episode.title || show.title,
+        audioUrl: episode.audioUrl,
+        image: episode.image || show.image,
+        notes: episode.description || show.description || '',
+        cues: [],
+      };
+      window.LinglishStudyMedia = media;
+      window.LinglishStudyVideoId = '';
+      if (coachReturnActive()) {
+        if (episode.transcriptUrl) {
+          try {
+            const data = await postMedia('cues', { url: episode.transcriptUrl });
+            media.cues = (data.cues || []).map((cue, index) => ({
+              index,
+              text: cue.text,
+              start: cue.start,
+              end: cue.end,
+            }));
+          } catch (_) {}
+        }
+        closePodcastBrowser();
+        try { sessionStorage.setItem('linglish.coach.media', JSON.stringify(media)); } catch (_) {}
+        location.href = `./practice-session-desktop.html?source=external&mode=${coachReturnMode()}`;
+        return;
+      }
+      closePodcastBrowser();
+      const video = {
+        id,
+        title: media.title,
+        original_filename: episode.title || show.title,
+        thumbnail_path: episode.image || show.image,
+        collection_name: show.title,
+        duration_sec: parseDurationSec(episode.duration),
+        external_podcast: true,
+        language: 'en',
+        episode_notes: episode.description || show.description || '',
+      };
+      state.currentVideo = video;
+      state.currentSegments = [];
+      if (currentTitleEl) currentTitleEl.textContent = video.title;
+      updateVideoMeta(video);
+      if (youtubePlayer) {
+        try { youtubePlayer.destroy(); } catch (_) { }
+        youtubePlayer = null;
+      }
+      if (youtubePlayerEl) youtubePlayerEl.style.display = 'none';
+      if (playerEl) {
+        playerEl.style.display = 'block';
+        playerEl.poster = video.thumbnail_path || '';
+        currentPlayerType = 'local';
+        playerEl.src = episode.audioUrl;
+        playerEl.load();
+        stopSpokenAudio();
+        playerEl.play().catch(() => { });
+      }
+      setPlayerOverlay('loading', {
+        titleKey: 'video.overlay.loading_title',
+        descKey: 'video.overlay.loading_desc',
+        tips: ['音频准备好后会自动开始。'],
+      });
+      const ready = () => setPlayerOverlay('ready');
+      playerEl?.addEventListener('canplay', ready, { once: true });
+      renderTranscript();
+      if (!episode.transcriptUrl) return;
+      try {
+        const data = await postMedia('cues', { url: episode.transcriptUrl });
+        if (!state.currentVideo || state.currentVideo.id !== id) return;
+        let cues = (data.cues || []).map((cue, index) => ({ index, text: cue.text, start: cue.start, end: cue.end }));
+        if (window.LinglishSentenceSegments?.toDisplayedParagraphs) {
+          cues = window.LinglishSentenceSegments.toDisplayedParagraphs(cues);
+        } else if (window.LinglishSentenceSegments?.toCompleteSentences) {
+          cues = window.LinglishSentenceSegments.toCompleteSentences(cues);
+        }
+        state.currentSegments = cues;
+        if (window.LinglishStudyMedia && window.LinglishStudyMedia.id === id) {
+          window.LinglishStudyMedia.cues = cues;
+        }
+        video.episode_notes = '';
+        renderTranscript();
+        syncActive();
+      } catch (_) { }
+    }
+
     function renderVideoBrowser() {
       const grid = document.getElementById('vb-grid');
       if (!grid) return;
@@ -7993,13 +10126,22 @@
       // then apply browser-local status / text search via the pure LibraryFilter module.
       // scope 现由共享闭包状态统一处理；这里再传一次保持幂等（闭包未初始化时兜底 vbState.scope）。
       const sharedNow = window.getLibraryFilterState ? window.getLibraryFilterState() : null;
-      const effectiveScope = sharedNow ? (sharedNow.scope || 'all') : vbState.scope;
-      let videos = Array.isArray(state.filteredVideos) ? state.filteredVideos.slice() : [];
+      const view = activeLibraryView();
+      const catalog = Array.isArray(state.videos) ? state.videos : [];
+      let videos = catalog.filter((video) => view === 'mine' ? isMemberVideo(video) : !isMemberVideo(video));
       const q = ((vbSearch && vbSearch.value) || '').trim();
+      const mineFilters = view === 'mine';
       if (window.LibraryFilter) {
         videos = window.LibraryFilter.filterVideos(
           videos,
-          { query: q, status: vbState.status, scope: effectiveScope },
+          {
+            query: q,
+            status: mineFilters ? vbState.status : '',
+            scope: 'all',
+            difficulty: mineFilters && sharedNow ? (sharedNow.difficulty || '') : '',
+            scene: mineFilters && sharedNow ? (sharedNow.scene || '') : '',
+            tagId: mineFilters && sharedNow ? (sharedNow.tagId || '') : '',
+          },
           vbGetFilterContext()
         );
       }
@@ -8011,20 +10153,57 @@
 
       // 清除全部筛选按钮：任一筛选生效时显示。
       const clearBtn = document.getElementById('vb-clear-all-btn');
-      if (clearBtn) {
-        const shared = sharedNow || {};
-        clearBtn.hidden = !(q || vbState.status || effectiveScope === 'mine'
-          || shared.difficulty || shared.scene || shared.tagId);
+      const shared = sharedNow || {};
+      const filtering = view === 'mine' && Boolean(q || vbState.status
+        || shared.difficulty || shared.scene || shared.tagId);
+      if (clearBtn) clearBtn.hidden = !filtering;
+      syncLibraryChrome(filtering);
+      if (vbState.channelKey) {
+        renderChannelFeed(grid, empty, stats, q);
+        return;
       }
+      if (view === 'channels') {
+        renderChannelShelf(grid, empty, stats, videos);
+        return;
+      }
+      const emptyTitle = document.querySelector('#vb-empty .vb-empty-title');
+      const emptyHint = document.querySelector('#vb-empty .vb-empty-hint');
+      const mineChannels = view === 'mine'
+        ? importedChannelItems().filter((item) => !q || String(item.title || '').toLowerCase().includes(q.toLowerCase()))
+        : [];
+      if (emptyTitle) {
+        emptyTitle.textContent = view === 'mine'
+          ? (q ? '没有找到你的视频' : '还没有你导入的视频')
+          : (q ? '没有找到这个视频' : '还没有视频');
+      }
+      if (emptyHint) {
+        emptyHint.textContent = view === 'mine'
+          ? (q ? '换个关键词，或调整难度、场景、状态、标签' : '上传或导入的视频会出现在这里，可用难度、场景、状态和标签筛选')
+          : (q ? '换个关键词试试' : '');
+      }
+      const resetInEmpty = document.getElementById('vb-reset-btn');
+      if (resetInEmpty) resetInEmpty.hidden = view !== 'mine';
+      const addEmpty = document.getElementById('vb-channel-empty-add');
+      if (addEmpty) addEmpty.hidden = true;
 
-      if (!videos.length) {
+      if (!videos.length && !mineChannels.length) {
         grid.innerHTML = '';
         if (empty) empty.hidden = false;
         return;
       }
       if (empty) empty.hidden = true;
+      if (stats && view === 'mine') {
+        stats.textContent = mineChannels.length
+          ? `${videos.length} 个视频 · ${mineChannels.length} 个频道`
+          : `${videos.length} 个视频`;
+      }
 
       const frag = document.createDocumentFragment();
+      mineChannels.forEach((item) => frag.appendChild(renderShelfCard(item, () => {
+        vbState.libraryView = 'mine';
+        vbState.channelKey = item.key;
+        renderVideoBrowser();
+      })));
       const currentId = state.currentVideo ? String(state.currentVideo.id) : null;
       const currentUserId = state.user?.id;
 
@@ -8040,12 +10219,18 @@
         const isComplete = progress >= 90;
 
         const diffCfg = {
-          beginner: { icon: '🌱', label: '入门', bg: 'rgba(34,197,94,0.92)' },
-          intermediate: { icon: '🌿', label: '进阶', bg: 'rgba(59,130,246,0.92)' },
-          advanced: { icon: '🌳', label: '高级', bg: 'rgba(168,85,247,0.92)' }
-        }[v.difficulty_level];
+          a1: { icon: '', label: 'A1', bg: 'rgba(22,163,74,0.92)' },
+          a2: { icon: '', label: 'A2', bg: 'rgba(13,148,136,0.92)' },
+          b1: { icon: '', label: 'B1', bg: 'rgba(37,99,235,0.92)' },
+          b2: { icon: '', label: 'B2', bg: 'rgba(109,40,217,0.92)' },
+          c1: { icon: '', label: 'C1', bg: 'rgba(126,34,206,0.92)' },
+          c2: { icon: '', label: 'C2', bg: 'rgba(159,18,57,0.92)' },
+          beginner: { icon: '', label: 'A1', bg: 'rgba(22,163,74,0.92)' },
+          intermediate: { icon: '', label: 'B1', bg: 'rgba(37,99,235,0.92)' },
+          advanced: { icon: '', label: 'C1', bg: 'rgba(126,34,206,0.92)' }
+        }[String(v.difficulty_level || '').toLowerCase()];
         const levelBadge = diffCfg
-          ? `<span class="vb-level-badge" style="background:${diffCfg.bg}; color:#fff;">${diffCfg.icon} ${diffCfg.label}</span>`
+          ? `<span class="vb-level-badge" style="background:${diffCfg.bg}; color:#fff;">${diffCfg.label}</span>`
           : '';
 
         const progressBar = progress > 0
@@ -8186,6 +10371,12 @@
       }, 60);
     }
 
+    function openChannelBrowser() {
+      vbState.libraryView = 'channels';
+      vbState.channelKey = '';
+      openVideoBrowser();
+    }
+
     function closeVideoBrowser() {
       const modal = document.getElementById('video-browser-modal');
       if (!modal) return;
@@ -8203,14 +10394,123 @@
     (function wireVideoBrowser() {
       const trigger = document.getElementById('open-video-browser');
       if (trigger) {
-        trigger.addEventListener('click', (e) => { e.preventDefault(); openVideoBrowser(); });
+        trigger.addEventListener('click', (e) => {
+          e.preventDefault();
+          vbState.libraryView = 'videos';
+          vbState.channelKey = '';
+          openVideoBrowser();
+        });
       }
+      document.getElementById('open-channel-browser')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openChannelBrowser();
+      });
+      document.getElementById('vb-channel-empty-add')?.addEventListener('click', openChannelDialog);
       document.querySelectorAll('[data-vb-close]').forEach(el => el.addEventListener('click', closeVideoBrowser));
       const closeBtn = document.getElementById('vb-close-btn');
       if (closeBtn) closeBtn.addEventListener('click', closeVideoBrowser);
 
       document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && window.__vbOpen) closeVideoBrowser();
+        if (e.key !== 'Escape') return;
+        const channelDialog = document.getElementById('channel-dialog');
+        const podcastDialog = document.getElementById('podcast-dialog');
+        if (channelDialog && !channelDialog.hidden) { closeChannelDialog(); return; }
+        if (podcastDialog && !podcastDialog.hidden) { closePodcastDialog(); return; }
+        if (window.__podOpen) { closePodcastBrowser(); return; }
+        if (vbState.filtersOpen) {
+          vbState.filtersOpen = false;
+          const pop = document.getElementById('vb-filter-pop');
+          if (pop) pop.hidden = true;
+          return;
+        }
+        if (window.__vbOpen) closeVideoBrowser();
+      });
+      document.getElementById('vb-filter-pop')?.addEventListener('click', (e) => e.stopPropagation());
+      document.addEventListener('click', (e) => {
+        const pop = document.getElementById('vb-filter-pop');
+        const trigger = document.getElementById('vb-view-mine');
+        if (!pop || pop.hidden) return;
+        if (pop.contains(e.target) || trigger?.contains(e.target)) return;
+        vbState.filtersOpen = false;
+        pop.hidden = true;
+      });
+      document.getElementById('vb-add-channel')?.addEventListener('click', openChannelDialog);
+      document.querySelectorAll('[data-vb-view]').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          const nextView = btn.dataset.vbView;
+          if (nextView === 'mine') {
+            const opening = vbState.libraryView !== 'mine' || !vbState.filtersOpen;
+            vbState.libraryView = 'mine';
+            vbState.channelKey = '';
+            vbState.filtersOpen = opening;
+            e.stopPropagation();
+            renderVideoBrowser();
+            return;
+          }
+          vbState.filtersOpen = false;
+          vbState.libraryView = nextView === 'channels' ? 'channels' : 'videos';
+          vbState.channelKey = '';
+          renderVideoBrowser();
+        });
+      });
+      document.getElementById('vb-channel-back')?.addEventListener('click', () => {
+        vbState.channelKey = '';
+        renderVideoBrowser();
+      });
+      document.getElementById('vb-channel-sub')?.addEventListener('click', () => {
+        const key = vbState.channelKey || '';
+        if (!key.startsWith('import:')) return;
+        writeStore(CHANNEL_STORE_KEY, readStore(CHANNEL_STORE_KEY).filter((ch) => ch.channelId !== key.slice(7)));
+        vbState.channelKey = '';
+        renderVideoBrowser();
+        showToast('已取消这个频道', 'info');
+      });
+      document.getElementById('channel-cancel')?.addEventListener('click', closeChannelDialog);
+      document.getElementById('channel-dialog-x')?.addEventListener('click', closeChannelDialog);
+      document.getElementById('channel-submit')?.addEventListener('click', submitChannelUrl);
+      document.getElementById('channel-url')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submitChannelUrl();
+      });
+      document.getElementById('channel-dialog')?.addEventListener('click', (e) => {
+        if (e.target.id === 'channel-dialog') closeChannelDialog();
+      });
+      document.getElementById('open-podcast-browser')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        openPodcastBrowser();
+      });
+      document.querySelectorAll('[data-pod-close]').forEach((el) => el.addEventListener('click', closePodcastBrowser));
+      document.getElementById('pod-close-btn')?.addEventListener('click', closePodcastBrowser);
+      document.getElementById('pod-back')?.addEventListener('click', () => {
+        podState.feedUrl = '';
+        renderPodcastBrowser();
+      });
+      document.getElementById('pod-unsubscribe')?.addEventListener('click', () => {
+        writeStore(PODCAST_STORE_KEY, readStore(PODCAST_STORE_KEY).filter((item) => item.feedUrl !== podState.feedUrl));
+        podState.feedUrl = '';
+        renderPodcastBrowser();
+        showToast('已取消这个播客', 'info');
+      });
+      document.getElementById('pod-search')?.addEventListener('input', () => renderPodcastBrowser());
+      document.getElementById('pod-add-btn')?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = document.getElementById('pod-add-menu');
+        if (menu) menu.hidden = !menu.hidden;
+      });
+      document.getElementById('pod-add-menu')?.addEventListener('click', (e) => e.stopPropagation());
+      document.addEventListener('click', () => {
+        const menu = document.getElementById('pod-add-menu');
+        if (menu) menu.hidden = true;
+      });
+      document.getElementById('pod-add-search')?.addEventListener('click', () => openPodcastDialog('search'));
+      document.getElementById('pod-add-rss')?.addEventListener('click', () => openPodcastDialog('rss'));
+      document.getElementById('podcast-cancel')?.addEventListener('click', closePodcastDialog);
+      document.getElementById('podcast-dialog-x')?.addEventListener('click', closePodcastDialog);
+      document.getElementById('podcast-submit')?.addEventListener('click', submitPodcastDialog);
+      document.getElementById('podcast-query')?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submitPodcastDialog();
+      });
+      document.getElementById('podcast-dialog')?.addEventListener('click', (e) => {
+        if (e.target.id === 'podcast-dialog') closePodcastDialog();
       });
 
       const vbSearch = document.getElementById('vb-search');
@@ -8277,6 +10577,8 @@
       });
 
       function vbClearAllFilters() {
+        vbState.channelKey = '';
+        vbState.filtersOpen = false;
         const vbSearch2 = document.getElementById('vb-search');
         if (vbSearch2) vbSearch2.value = '';
         const vbSearchClear2 = document.getElementById('vb-search-clear');
@@ -8949,6 +11251,43 @@
       return refined;
     }
 
+    function loadCurrentTranscript(v, selectionToken) {
+      if (v && v.external_youtube) return loadExternalTranscript(v, selectionToken);
+      return loadVideoDetails(v.id, selectionToken);
+    }
+    async function loadExternalTranscript(v, selectionToken) {
+      const isExpected = () => {
+        const currentId = state.currentVideo && state.currentVideo.id;
+        if (currentId == null || String(currentId) !== String(v.id)) return false;
+        return !selectionToken || videoSelectionGuard.isCurrent(selectionToken, v.id);
+      };
+      try {
+        const res = await fetch(`${API_BASE}/youtube/transcript`, {
+          method: 'POST',
+          headers: headers(),
+          body: JSON.stringify({ url: `https://www.youtube.com/watch?v=${v.youtube_video_id}`, language: 'en' }),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (!isExpected()) return;
+        if (!res.ok || data.success === false) throw new Error(data.error || '这一集暂时没有字幕');
+        let nextSegments = refineTranscriptSegments(Array.isArray(data.segments) ? data.segments : []);
+        if (window.LinglishSentenceSegments?.toDisplayedParagraphs) {
+          nextSegments = window.LinglishSentenceSegments.toDisplayedParagraphs(nextSegments);
+        } else if (window.LinglishSentenceSegments?.toCompleteSentences) {
+          nextSegments = window.LinglishSentenceSegments.toCompleteSentences(nextSegments);
+        }
+        if (!isExpected()) return;
+        state.currentSegments = nextSegments;
+        rememberVideoWords(v.id, nextSegments);
+        renderTranscript();
+        if (typeof syncModeButtons === 'function') syncModeButtons();
+      } catch (error) {
+        if (!isExpected()) return;
+        state.currentSegments = [];
+        renderTranscript();
+        showToast(error.message || '这一集暂时没有字幕', 'warn');
+      }
+    }
     async function loadVideoDetails(id, selectionToken = null) {
       const isExpectedVideo = () => {
         const currentId = state.currentVideo && state.currentVideo.id;
@@ -9012,7 +11351,9 @@
           nextSegments = refineTranscriptSegments(segArray);
           nextSegments = await splitSegmentsByWaveformSilence(nextSegments, video.id, { skipIfTranslated: hasTranslations });
           if (!isExpectedVideo()) return;
-          if (window.LinglishSentenceSegments?.toCompleteSentences) {
+          if (window.LinglishSentenceSegments?.toDisplayedParagraphs) {
+            nextSegments = window.LinglishSentenceSegments.toDisplayedParagraphs(nextSegments);
+          } else if (window.LinglishSentenceSegments?.toCompleteSentences) {
             nextSegments = window.LinglishSentenceSegments.toCompleteSentences(nextSegments);
           } else {
             nextSegments = mergeIncompleteSentences(nextSegments);
@@ -9021,6 +11362,7 @@
         if (!isExpectedVideo()) return;
         state.currentSegments = nextSegments;
         console.log('[DEBUG] Final currentSegments length:', state.currentSegments.length);
+        rememberVideoWords(state.currentVideo && state.currentVideo.id, nextSegments);
 
         renderTranscript();
         syncModeButtons(); // 更新双语按钮状态
@@ -9046,6 +11388,7 @@
     }
     // Auto-import vocabulary from video (runs in background)
     async function autoImportVocabulary(videoId) {
+      if (!/^\d+$/.test(String(videoId || ''))) return;
       // Check if already processed
       if (processedVideos.has(Number(videoId))) {
         debugLog(`Video ${videoId} already processed, skipping auto-import`);
@@ -9084,7 +11427,66 @@
       }
     }
 
+    function renderVideoIntro(v) {
+      const thumb = document.getElementById('intro-thumb');
+      const titleEl = document.getElementById('intro-title');
+      const metaEl = document.getElementById('intro-meta');
+      const aboutEl = document.getElementById('intro-about');
+      if (!titleEl) return;
+      if (!v) {
+        if (thumb) {
+          thumb.hidden = true;
+          thumb.removeAttribute('src');
+        }
+        titleEl.textContent = '还没有选择视频';
+        if (metaEl) metaEl.textContent = '';
+        if (aboutEl) aboutEl.textContent = '打开顶部「视频库」，\n选中一个视频后，\n这里会显示封面、\n标题和简介。';
+        return;
+      }
+      const name = v.title || v.original_filename || `视频 ${v.id}`;
+      titleEl.textContent = name;
+      const channel = v.collection_name || v.collection || v.series || v.channel || 'Linglish';
+      const metaText = [channel, feedMeta(v)].filter(Boolean).join(' · ');
+      if (metaEl) metaEl.textContent = metaText;
+      const desc = String(v.description || v.episode_notes || v.summary || '').trim();
+      if (aboutEl) aboutEl.textContent = desc || '这段视频还没有简介。播放时看右侧字幕，点一句就能跳到对应位置。';
+      if (thumb) {
+        const src = resolveThumbnail(v);
+        if (src) {
+          thumb.hidden = false;
+          thumb.alt = name;
+          thumb.src = src;
+        } else {
+          thumb.hidden = true;
+        }
+      }
+    }
+
+    document.getElementById('intro-back')?.addEventListener('click', () => {
+      if (window.history.length > 1) window.history.back();
+      else window.location.href = './index-desktop.html';
+    });
+
+    let coachPickReady = false;
+
+    function coachReturnActive() {
+      return coachPickReady && new URLSearchParams(location.search).get('returnTo') === 'coach';
+    }
+
+    function coachReturnMode() {
+      return new URLSearchParams(location.search).get('mode') === 'dialogue' ? 'dialogue' : 'shadowing';
+    }
+
+    function leaveForCoach(videoId) {
+      if (!coachReturnActive() || !/^\d+$/.test(String(videoId || ''))) return false;
+      location.href = `./practice-session-desktop.html?videoId=${encodeURIComponent(videoId)}&mode=${coachReturnMode()}`;
+      return true;
+    }
+
     async function selectVideo(v) {
+      if (leaveForCoach(v && v.id)) return;
+      window.LinglishStudyVideoId = v && /^\d+$/.test(String(v.id)) ? String(v.id) : '';
+      if (!(v && /^\d+$/.test(String(v.id)))) window.LinglishStudyMedia = null;
       teardownFirstLessonRecording('video-selection');
       firstLessonGoal = null;
       firstLessonGoalCard.hide();
@@ -9121,7 +11523,8 @@
       }
 
       // 增加视频浏览量（仅在选择新视频时）
-      if (isNewVideo && v.id) {
+      if (playerEl) playerEl.poster = '';
+      if (isNewVideo && v.id && /^\d+$/.test(String(v.id))) {
         fetch(`${API_BASE}/video-resources/${v.id}/increment-view`, {
           method: 'POST',
           headers: headers()
@@ -9143,6 +11546,7 @@
       } catch (_) { }
       const title = v.title || v.original_filename || `视频 ${v.id}`;
       currentTitleEl.textContent = title;
+      renderVideoIntro(v);
       updateVideoMeta(v);
       updateVideoProgress(0, v.duration_sec || 0);
       progressSaveState.lastAt = 0;
@@ -9172,6 +11576,7 @@
             needsProxy = false;
           }
           if (!isCurrentSelection()) return;
+          if (v.external_youtube) needsProxy = false;
 
           // Strategy: Mainland users use local video if available, otherwise use YouTube iframe
           const hasLocalVideo = v.local_video_path && v.local_video_status === 'completed';
@@ -9212,7 +11617,7 @@
             openSourceBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${v.youtube_video_id}`, '_blank');
             importWordsBtn.disabled = false;
             setExtractButtonState(true);
-            loadVideoDetails(v.id, selectionToken);
+            loadCurrentTranscript(v, selectionToken);
 
             // Auto-import vocabulary in background (non-blocking)
             autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -9260,6 +11665,7 @@
                   try { youtubePlayer.pause(); } catch (_) { }
                   return;
                 }
+                noteLearningVideoStarted();
                 setPlayerOverlay('ready');
                 startWatchTimer();
                 syncActive();
@@ -9272,9 +11678,6 @@
                 stopWatchTimer(true);
                 isVideoPlaying = false;
                 if (event.data === YT.PlayerState.ENDED) highlightNextVideoCard();
-                if (event.data === YT.PlayerState.PAUSED && youtubePlayer && typeof youtubePlayer.suppressPauseOverlay === 'function') {
-                  youtubePlayer.suppressPauseOverlay();
-                }
               }
               updateShellCollapse();
             });
@@ -9289,7 +11692,7 @@
             openSourceBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${v.youtube_video_id}`, '_blank');
             importWordsBtn.disabled = false;
             setExtractButtonState(true);
-            loadVideoDetails(v.id, selectionToken);
+            loadCurrentTranscript(v, selectionToken);
 
             // Auto-import vocabulary in background (non-blocking)
             autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -9330,6 +11733,7 @@
                   try { youtubePlayer.pause(); } catch (_) { }
                   return;
                 }
+                noteLearningVideoStarted();
                 setPlayerOverlay('ready');
                 startWatchTimer();
                 syncActive(); // Sync subtitle on play
@@ -9342,9 +11746,6 @@
                 stopWatchTimer(true);
                 isVideoPlaying = false;
                 if (event.data === YT.PlayerState.ENDED) highlightNextVideoCard();
-                if (event.data === YT.PlayerState.PAUSED && youtubePlayer && typeof youtubePlayer.suppressPauseOverlay === 'function') {
-                  youtubePlayer.suppressPauseOverlay();
-                }
               }
               updateShellCollapse();
             });
@@ -9360,7 +11761,7 @@
             openSourceBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${v.youtube_video_id}`, '_blank');
             importWordsBtn.disabled = false;
             setExtractButtonState(true);
-            loadVideoDetails(v.id, selectionToken);
+            loadCurrentTranscript(v, selectionToken);
 
             // Auto-import vocabulary in background (non-blocking)
             autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -9405,19 +11806,31 @@
 
         if (src) {
           const url = src.startsWith('http') ? src : `${API_BASE}${src.startsWith('/') ? '' : '/'}${src}`;
+          let playable = null;
           try {
-            const playable = await setProtectedMediaSource(playerEl, url, isCurrentSelection);
-            if (!playable || !isCurrentSelection()) return;
-            try { lastLoadedUrl = new URL(playable, location.href).href; } catch (_) { lastLoadedUrl = playable; }
+            playable = await setProtectedMediaSource(playerEl, url, isCurrentSelection);
           } catch (_) {
             if (!isCurrentSelection()) return;
+            try {
+              if (window.LinglishMediaSession) await window.LinglishMediaSession.clear();
+              if (!isCurrentSelection()) return;
+              playable = await setProtectedMediaSource(playerEl, url, isCurrentSelection);
+            } catch (err) {
+              playable = null;
+            }
+          }
+          if (!playable || !isCurrentSelection()) {
+            if (!isCurrentSelection()) return;
+            const signedIn = !!getToken();
             setPlayerOverlay('error', {
               titleKey: 'video.overlay.error_title',
-              desc: '媒体授权失败，请重试。',
-              tips: [tOverlay('video.overlay.tip_retry', '可以尝试重试加载，或切换到其它视频。')]
+              desc: signedIn ? '播放授权没通过。点重试，再取一次授权。' : '登录后就能播放这一句。',
+              tips: [signedIn ? '如果还是失败，换一条视频，或刷新页面。' : '登录后进度会留在你的账号里。']
             });
+            if (!signedIn && playerOverlayRetryBtn) playerOverlayRetryBtn.textContent = '去登录';
             return;
           }
+          try { lastLoadedUrl = new URL(playable, location.href).href; } catch (_) { lastLoadedUrl = playable; }
 
           // graceful 404 handling
           playerEl.onerror = () => {
@@ -9438,7 +11851,7 @@
           openSourceBtn.onclick = () => window.open(lastLoadedUrl, '_blank');
           importWordsBtn.disabled = false;
           setExtractButtonState(true);
-          loadVideoDetails(v.id, selectionToken);
+          loadCurrentTranscript(v, selectionToken);
 
           // Auto-import vocabulary in background (non-blocking)
           autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -9453,7 +11866,7 @@
             titleKey: 'video.overlay.empty_title',
             descKey: 'video.overlay.empty_desc',
             tips: [
-              tOverlay('video.overlay.tip_pick', '你可以在左侧视频列表选择喜欢的视频开始学习。'),
+              tOverlay('video.overlay.tip_pick', '打开顶部「视频库」，选一个视频开始学习。'),
               getUploadTip(),
             ]
           });
@@ -9462,12 +11875,27 @@
       updateNextVideoCard();
     }
     // Manual import button - allows re-importing even if already processed
+    if (openVocabTabBtn) {
+      openVocabTabBtn.addEventListener('click', () => {
+        if (location.hash === '#vocabulary') {
+          location.hash = '';
+          setHashView('');
+          vocabStudyStop();
+          return;
+        }
+        location.hash = '#vocabulary';
+        setHashView('#vocabulary', { videoId: state.currentVideo && state.currentVideo.id });
+        vocabStudyStart();
+      });
+    }
     importWordsBtn.addEventListener('click', async () => {
       const v = state.currentVideo; if (!v) return;
       // Require auth for manual import
       const tk = getToken() || '';
       if (!tk || tk === 'null' || tk === 'undefined') { showToast('请先登录后再提取词汇', 'warn'); return; }
-      importWordsBtn.disabled = true; const old = importWordsBtn.textContent; importWordsBtn.textContent = '提取中…';
+      const importWordsLabel = importWordsBtn.querySelector('.import-words-label');
+      importWordsBtn.disabled = true;
+      if (importWordsLabel) importWordsLabel.textContent = '提取中…';
       try {
         const res = await fetch(`${API_BASE}/video-resources/${v.id}/import-words`, { method: 'POST', headers: headers() });
         const data = await res.json();
@@ -9486,9 +11914,13 @@
 
         // Reload vocabulary and switch to vocabulary tab
         await Promise.all([loadVocab(), loadVocabStats()]);
-        location.hash = '#vocabulary'; setHashView('#vocabulary');
+        location.hash = '#vocabulary'; setHashView('#vocabulary', { videoId: v.id });
       } catch (err) { showToast(err.message || '提取失败', 'warn'); }
-      finally { importWordsBtn.disabled = false; setExtractButtonState(true); importWordsBtn.textContent = old; }
+      finally {
+        importWordsBtn.disabled = !state.currentVideo;
+        setExtractButtonState(!!state.currentVideo);
+        if (importWordsLabel) importWordsLabel.textContent = '提取';
+      }
     });
     refreshVideosBtn.addEventListener('click', () => loadVideos().catch(e => showToast(e.message || '加载失败', 'warn')));
 
@@ -9705,7 +12137,10 @@
         }
         document.body.classList.toggle('focus-mode', !!enabled);
         if (focusToggleBtn) {
-          focusToggleBtn.textContent = enabled ? '🧘 专注中' : '🎧 专注';
+          focusToggleBtn.classList.toggle('is-active', !!enabled);
+          focusToggleBtn.setAttribute('aria-pressed', String(!!enabled));
+          const label = focusToggleBtn.querySelector('.focus-toggle__label');
+          if (label) label.textContent = enabled ? '专注中' : '专注';
         }
         updateSidebarToggleA11y();
         if (options.persist !== false) {
@@ -9740,12 +12175,32 @@
         });
       }
 
+      const requestPageFullscreen = () => {
+        const root = document.documentElement;
+        const request = root.requestFullscreen || root.webkitRequestFullscreen;
+        if (!request || document.fullscreenElement || document.webkitFullscreenElement) return;
+        Promise.resolve(request.call(root)).catch(() => {});
+      };
+      const exitPageFullscreen = () => {
+        if (!(document.fullscreenElement || document.webkitFullscreenElement)) return;
+        const exit = document.exitFullscreen || document.webkitExitFullscreen;
+        if (exit) Promise.resolve(exit.call(document)).catch(() => {});
+      };
+
       if (focusToggleBtn) {
         focusToggleBtn.addEventListener('click', () => {
           const enabled = !document.body.classList.contains('focus-mode');
           setFocusMode(enabled);
+          if (enabled) requestPageFullscreen();
+          else exitPageFullscreen();
         });
       }
+
+      document.addEventListener('fullscreenchange', () => {
+        if (!document.fullscreenElement && document.body.classList.contains('focus-mode')) {
+          setFocusMode(false);
+        }
+      });
 
       try {
         const savedPreference = localStorage.getItem('linglish_focus_mode');
@@ -9783,7 +12238,7 @@
             titleKey: 'video.overlay.empty_title',
             descKey: 'video.overlay.empty_desc',
             tips: [
-              tOverlay('video.overlay.tip_pick', '你可以在左侧视频列表选择喜欢的视频开始学习。'),
+              tOverlay('video.overlay.tip_pick', '打开顶部「视频库」，选一个视频开始学习。'),
               getUploadTip(),
             ]
           });
@@ -10097,7 +12552,13 @@
       return result;
     }
 
-    function wrapWordsToHTML(text) {
+    function missedWordsForSegment(segmentKey) {
+      if (!window.LinglishMissedWords) return new Set();
+      const videoId = state.currentVideo && state.currentVideo.id;
+      return new Set(window.LinglishMissedWords.wordsFor(localStorage, videoId, segmentKey));
+    }
+
+    function wrapWordsToHTML(text, missedSet) {
       const s = String(text || '');
       const parts = [];
       let i = 0;
@@ -10124,7 +12585,8 @@
             }
           }
 
-          parts.push(`<span class="word${owned ? ' owned' : ''}${stateClass}" data-lemma="${esc(lemma)}">${esc(token)}</span>`);
+          const missingClass = missedSet && (missedSet.has(token.toLowerCase()) || missedSet.has(lemma)) ? ' word-missing' : '';
+          parts.push(`<span class="word${owned ? ' owned' : ''}${stateClass}${missingClass}" data-lemma="${esc(lemma)}">${esc(token)}</span>`);
           i = j;
         } else {
           // emit single char, escaped
@@ -10139,8 +12601,14 @@
       const segs = Array.isArray(state.currentSegments) ? state.currentSegments : [];
       transcriptListEl.innerHTML = '';
       if (!segs.length) {
-        const noSubText = typeof i18n !== 'undefined' ? i18n.t('video.no_subtitle') : '暂无字幕';
-        transcriptListEl.innerHTML = `<div class="empty">${noSubText}</div>`;
+        const notes = state.currentVideo && state.currentVideo.episode_notes;
+        if (notes) {
+          transcriptListEl.innerHTML = `<div class="seg"><div class="time">节目简介</div><div class="text">${esc(notes)}</div></div>`;
+        } else {
+          const noSubText = typeof i18n !== 'undefined' ? i18n.t('video.no_subtitle') : '暂无字幕';
+          transcriptListEl.innerHTML = `<div class="empty">${noSubText}</div>`;
+        }
+        renderLyricStage(-1);
         return;
       }
       const frag = document.createDocumentFragment();
@@ -10157,7 +12625,7 @@
         el.dataset.index = String(i);
         el.dataset.start = String(startTime);
         el.dataset.end = String(endTime);
-        const textHTML = wrapWordsToHTML(s.text || '');
+        const textHTML = wrapWordsToHTML(s.text || '', missedWordsForSegment(i));
         el.innerHTML = `
             <div class="time">${start} – ${end}</div>
             <div class="text">${speaker ? `<span class=\"speaker\">${esc(speaker)}:</span>` : ''}${textHTML}</div>
@@ -10181,6 +12649,7 @@
           if (!Number.isFinite(Number(startTime))) return;
           try {
             const seekTime = Math.max(0, Number(startTime) + 0.01);
+            stopSpokenAudio();
             if (currentPlayerType === 'youtube' && youtubePlayer) {
               youtubePlayer.seekTo(seekTime);
               youtubePlayer.play();
@@ -10322,6 +12791,41 @@
         ensureVisible(el);
       }
     }
+
+    function startSubtitleDemo() {
+      const raw = [
+        { start: 0, end: 2.2, text: 'Welcome back. Today we are' },
+        { start: 2.2, end: 5.4, text: 'looking at how a clear paragraph helps you follow a story.' },
+        { start: 5.6, end: 8.1, text: 'Mr. Smith arrived at 3.14 and sat by the window.' },
+        { start: 8.3, end: 11.2, text: 'He opened his notebook and waited for the meeting to begin.' },
+        { start: 14, end: 16.4, text: 'The client walked in a little early.' },
+        { start: 16.5, end: 19.8, text: 'She smiled, put her bag down, and asked if everyone was ready.' },
+        { start: 20, end: 23.5, text: 'They started with the first question instead of the long introduction.' },
+        { start: 26.2, end: 29, text: 'Listen for the pause between ideas.' },
+        { start: 29.1, end: 32.4, text: 'A short pause stays in the same paragraph.' },
+        { start: 32.6, end: 36, text: 'A longer pause starts the next one, so each block is a complete thought.' },
+        { start: 39, end: 42.2, text: 'When the line under the video changes, the card on the right changes with it.' },
+        { start: 42.4, end: 46, text: 'You can read the whole paragraph, not a fragment cut in the middle.' },
+        { start: 48.5, end: 51.4, text: 'Try clicking a paragraph.' },
+        { start: 51.5, end: 55, text: 'The highlight follows that thought, and the words stay together until the idea is finished.' },
+      ];
+      const paragraphs = window.LinglishSentenceSegments?.toDisplayedParagraphs
+        ? window.LinglishSentenceSegments.toDisplayedParagraphs(raw)
+        : raw;
+      state.currentSegments = paragraphs;
+      renderTranscript();
+      let index = 0;
+      const show = () => {
+        highlightActiveSegment(index, true);
+        index = (index + 1) % paragraphs.length;
+      };
+      show();
+      window.setInterval(show, 3200);
+    }
+
+    if (new URLSearchParams(location.search).has('subtitle-demo')) {
+      startSubtitleDemo();
+    }
     // Unified sync function that works with both local and YouTube players
     const syncActive = () => {
       let currentTime = 0;
@@ -10387,7 +12891,12 @@
         const startSec = segEl?.dataset?.start ? Number(segEl.dataset.start) : (seg?.start_sec ?? seg?.start ?? seg?.startTime ?? null);
         const endSec = segEl?.dataset?.end ? Number(segEl.dataset.end) : (seg?.end_sec ?? seg?.end ?? seg?.endTime ?? null);
         e.stopPropagation();
-        openDrawerLookup(lemma, { index, startSec, endSec, sentence: seg?.text || '' });
+        const lookupCtx = { index, startSec, endSec, sentence: seg?.text || activeSubtitleEl?.textContent || '' };
+        if (wordEl.closest('#active-subtitle')) {
+          showSubtitleAssist(lemma, lookupCtx, wordEl);
+          return;
+        }
+        openDrawerLookup(lemma, lookupCtx);
         return;
       }
 
@@ -10450,19 +12959,135 @@
       const seg = Array.isArray(state.currentSegments) && Number.isFinite(index) ? state.currentSegments[index] : null;
       const startSec = segEl?.dataset?.start ? Number(segEl.dataset.start) : (seg?.start_sec ?? seg?.start ?? seg?.startTime ?? null);
       const endSec = segEl?.dataset?.end ? Number(segEl.dataset.end) : (seg?.end_sec ?? seg?.end ?? seg?.endTime ?? null);
-      openDrawerLookup(got.lemma, { index, startSec, endSec, sentence: seg?.text || '' });
+      const lookupCtx = { index, startSec, endSec, sentence: seg?.text || activeSubtitleEl?.textContent || '' };
+      if (target.closest('#active-subtitle')) showSubtitleAssist(got.lemma, lookupCtx, null);
+      else openDrawerLookup(got.lemma, lookupCtx);
     };
+
+    function bindSubtitleAssist(card) {
+      const closeBtn = card.querySelector('[data-assist="close"]');
+      const sayBtn = card.querySelector('[data-assist="say"]');
+      if (closeBtn) closeBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        card.hidden = true;
+        activeSubtitleEl?.querySelectorAll('.word-lookup').forEach((el) => el.classList.remove('word-lookup'));
+      });
+      if (sayBtn) sayBtn.addEventListener('click', (event) => {
+        event.stopPropagation();
+        card.hidden = true;
+        const record = document.getElementById('first-lesson-record');
+        if (record) record.click();
+      });
+    }
+
+    async function showSubtitleAssist(word, ctx, wordEl) {
+      const card = document.getElementById('subtitle-assist');
+      const assist = window.LinglishSentenceAssist;
+      if (!card || !assist) {
+        openDrawerLookup(word, ctx);
+        return;
+      }
+      if (dictDrawer && dictDrawer.classList.contains('show')) {
+        dictDrawer.classList.remove('show');
+        dictDrawer.setAttribute('aria-hidden', 'true');
+        isLookupOpen = false;
+      }
+      const sentence = (ctx && ctx.sentence) || activeSubtitleEl?.textContent || '';
+      card.dataset.word = word;
+      card.dataset.segment = Number.isFinite(Number(ctx && ctx.index)) ? String(ctx.index) : (activeSubtitleEl?.dataset.index || '');
+      card.hidden = false;
+      card.innerHTML = assist.cardHTML({ word, gloss: '正在查这个词…', sentence });
+      bindSubtitleAssist(card);
+      activeSubtitleEl?.querySelectorAll('.word-lookup').forEach((el) => el.classList.remove('word-lookup'));
+      if (wordEl) wordEl.classList.add('word-lookup');
+      let entry = null;
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 2500);
+      try {
+        const res = await fetch(`${API_BASE}/dictionary/${encodeURIComponent(word)}`, { headers: headers(), signal: controller.signal });
+        if (res.ok) entry = (await res.json())?.entry || null;
+      } catch (_) { }
+      finally { clearTimeout(timer); }
+      if (card.hidden || card.dataset.word !== word) return;
+      card.innerHTML = assist.cardHTML({
+        word,
+        phonetic: assist.phoneticOf(entry),
+        gloss: assist.shortGloss(entry),
+        sentence,
+      });
+      bindSubtitleAssist(card);
+      try { ensureLearning(word, ctx || {}, true); } catch (_) { }
+    }
     // Transcript single-click seeks; double-click looks up a word.
     transcriptListEl?.addEventListener('dblclick', handleLookupEvent);
     activeSubtitleEl?.addEventListener('click', handleLookupEvent, true);
+    document.getElementById('lyric-current')?.addEventListener('click', handleLookupEvent, true);
+    document.getElementById('lyric-stage')?.addEventListener('click', (e) => {
+      if (e.target.closest('.word')) return;
+      const line = e.target.closest('.lyric-line');
+      const start = Number(line?.dataset?.start);
+      if (!line || !Number.isFinite(start)) return;
+      const seekTime = Math.max(0, start + 0.01);
+      try {
+        stopSpokenAudio();
+        if (currentPlayerType === 'youtube' && youtubePlayer) {
+          youtubePlayer.seekTo(seekTime);
+          youtubePlayer.play();
+        } else if (playerEl) {
+          playerEl.currentTime = seekTime;
+          playerEl.play();
+        }
+      } catch (_) { }
+      const idx = Number(line.dataset.index);
+      if (Number.isFinite(idx)) highlightActiveSegment(idx, true);
+    });
     activeSubtitleEl?.addEventListener('dblclick', handleLookupEvent);
     activeSubtitleEl?.addEventListener('touchstart', (e) => handleLookupEvent(e.changedTouches ? { ...e, clientX: e.changedTouches[0].clientX, clientY: e.changedTouches[0].clientY, target: e.target } : e), { passive: true });
 
     // Dictionary popover logic
     const ipaCache = new Map();
     const audioCache = new Map();
-    // Global audio player to prevent overlapping sounds
+    // One audible source: word, definition, sentence, or the learning video.
     let currentAudioPlayer = null;
+    const dictVoiceSlot = (window.LinglishVoiceSlot
+      ? window.LinglishVoiceSlot.createVoiceSlot()
+      : { claim() { return 1; }, release() {}, isCurrent() { return true; } });
+    function haltSpokenOutput() {
+      if (currentAudioPlayer) {
+        try {
+          currentAudioPlayer.pause();
+          currentAudioPlayer.currentTime = 0;
+        } catch (_) { }
+        currentAudioPlayer = null;
+      }
+      try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) { }
+    }
+    let learningVideoYieldUntil = 0;
+    function stopSpokenAudio() {
+      learningVideoYieldUntil = 0;
+      dictVoiceSlot.release();
+      haltSpokenOutput();
+    }
+    function pauseLearningVideoNow() {
+      try {
+        if (currentPlayerType === 'youtube' && youtubePlayer && typeof youtubePlayer.getPlayerState === 'function' && youtubePlayer.getPlayerState() === 1) {
+          youtubePlayer.pause();
+        } else if (playerEl && !playerEl.paused) {
+          playerEl.pause();
+        }
+      } catch (_) { }
+    }
+    function pauseLearningVideo() {
+      learningVideoYieldUntil = Date.now() + 250;
+      pauseLearningVideoNow();
+    }
+    function noteLearningVideoStarted() {
+      if (Date.now() < learningVideoYieldUntil) {
+        pauseLearningVideoNow();
+        return;
+      }
+      stopSpokenAudio();
+    }
 
     // SpeechSynthesis voices load asynchronously on Android — cache them and
     // listen for voiceschanged so the fallback never runs with an empty list
@@ -10503,38 +13128,46 @@
       });
     }
     async function speak(word, directUrl = null) {
-      // Stop any currently playing audio
-      if (currentAudioPlayer) {
-        try {
-          currentAudioPlayer.pause();
-          currentAudioPlayer.currentTime = 0;
-          currentAudioPlayer = null;
-        } catch (_) { }
-      }
+      const text = String(word || '').trim();
+      if (!text) return;
+      const speakToken = dictVoiceSlot.claim(word);
+      if (!speakToken) return;
+      const alive = () => dictVoiceSlot.isCurrent(speakToken);
+      haltSpokenOutput();
+      pauseLearningVideo();
 
-      // Cancel any ongoing speech synthesis
-      try {
-        if (window.speechSynthesis) {
-          window.speechSynthesis.cancel();
+      const playUrl = (url) => new Promise((resolve) => {
+        if (!alive()) { resolve('stale'); return; }
+        const audio = new Audio();
+        audio.src = url;
+        currentAudioPlayer = audio;
+        if (!alive()) {
+          try { audio.pause(); } catch (_) { }
+          if (currentAudioPlayer === audio) currentAudioPlayer = null;
+          resolve('stale');
+          return;
         }
-      } catch (_) { }
+        const finish = (result) => {
+          if (!alive()) {
+            try { audio.pause(); } catch (_) { }
+            if (currentAudioPlayer === audio) currentAudioPlayer = null;
+            resolve('stale');
+            return;
+          }
+          if (result === false && currentAudioPlayer === audio) currentAudioPlayer = null;
+          resolve(result);
+        };
+        audio.onended = () => {
+          if (currentAudioPlayer === audio) currentAudioPlayer = null;
+        };
+        audio.onerror = () => finish(false);
+        audio.play().then(() => finish(true)).catch(() => finish(false));
+      });
 
-      // Helper to play audio with promise wrapper
-      const playUrl = (url) => {
-        return new Promise((resolve, reject) => {
-          const audio = new Audio();
-          audio.src = url;
-          currentAudioPlayer = audio;
-          audio.onended = resolve;
-          audio.onerror = () => reject(new Error('AUDIO_LOAD_FAILED'));
-          audio.play().catch(err => reject(err));
-        });
-      };
-
-      // 使用后端高质量 TTS 服务
       async function useBackendTTS() {
         const token = getToken();
         if (!token) throw new Error('No token');
+        if (!alive()) return 'stale';
 
         console.log('[Audio] Using backend TTS for:', word);
         const res = await fetch(`${API_BASE}/tts/generate`, {
@@ -10547,9 +13180,10 @@
             text: word,
             lang: 'en',
             provider: 'edge',
-            voice: 'en-US-JennyNeural'  // Edge TTS 最高质量神经网络女声
+            voice: (window.LinglishTtsVoice ? LinglishTtsVoice.current() : 'en-US-AvaMultilingualNeural')
           })
         });
+        if (!alive()) return 'stale';
 
         if (!res.ok) {
           const errText = await res.text().catch(() => '');
@@ -10558,81 +13192,20 @@
         }
         const data = await res.json();
         console.log('[Audio] TTS API response received:', Boolean(data));
+        if (!alive()) return 'stale';
         if (data.audioUrl) {
           const fullUrl = API_BASE + data.audioUrl;
           console.log('[Audio] Playing TTS audio');
-          await playUrl(fullUrl);
-          console.log('[Audio] TTS audio played successfully');
-          return true;
+          return playUrl(fullUrl);
         }
         throw new Error('No audio URL returned');
-      }
-
-      try {
-        // 国内用户直接使用后端 TTS，避免 Google 音频超时
-        if (state.isMainlandUser) {
-          console.log('[Audio] Mainland user detected, using backend TTS directly');
-          try {
-            await useBackendTTS();
-            return;
-          } catch (err) {
-            console.warn('[Audio] Backend TTS failed for mainland user:', err);
-            useBrowserTTS();
-            return;
-          }
-        }
-
-        let url = directUrl || audioCache.get(word);
-        const allowPublicDictionaryAudio = !!window.__ALLOW_PUBLIC_DICT_AUDIO__ ||
-          location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-
-        // Fallback candidates if no direct URL
-        const candidates = [];
-        if (!url) {
-          if (allowPublicDictionaryAudio) {
-            candidates.push(`https://ssl.gstatic.com/dictionary/static/sounds/oxford/${word}--_us_1.mp3`);
-            candidates.push(`https://ssl.gstatic.com/dictionary/static/sounds/oxford/${word}--_gb_1.mp3`);
-          }
-        } else {
-          // Fix protocol-relative URLs
-          if (url.startsWith('//')) url = 'https:' + url;
-          const sameOrigin = url.startsWith(API_BASE) || url.startsWith(window.location.origin);
-          if (allowPublicDictionaryAudio || sameOrigin) {
-            candidates.push(url);
-          }
-        }
-
-        // Try playing candidates sequentially
-        for (const src of candidates) {
-          try {
-            await playUrl(src);
-            return; // Success!
-          } catch (err) {
-            console.warn('[Audio] Failed:', { code: err?.name || 'AUDIO_PLAYBACK_ERROR' });
-          }
-        }
-
-        // 如果牛津词典音频失败，尝试后端 TTS
-        try {
-          await useBackendTTS();
-          return;
-        } catch (err) {
-          console.warn('[Audio] Backend TTS failed:', err);
-        }
-
-        // 最后回退到浏览器 TTS
-        throw new Error('All audio candidates failed');
-
-      } catch (err) {
-        console.warn('[Audio] All fallbacks failed, using browser TTS:', err);
-        useBrowserTTS();
       }
 
       async function useBrowserTTS() {
         console.log('[Audio] Falling back to browser SpeechSynthesis for:', word);
         try {
-          // Wait for voices to populate (Android fires voiceschanged asynchronously)
           const voices = await waitForTtsVoices(1000);
+          if (!alive()) return;
           const preferredNames = [
             'Jenny', 'Aria', 'Emma', 'Ava', 'Samantha', 'Victoria',
             'Allison', 'Moira', 'Tessa', 'Karen',
@@ -10643,13 +13216,12 @@
             preferredNames.some(name => v.name.toLowerCase().includes(name.toLowerCase()))
           ) || voices.find(v => v.lang === 'en-US') || voices.find(v => v.lang.startsWith('en'));
 
-          // No English voice on this device (e.g. Chinese-only system TTS):
-          // better silent + toast than mispronounced audio from a zh engine
           if (!preferredVoice) {
             console.warn('[Audio] No English voice available, skipping browser TTS');
             try { showToast('设备缺少英文语音，请检查系统 TTS 设置', 'warn'); } catch (_) { }
             return;
           }
+          if (!alive()) return;
 
           const u = new SpeechSynthesisUtterance(word);
           u.lang = 'en-US';
@@ -10658,11 +13230,66 @@
           u.volume = 0.8;
           u.voice = preferredVoice;
           console.log('[Audio] Using voice:', preferredVoice.name);
-
+          speechSynthesis.cancel();
+          if (!alive()) return;
           speechSynthesis.speak(u);
         } catch (e) {
           console.error('[Audio] SpeechSynthesis also failed:', e);
         }
+      }
+
+      const keepPlaying = (result) => result === true || result === 'stale';
+
+      try {
+        if (state.isMainlandUser) {
+          console.log('[Audio] Mainland user detected, using backend TTS directly');
+          try {
+            const result = await useBackendTTS();
+            if (keepPlaying(result) || !alive()) return;
+          } catch (err) {
+            console.warn('[Audio] Backend TTS failed for mainland user:', err);
+          }
+          if (alive()) await useBrowserTTS();
+          return;
+        }
+
+        let url = directUrl || audioCache.get(word);
+        const allowPublicDictionaryAudio = !!window.__ALLOW_PUBLIC_DICT_AUDIO__ ||
+          location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+        const candidates = [];
+        if (!url) {
+          if (allowPublicDictionaryAudio) {
+            candidates.push(`https://ssl.gstatic.com/dictionary/static/sounds/oxford/${word}--_us_1.mp3`);
+            candidates.push(`https://ssl.gstatic.com/dictionary/static/sounds/oxford/${word}--_gb_1.mp3`);
+          }
+        } else {
+          if (url.startsWith('//')) url = 'https:' + url;
+          const sameOrigin = url.startsWith(API_BASE) || url.startsWith(window.location.origin);
+          if (allowPublicDictionaryAudio || sameOrigin) candidates.push(url);
+        }
+
+        for (const src of candidates) {
+          if (!alive()) return;
+          const result = await playUrl(src);
+          if (keepPlaying(result)) return;
+          console.warn('[Audio] Failed:', { code: 'AUDIO_PLAYBACK_ERROR' });
+        }
+
+        if (!alive()) return;
+        try {
+          const result = await useBackendTTS();
+          if (keepPlaying(result) || !alive()) return;
+        } catch (err) {
+          console.warn('[Audio] Backend TTS failed:', err);
+        }
+
+        if (!alive()) return;
+        throw new Error('All audio candidates failed');
+      } catch (err) {
+        if (!alive()) return;
+        console.warn('[Audio] All fallbacks failed, using browser TTS:', err);
+        await useBrowserTTS();
       }
     }
     async function fetchDefinition(word) {
@@ -10699,6 +13326,7 @@
     };
     function showDrawer() { if (dictDrawer) { dictDrawer.classList.add('show'); dictDrawer.setAttribute('aria-hidden', 'false'); } isLookupOpen = true; updateShellCollapse(); }
     function hideDrawer() {
+      stopSpokenAudio();
       try { clearDictTranslatePoll(); } catch (_) { }
       console.log('[关闭查词] wasPlayingBeforeLookup =', wasPlayingBeforeLookup);
       if (dictDrawer) {
@@ -10759,10 +13387,12 @@
             if (state === 1) { // Playing
               youtubePlayer.pause();
             } else {
+              stopSpokenAudio();
               youtubePlayer.play();
             }
           } else if (playerEl) {
             if (playerEl.paused) {
+              stopSpokenAudio();
               playerEl.play();
             } else {
               playerEl.pause();
@@ -12232,6 +14862,20 @@
     })();
     // ===== Init =====
     (async function init() {
+      function openCoachLibraryIfRequested() {
+        const coachParams = new URLSearchParams(location.search);
+        if (coachParams.get('returnTo') !== 'coach') return;
+        coachPickReady = true;
+        const library = coachParams.get('library');
+        const label = coachParams.get('mode') === 'dialogue' ? '实战场' : 'AI陪练';
+        const hint = document.getElementById('vb-hint');
+        if (hint) hint.textContent = `选中一条内容后，会直接进入${label}。`;
+        if (library === 'podcasts') openPodcastBrowser();
+        else if (library === 'channels') openChannelBrowser();
+        else openVideoBrowser();
+        showToast(`选好内容后回到${label}`, 'info');
+      }
+
       function normalizeLevel(raw) {
         const v = String(raw || '').trim().toLowerCase();
         return (v === 'beginner' || v === 'intermediate' || v === 'advanced') ? v : null;
@@ -12242,6 +14886,7 @@
           return normalizeLevel(p.get('level') || p.get('difficulty'));
         } catch (_) { return null; }
       }
+      openCoachLibraryIfRequested();
       const urlLevelOverride = readLevelOverrideFromUrl();
       if (urlLevelOverride) {
         // Persist so other parts (difficulty chips, vocab page) stay consistent.
@@ -12342,6 +14987,7 @@
         const fallback = restored || pickDefaultVideo(baseList, urlLevelOverride);
         if (fallback) await selectVideo(fallback);
       }
+      coachPickReady = true;
     })();
 
     // 游客权限限制
@@ -12415,9 +15061,10 @@
     function advanceDesktopFirstLesson(context) {
       const nextIndex = context.displayIndex + 1;
       const next = state.currentSegments[nextIndex];
-      if (!next) return;
+      if (!next) return false;
       const start = Number(next.start ?? next.start_sec ?? 0);
       renderActiveSubtitle(nextIndex);
+      stopSpokenAudio();
       if (currentPlayerType === 'youtube' && youtubePlayer) {
         try {
           youtubePlayer.seekTo(start);
@@ -12430,6 +15077,7 @@
           if (playPromise?.catch) playPromise.catch(() => { });
         } catch (_) { }
       }
+      return true;
     }
 
     firstLessonRecorderController = window.LinglishFirstLessonPractice.createDesktopRecorderController({
@@ -12455,17 +15103,26 @@
         };
       },
       renderFeedback: (feedback, _snapshot, result) => {
-        firstLessonGoalCard.feedback(feedback);
-        showToast(feedback, result?.success === true ? 'success' : 'warn');
+        const selected = currentFirstLessonSegment();
+        const reference = result?.targetText || selected?.segment?.text || '';
+        const recognized = result?.recognizedText || '';
+        let missed = [];
+        if (window.LinglishMissedWords && reference && selected) {
+          missed = window.LinglishMissedWords.remember(
+            localStorage,
+            state.currentVideo && state.currentVideo.id,
+            selected.index,
+            reference,
+            recognized
+          );
+          renderActiveSubtitle(selected.index);
+          renderTranscript();
+        }
+        const note = window.LinglishFirstLessonGoal.sentenceResult(result?.success === true, missed);
+        firstLessonGoalCard.settle(note);
       },
-      advance: (_context, snapshot) => {
-        if (firstLessonGoal?.complete) return;
-        if (!snapshot?.complete) advanceDesktopFirstLesson(firstLessonGoal
-          ? { displayIndex: firstLessonGoal.nextIndex - 1 } : _context);
-      },
-      complete: (snapshot) => {
-        showToast(`首课完成 · 已练 ${snapshot.practicedCount}/${snapshot.total}`, 'success');
-      },
+      advance: () => {},
+      complete: () => {},
       onError: (error) => {
         firstLessonGoalCard.feedback(error?.message || '无法使用麦克风，请检查浏览器权限');
         showToast(error?.message || '无法使用麦克风，请检查浏览器权限', 'warn');
@@ -12502,6 +15159,7 @@
         playerEl,
         getYouTubePlayer: () => (typeof youtubePlayer !== 'undefined' ? youtubePlayer : null),
         getPlayerType: () => (typeof currentPlayerType !== 'undefined' ? currentPlayerType : 'local'),
+        stopDictAudio: () => { try { stopSpokenAudio(); } catch (_) { } },
         state,
         currentSegmentIndexByTime: (typeof currentSegmentIndexByTime === 'function') ? currentSegmentIndexByTime : null,
         highlightActiveSegment: (typeof highlightActiveSegment === 'function') ? highlightActiveSegment : null,
@@ -12577,10 +15235,13 @@
           <div class="tag-manager-section-title">难度级别</div>
           <select id="video-difficulty-selector"
             style="width:100%; padding:0.75rem; border:2px solid #e0e0e0; border-radius:10px; font-size:1rem; background:#f8f9fa;">
-            <option value="">未设置</option>
-            <option value="beginner">🌱 Beginner - 初级</option>
-            <option value="intermediate">🌿 Intermediate - 中级</option>
-            <option value="advanced">🌳 Advanced - 高级</option>
+            <option value="">字幕识别后自动填写</option>
+            <option value="a1">A1</option>
+            <option value="a2">A2</option>
+            <option value="b1">B1</option>
+            <option value="b2">B2</option>
+            <option value="c1">C1</option>
+            <option value="c2">C2</option>
           </select>
         </div>
 
@@ -12646,11 +15307,11 @@
         window.setLibraryFilter = (partial) => {
           const p = partial || {};
           if ('difficulty' in p) {
-            const lvl = normalizeDifficultyLevel(p.difficulty);
+            const lvl = canonicalVideoLevel(p.difficulty);
             currentDifficultyFilter = lvl;
             renderDifficultyFilters();
-            // 与侧栏 chip 点击保持一致：选中具体难度时记住用户偏好
-            if (lvl) saveUserLevel(lvl); else setLevelOverride(null);
+            const profileLevel = profileLevelForVideoLevel(lvl);
+            if (profileLevel) saveUserLevel(profileLevel); else setLevelOverride(null);
           }
           if ('scene' in p) {
             currentSceneFilter = p.scene || null;
@@ -12782,8 +15443,9 @@
           navGroup.className = 'tag-nav-group';
           const allScopeActive = currentScopeFilter !== 'mine' && !currentTagFilter;
           const mineScopeActive = currentScopeFilter === 'mine';
+          const officialCount = Math.max(0, (videos ? videos.length : 0) - myCount);
           navGroup.innerHTML =
-            `<button type="button" class="tag-nav-item${allScopeActive ? ' active' : ''}" data-action="scope" data-scope="all" aria-pressed="${allScopeActive}"><span class="tag-icon">📂</span><span>全部视频</span><span class="tag-count">(${videos ? videos.length : 0})</span></button>`
+            `<button type="button" class="tag-nav-item${allScopeActive ? ' active' : ''}" data-action="scope" data-scope="all" aria-pressed="${allScopeActive}"><span class="tag-icon">📂</span><span>视频库</span><span class="tag-count">(${officialCount})</span></button>`
             + `<button type="button" class="tag-nav-item${mineScopeActive ? ' active' : ''}" data-action="scope" data-scope="mine" aria-pressed="${mineScopeActive}"><span class="tag-icon">👤</span><span>我的视频</span><span class="tag-count">(${myCount})</span></button>`;
           fragment.appendChild(navGroup);
 
@@ -13297,7 +15959,7 @@
             try {
               const video = state.videos.find(v => String(v.id) === String(currentVideoForTagging));
               if (video && video.difficulty_level) {
-                difficultySelector.value = normalizeDifficultyLevel(video.difficulty_level) || '';
+                difficultySelector.value = canonicalVideoLevel(video.difficulty_level) || '';
               } else {
                 difficultySelector.value = '';
               }
@@ -13452,9 +16114,21 @@
         // ===== 难度筛选系统 =====
         let currentDifficultyFilter = null;
 
-        function normalizeLevel(raw) {
+        function canonicalVideoLevel(raw) {
           const v = String(raw || '').trim().toLowerCase();
-          return (v === 'beginner' || v === 'intermediate' || v === 'advanced') ? v : null;
+          if (v === 'beginner') return 'a1';
+          if (v === 'intermediate') return 'b1';
+          if (v === 'advanced') return 'c1';
+          return (v === 'a1' || v === 'a2' || v === 'b1' || v === 'b2' || v === 'c1' || v === 'c2') ? v : null;
+        }
+        function profileLevelForVideoLevel(level) {
+          if (level === 'a1' || level === 'a2') return 'beginner';
+          if (level === 'b1' || level === 'b2') return 'intermediate';
+          if (level === 'c1' || level === 'c2') return 'advanced';
+          return null;
+        }
+        function normalizeLevel(raw) {
+          return canonicalVideoLevel(raw);
         }
         function readLevelOverride() {
           try {
@@ -13514,7 +16188,6 @@
               body: JSON.stringify({ level })
             });
             console.log('[Difficulty] Saved user level:', level);
-            setLevelOverride(level);
           } catch (e) {
             console.warn('[Difficulty] Failed to save user level:', e);
           }
@@ -13525,17 +16198,16 @@
           if (!container) return;
 
           const videos = state.videos || [];
-          const stats = {
-            beginner: videos.filter(v => normalizeDifficultyLevel(v.difficulty_level) === 'beginner').length,
-            intermediate: videos.filter(v => normalizeDifficultyLevel(v.difficulty_level) === 'intermediate').length,
-            advanced: videos.filter(v => normalizeDifficultyLevel(v.difficulty_level) === 'advanced').length
-          };
+          const countLevel = (key) => videos.filter(v => canonicalVideoLevel(v.difficulty_level) === key).length;
 
           const levels = [
             { key: null, label: '全部', count: videos.length },
-            { key: 'beginner', label: '🌱 入门', count: stats.beginner },
-            { key: 'intermediate', label: '🌿 进阶', count: stats.intermediate },
-            { key: 'advanced', label: '🌳 高级', count: stats.advanced }
+            { key: 'a1', label: 'A1', count: countLevel('a1') },
+            { key: 'a2', label: 'A2', count: countLevel('a2') },
+            { key: 'b1', label: 'B1', count: countLevel('b1') },
+            { key: 'b2', label: 'B2', count: countLevel('b2') },
+            { key: 'c1', label: 'C1', count: countLevel('c1') },
+            { key: 'c2', label: 'C2', count: countLevel('c2') }
           ];
 
           container.innerHTML = levels.map(level => {
@@ -13547,16 +16219,13 @@
           // Add click handlers
           container.querySelectorAll('.difficulty-chip').forEach(chip => {
             chip.addEventListener('click', () => {
-              const newLevel = chip.dataset.difficulty || null;
+              const newLevel = canonicalVideoLevel(chip.dataset.difficulty);
               currentDifficultyFilter = newLevel;
+              setLevelOverride(newLevel);
               renderDifficultyFilters();
               if (window.applyVideoFilter) window.applyVideoFilter();
-              // Save to user profile if a specific level is selected
-              if (newLevel) {
-                saveUserLevel(newLevel);
-              } else {
-                setLevelOverride(null);
-              }
+              const profileLevel = profileLevelForVideoLevel(newLevel);
+              if (profileLevel) saveUserLevel(profileLevel);
             });
           });
 
@@ -13572,9 +16241,9 @@
         }
 
         // Initialize difficulty filters with user's default level
-        loadUserDefaultLevel().then(userLevel => {
-          const override = readLevelOverride();
-          currentDifficultyFilter = override || userLevel || null;
+        loadUserDefaultLevel().then(() => {
+          const stored = String(localStorage.getItem('linglish_active_level') || '').trim().toLowerCase();
+          currentDifficultyFilter = canonicalVideoLevel(stored);
           renderDifficultyFilters();
           if (window.applyVideoFilter) window.applyVideoFilter();
         });
@@ -13587,14 +16256,20 @@
         window.applyVideoFilter = function () {
           // 首先应用范围筛选（全部视频 / 我的视频）
           let filteredVideos = Array.isArray(state.videos) ? state.videos : [];
+          const uid = state.user && state.user.id;
+          const hasUid = !(uid === null || uid === undefined || uid === '');
           if (currentScopeFilter === 'mine') {
-            const uid = state.user && state.user.id;
-            filteredVideos = (uid === null || uid === undefined || uid === '')
+            filteredVideos = !hasUid
               ? []
               : filteredVideos.filter(v =>
                 v.uploader_id !== null && v.uploader_id !== undefined
                 && String(v.uploader_id) === String(uid)
               );
+          } else if (hasUid) {
+            filteredVideos = filteredVideos.filter(v =>
+              !(v.uploader_id !== null && v.uploader_id !== undefined
+                && String(v.uploader_id) === String(uid))
+            );
           }
 
           // 然后应用搜索筛选
@@ -13608,7 +16283,7 @@
           // 应用难度筛选（归一化比较：兼容历史数据 'Beginner' / ' intermediate ' 等）
           if (currentDifficultyFilter) {
             filteredVideos = filteredVideos.filter(v =>
-              normalizeDifficultyLevel(v.difficulty_level) === currentDifficultyFilter
+              canonicalVideoLevel(v.difficulty_level) === currentDifficultyFilter
             );
           }
 
@@ -13756,44 +16431,10 @@
       // 隐藏页面加载指示器
       function hidePageLoader() {
         const loader = document.getElementById('pageLoader');
-        if (loader) {
-          loader.classList.add('hidden');
-          setTimeout(() => loader.remove(), 400);
-        }
+        if (loader) loader.remove();
       }
 
-      // 为面板添加入场动画
-      function addEntryAnimations() {
-        const sidebar = document.querySelector('.sidebar');
-        const main = document.querySelector('.main');
-        const transcript = document.querySelector('.transcript');
-
-        if (sidebar) {
-          sidebar.classList.add('animate-in-left');
-        }
-        if (main) {
-          main.classList.add('animate-in', 'animate-delay-2');
-        }
-        if (transcript) {
-          transcript.classList.add('animate-in-right', 'animate-delay-3');
-        }
-      }
-
-      // 页面加载完成后执行
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-          addEntryAnimations();
-          setTimeout(hidePageLoader, 200);
-        });
-      } else {
-        addEntryAnimations();
-        setTimeout(hidePageLoader, 200);
-      }
-
-      // window.onload 作为备选
-      window.addEventListener('load', () => {
-        setTimeout(hidePageLoader, 100);
-      });
+      hidePageLoader();
     })();
   </script>
 
@@ -13808,25 +16449,16 @@
       if (window.startLinglishTour && window.LinglishTour.shouldStartTour(window.location.search)) {
         window.startLinglishTour(steps, 'linglish_tour_video_reader');
       }
-
-      // 确保视频区域完整可见
-      setTimeout(() => {
-        const player = document.getElementById('player');
-        if (player) {
-          const rect = player.getBoundingClientRect();
-          // 如果视频底部被遮挡，滚动到让视频完整显示
-          if (rect.bottom > window.innerHeight) {
-            window.scrollTo({
-              top: Math.max(0, rect.top + window.scrollY - 60),
-              behavior: 'smooth'
-            });
-          }
-        }
-      }, 300);
     });
   </script>
   <script src="./js/page-tracker.js"></script>
-  <script src="./js/video-reader/pro-controls.js?v=20261013" defer></script>
+  <script src="./js/video-reader/coaching-mode.js?v=20261015"></script>
+  <script src="./js/video-reader/sentence-analysis.js?v=20261018"></script>
+  <script src="./js/subtitle-study.js?v=20261019-study"></script>
+  <script src="./js/video-reader/coaching-dock.js?v=20261018-note-save" defer></script>
+  <script src="./js/video-reader/pro-controls.js?v=20261017-row-text" defer></script>
+  <script src="./js/study-switch.js?v=20261017-instant" defer></script>
+
 </body>
 
 </html>

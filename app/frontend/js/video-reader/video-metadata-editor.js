@@ -13,7 +13,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  var ALLOWED_DIFFICULTIES = ['beginner', 'intermediate', 'advanced'];
+  var ALLOWED_DIFFICULTIES = ['a1', 'a2', 'b1', 'b2', 'c1', 'c2', 'beginner', 'intermediate', 'advanced'];
 
   function normalizeMetadataUpdates(input) {
     var source = input || {};

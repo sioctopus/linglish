@@ -5,7 +5,13 @@
 
 function mapErrorToStatus(err, defaultStatus = 500) {
   if (!err || !err.message) return defaultStatus;
-  if (err.message === 'UNAUTHORIZED' || err.message === 'TOKEN_EXPIRED') {
+  if (
+    err.message === 'UNAUTHORIZED'
+    || err.message === 'TOKEN_EXPIRED'
+    || err.message === 'INVALID_TOKEN'
+    || err.message === 'GOOGLE_AUTHORIZATION_REVOKED'
+    || err.message === 'SESSION_EXPIRED'
+  ) {
     return 401;
   }
   if (err.message === 'FORBIDDEN' || err.message === 'BANNED' || err.status === 403) {
@@ -27,7 +33,7 @@ function sendJson(res, status, payload) {
   }
   const JSON_HEADERS = {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Linglish-Device',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,OPTIONS',
   };
   res.writeHead(status, JSON_HEADERS);

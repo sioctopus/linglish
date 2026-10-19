@@ -558,7 +558,10 @@ test('POST /auth/oauth/session returns the established account JSON and clears i
     new URL('http://localhost/auth/oauth/session'),
   ), true);
   assert.equal(successRes.statusCode, 200);
-  assert.equal(successRes.body.access_token, successRes.body.refresh_token);
+  assert.notEqual(successRes.body.access_token, successRes.body.refresh_token);
+  const refreshPayload = authService.decodeToken(successRes.body.refresh_token);
+  assert.equal(refreshPayload.typ, 'refresh');
+  assert.equal(refreshPayload.sub, 7);
   assert.equal(successRes.body.user_id, 7);
   assert.equal(successRes.body.is_new, false);
   assert.equal(successRes.body.user.email, 'oauth@example.test');

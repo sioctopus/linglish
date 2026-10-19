@@ -104,6 +104,7 @@
     return !!playerEl.paused;
   }
   function play() {
+    try { if (typeof bridge.stopDictAudio === 'function') bridge.stopDictAudio(); } catch (_) { /* ignore */ }
     const yt = getYT();
     if (getPlayerType() === 'youtube' && yt && typeof yt.play === 'function') {
       try { yt.play(); return; } catch (_) { /* fall through */ }
@@ -378,6 +379,12 @@
     if (m === -1) return verbose ? '↻ Loop ∞' : 'Loop ∞';
     return verbose ? `↻ Loop ×${m}` : `Loop ×${m}`;
   }
+  function loopShortLabel() {
+    const m = settings.loopMode || 0;
+    if (m === 0) return '循环';
+    if (m === -1) return '∞';
+    return `×${m}`;
+  }
   function paintLoopBtn() {
     const btn = document.getElementById('vrp-loop');
     if (!btn) return;
@@ -385,6 +392,8 @@
     btn.dataset.mode = String(settings.loopMode || 0);
     const label = btn.querySelector('.vrp-toggle__label');
     if (label) label.textContent = loopBtnLabel(false);
+    const short = btn.querySelector('.vrp-toggle__short');
+    if (short) short.textContent = loopShortLabel();
   }
 
   // Per-video resume positions: { [videoId]: { sec, ts } }
@@ -659,14 +668,20 @@
     opts = opts || {};
     return `<svg class="${opts.cls || 'vrp-btn__icon'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
   }
+  function lx(name, fallbackInner) {
+    if (typeof window !== 'undefined' && window.LxIcon && typeof window.LxIcon.html === 'function') {
+      return window.LxIcon.html(name, { className: 'vrp-btn__icon lx-icon' });
+    }
+    return svg(fallbackInner);
+  }
   const ICONS = {
-    prev:    svg('<polygon points="19 20 9 12 19 4 19 20"/><line x1="5" y1="19" x2="5" y2="5"/>'),
-    next:    svg('<polygon points="5 4 15 12 5 20 5 4"/><line x1="19" y1="5" x2="19" y2="19"/>'),
-    replay:  svg('<polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/>'),
-    loop:    svg('<polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'),
-    pause:   svg('<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>'),
-    speed:   svg('<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>'),
-    help:    '?',
+    prev:    lx('prev', '<path d="M19 5v14l-10-7 10-7z"/><path d="M5 5v14"/>'),
+    next:    lx('next', '<path d="M5 5v14l10-7L5 5z"/><path d="M19 5v14"/>'),
+    replay:  lx('replay', '<path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 5v5h5"/>'),
+    loop:    lx('loop', '<path d="m17 2 4 4-4 4"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>'),
+    pause:   lx('pause', '<rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/>'),
+    speed:   lx('clock', '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
+    help:    lx('help', '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.7 2.2c-.8.5-1.2 1-1.2 2"/><path d="M12 17h.01"/>'),
   };
 
   function buildBar() {
@@ -685,32 +700,33 @@
     bar.setAttribute('role', 'toolbar');
     bar.setAttribute('aria-label', 'Video learning controls');
 
-    // Insert scrubber rail just above the bar (single-line, full-width)
-    const scrub = buildScrubber();
-
     bar.innerHTML = `
       <div class="vrp-bar__group" role="group" aria-label="Sentence navigation">
-        <button class="vrp-btn" id="vrp-prev"  type="button" title="上一句 (←)">${ICONS.prev}<span>上一句</span></button>
-        <button class="vrp-btn" id="vrp-replay" type="button" title="Replay sentence (R)">${ICONS.replay}<span>Replay</span></button>
-        <button class="vrp-btn" id="vrp-next"  type="button" title="下一句 (→)">${ICONS.next}<span>下一句</span></button>
+        <button class="vrp-btn" id="vrp-prev"  type="button" title="上一句 (←)" aria-label="上一句"><span>上一句</span></button>
+        <button class="vrp-btn" id="vrp-replay" type="button" title="重放当前句 (R)" aria-label="重放当前句"><span>重放</span></button>
+        <button class="vrp-btn" id="vrp-next"  type="button" title="下一句 (→)" aria-label="下一句"><span>下一句</span></button>
       </div>
 
       <div class="vrp-bar__group" role="group" aria-label="Speed">
         <span class="vrp-bar__label">Speed</span>
         <div class="vrp-speed" id="vrp-speed">
-          ${SPEEDS.map(s => `<button class="vrp-speed__btn" type="button" data-speed="${s}" aria-pressed="${s === settings.rate}">${s === 1 ? '1×' : s + '×'}</button>`).join('')}
+          ${SPEEDS.map(s => {
+            const full = s === 1 ? '1×' : s + '×';
+            const short = s === 1 ? '1' : String(s).replace(/^0/, '');
+            return `<button class="vrp-speed__btn" type="button" data-speed="${s}" aria-label="${full}" aria-pressed="${s === settings.rate}"><span class="vrp-speed__full">${full}</span><span class="vrp-speed__short">${short}</span></button>`;
+          }).join('')}
         </div>
       </div>
 
-      <button class="vrp-toggle" id="vrp-loop" type="button" aria-pressed="${loopActive()}" data-mode="${settings.loopMode || 0}" title="Cycle loop mode: off → ×3 → ×5 → ∞ (A)">
-        <span class="vrp-toggle__dot"></span><span class="vrp-toggle__label">${loopBtnLabel(false)}</span>
+      <button class="vrp-toggle" id="vrp-loop" type="button" aria-pressed="${loopActive()}" data-mode="${settings.loopMode || 0}" title="循环当前句：关闭 → 3次 → 5次 → 一直 (A)" aria-label="循环当前句">
+        ${ICONS.loop}<span class="vrp-toggle__dot"></span><span class="vrp-toggle__label">${loopBtnLabel(false)}</span><span class="vrp-toggle__short">${loopShortLabel()}</span>
       </button>
-      <button class="vrp-toggle" id="vrp-autopause"  type="button" aria-pressed="${!!settings.autoPauseAtEnd}" title="Auto-pause at end of sentence (P)">
-        <span class="vrp-toggle__dot"></span><span>Auto-pause</span>
+      <button class="vrp-toggle" id="vrp-autopause"  type="button" aria-pressed="${!!settings.autoPauseAtEnd}" title="句末自动暂停 (P)" aria-label="句末自动暂停">
+        <span class="vrp-toggle__dot"></span><span>句末暂停</span>
       </button>
       <button class="vrp-btn" id="vrp-pip" type="button" title="Picture-in-Picture (I)" aria-label="Picture-in-Picture">
         <svg class="vrp-btn__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><rect x="12" y="11" width="7" height="6" rx="1" fill="currentColor" opacity="0.18"/></svg>
-        <span>PiP</span>
+        <span class="vrp-pip__label">画中画</span>
       </button>
 
       <button class="vrp-ab-pill" id="vrp-ab-pill" type="button" data-state="off" style="display:none" title="Click to clear A↔B (B to set, B again to start, B again to clear)">
@@ -740,11 +756,14 @@
       <button class="vrp-help-btn" id="vrp-help-btn" type="button" title="Keyboard shortcuts (?)" aria-label="Keyboard shortcuts">?</button>
     `;
 
-    // Mount the scrubber and toolbar as one sticky learning-control dock.
-    if (scrub) dock.appendChild(scrub);
+    // The player already has its own progress bar, so this dock is only the
+    // sentence controls. Place it directly under the video, above 带教.
     dock.appendChild(bar);
+    const caption = wrap.querySelector('#caption-bar');
     const meta = wrap.querySelector('#video-meta');
-    if (meta) {
+    if (caption) {
+      wrap.insertBefore(dock, caption);
+    } else if (meta) {
       wrap.insertBefore(dock, meta);
     } else {
       wrap.appendChild(dock);

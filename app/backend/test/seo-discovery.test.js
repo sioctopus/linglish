@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
+const vm = require('node:vm');
 
 // Exercise deployed canonicals with an explicit fictional site configuration.
 process.env.SITE_URL = 'https://www.example.com';
@@ -41,7 +42,21 @@ test('root serves the indexable product landing page on the canonical www URL', 
   assert.match(html, /<h1[^>]*>Linglish<\/h1>/);
   assert.match(html, /<link rel="canonical" href="https:\/\/www\.example\.com\/">/);
   assert.match(html, /"@type":\s*"FAQPage"/);
-  assert.doesNotMatch(html, /window\.location\.replace/);
+  const redirectStart = html.indexOf('if (readToken() && !isGuestSession(readToken())) {');
+  const redirectEnd = html.indexOf("document.getElementById('account-logout')", redirectStart);
+  assert.ok(redirectStart >= 0 && redirectEnd > redirectStart, 'account redirect must be conditional');
+  const destinations = [];
+  const accountRedirect = html.slice(redirectStart, redirectEnd);
+  for (const token of [null, 'guest-token']) {
+    vm.runInNewContext(accountRedirect, {
+      readToken: () => token,
+      isGuestSession: () => token === 'guest-token',
+      isMobile: () => false,
+      renderLoggedInAccount: () => {},
+      window: { location: { replace: destination => destinations.push(destination) } },
+    });
+  }
+  assert.deepEqual(destinations, [], 'anonymous and guest visitors must stay on the indexable landing page');
 });
 
 test('legacy landing URL redirects permanently to the canonical root', async (t) => {
