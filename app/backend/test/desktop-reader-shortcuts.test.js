@@ -48,6 +48,10 @@ function keyboardHarness(type = 'local') {
     getDuration: () => 30, showToast() {},
   };
   vm.createContext(context);
+  const typingStart = controls.indexOf('  function isTypingTarget(el) {');
+  const typingEnd = controls.indexOf('  // Toggle bilingual:', typingStart);
+  assert.ok(typingStart >= 0 && typingEnd > typingStart);
+  vm.runInContext(controls.slice(typingStart, typingEnd), context);
   const hostStart = html.indexOf("    document.addEventListener('keydown', (ev) => {");
   const hostEnd = html.indexOf('    // Wire dict tab buttons', hostStart);
   assert.ok(hostStart >= 0 && hostEnd > hostStart);
@@ -121,4 +125,16 @@ test('optional waveform refinement aborts a stalled request and keeps existing s
   assert.equal(await context.fetchOriginalWaveformFromServer(162, 0, 20, 240, 5), null);
   assert.equal(aborted, true);
   assert.equal(context.waveformOriginalCache.size, 0);
+});
+
+test('navigation disclosures and header controls keep native Space activation without toggling video', () => {
+  for (const target of [
+    { tagName: 'SUMMARY', getAttribute() { return null; } },
+    { tagName: 'BUTTON', closest(selector) { return selector === '.topbar' ? {} : null; } },
+  ]) {
+    const harness = keyboardHarness();
+    const event = harness.dispatch(' ', { target });
+    assert.equal(event.defaultPrevented, false);
+    assert.equal(harness.snapshot().toggles, 0);
+  }
 });

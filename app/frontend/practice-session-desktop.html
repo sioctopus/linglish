@@ -1612,6 +1612,8 @@
   }
   </script>
   <script src="./js/nav-back.js?v=1"></script>
+  <link rel="stylesheet" href="./css/learning-navigation.css?v=20261019-nav9">
+  <script src="./js/learning-navigation.js?v=20261019-nav3" defer></script>
 </head>
 
 <body>
@@ -1714,6 +1716,7 @@
 
   <div class="topbar">
     <div class="brand">
+      <a class="learning-compact-brand" href="./index-desktop.html" aria-label="Linglish 首页">Linglish</a>
       <h1 data-i18n="video.desktop_title">linglish · 视频学习（桌面版）</h1>
     </div>
     <div class="nav">
@@ -1744,7 +1747,7 @@
         <span class="vip-icon" data-lx-icon="crown" data-lx-class="lx-icon--sm"></span>
         <span class="vip-text">VIP</span>
       </a>
-      <a class="pill" data-nav="back" href="./video-reader-desktop.html" title="返回上一页">
+      <a class="pill" data-nav="back" data-learning-primary="back" aria-label="返回" href="./video-reader-desktop.html" title="返回上一页">
         <span data-lx-icon="back" data-lx-size="16" data-lx-class="lx-icon--sm"></span>
         <span data-i18n="nav.back">返回</span>
       </a>
@@ -1752,7 +1755,7 @@
         <span data-lx-icon="home" data-lx-size="14" data-lx-class="lx-icon--sm"></span>
         <span data-i18n="nav.home">首页</span>
       </a>
-      <a class="pill pill-browser" href="#" data-library="videos" title="浏览视频库"><span data-lx-icon="video" data-lx-class="lx-icon--sm"></span><span data-i18n="nav.library">视频库</span></a>
+      <a class="pill pill-browser" href="#" data-library="videos" data-learning-primary="library" title="浏览视频库"><span data-lx-icon="video" data-lx-class="lx-icon--sm"></span><span data-i18n="nav.library">视频库</span></a>
       <a class="pill pill-browser" href="#" data-library="channels" title="浏览频道库"><span data-lx-icon="channel" data-lx-class="lx-icon--sm"></span><span>频道库</span></a>
       <a class="pill" href="#" data-library="podcasts" title="浏览播客"><span data-lx-icon="mic" data-lx-class="lx-icon--sm"></span><span>播客</span></a>
       <a class="pill" href="./youtube-import.html" title="网络上传"><span data-lx-icon="upload" data-lx-class="lx-icon--sm"></span><span data-i18n="nav.youtube">网络上传</span></a>
@@ -16820,7 +16823,7 @@
     document.addEventListener('keydown', (e) => {
       if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
       // 如果用户正在输入框中打字，忽略快捷键
-      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT' || e.target.isContentEditable || e.target.getAttribute?.('role') === 'slider') {
+      if (e.target.closest?.('.topbar') || e.target.tagName === 'SUMMARY' || e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT' || e.target.isContentEditable || e.target.getAttribute?.('role') === 'slider') {
         return;
       }
 

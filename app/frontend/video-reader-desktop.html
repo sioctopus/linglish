@@ -6520,6 +6520,8 @@
     }
   }
 </style>
+  <link rel="stylesheet" href="./css/learning-navigation.css?v=20261019-nav9">
+  <script src="./js/learning-navigation.js?v=20261019-nav3" defer></script>
 </head>
 
 <body>
@@ -6531,6 +6533,7 @@
 
   <div class="topbar">
     <div class="brand">
+      <a class="learning-compact-brand" href="./index-desktop.html" aria-label="Linglish 首页">Linglish</a>
       <h1 data-i18n="video.desktop_title">linglish · 视频学习（桌面版）</h1>
     </div>
     <div class="nav">
@@ -6571,7 +6574,7 @@
         <span class="vip-icon" data-lx-icon="crown" data-lx-class="lx-icon--sm"></span>
         <span class="vip-text">VIP</span>
       </a>
-      <a class="pill" href="#" id="back-to-list" title="返回视频列表" style="padding-left: 0.7rem; padding-right: 0.9rem;">
+      <a class="pill" href="#" id="back-to-list" data-learning-primary="back" aria-label="返回" title="返回视频列表" style="padding-left: 0.7rem; padding-right: 0.9rem;">
         <span data-lx-icon="back" data-lx-size="16" data-lx-class="lx-icon--sm"></span>
         <span data-i18n="nav.back">返回</span>
       </a>
@@ -6579,7 +6582,7 @@
         <span data-lx-icon="home" data-lx-size="14" data-lx-class="lx-icon--sm"></span>
         <span data-i18n="nav.home">首页</span>
       </a>
-      <a class="pill pill-browser" href="#" id="open-video-browser" title="浏览视频库" style="padding-left: 0.8rem; padding-right: 0.95rem;">
+      <a class="pill pill-browser" href="#" id="open-video-browser" data-learning-primary="library" title="浏览视频库" style="padding-left: 0.8rem; padding-right: 0.95rem;">
         <span data-lx-icon="video" data-lx-class="lx-icon--sm"></span>
         <span data-i18n="nav.library">视频库</span>
       </a>
@@ -13361,9 +13364,11 @@
       // Ignore if user is typing in an input/textarea
       const target = ev.target;
       const isInputField = target && (
+        target.closest?.('.topbar') ||
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
         target.tagName === 'SELECT' ||
+        target.tagName === 'SUMMARY' ||
         target.getAttribute?.('role') === 'slider' ||
         target.isContentEditable
       );
@@ -16456,7 +16461,7 @@
   <script src="./js/video-reader/sentence-analysis.js?v=20261018"></script>
   <script src="./js/subtitle-study.js?v=20261019-study"></script>
   <script src="./js/video-reader/coaching-dock.js?v=20261018-note-save" defer></script>
-  <script src="./js/video-reader/pro-controls.js?v=20261017-row-text" defer></script>
+  <script src="./js/video-reader/pro-controls.js?v=20261019-nav1" defer></script>
   <script src="./js/study-switch.js?v=20261017-instant" defer></script>
 
 </body>
