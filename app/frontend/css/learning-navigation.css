@@ -183,6 +183,15 @@ body > .topbar .learning-more:not([open]) > .learning-tools { display: none !imp
 }
 
 @media (max-width: 900px) {
+  body.learning-nav-ready .caption-bar { grid-template-columns: minmax(0, 1fr); }
+  body.learning-nav-ready .caption-bar > :is(.lyric-stage, #coach-slot, #subtitle-study-host) {
+    min-width: 0;
+    max-width: 100%;
+  }
+  body.learning-nav-ready .caption-bar .lyric-stage {
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+  }
   body.learning-nav-ready:not(.focus-mode):not(.practice-focus-active) {
     height: auto !important;
     min-height: 100dvh;
