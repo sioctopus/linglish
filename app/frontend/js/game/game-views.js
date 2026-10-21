@@ -58,7 +58,10 @@
     if (event.altKey || event.ctrlKey || event.metaKey) return null;
     if (event.key === 'ArrowUp') return 'prev';
     if (event.key === 'ArrowDown') return 'next';
-    if (event.key === ' ' || event.code === 'Space') return 'toggle';
+    if (event.key === ' ' || event.code === 'Space') {
+      if (tag === 'BUTTON' || tag === 'A' || tag === 'SUMMARY') return null;
+      return 'toggle';
+    }
     return null;
   }
 
@@ -670,7 +673,23 @@
       let index = 0;
       const head = viewHead(ctx, (deck && deck.label) || '单词卡片', 0, words.length || 1);
       const cardHost = h('div', 'game-card-host');
-      const status = h('p', 'game-speak-status', '↑↓ 翻卡，空格播放或暂停');
+      const status = h('p', 'game-speak-status');
+      status.hidden = true;
+      let captionsVisible = true;
+      const captionToggle = button('game-caption-toggle', '字幕', function () {
+        captionsVisible = !captionsVisible;
+        captionToggle.setAttribute('aria-checked', String(captionsVisible));
+        const copy = cardHost.querySelector('.game-word-copy');
+        if (copy) copy.hidden = !captionsVisible;
+      });
+      captionToggle.setAttribute('role', 'switch');
+      captionToggle.setAttribute('aria-checked', 'true');
+      captionToggle.setAttribute('aria-label', '显示词卡字幕');
+      const title = head.querySelector('.game-view-title');
+      const heading = h('div', 'game-deck-heading');
+      head.insertBefore(heading, title);
+      heading.appendChild(title);
+      heading.appendChild(captionToggle);
       const reader = numberWords();
       const numberDeck = Boolean(reader) && deck && deck.id === 'numbers';
       let custom = null;
@@ -776,6 +795,7 @@
         const word = reader.read(raw);
         if (!word) {
           status.textContent = '请输入 1 到 15 位数字。';
+          status.hidden = false;
           return;
         }
         custom = word;
@@ -809,8 +829,10 @@
         syncCurrencyBars();
         const card = wordCard(word, { coach: true });
         card.classList.add('game-theme-card');
+        card.querySelector('.game-word-copy').hidden = !captionsVisible;
         if (numberDeck) card.classList.add('game-number-card');
         if (currencyDeck) card.classList.add('game-currency-card');
+        if (!numberDeck && !currencyDeck) card.classList.add('game-picture-card');
         card.tabIndex = 0;
         card.setAttribute('role', 'button');
         card.setAttribute('aria-label', '播放 ' + word.lemma);
@@ -849,7 +871,8 @@
         amountBar.setAttribute('role', 'group');
         amountBar.setAttribute('aria-label', '选择面值');
         layout.push(currencyBar, amountBar);
-        status.textContent = '先选币种，再点面值听金额。↑↓ 翻面值，空格播放或暂停。';
+        status.textContent = '先选币种，再点面值听金额。';
+        status.hidden = false;
       }
       if (numberDeck) {
         placeBar = h('div', 'game-number-places');
@@ -880,6 +903,7 @@
         });
         layout.push(placeBar, readRow);
         status.textContent = '点百后再下一张：100→200→300。点十则 10→20→30。输入数字后按 1 递增。';
+        status.hidden = false;
       }
       layout.push(cardHost, status, actions);
       show(ctx.container, layout);

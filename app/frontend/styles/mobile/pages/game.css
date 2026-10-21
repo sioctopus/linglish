@@ -1606,3 +1606,128 @@ span.game-word-art {
 .game-number-card .game-word-lemma--coach {
   font-size: clamp(22px, 4vw, 36px);
 }
+
+.game-deck-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  flex: 1;
+  min-width: 0;
+}
+.game-deck-heading .game-view-title { flex: 0 1 auto; }
+.game-caption-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.game-caption-toggle::after {
+  content: '';
+  width: 28px;
+  height: 18px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 9px 9px, #fff 6px, transparent 7px), #94a3b8;
+}
+.game-caption-toggle[aria-checked='true'] { color: #0f766e; background: #ccfbf1; }
+.game-caption-toggle[aria-checked='true']::after {
+  background: radial-gradient(circle at 19px 9px, #fff 6px, transparent 7px), #0d9488;
+}
+.game-caption-toggle:focus-visible { outline: 3px solid var(--game-secondary); outline-offset: 2px; }
+.game-word-copy[hidden] { display: none !important; }
+
+@media (max-width: 699px) {
+  .game-shell-main--cards .game-view-head { gap: 8px; margin: 4px 12px 8px; }
+  .game-deck-heading { gap: 4px 8px; }
+  .game-deck-heading .game-view-title { font-size: 21px; }
+  .game-shell-main--cards .game-step { flex-shrink: 0; font-size: 13px; }
+  .game-card-host .game-picture-card {
+    position: relative;
+    padding: 0;
+    margin: 0 12px 12px;
+    min-height: 0;
+    border: 0;
+    border-radius: 24px;
+    background: #134e4a;
+  }
+  .game-card-host .game-picture-card .game-word-row { position: relative; display: block; }
+  .game-card-host .game-picture-card .game-word-stage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    border-radius: 0;
+  }
+  .game-card-host .game-picture-card .game-word-stage img { border-radius: 0; }
+  .game-card-host .game-picture-card .game-word-copy {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 1;
+    container-type: normal;
+    box-sizing: border-box;
+    width: 100%;
+    max-height: 85%;
+    align-items: flex-start;
+    justify-content: flex-start;
+    gap: 7px;
+    padding: 48px 20px 22px;
+    color: #fff;
+    text-align: left;
+    background: linear-gradient(transparent, rgba(2, 20, 24, 0.86) 36%, rgba(2, 20, 24, 0.96));
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  }
+  .game-card-host .game-picture-card .game-word-zh {
+    align-self: flex-start;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #ccfbf1;
+    font-size: 20px;
+  }
+  .game-card-host .game-picture-card .game-word-lemma {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    border: 0;
+    color: #fff;
+    font-size: clamp(28px, 9vw, 42px);
+    line-height: 1.12;
+    text-align: left;
+    overflow-wrap: break-word;
+    word-break: normal;
+  }
+  .game-card-host .game-picture-card .game-word-ipa {
+    align-self: flex-start;
+    margin: 0;
+    color: #e2e8f0;
+    font-size: 18px;
+  }
+  .game-card-host .game-picture-card .game-pronounce-tip {
+    align-self: flex-start;
+    margin: 0;
+    color: #f1f5f9;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+  }
+  .game-card-nav { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin-inline: 12px; }
+  .game-card-nav :is(.game-btn, .game-icon-btn) {
+    min-width: 0;
+    min-height: 50px;
+    padding-inline: 8px;
+    font-size: 17px;
+    border-radius: 18px;
+  }
+}
