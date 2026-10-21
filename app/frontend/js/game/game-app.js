@@ -90,7 +90,8 @@
       audio: {
         play: function (url) {
           element.src = url;
-          return element.play().catch(function () {});
+          element.playbackRate = 0.92;
+          return element.play();
         },
         playing: function () {
           return Boolean(element.src) && !element.paused && !element.ended;
@@ -99,7 +100,7 @@
           return Boolean(element.src) && element.paused && element.currentTime > 0 && !element.ended;
         },
         pause: function () { element.pause(); },
-        resume: function () { return element.play().catch(function () {}); },
+        resume: function () { return element.play(); },
         setEnded: function (fn) { element.onended = fn; },
       },
     });

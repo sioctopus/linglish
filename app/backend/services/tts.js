@@ -19,6 +19,7 @@ const PROJECT_ROOT = path.join(__dirname, '..');
 const CACHE_DIR = path.join(PROJECT_ROOT, 'tts_cache');
 // 尝试多个可能的 edge-tts 路径
 const EDGE_PATHS = [
+  '/opt/linglish-edge-tts/bin/edge-tts',
   '/usr/local/bin/edge-tts',
   '/usr/local/bin/edge-tts-safe',
   '/Library/Frameworks/Python.framework/Versions/3.14/bin/edge-tts',
@@ -326,6 +327,12 @@ async function textToSpeech(text, options = {}) {
         `${EDGE_TTS_STATS.consecutiveFailures} consecutive`
       );
     }
+  }
+
+  if (provider === 'edge' && options.allowFallback === false) {
+    const error = new Error('Neural speech is temporarily unavailable');
+    error.statusCode = 503;
+    throw error;
   }
 
   // Fallback to Google TTS — writes under its own cache key, never the edge key

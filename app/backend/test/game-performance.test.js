@@ -219,8 +219,9 @@ test('game shell asks the browser to preload the word pack', async () => {
 test('game shell invalidates the immutable pre-tracking API client cache', async () => {
   const response = await serveFrontend('game.html', '/game.html');
 
-  assert.match(response.body(), /<script src="\/js\/game\/api-client\.js\?v=6"><\/script>/);
-  assert.doesNotMatch(response.body(), /<script src="\/js\/game\/api-client\.js\?v=5"><\/script>/);
+  const reference = response.body().match(/<script src="\/js\/game\/api-client\.js\?v=(\d+)"><\/script>/);
+  assert.ok(reference, 'API client retains a numeric immutable cache key');
+  assert.ok(Number(reference[1]) >= 6, 'API client must invalidate versions before tracking support');
 });
 
 test('game shell publishes interaction fixes under fresh immutable cache keys', async () => {

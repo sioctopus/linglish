@@ -5,6 +5,18 @@ const { sendJson, sendError, mapErrorToStatus } = require('../middleware/error-h
 const { authenticate } = require('../middleware/auth');
 const { serveStatic } = require('../middleware/file-server');
 
+const WORD_VOICE = 'en-US-AvaMultilingualNeural';
+
+function wordRequest(url) {
+  const text = String(url.searchParams.get('text') || '').trim();
+  if (!text || text.length > 180 || !/^[a-zA-Z0-9 ,.'!?\-]+$/.test(text) || !/[a-zA-Z0-9]/.test(text)) {
+    const error = new Error('A short English word or phrase is required');
+    error.statusCode = 400;
+    throw error;
+  }
+  return { text, voice: WORD_VOICE };
+}
+
 const PRACTICE_VOICES = new Set([
   'en-US-AriaNeural',
   'en-US-GuyNeural',
@@ -43,6 +55,26 @@ function practiceRequest(body) {
  * @returns {Promise<boolean>} True if route was handled, false otherwise
  */
 async function registerTtsRoutes(pathname, req, res, url) {
+  // Direct media URL: the Audio element can play synchronously from a mobile tap.
+  if (pathname === '/tts/word' && req.method === 'GET') {
+    try {
+      const word = wordRequest(url);
+      const audioFile = await ttsService.textToSpeech(word.text, {
+        lang: 'en', provider: 'edge', voice: word.voice, format: 'mp3', allowFallback: false,
+      });
+      res.setHeader('X-TTS-Voice', word.voice);
+      res.setHeader('Cache-Control', 'public, max-age=604800');
+      const served = await serveStatic(res, audioFile, req);
+      if (!served) {
+        res.setHeader('Cache-Control', 'no-store');
+        return sendError(res, 404, 'Audio file not found');
+      }
+      return true;
+    } catch (err) {
+      res.setHeader('Cache-Control', 'no-store');
+      return sendError(res, err.statusCode || 503, err.message);
+    }
+  }
   // POST /tts/practice — short English lines for the daily speaking page, no login
   if (pathname === '/tts/practice' && req.method === 'POST') {
     try {
@@ -118,4 +150,4 @@ async function registerTtsRoutes(pathname, req, res, url) {
   return false;
 }
 
-module.exports = { registerTtsRoutes, practiceRequest };
+module.exports = { registerTtsRoutes, practiceRequest, wordRequest };

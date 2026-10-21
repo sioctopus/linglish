@@ -157,11 +157,11 @@
       }
     }
 
-    // 一局连连看里同一个词会被念很多次,不缓存就是几十次 TTS 生成请求。
-    const audioUrls = new Map();
+    // A stable media URL lets the browser start loading inside the original tap.
     let speakGeneration = 0;
     let locallyPaused = false;
     let onSpeakIdle = null;
+    let speechSource = null;
 
     function synthesisHost() {
       const host = typeof window !== 'undefined' ? window : null;
@@ -183,6 +183,7 @@
       const host = synthesisHost();
       if (!host) return false;
       locallyPaused = false;
+      speechSource = 'local';
       const generation = ++speakGeneration;
       host.speechSynthesis.cancel();
       const utter = new host.SpeechSynthesisUtterance(String(text));
@@ -201,37 +202,44 @@
       return Boolean(audio && typeof audio.playing === 'function' && audio.playing());
     }
 
-    async function playAudio(text) {
-      if (!audio) return false;
-      if (!audioUrls.has(text)) {
-        const body = await postJson('/tts/generate', { text, lang: 'en' });
-        if (body && body.audioUrl) audioUrls.set(text, body.audioUrl);
-      }
-      if (!audioUrls.has(text)) return false;
-      const generation = ++speakGeneration;
-      locallyPaused = false;
-      if (typeof audio.setEnded === 'function') {
-        audio.setEnded(function () { noteIdle(generation); });
-      }
-      await audio.play(audioUrls.get(text));
-      return true;
+    function audioState() {
+      return audioIsPlaying() ? 'playing' : (audioIsPaused() ? 'paused' : 'idle');
     }
 
     async function speak(text) {
       if (!text) return false;
-      // 必须在点击当下落地发音。先等服务器再播，手势过期后浏览器会静音。
-      if (speakLocally(text)) return true;
-      try {
-        return await playAudio(text);
-      } catch (_) {
-        return false;
+      const generation = ++speakGeneration;
+      locallyPaused = false;
+      const host = synthesisHost();
+      if (host) host.speechSynthesis.cancel();
+      if (audio) {
+        speechSource = 'audio';
+        if (typeof audio.setEnded === 'function') {
+          audio.setEnded(function () { noteIdle(generation); });
+        }
+        try {
+          // Do not await a JSON request before play(): iOS requires the original gesture.
+          await audio.play('/tts/word?text=' + encodeURIComponent(String(text)) + '&v=ava1');
+          return generation === speakGeneration;
+        } catch (error) {
+          if (generation !== speakGeneration || (error && error.name === 'AbortError')) return false;
+          if (error && error.name === 'NotAllowedError') {
+            speechSource = null;
+            noteIdle(generation);
+            return false;
+          }
+        }
       }
+      if (speakLocally(text)) return true;
+      speechSource = null;
+      noteIdle(generation);
+      return false;
     }
 
     // 空格:正在念就暂停,暂停中就续上,没在念就从头播放。
     async function toggleSpeak(text) {
       const host = synthesisHost();
-      if (host) {
+      if (speechSource === 'local' && host) {
         const synth = host.speechSynthesis;
         if (locallyPaused) {
           locallyPaused = false;
@@ -245,8 +253,14 @@
         }
       } else if (audioIsPaused()) {
         locallyPaused = false;
-        if (typeof audio.resume === 'function') await audio.resume();
-        return 'playing';
+        const generation = speakGeneration;
+        try {
+          if (typeof audio.resume === 'function') await audio.resume();
+        } catch (error) {
+          if (generation !== speakGeneration || (error && error.name === 'AbortError')) return audioState();
+          return (await speak(text)) ? 'playing' : 'idle';
+        }
+        return audioState();
       } else if (audioIsPlaying()) {
         locallyPaused = true;
         if (typeof audio.pause === 'function') audio.pause();
