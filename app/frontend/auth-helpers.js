@@ -50,8 +50,18 @@
 
   let _authHandlerTriggered = false;
 
-  async function handleAuth(res) {
+  function isSessionRequest(input) {
+    try {
+      const target = input && typeof input.url === 'string' ? input.url : input;
+      const pathname = new URL(target, window.location.href).pathname;
+      return /^\/auth\/(login|register|guest|refresh|oauth\/session)$/.test(pathname);
+    } catch (_) { return false; }
+  }
+
+  async function handleAuth(res, input) {
     if (!res || (res.status !== 401 && res.status !== 403)) return;
+    // Credential entry and session renewal report their own failures to the caller.
+    if (res.status === 401 && isSessionRequest(input || res.url)) return;
 
     // Check if user is a guest - guests can stay on page even with 401
     const isGuest = typeof window.GuestCheck !== 'undefined' && window.GuestCheck.isGuest && window.GuestCheck.isGuest();
@@ -91,7 +101,7 @@
   if (!originalFetch) return;
   window.fetch = function authWrappedFetch(input, init) {
     return originalFetch(input, init).then((res) => {
-      try { handleAuth(res); } catch (_) { }
+      try { handleAuth(res, input); } catch (_) { }
       return res;
     });
   };
