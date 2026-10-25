@@ -228,6 +228,23 @@ async function googleFallbackToFile(text, outFile, lang = GOOGLE_LANG) {
 }
 
 // ====== Main TTS Function ======
+// 并发去重:同一 voice+text 的并发请求共用一次合成(edge-tts 是子进程,重复 spawn 纯浪费)。
+const inflightSyntheses = new Map();
+
+// 缓存清理是全目录 readdir+stat,2000 个文件时每次合成都跑一遍太重,节流到最多 10 分钟一次。
+const CLEANUP_MIN_INTERVAL_MS = 10 * 60 * 1000;
+let lastCleanupAt = 0;
+
+async function maybeCleanupCache() {
+  if (!TTS_CONFIG.enableCache) return;
+  const now = Date.now();
+  if (now - lastCleanupAt < CLEANUP_MIN_INTERVAL_MS) return;
+  lastCleanupAt = now;
+  try {
+    await cleanupCache();
+  } catch (_) { /* cleanupCache 自身已吞错 */ }
+}
+
 /**
  * Generate/return cached TTS mp3 file
  * @param {string} text - Text to synthesize
@@ -268,6 +285,20 @@ async function textToSpeech(text, options = {}) {
     }
   }
 
+  const inflightKey = provider === 'edge' ? edgeFile : googleFile;
+  let job = inflightSyntheses.get(inflightKey);
+  if (job) {
+    console.log(`TTS inflight dedup: ${path.basename(inflightKey)}`);
+    return job;
+  }
+  job = synthesizeUncached(text, {
+    lang, provider, voice, edgeFile, googleFile, allowFallback: options.allowFallback,
+  }).finally(function () { inflightSyntheses.delete(inflightKey); });
+  inflightSyntheses.set(inflightKey, job);
+  return job;
+}
+
+async function synthesizeUncached(text, { lang, provider, voice, edgeFile, googleFile, allowFallback }) {
   console.log(`Generating TTS for text (${text.length} chars) using ${provider}...`);
 
   // Check if Edge TTS should be temporarily disabled due to failures
@@ -304,15 +335,12 @@ async function textToSpeech(text, options = {}) {
       EDGE_TTS_STATS.consecutiveFailures = 0;
       const successRate = (
         ((EDGE_TTS_STATS.attempts - EDGE_TTS_STATS.failures) /
-          EDGE_TTS_STATS.attempts) *
+        EDGE_TTS_STATS.attempts) *
         100
       ).toFixed(1);
       console.log(`Edge TTS generated: ${edgeFile} (Success rate: ${successRate}%)`);
 
-      // Clean up old cache if needed
-      if (TTS_CONFIG.enableCache) {
-        await cleanupCache();
-      }
+      await maybeCleanupCache();
 
       return edgeFile;
     } catch (e) {
@@ -329,7 +357,7 @@ async function textToSpeech(text, options = {}) {
     }
   }
 
-  if (provider === 'edge' && options.allowFallback === false) {
+  if (provider === 'edge' && allowFallback === false) {
     const error = new Error('Neural speech is temporarily unavailable');
     error.statusCode = 503;
     throw error;
@@ -344,10 +372,7 @@ async function textToSpeech(text, options = {}) {
   const gOut = await googleFallbackToFile(text, googleFile, lang);
   console.log(`Google TTS generated: ${gOut}`);
 
-  // Clean up old cache if needed
-  if (TTS_CONFIG.enableCache) {
-    await cleanupCache();
-  }
+  await maybeCleanupCache();
 
   return gOut;
 }
