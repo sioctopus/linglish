@@ -14,6 +14,12 @@ test('word audio uses the agreed American female neural voice and trims input', 
   });
 });
 
+test('word audio follows a caller-selected practice voice', () => {
+  assert.deepEqual(wordRequest(new URL('http://local/tts/word?text=elephant&voice=en-GB-RyanNeural')), {
+    text: 'elephant', voice: 'en-GB-RyanNeural',
+  });
+});
+
 test('word audio rejects empty, oversized and non-word payloads', () => {
   assert.equal(typeof wordRequest, 'function');
   for (const text of ['', ' ', '...', 'a'.repeat(181), '<script>alert(1)</script>']) {

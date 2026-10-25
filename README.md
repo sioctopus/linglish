@@ -46,7 +46,7 @@ npm start
 - 邮件：设置 `SMTP_*` 和 `EMAIL_FROM`，用于邮箱验证及密码重置。没有邮件服务时，界面提供部署者支持邮箱作为回退方式；请自行配置 `SUPPORT_EMAIL`。
 - Google OAuth：设置自己的客户端 ID、密钥、回调地址，然后启用相应开关。
 - 音视频：安装 FFmpeg/FFprobe，或使用依赖提供的 FFmpeg；可通过 `FFPROBE_PATH` 指定 FFprobe。YouTube 导入需要部署者能访问相关服务。
-- 单词发音：安装 Python 版 `edge-tts==7.3.1`（例如 `pipx install edge-tts==7.3.1`），并确保服务可以访问 Microsoft Edge 语音服务。支持 `~/.local/bin/edge-tts`、系统路径和独立环境 `/opt/linglish-edge-tts/bin/edge-tts`。词卡使用 Ava 美式女声；手机系统朗读仅在合成或播放失败时备用。
+- 单词发音：安装 Python 版 `edge-tts==7.3.1`（例如 `pipx install edge-tts==7.3.1`），并确保服务可以访问 Microsoft Edge 语音服务。支持 `~/.local/bin/edge-tts`、系统路径和独立环境 `/opt/linglish-edge-tts/bin/edge-tts`。词卡默认使用 Ava 美式女声，并跟随会员页选择的朗读音色；手机系统朗读仅在合成或播放失败时备用，且会匹配所选音色的口音。
 - OCR / 自定义语音识别：相应服务需要自行部署并填写地址。
 - 支付：设置自己的 LemonSqueezy 配置，示例默认不包含商店、产品或支付凭据。
 

@@ -5009,7 +5009,9 @@ async function playWordAudioSmart(word, dictAudioUrl) {
         let v = 'en-US';
         try {
           const pref = localStorage.getItem('linglish_tts_voice') || '';
-          v = pref && pref.startsWith('zh-') ? 'zh-CN' : 'en-US';
+          v = pref.startsWith('zh-')
+            ? 'zh-CN'
+            : (window.LinglishTtsVoice && LinglishTtsVoice.synthesisLang ? LinglishTtsVoice.synthesisLang() : 'en-US');
         } catch (_) { }
         u.lang = v;
         if (!alive()) return;
@@ -5139,7 +5141,9 @@ async function playWordAudioSmart(word, dictAudioUrl) {
       if (!alive()) return;
       clearGestureFallback();
       const utterance = new SpeechSynthesisUtterance(lemma);
-      utterance.lang = voiceLang.startsWith('zh') ? 'zh-CN' : 'en-US';
+      utterance.lang = voiceLang.startsWith('zh')
+        ? 'zh-CN'
+        : (window.LinglishTtsVoice && LinglishTtsVoice.synthesisLang ? LinglishTtsVoice.synthesisLang() : 'en-US');
       speechSynthesis.cancel();
       if (!alive()) return;
       speechSynthesis.speak(utterance);
@@ -8135,7 +8139,11 @@ async function deleteVocab(lemma) {
 async function playPronunciation(word) {
   try {
     const utterance = new SpeechSynthesisUtterance(word);
-    utterance.lang = 'en-US';
+    utterance.lang = (window.LinglishTtsVoice && LinglishTtsVoice.synthesisLang) ? LinglishTtsVoice.synthesisLang() : 'en-US';
+    const systemVoice = (window.LinglishTtsVoice && LinglishTtsVoice.findSystemVoice)
+      ? LinglishTtsVoice.findSystemVoice(window.speechSynthesis.getVoices())
+      : null;
+    if (systemVoice) utterance.voice = systemVoice;
     utterance.rate = 0.9;
     window.speechSynthesis.speak(utterance);
     // metrics: pronounce interaction

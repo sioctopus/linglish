@@ -178,7 +178,7 @@ test('speak starts the neural audio URL before yielding the user gesture', async
   const audio = fakeAudio();
   const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio });
   const pending = client.speak('apple');
-  assert.deepEqual(audio.played, ['/tts/word?text=apple&v=ava1']);
+  assert.deepEqual(audio.played, ['/tts/word?text=apple&voice=en-US-AvaMultilingualNeural&v=2']);
   assert.equal(await pending, true);
   assert.equal(fetch.calls.length, 0);
 });
@@ -191,7 +191,7 @@ test('replaying a word reuses the same cacheable neural audio URL', async () => 
   await client.speak('apple');
   await client.speak('apple');
   assert.equal(fetch.calls.length, 0);
-  assert.deepEqual(audio.played, ['/tts/word?text=apple&v=ava1', '/tts/word?text=apple&v=ava1']);
+  assert.deepEqual(audio.played, ['/tts/word?text=apple&voice=en-US-AvaMultilingualNeural&v=2', '/tts/word?text=apple&voice=en-US-AvaMultilingualNeural&v=2']);
 });
 
 function controllableAudio() {
@@ -311,7 +311,7 @@ test('a pending resume interrupted by the next card cannot restart the old word'
   await client.speak('elephant');
   rejectResume(Object.assign(new Error('source changed'), { name: 'AbortError' }));
   assert.equal(await pending, 'playing');
-  assert.deepEqual(audio.state.played, ['/tts/word?text=apple&v=ava1', '/tts/word?text=elephant&v=ava1']);
+  assert.deepEqual(audio.state.played, ['/tts/word?text=apple&voice=en-US-AvaMultilingualNeural&v=2', '/tts/word?text=elephant&voice=en-US-AvaMultilingualNeural&v=2']);
 });
 
 test('autoplay permission denial waits for a tap instead of reverting to the phone voice', async (t) => {

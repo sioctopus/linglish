@@ -970,7 +970,7 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <script src="./js/tts-voice.js?v=1"></script>
+  <script src="./js/tts-voice.js?v=2"></script>
   <script>
     const PLAN_NAMES = {
       free: '免费体验',
@@ -1437,10 +1437,16 @@
       });
     }
 
+    let voiceSampleLoading = false;
+
     async function chooseVoice(voice) {
       LinglishTtsVoice.set(voice.voice);
       paintVoices();
-      voiceStatus.textContent = '已换成 ' + voice.name + '。全站朗读都会用这个声音。';
+      if (voiceSampleLoading) {
+        try { voiceSample.pause(); } catch (_) { }
+      }
+      voiceSampleLoading = true;
+      voiceStatus.textContent = '正在准备 ' + voice.name + ' 的试听…';
       try {
         const response = await fetch('/tts/practice', {
           method: 'POST',
@@ -1449,11 +1455,14 @@
         });
         const data = await response.json();
         if (!response.ok || !data.audioUrl) throw new Error('no audio');
+        voiceStatus.textContent = '已换成 ' + voice.name + '。全站朗读都会用这个声音。';
         voiceSample.src = data.audioUrl;
         voiceSample.hidden = false;
         await voiceSample.play();
       } catch (_) {
         voiceStatus.textContent = '已换成 ' + voice.name + '。这一句暂时没播出来，到学习页再听一次。';
+      } finally {
+        voiceSampleLoading = false;
       }
     }
 

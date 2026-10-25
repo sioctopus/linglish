@@ -179,6 +179,13 @@
       onSpeakIdle = typeof fn === 'function' ? fn : null;
     }
 
+    // 词卡发音跟随全站所选音色；后端只认白名单内的音色，未加载模块时回退默认 Ava。
+    function wordAudioVoice() {
+      const host = typeof window !== 'undefined' ? window : null;
+      const tts = host && host.LinglishTtsVoice;
+      return (tts && typeof tts.current === 'function') ? tts.current() : 'en-US-AvaMultilingualNeural';
+    }
+
     function speakLocally(text) {
       const host = synthesisHost();
       if (!host) return false;
@@ -187,7 +194,18 @@
       const generation = ++speakGeneration;
       host.speechSynthesis.cancel();
       const utter = new host.SpeechSynthesisUtterance(String(text));
-      utter.lang = 'en-US';
+      const tts = host.LinglishTtsVoice;
+      if (tts && typeof tts.synthesisLang === 'function') {
+        utter.lang = tts.synthesisLang();
+        try {
+          const systemVoice = typeof tts.findSystemVoice === 'function'
+            ? tts.findSystemVoice(host.speechSynthesis.getVoices())
+            : null;
+          if (systemVoice) utter.voice = systemVoice;
+        } catch (_) { }
+      } else {
+        utter.lang = 'en-US';
+      }
       utter.rate = 0.92;
       utter.onend = function () { noteIdle(generation); };
       host.speechSynthesis.speak(utter);
@@ -219,7 +237,8 @@
         }
         try {
           // Do not await a JSON request before play(): iOS requires the original gesture.
-          await audio.play('/tts/word?text=' + encodeURIComponent(String(text)) + '&v=ava1');
+          // voice 进 URL，浏览器按 URL 缓存，同一文本在不同音色下不会互相污染。
+          await audio.play('/tts/word?text=' + encodeURIComponent(String(text)) + '&voice=' + encodeURIComponent(wordAudioVoice()) + '&v=2');
           return generation === speakGeneration;
         } catch (error) {
           if (generation !== speakGeneration || (error && error.name === 'AbortError')) return false;

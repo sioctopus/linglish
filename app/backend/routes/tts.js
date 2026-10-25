@@ -7,16 +7,6 @@ const { serveStatic } = require('../middleware/file-server');
 
 const WORD_VOICE = 'en-US-AvaMultilingualNeural';
 
-function wordRequest(url) {
-  const text = String(url.searchParams.get('text') || '').trim();
-  if (!text || text.length > 180 || !/^[a-zA-Z0-9 ,.'!?\-]+$/.test(text) || !/[a-zA-Z0-9]/.test(text)) {
-    const error = new Error('A short English word or phrase is required');
-    error.statusCode = 400;
-    throw error;
-  }
-  return { text, voice: WORD_VOICE };
-}
-
 const PRACTICE_VOICES = new Set([
   'en-US-AriaNeural',
   'en-US-GuyNeural',
@@ -30,6 +20,22 @@ const PRACTICE_VOICES = new Set([
   'en-GB-ThomasNeural',
 ]);
 
+// Unknown voices fall back to the default so an edge-tts run can never be
+// started with an arbitrary caller-supplied voice name.
+function allowedVoice(voice) {
+  return PRACTICE_VOICES.has(voice) ? voice : WORD_VOICE;
+}
+
+function wordRequest(url) {
+  const text = String(url.searchParams.get('text') || '').trim();
+  if (!text || text.length > 180 || !/^[a-zA-Z0-9 ,.'!?\-]+$/.test(text) || !/[a-zA-Z0-9]/.test(text)) {
+    const error = new Error('A short English word or phrase is required');
+    error.statusCode = 400;
+    throw error;
+  }
+  return { text, voice: allowedVoice(url.searchParams.get('voice')) };
+}
+
 function practiceRequest(body) {
   const text = String((body && body.text) || '').trim();
   if (!text) {
@@ -42,8 +48,7 @@ function practiceRequest(body) {
     error.statusCode = 400;
     throw error;
   }
-  const voice = PRACTICE_VOICES.has(body && body.voice) ? body.voice : 'en-US-AvaMultilingualNeural';
-  return { text, voice };
+  return { text, voice: allowedVoice(body && body.voice) };
 }
 
 /**
@@ -107,7 +112,7 @@ async function registerTtsRoutes(pathname, req, res, url) {
         lang: body.lang || 'en',
         slow: body.slow || false,
         provider: body.provider || ttsService.TTS_CONFIG.provider,
-        voice: body.voice || ttsService.TTS_CONFIG.edgeVoice,
+        voice: allowedVoice(body.voice),
         format: body.format || 'mp3',
       });
 

@@ -219,7 +219,16 @@
       if ('speechSynthesis' in window) {
         try {
           const utterance = new SpeechSynthesisUtterance(text);
-          utterance.lang = 'en-US';
+          const tts = window.LinglishTtsVoice;
+          if (tts && typeof tts.synthesisLang === 'function') {
+            utterance.lang = tts.synthesisLang();
+            const systemVoice = typeof tts.findSystemVoice === 'function'
+              ? tts.findSystemVoice(window.speechSynthesis.getVoices())
+              : null;
+            if (systemVoice) utterance.voice = systemVoice;
+          } else {
+            utterance.lang = 'en-US';
+          }
           window.speechSynthesis.cancel();
           window.speechSynthesis.speak(utterance);
         } catch (e) {
@@ -934,7 +943,16 @@
       if (!text) return;
       try {
         const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US';
+        const tts = window.LinglishTtsVoice;
+        if (tts && typeof tts.synthesisLang === 'function') {
+          utterance.lang = tts.synthesisLang();
+          const systemVoice = typeof tts.findSystemVoice === 'function'
+            ? tts.findSystemVoice(speechSynthesis.getVoices())
+            : null;
+          if (systemVoice) utterance.voice = systemVoice;
+        } else {
+          utterance.lang = 'en-US';
+        }
         speechSynthesis.cancel();
         speechSynthesis.speak(utterance);
       } catch (err) {

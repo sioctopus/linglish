@@ -33,7 +33,7 @@ const DEFAULT_VOICE = 'en-US-JennyNeural';
 const GOOGLE_LANG = 'en';
 const EDGE_TIMEOUT_MS = 15000;  // 默认15秒，单词发音够用
 const EDGE_SHORT_TIMEOUT_MS = 8000;  // 短文本（<50字符）用8秒
-const MAX_CACHE_SIZE = 500;  // 增加缓存数量
+const MAX_CACHE_SIZE = 2000;  // 多音色场景按 voice+text 分别缓存，太小会频繁逐出导致重复合成
 
 // Edge TTS failure tracking
 const EDGE_TTS_STATS = {
@@ -57,7 +57,7 @@ const TTS_CONFIG = {
   host: 'https://translate.google.com',
   enableCache: true,
   cacheSize: 100,
-  edgeVoice: 'en-US-AriaNeural', // Default Edge TTS voice (专业清晰女声)
+  edgeVoice: 'en-US-AvaMultilingualNeural', // Default Edge TTS voice,与路由层词卡/练习默认音色保持一致
 };
 
 // ====== Utility Functions ======
