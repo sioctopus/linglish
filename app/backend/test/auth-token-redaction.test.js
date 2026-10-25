@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { readPage } = require('./helpers/page-source');
 
 const ROOT = path.resolve(__dirname, '../..');
 const read = relativePath => fs.readFileSync(path.join(ROOT, relativePath), 'utf8');
@@ -18,6 +19,10 @@ const knownLogSites = [
   'frontend/js/video-reader/main.js',
   'frontend/practice-session.html',
   'frontend/practice-session-desktop.html',
+  'frontend/js/pages/practice-session-app.js',
+  'frontend/js/pages/practice-session-desktop-app.js',
+  'frontend/js/pages/video-reader-desktop-app.js',
+  'frontend/js/pages/daily-speaking-app.js',
   'frontend/practice-session-refactored.html',
   'frontend/js/practice-session/api-client.js',
   'frontend/js/practice-session/audio-manager.js',
@@ -117,7 +122,7 @@ test('logout and account-switch paths clear the media cookie through the shared 
   assert.match(reader, /await window\.AuthManager\.clearToken\(\)/);
   assert.doesNotMatch(reader, /\/auth\/guest/);
 
-  const practice = read('frontend/practice-session.html');
+  const practice = readPage('practice-session.html');
   assert.match(practice, /await window\.AuthManager\.clearToken\(\)/);
   assert.doesNotMatch(practice, /\/auth\/guest/);
 
@@ -134,7 +139,7 @@ test('PDF route logs only query-free request paths or anonymous error codes', ()
 });
 
 test('mobile practice sanitizes debug payloads before both console and DOM output', () => {
-  const source = read('frontend/practice-session.html');
+  const source = readPage('practice-session.html');
   const sink = source.match(/function pushDebug\(message, payload = null\)[\s\S]*?^\s{6}}/m)?.[0] || '';
   assert.ok(sink, 'pushDebug must remain present');
   assert.match(sink, /sanitizeDebugPayload\(payload\)/);

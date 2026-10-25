@@ -6,7 +6,7 @@ const path = require('node:path');
 const frontend = path.resolve(__dirname, '../../frontend');
 const homePath = path.join(frontend, 'index-desktop.html');
 const todayPath = path.join(frontend, 'today.html');
-const practicePath = path.join(frontend, 'practice-session-desktop.html');
+const { readPage } = require('./helpers/page-source');
 
 test('home normal training stays ordinary while Today first lesson uses the focus contract', () => {
   const home = fs.readFileSync(homePath, 'utf8');
@@ -74,7 +74,7 @@ test('today first lesson delegates anonymous, valid, and expired sessions to the
 });
 
 test('focus next button uses the active shadowing state machine', () => {
-  const html = fs.readFileSync(practicePath, 'utf8');
+  const html = readPage('practice-session-desktop.html');
 
   assert.match(html, /function handleFocusNextSentence\(\)/);
   assert.match(

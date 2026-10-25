@@ -1,6 +1,8 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const http = require('node:http');
+const fs = require('node:fs');
+const path = require('node:path');
 const vm = require('node:vm');
 
 // A domain shared with the template plus a port catches cascading replacements.
@@ -30,7 +32,11 @@ test('configured metadata origin is substituted once, with valid inline scripts 
     const get = await fetch(origin + pathname);
     const html = await get.text();
     assert.equal(get.status, 200);
-    assert.ok(html.includes('https://example.com:4444'));
+    // 巨型内联脚本已外链(js/pages/*,不含站点占位符),只有仍含占位符的页面才需要替换结果。
+    const raw = fs.readFileSync(path.join(__dirname, '../../frontend', pathname.slice(1)), 'utf8');
+    if (/https:\/\/(?:www\.)?example\.com/.test(raw)) {
+      assert.ok(html.includes('https://example.com:4444'));
+    }
     assert.doesNotMatch(html, /:4444:4444|https:\/\/www\.example\.com/);
     for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
       if (/\bsrc\s*=|type=["']module["']/i.test(match[1])) continue;

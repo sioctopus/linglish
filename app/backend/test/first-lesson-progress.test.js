@@ -4,7 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const modulePath = path.resolve(__dirname, '../../frontend/js/video-reader/first-lesson-progress.js');
-const desktopPath = path.resolve(__dirname, '../../frontend/video-reader-desktop.html');
+const { readPage } = require('./helpers/page-source');
 const mobileMainPath = path.resolve(__dirname, '../../frontend/js/video-reader/main.js');
 const proControlsPath = path.resolve(__dirname, '../../frontend/js/video-reader/pro-controls.js');
 const sentenceSegments = require('../../frontend/js/video-reader/sentence-segments');
@@ -205,7 +205,7 @@ test('general progress sync is blocked until complete and runs once from the com
 });
 
 test('desktop and mobile integrations read practice snapshots and never convert navigation into practice', () => {
-  const desktop = fs.readFileSync(desktopPath, 'utf8');
+  const desktop = readPage('video-reader-desktop.html');
   const mobile = fs.readFileSync(mobileMainPath, 'utf8');
   const pro = fs.readFileSync(proControlsPath, 'utf8');
 

@@ -5,7 +5,9 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const FRONTEND = path.resolve(__dirname, '../../frontend');
-const read = relativePath => fs.readFileSync(path.join(FRONTEND, relativePath), 'utf8');
+const { readPage } = require('./helpers/page-source');
+const bigPages = new Set(['video-reader-desktop.html', 'practice-session.html', 'practice-session-desktop.html', 'daily-speaking.html']);
+const read = relativePath => bigPages.has(relativePath) ? readPage(relativePath) : fs.readFileSync(path.join(FRONTEND, relativePath), 'utf8');
 
 const protectedMediaConsumers = [
   'js/video-reader/main.js',

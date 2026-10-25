@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { readPage } = require('./helpers/page-source');
 
 const frontend = path.resolve(__dirname, '../../frontend');
 
@@ -21,7 +22,7 @@ function extractCssBlock(css, selector) {
 }
 
 test('desktop video reader keeps transcript and sticky core controls in focus mode', () => {
-  const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const html = readPage('video-reader-desktop.html');
   const css = fs.readFileSync(path.join(frontend, 'styles/video-reader-pro.css'), 'utf8');
   const controls = fs.readFileSync(path.join(frontend, 'js/video-reader/pro-controls.js'), 'utf8');
 
@@ -44,7 +45,7 @@ test('desktop video reader keeps transcript and sticky core controls in focus mo
 });
 
 test('desktop player preserves 16:9 when viewport height limits its size', () => {
-  const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const html = readPage('video-reader-desktop.html');
   const workspaceCss = html.match(
     /\/\* ={10,}\s*Desktop learning workspace[\s\S]*?<\/style>/
   );
@@ -104,7 +105,7 @@ test('desktop player preserves 16:9 when viewport height limits its size', () =>
 });
 
 test('desktop practice keeps a compact top mode bar and shared replay controller', () => {
-  const html = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
+  const html = readPage('practice-session-desktop.html');
   const css = fs.readFileSync(path.join(frontend, 'styles/practice-session-desktop.css'), 'utf8');
 
   assert.match(html, /js\/practice\/original-audio-replay\.js/);
@@ -130,7 +131,7 @@ test('desktop practice keeps a compact top mode bar and shared replay controller
   const tokens = fs.readFileSync(path.join(frontend, 'styles/tokens.css'), 'utf8');
   assert.match(tokens, /--lx-focus-inset:\s*24px/);
   assert.match(tokens, /--lx-focus-gap:\s*16px/);
-  const readerHtml = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const readerHtml = readPage('video-reader-desktop.html');
   assert.match(readerHtml, /body\.focus-mode \.layout\s*\{[^}]*padding:\s*var\(--lx-focus-inset,\s*24px\)/s);
   assert.match(css, /body\.practice-focus-active \.mode-top-bar/);
   assert.match(css, /\.practice-focus-badge\s*\{[^}]*#0f766e/s);
@@ -141,7 +142,7 @@ test('desktop practice keeps a compact top mode bar and shared replay controller
 });
 
 test('desktop video reader exposes one canonical playback progress rail', () => {
-  const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const html = readPage('video-reader-desktop.html');
   const controls = fs.readFileSync(path.join(frontend, 'js/video-reader/pro-controls.js'), 'utf8');
 
   assert.match(controls, /scrub\.className = 'vrp-scrub'/);
@@ -157,8 +158,8 @@ test('desktop video reader exposes one canonical playback progress rail', () => 
 });
 
 test('video learning and AI practice share one workspace switch', () => {
-  const reader = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
-  const practice = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
+  const reader = readPage('video-reader-desktop.html');
+  const practice = readPage('practice-session-desktop.html');
   const markup = /id="study-switch"[\s\S]*data-study="video"[\s\S]*data-study="coach"[\s\S]*data-study="arena"/;
 
   assert.match(reader, markup);
@@ -169,8 +170,8 @@ test('video learning and AI practice share one workspace switch', () => {
 });
 
 test('study menu switches without a loader delay', () => {
-  const reader = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
-  const practice = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
+  const reader = readPage('video-reader-desktop.html');
+  const practice = readPage('practice-session-desktop.html');
   const study = fs.readFileSync(path.join(frontend, 'js/study-switch.js'), 'utf8');
 
   assert.match(reader, /getElementById\('pageLoader'\)\?\.remove\(\)/);

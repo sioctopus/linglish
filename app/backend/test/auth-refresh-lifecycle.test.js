@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { readPage } = require('./helpers/page-source');
 
 const frontend = path.resolve(__dirname, '../../frontend');
 const source = fs.readFileSync(path.join(frontend, 'js/auth-manager.js'), 'utf8');
@@ -128,7 +129,7 @@ test('storage revoked after initialization falls back to memory without throwing
 
 for (const page of ['document-import.html', 'daily-speaking.html', 'exam-paper.html']) {
   test(`${page} loads AuthManager before inline requests and reads credentials from it`, () => {
-    const html = fs.readFileSync(path.join(frontend, page), 'utf8');
+    const html = readPage(page);
     const managerScript = html.indexOf('src="./js/auth-manager.js');
     const inlineToken = html.indexOf('function readToken()');
     assert.ok(managerScript >= 0 && managerScript < inlineToken, 'the shared refresh and retry handler must load before requests');

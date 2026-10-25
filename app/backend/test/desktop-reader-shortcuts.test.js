@@ -3,9 +3,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { readPage } = require('./helpers/page-source');
 
 const frontend = path.resolve(__dirname, '../../frontend');
-const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+const html = readPage('video-reader-desktop.html');
 const controls = fs.readFileSync(path.join(frontend, 'js/video-reader/pro-controls.js'), 'utf8');
 
 function keyboardHarness(type = 'local') {

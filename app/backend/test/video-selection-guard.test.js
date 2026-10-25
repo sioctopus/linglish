@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const frontend = path.resolve(__dirname, '../../frontend');
 const guardPath = path.join(frontend, 'js/video-reader/video-selection-guard.js');
-const pagePath = path.join(frontend, 'video-reader-desktop.html');
+const { readPage } = require('./helpers/page-source');
 
 test('only the latest video selection may update asynchronous player state', () => {
   assert.equal(fs.existsSync(guardPath), true, 'video selection guard module should exist');
@@ -56,7 +56,7 @@ test('starting or clearing a selection fully releases the previous players', () 
 });
 
 test('desktop reader guards both player and transcript commits with the selection token', () => {
-  const html = fs.readFileSync(pagePath, 'utf8');
+  const html = readPage('video-reader-desktop.html');
 
   assert.match(html, /js\/video-reader\/video-selection-guard\.js/);
   assert.match(html, /js\/app\/youtube-player\.js\?v=20260803/);

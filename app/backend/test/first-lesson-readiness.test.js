@@ -5,8 +5,9 @@ const path = require('node:path');
 
 const { createFirstLessonReadiness } = require('../../frontend/js/video-reader/first-lesson-readiness');
 const sentenceSegments = require('../../frontend/js/video-reader/sentence-segments');
+const { readPage } = require('./helpers/page-source');
 
-const readerHtml = fs.readFileSync(path.resolve(__dirname, '../../frontend/video-reader-desktop.html'), 'utf8');
+const readerHtml = readPage('video-reader-desktop.html');
 const mobileReaderMain = fs.readFileSync(path.resolve(__dirname, '../../frontend/js/video-reader/main.js'), 'utf8');
 
 function extractNamedFunction(source, name) {

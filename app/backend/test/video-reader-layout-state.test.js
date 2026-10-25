@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const frontend = path.resolve(__dirname, '../../frontend');
 const stateModulePath = path.join(frontend, 'js/video-reader/reader-layout-state.js');
-const pagePath = path.join(frontend, 'video-reader-desktop.html');
+const { readPage } = require('./helpers/page-source');
 
 test('a selected video opens in the simple layout while the library and saved choices remain accessible', () => {
   const { shouldStartFocused } = require(stateModulePath);
@@ -41,7 +41,7 @@ test('video library button still toggles the sidebar outside focus mode', () => 
 });
 
 test('vocabulary view hides the left column and drops the embedded title bar', () => {
-  const html = fs.readFileSync(pagePath, 'utf8');
+  const html = readPage('video-reader-desktop.html');
   const vocab = fs.readFileSync(path.join(frontend, 'video-vocabulary-desktop.html'), 'utf8');
 
   assert.match(html, /classList\.toggle\('vocab-view', isVocab\)/);
@@ -54,7 +54,7 @@ test('vocabulary view hides the left column and drops the embedded title bar', (
 });
 
 test('desktop reader wires the hamburger button to the shared layout transition', () => {
-  const html = fs.readFileSync(pagePath, 'utf8');
+  const html = readPage('video-reader-desktop.html');
 
   assert.match(html, /js\/video-reader\/reader-layout-state\.js/);
   assert.match(html, /LinglishReaderLayoutState\.toggleVideoLibrary/);
@@ -63,7 +63,7 @@ test('desktop reader wires the hamburger button to the shared layout transition'
 
 test('vocabulary navigation hides both surrounding columns and preserves embedded navigation on return', () => {
   const vm = require('node:vm');
-  const html = fs.readFileSync(pagePath, 'utf8');
+  const html = readPage('video-reader-desktop.html');
   const setView = html.match(/    function setHashView\(hash, opts\) \{[\s\S]*?\n    \}/)?.[0];
   const syncEmbed = html.match(/    function syncVocabEmbed\(videoId, sentence\) \{[\s\S]*?\n    \}/)?.[0];
   const classes = new Set();
