@@ -120,7 +120,8 @@ async function openSession({ userId, deviceId, provider } = {}) {
   };
   revoked.delete(record.id);
   await persist(record, { create: true });
-  await revokeOtherDevices(record.userId, record.deviceId);
+  // 多端共存:手机、电脑、微信内嵌浏览器各自持有 30 天会话,互不吊销。
+  // 旧版在这里吊销其他设备,造成"手机老是登录过期";revokeOtherDevices 保留给未来的"登出所有设备"。
   return record;
 }
 
