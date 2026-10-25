@@ -272,6 +272,9 @@ body.game-body {
 .game-view-title { margin: 0; flex: 1; font-size: 22px; font-weight: 800; }
 .game-step {
   margin: 0;
+  /* "2 / 8" 在窄头部会折行丢失总数,页码必须整体一行 */
+  white-space: nowrap;
+  flex-shrink: 0;
   font-size: 14px;
   font-weight: 800;
   color: #0f766e;
@@ -1251,18 +1254,34 @@ span.game-word-art {
     justify-content: center;
     padding: 14px 14px 16px;
   }
+  /* 280px 窄卡里左图右字会把文字列(flex-basis 0)压成一条竖缝,单词逐字母换行,改上图下字 */
+  .game-learn-stage--scene .game-word-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+  }
   .game-learn-stage--scene .game-word-stage {
-    flex: 1 1 auto;
+    flex: 0 0 auto;
+    width: 100%;
     min-height: 0;
     max-height: none;
-    margin-bottom: 8px;
+  }
+  .game-learn-stage--scene .game-word-copy {
+    flex: 1 1 auto;
+    width: 100%;
+    min-height: 0;
   }
   .game-learn-stage--scene .game-learn-photo,
   .game-learn-stage--scene .game-word-photo {
     width: 100%;
     height: auto;
-    max-height: min(168px, 22dvh);
+    max-height: min(150px, 20dvh);
     object-fit: cover;
+  }
+  .game-learn-stage--scene .game-word-fallback {
+    width: 100%;
+    height: min(150px, 20dvh);
+    font-size: min(96px, 13dvh);
   }
   .game-shell-main:has(.game-path) {
     grid-template-rows: auto auto minmax(0, 1fr) var(--game-dock, 76px);
