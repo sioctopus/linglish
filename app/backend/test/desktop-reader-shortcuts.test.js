@@ -139,3 +139,15 @@ test('navigation disclosures and header controls keep native Space activation wi
     assert.equal(harness.snapshot().toggles, 0);
   }
 });
+
+test('guided lesson buttons and native recording controls keep their own keyboard behavior', () => {
+  for (const tagName of ['BUTTON', 'AUDIO']) {
+    const harness = keyboardHarness();
+    const target = { tagName, closest: selector => selector === '.goal-studio' ? {} : null };
+    for (const key of [' ', 'ArrowRight']) {
+      const event = harness.dispatch(key, { target });
+      assert.equal(event.defaultPrevented, false);
+      assert.deepEqual(harness.snapshot(), { time: 12, paused: true, toggles: 0 });
+    }
+  }
+});

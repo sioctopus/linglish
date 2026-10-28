@@ -322,7 +322,7 @@
     <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
 
     <!-- Preload critical resources for video playback -->
-    <link rel="preload" href="./js/video-reader/main.js?v=20261024" as="script">
+    <link rel="preload" href="./js/video-reader/main.js?v=2026102804" as="script">
     <link rel="preload" href="./js/app/youtube-player.js" as="script">
     <link rel="preload" href="./css/video-reader/components.css?v=20261019" as="style">
     <link rel="preconnect" href="https://www.youtube.com">
@@ -582,6 +582,12 @@
                 </div>
               </div>
             </div>
+            <a class="guided-lesson-entry" id="guided-lesson-entry" hidden>
+              <span>跟读小课堂</span><span>练 3 句英语</span>
+            </a>
+            <section id="first-lesson-goal" hidden aria-label="今日跟读小目标"></section>
+            <details class="guided-reader-tools" id="guided-reader-tools" open>
+              <summary>字幕、查词与播放设置</summary>
             <div class="mobile-transcript-view" id="mobile-transcript" aria-live="polite">
               <div class="mobile-view-toggle" id="mobile-view-toggle" role="group" aria-label="字幕控制">
                 <button class="mobile-view-btn" data-mode="english">英文</button>
@@ -595,7 +601,6 @@
                 <button class="mobile-transcript-nav next" id="mobile-next-segment" aria-label="下一句">›</button>
               </div>
             </div>
-            <section id="first-lesson-goal" hidden aria-label="今日跟读小目标"></section>
             <div class="mobile-player-controls" id="mobile-player-controls">
               <div id="first-lesson-progress" role="status" aria-live="polite" hidden>已练 0/0 · 0%</div>
               <div class="mobile-speed-controls" role="group" aria-label="播放速度">
@@ -611,6 +616,7 @@
               </div>
               <button class="mobile-replay-btn" id="mobile-replay" aria-label="重新播放">↺</button>
             </div>
+            </details>
             <div class="transcript-panel">
               <div class="transcript-header">
                 <h3 style="margin: 0; font-size: 0.9rem;">Transcript</h3>
@@ -836,8 +842,8 @@
     <script src="./js/video-reader/mobile-reader-layout.js?v=2"></script>
     <script src="./js/video-reader/first-lesson-focus.js?v=20260822"></script>
     <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-    <script src="./js/video-reader/first-lesson-goal.js?v=20261015"></script>
-    <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=20260922">
+    <script src="./js/video-reader/first-lesson-goal.js?v=2026102804"></script>
+    <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026102803">
     <script src="./js/video-reader/sentence-segments.js?v=20261019"></script>
     <script src="./js/video-reader/missed-words.js?v=20261015"></script>
     <script src="./js/video-reader/sentence-assist.js?v=20261015"></script>
@@ -852,7 +858,7 @@
     <script src="./js/video-reader/coaching-mode.js?v=20261015"></script>
     <script src="./js/video-reader/coaching-dock.js?v=20261018-note"></script>
     <script src="./js/video-reader/voice-slot.js?v=1"></script>
-    <script src="./js/video-reader/main.js?v=20261024"></script>
+    <script src="./js/video-reader/main.js?v=2026102804"></script>
     <script>
       // Hide upload functionality for guest users
       (function() {

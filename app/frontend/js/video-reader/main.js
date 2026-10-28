@@ -541,6 +541,11 @@ let firstLessonGoal = null;
 let firstLessonGoalBusy = false;
 const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.getElementById('first-lesson-goal'), {
   mobile: true,
+  getSentence: (index) => {
+    const line = state.currentSegments[index];
+    return line && { index, text: line.text, translation: line.translation || line.cn || line.zh || line.text_cn || '' };
+  },
+  pauseOriginal: () => { pauseLearningVideoNow(); stopDictSpeech(); },
   listen: (index) => {
     if (!firstLessonSession.isActive() || firstLessonGoalBusy) return;
     const line = selectMobileGoalLine(index);
@@ -560,13 +565,21 @@ const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.g
     startPracticeRecording();
   },
   next: () => {
-    const index = (state.practiceIndex ?? 0) + 1;
+    const index = firstLessonGoal && !firstLessonGoal.complete ? firstLessonGoal.nextIndex : (state.practiceIndex ?? 0) + 1;
     if (!selectMobileGoalLine(index)) {
       location.href = './mobile-today.html#learning-details';
       return;
     }
     firstLessonGoalCard.update(firstLessonGoal);
   },
+});
+const guidedReaderTools = document.getElementById('guided-reader-tools');
+if (guidedReaderTools) guidedReaderTools.open = !firstLessonSession.isActive();
+const guidedLessonEntry = document.getElementById('guided-lesson-entry');
+if (guidedLessonEntry) guidedLessonEntry.addEventListener('click', (event) => {
+  const href = window.LinglishFirstLessonGoal.resumeHref({ videoId: String(state.selectedVideoId || '') }, true, 'reader_guided_practice');
+  if (!href) { event.preventDefault(); return; }
+  guidedLessonEntry.href = href;
 });
 
 function selectMobileGoalLine(index) {
@@ -592,6 +605,7 @@ function clearMobileFirstLessonState() {
   firstLessonGoal = null;
   firstLessonGoalBusy = false;
   firstLessonGoalCard.hide();
+  if (guidedReaderTools) guidedReaderTools.open = true;
   const progress = document.getElementById('first-lesson-progress');
   if (progress) {
     progress.hidden = true;
@@ -678,7 +692,8 @@ function createMobileAssessmentContext(line) {
 
 function isMobileAssessmentContextCurrent(captured) {
   if (!captured || !firstLessonSession.isActive()) return false;
-  const segment = state.currentSegments[captured.displayIndex];
+  const displayIndex = state.practiceIndex;
+  const segment = state.currentSegments[displayIndex];
   if (!segment || !state.selectedVideoId) return false;
   const current = window.LinglishFirstLessonPractice.createAssessmentContext({
     subject: resolveMobileFirstLessonSubject(),
@@ -686,11 +701,11 @@ function isMobileAssessmentContextCurrent(captured) {
     stableSegmentId: window.LinglishFirstLessonProgress.stableSegmentId(
       state.selectedVideoId,
       segment,
-      captured.displayIndex,
+      displayIndex,
     ),
     sourceIndices: segment.source_indices,
     selectionGeneration: videoSelectionGeneration,
-    displayIndex: captured.displayIndex,
+    displayIndex,
   });
   return window.LinglishFirstLessonPractice.assessmentContextMatches(captured, current);
 }
@@ -718,9 +733,14 @@ function markPracticedMobileFirstLesson(context, result, assessmentId, evidenceK
 }
 
 function markFirstLessonReadyForCommittedTranscript(video, segments) {
-  if (!firstLessonSession.isActive()) return;
   if (!video || !Array.isArray(segments) || segments.length === 0) return;
   if (state.selectedVideoId !== video.id || state.currentSegments !== segments) return;
+  if (guidedLessonEntry) {
+    const href = window.LinglishFirstLessonGoal.resumeHref({ videoId: String(video.id) }, true, 'reader_guided_practice');
+    guidedLessonEntry.hidden = firstLessonSession.isActive() || !href;
+    if (href) guidedLessonEntry.href = href;
+  }
+  if (!firstLessonSession.isActive()) return;
   const readiness = firstLessonReadiness.markReady({
     videoId: video.id,
     segmentCount: segments.length,
@@ -5598,7 +5618,12 @@ function updatePracticeArmUI() {
 
 // 辅助函数：同时更新主面板和右侧边栏的反馈消息
 function updatePracticeFeedback(text, color = '#333') {
-  if (firstLessonSession.isActive()) firstLessonGoalCard.feedback(text);
+  if (firstLessonSession.isActive()) firstLessonGoalCard.feedback({
+    'Recording...': '正在录音，说完后点击「完成录音」。',
+    'Evaluating...': '正在听你的表达，马上给你反馈…',
+    'Detected silence, evaluating...': '已收好录音，正在获取反馈…',
+    'Time limit reached, evaluating...': '录音已结束，正在获取反馈…',
+  }[text] || text);
   if (practiceFeedback) {
     practiceFeedback.textContent = text;
     practiceFeedback.style.color = color;
@@ -5822,6 +5847,9 @@ function renderPracticeCurrentLine() {
   }
 
   const key = line && line.index != null ? line.index : state.practiceIndex;
+  if (firstLessonSession.isActive()) firstLessonGoalCard.setSentence({
+    index: key, text: line.text, translation: line.translation || line.cn || line.zh || line.text_cn || '',
+  });
   const lineStatus = state.practiceLineResults[key] || null;
   const isSuccessful = lineStatus === 'success';
   const storedMatches = state.practiceLineWordResults[key] || {};
@@ -6129,6 +6157,7 @@ async function submitPracticeRecording(blob, line, assessmentContext = null) {
   if (!token || !state.selectedVideoId) return;
   // Save the recording blob for comparison
   state.lastRecordingBlob = blob;
+  if (assessmentContext && isMobileAssessmentContextCurrent(assessmentContext)) firstLessonGoalCard.setRecording(blob);
   try {
     let result = null;
     if (assessmentContext) {
@@ -6196,7 +6225,9 @@ function handlePracticeResult(result, line, assessmentContext = null) {
       state.segmentPlaybackEnd = null;
       state.segmentPlaybackCallback = null;
     }
-    firstLessonGoalCard.settle(window.LinglishFirstLessonGoal.sentenceResult(success === true, wordMatches.missingWords));
+    firstLessonGoalCard.settle(window.LinglishFirstLessonGoal.sentenceResult(success === true, wordMatches.missingWords), {
+      success: success === true, recognizedText, missedWords: wordMatches.missingWords,
+    });
     updatePracticeButtons(false, false, false);
     return true;
   }

@@ -458,7 +458,7 @@
         el.innerHTML = id === 'lyric-current' ? wrapWordsToHTML(text, missedWordsForSegment(lineIdx)) : esc(text);
       });
     }
-    function renderActiveSubtitle(idx) {
+    function renderActiveSubtitle(idx, updateLesson = true) {
       renderLyricStage(idx);
       if (!activeSubtitleEl) return;
       const segs = Array.isArray(state.currentSegments) ? state.currentSegments : [];
@@ -481,6 +481,10 @@
       activeSubtitleEl.dataset.start = String(seg.start_sec ?? seg.start ?? seg.startTime ?? '');
       activeSubtitleEl.dataset.end = String(seg.end_sec ?? seg.end ?? seg.endTime ?? '');
       const translation = (seg.translation || seg.cn || seg.zh || seg.text_cn || '').trim();
+      if (updateLesson && firstLessonSession.isActive()) {
+        firstLessonOriginalController?.stop();
+        firstLessonGoalCard.setSentence({ index: idx, text, translation });
+      }
       if (activeTranslationEl) {
         if (state.showBilingual && translation) {
           activeTranslationEl.textContent = translation;
@@ -1484,6 +1488,7 @@
     let firstLessonRecorderController = null;
     let currentDesktopSelectionToken = null;
     let firstLessonPlaybackLocked = false;
+    let firstLessonOriginalController = null;
     const firstLessonSession = window.LinglishFirstLessonFocus.createSession({
       search: window.location.search,
       pathname: window.location.pathname,
@@ -1510,14 +1515,20 @@
     let firstLessonGoal = null;
     const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.getElementById('first-lesson-goal'), {
       mobile: false,
+      getSentence: (index) => {
+        const line = state.currentSegments[index];
+        return line && { index, text: line.text, translation: line.translation || line.cn || line.zh || line.text_cn || '' };
+      },
+      pauseOriginal: () => { firstLessonOriginalController?.stop(); pauseFirstLessonSourcePlayback(); stopSpokenAudio(); },
       listen: (index) => {
         if (!firstLessonSession.isActive()) return;
         postEvent('first_lesson_goal_listen', { video_resource_id: state.currentVideo?.id });
-        advanceDesktopFirstLesson({ displayIndex: index - 1 });
+        firstLessonOriginalController.play(index);
       },
       record: async (index) => {
         if (!firstLessonSession.isActive() || !firstLessonRecorderController) return;
         if (firstLessonRecorderController.isRecording()) { firstLessonRecorderController.stop('manual'); return; }
+        firstLessonOriginalController.stop();
         const segment = state.currentSegments[index];
         if (!segment) return;
         pauseFirstLessonSourcePlayback();
@@ -1529,8 +1540,10 @@
         if (context) await firstLessonRecorderController.start(context);
       },
       next: () => {
+        firstLessonOriginalController.stop();
         const selected = currentFirstLessonSegment();
-        const moved = selected && advanceDesktopFirstLesson({ displayIndex: selected.index });
+        const nextIndex = firstLessonGoal && !firstLessonGoal.complete ? firstLessonGoal.nextIndex : selected && selected.index + 1;
+        const moved = Number.isInteger(nextIndex) && advanceDesktopFirstLesson({ displayIndex: nextIndex - 1 });
         if (!moved) {
           location.href = './today.html?from=first_lesson_complete#day-end';
           return;
@@ -1538,6 +1551,7 @@
         firstLessonGoalCard.update(firstLessonGoal);
       },
     });
+    firstLessonOriginalController = createDesktopFirstLessonPreview();
 
     function clearDesktopFirstLessonState() {
       firstLessonProgressSubject = null;
@@ -1548,6 +1562,7 @@
     }
 
     function teardownFirstLessonRecording(reason) {
+      if (firstLessonOriginalController) firstLessonOriginalController.stop();
       if (firstLessonRecorderController) firstLessonRecorderController.teardown(reason || 'exit');
     }
 
@@ -1630,7 +1645,9 @@
 
     function isDesktopAssessmentContextCurrent(captured) {
       if (!captured || !firstLessonSession.isActive() || !state.currentVideo) return false;
-      const segment = state.currentSegments[captured.displayIndex];
+      const selected = currentFirstLessonSegment();
+      const displayIndex = selected && selected.index;
+      const segment = selected && selected.segment;
       if (!segment) return false;
       const current = window.LinglishFirstLessonPractice.createAssessmentContext({
         subject: resolveFirstLessonSubject(),
@@ -1638,11 +1655,11 @@
         stableSegmentId: window.LinglishFirstLessonProgress.stableSegmentId(
           state.currentVideo.id,
           segment,
-          captured.displayIndex,
+          displayIndex,
         ),
         sourceIndices: segment.source_indices,
         selectionGeneration: currentDesktopSelectionToken?.generation,
-        displayIndex: captured.displayIndex,
+        displayIndex,
       });
       return window.LinglishFirstLessonPractice.assessmentContextMatches(captured, current)
         && videoSelectionGuard.isCurrent(currentDesktopSelectionToken, state.currentVideo.id);
@@ -5627,9 +5644,12 @@
         }
       }
     }
-    function highlightActiveSegment(idx, scroll) {
+    function highlightActiveSegment(idx, scroll, updateLesson = true) {
       // 性能优化：只在索引改变时才更新DOM
-      if (idx === _lastActiveIdx) return;
+      if (idx === _lastActiveIdx) {
+        if (updateLesson && firstLessonSession.isActive()) renderActiveSubtitle(idx);
+        return;
+      }
 
       // 性能优化：只移除上一个active元素，不遍历所有
       if (_lastActiveElement) {
@@ -5649,7 +5669,7 @@
       el.classList.add('active');
       _lastActiveElement = el;
       _lastActiveIdx = idx;
-      renderActiveSubtitle(idx);
+      renderActiveSubtitle(idx, updateLesson);
 
       if (scroll) {
         ensureVisible(el);
@@ -5701,7 +5721,7 @@
       updateVideoProgress(currentTime, getActiveDuration());
       if (!state.currentSegments || !state.currentSegments.length) return;
       const idx = currentSegmentIndexByTime(currentTime);
-      highlightActiveSegment(idx, true);
+      highlightActiveSegment(idx, true, false);
     };
 
     // Add event listeners for local video player
@@ -6226,6 +6246,7 @@
       const target = ev.target;
       const isInputField = target && (
         target.closest?.('.topbar') ||
+        target.closest?.('.goal-studio') ||
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
         target.tagName === 'SELECT' ||
@@ -7882,6 +7903,11 @@
     const firstLessonRecordBtn = document.getElementById('first-lesson-record');
 
     function currentFirstLessonSegment() {
+      // The visible practice sentence owns recording identity; YouTube seek is asynchronous.
+      if (firstLessonSession.isActive()) {
+        const index = firstLessonGoalCard.getSentenceIndex();
+        if (Number.isInteger(index) && state.currentSegments[index]) return { index, segment: state.currentSegments[index] };
+      }
       let time = Number(playerEl.currentTime || 0);
       if (currentPlayerType === 'youtube' && youtubePlayer && typeof youtubePlayer.getCurrentTime === 'function') {
         time = Number(youtubePlayer.getCurrentTime() || 0);
@@ -7893,6 +7919,49 @@
     function pauseFirstLessonSourcePlayback() {
       try { playerEl.pause(); } catch (_) { }
       try { if (youtubePlayer && typeof youtubePlayer.pause === 'function') youtubePlayer.pause(); } catch (_) { }
+    }
+
+    function createDesktopFirstLessonPreview() {
+      let target = null;
+      const getTime = () => currentPlayerType === 'youtube' && youtubePlayer
+        ? Number(youtubePlayer.getCurrentTime() || 0) : Number(playerEl.currentTime || 0);
+      const seek = (time) => {
+        if (currentPlayerType === 'youtube' && youtubePlayer) youtubePlayer.seekTo(time);
+        else playerEl.currentTime = time;
+      };
+      const controller = window.LinglishOriginalAudioReplay.createOriginalAudioReplayController({
+        getTime, setTime: seek,
+        play: () => currentPlayerType === 'youtube' && youtubePlayer ? youtubePlayer.play() : playerEl.play(),
+        pause: pauseFirstLessonSourcePlayback,
+        requestFrame: window.requestAnimationFrame.bind(window),
+        cancelFrame: window.cancelAnimationFrame.bind(window),
+        setTimer: window.setTimeout.bind(window), clearTimer: window.clearTimeout.bind(window),
+        onStateChange: (playing) => {
+          if (playing || !target || !firstLessonSession.isActive() || state.currentVideo?.id !== target.videoId) return;
+          const time = getTime();
+          // Keep the paused cursor inside this sentence rather than selecting its neighbour.
+          if (time >= target.end && time < target.end + 0.5) seek(Math.max(target.start, target.end - 0.02));
+          const index = getTime() >= target.start && getTime() < target.end ? target.index : null;
+          if (index !== null) renderActiveSubtitle(index, false);
+        },
+        onError: () => firstLessonGoalCard.feedback('原音暂时没有播放出来，请再试一次。'),
+      });
+      function stop() { target = null; controller.stop(); }
+      return {
+        stop, isPlaying: controller.isPlaying,
+        async play(index) {
+          const line = state.currentSegments[index];
+          if (!line || !firstLessonSession.isActive()) return false;
+          stop(); stopSpokenAudio();
+          const start = Number(line.start ?? line.start_sec ?? 0);
+          const end = Number(line.end ?? line.end_sec) || start + 4;
+          target = { index, start, end, videoId: state.currentVideo?.id };
+          firstLessonPlaybackLocked = false;
+          renderActiveSubtitle(index, false);
+          try { return await controller.replay({ start, end, leadIn: 0, tailBuffer: 0 }); }
+          catch (_) { firstLessonGoalCard.feedback('原音暂时没有播放出来，请再试一次。'); return false; }
+        },
+      };
     }
 
     function setFirstLessonRecordButtonState(buttonState) {
@@ -7914,6 +7983,7 @@
       if (!currentToken || !context || !blob?.size) {
         throw new Error('录音或登录状态无效，请重试');
       }
+      if (isDesktopAssessmentContextCurrent(context)) firstLessonGoalCard.setRecording(blob);
       return window.LinglishFirstLessonPractice.submitAssessment({
         fetch,
         url: `${API_BASE}/practice/evaluate`,
@@ -7985,7 +8055,7 @@
           renderTranscript();
         }
         const note = window.LinglishFirstLessonGoal.sentenceResult(result?.success === true, missed);
-        firstLessonGoalCard.settle(note);
+        firstLessonGoalCard.settle(note, { success: result?.success === true, recognizedText: recognized, missedWords: missed });
       },
       advance: () => {},
       complete: () => {},

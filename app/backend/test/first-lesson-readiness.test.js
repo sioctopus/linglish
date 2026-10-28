@@ -118,6 +118,8 @@ function mobileCommittedReadinessContract() {
     'postEvent',
     'firstLessonLifecycle',
     'firstLessonSession',
+    'guidedLessonEntry',
+    'window',
     `return (${source});`,
   );
 }
@@ -232,6 +234,28 @@ test('mobile reader emits readiness once only for committed subtitles of the cur
     name: 'today_first_lesson_workspace_ready',
     payload: { video_resource_id: 113, segment_count: 2, ready_ms: 1500 },
   }]);
+});
+
+test('ordinary mobile reader exposes the guided lesson only for the committed selected video', () => {
+  const segments = [{ text: 'Could you slow down?' }];
+  const state = { selectedVideoId: 42, currentSegments: segments };
+  const entry = { hidden: true, href: '' };
+  const mark = mobileCommittedReadinessContract()(
+    state,
+    { markReady() { assert.fail('Ordinary reading is not a first-lesson readiness event'); } },
+    () => assert.fail('No first-lesson event expected'),
+    {},
+    { isActive: () => false },
+    entry,
+    { LinglishFirstLessonGoal: require('../../frontend/js/video-reader/first-lesson-goal') },
+  );
+  mark({ id: 41 }, segments);
+  assert.equal(entry.hidden, true);
+  mark({ id: 42 }, segments);
+  assert.equal(entry.hidden, false);
+  const url = new URL(entry.href, 'https://example.com/');
+  assert.equal(url.searchParams.get('videoId'), '42');
+  assert.equal(url.searchParams.get('from'), 'reader_guided_practice');
 });
 
 test('mobile first lesson commits and renders subtitles without starting waveform refinement', () => {
