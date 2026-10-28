@@ -122,3 +122,40 @@ test('desktop playback highlighting preserves the lesson, while an explicit subt
   assert.equal(selected, 1, 'deliberate transcript selection must retarget the card');
   assert.equal(stops, 1, 'a deliberate selection cancels the old sentence preview');
 });
+
+test('guided desktop subtitles load while the YouTube iframe is pending and are not reloaded on ready', async () => {
+  const loads = [];
+  let ready;
+  const pending = new Promise(resolve => { ready = resolve; });
+  const noop = () => {};
+  const context = {
+    window: {}, state: { currentVideo: null }, firstLessonGoal: null,
+    firstLessonSession: { isActive: () => true },
+    firstLessonGoalCard: { hide: noop },
+    leaveForCoach: () => false, teardownFirstLessonRecording: noop,
+    videoSelectionGuard: { begin: () => ({ generation: 1 }), isCurrent: () => true },
+    currentDesktopSelectionToken: null, pendingSeek: null,
+    document: { querySelector: () => null, getElementById: () => null },
+    localStorage: { setItem: noop }, headers: () => ({}), API_BASE: '',
+    fetch: async () => ({ json: async () => ({ needsProxy: false }) }),
+    playerEl: { style: {} }, youtubePlayerEl: { style: {} },
+    youtubePlayer: null, currentPlayerType: null,
+    YouTubePlayer: class { init() { return pending; } on() {} destroy() {} },
+    currentTitleEl: {}, progressSaveState: {}, _lastActiveIdx: -1, _lastActiveElement: null,
+    openSourceBtn: {}, importWordsBtn: {},
+    renderVideoList: noop, setPlayerOverlay: noop, tOverlay: (_key, fallback) => fallback,
+    renderVideoIntro: noop, updateVideoMeta: noop, updateVideoProgress: noop,
+    setExtractButtonState: noop, stopWatchTimer: noop, debugLog: noop,
+    applyPendingSeekToYouTube: noop, updateNextVideoCard: noop,
+    autoImportVocabulary: async () => {},
+    loadCurrentTranscript: async (video, token) => { loads.push([video.id, token.generation]); },
+  };
+  const select = vm.runInNewContext(`(${sourceFunction('js/pages/video-reader-desktop-app.js', 'selectVideo', '    ').replace('function selectVideo', 'async function selectVideo')})`, context);
+  const selection = select({ id: 10, title: 'English practice', youtube_video_id: 'example-id' });
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(loads.length, 1, 'available English text must not wait for a third-party iframe');
+  ready();
+  await selection;
+  assert.equal(loads.length, 1, 'player readiness must not reset the prepared lesson');
+  assert.deepEqual(loads[0], [10, 1]);
+});

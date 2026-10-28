@@ -4436,6 +4436,14 @@
 
       stopWatchTimer(false);
 
+      // Prepare available English text independently of slow third-party media.
+      let transcriptRequest = null;
+      const loadSelectedTranscript = () => {
+        if (!transcriptRequest) transcriptRequest = loadCurrentTranscript(v, selectionToken);
+        return transcriptRequest;
+      };
+      if (firstLessonSession.isActive()) loadSelectedTranscript();
+
       // Check if this is a YouTube video
       const isYouTube = !!v.youtube_video_id;
 
@@ -4498,7 +4506,7 @@
             openSourceBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${v.youtube_video_id}`, '_blank');
             importWordsBtn.disabled = false;
             setExtractButtonState(true);
-            loadCurrentTranscript(v, selectionToken);
+            loadSelectedTranscript();
 
             // Auto-import vocabulary in background (non-blocking)
             autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -4573,7 +4581,7 @@
             openSourceBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${v.youtube_video_id}`, '_blank');
             importWordsBtn.disabled = false;
             setExtractButtonState(true);
-            loadCurrentTranscript(v, selectionToken);
+            loadSelectedTranscript();
 
             // Auto-import vocabulary in background (non-blocking)
             autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -4642,7 +4650,7 @@
             openSourceBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${v.youtube_video_id}`, '_blank');
             importWordsBtn.disabled = false;
             setExtractButtonState(true);
-            loadCurrentTranscript(v, selectionToken);
+            loadSelectedTranscript();
 
             // Auto-import vocabulary in background (non-blocking)
             autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -4732,7 +4740,7 @@
           openSourceBtn.onclick = () => window.open(lastLoadedUrl, '_blank');
           importWordsBtn.disabled = false;
           setExtractButtonState(true);
-          loadCurrentTranscript(v, selectionToken);
+          loadSelectedTranscript();
 
           // Auto-import vocabulary in background (non-blocking)
           autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));

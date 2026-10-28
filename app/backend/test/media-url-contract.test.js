@@ -224,11 +224,11 @@ test('both readers guard source assignment and follow-up effects with the curren
   assert.match(desktop, /authorizeElementSource\([\s\S]{0,220}\bisCurrent,\s*\n/);
   assert.match(
     desktop,
-    /await setProtectedMediaSource\(playerEl,\s*localUrl,\s*isCurrentSelection\)[\s\S]{0,160}!isCurrentSelection\(\)[\s\S]{0,800}loadCurrentTranscript/,
+    /await setProtectedMediaSource\(playerEl,\s*localUrl,\s*isCurrentSelection\)[\s\S]{0,160}!isCurrentSelection\(\)[\s\S]{0,800}loadSelectedTranscript/,
   );
   assert.match(
     desktop,
-    /await setProtectedMediaSource\(playerEl,\s*url,\s*isCurrentSelection\)[\s\S]{0,160}!isCurrentSelection\(\)[\s\S]{0,1800}loadCurrentTranscript/,
+    /await setProtectedMediaSource\(playerEl,\s*url,\s*isCurrentSelection\)[\s\S]{0,160}!isCurrentSelection\(\)[\s\S]{0,1800}loadSelectedTranscript/,
   );
   assert.match(
     desktop,
@@ -269,6 +269,7 @@ test('a stale desktop media authorization failure cannot clear or retry the newl
     videoSelectionGuard: createVideoSelectionGuard(),
     leaveForCoach: () => false,
     teardownFirstLessonRecording: noop, firstLessonGoal: null, firstLessonGoalCard: { hide: noop },
+    firstLessonSession: { isActive: () => false },
     currentDesktopSelectionToken: null, pendingSeek: null,
     renderVideoList: noop, setPlayerOverlay: noop, tOverlay: (_key, fallback) => fallback,
     document: { querySelector: () => null, getElementById: () => null },
