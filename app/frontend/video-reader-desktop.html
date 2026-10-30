@@ -12518,6 +12518,22 @@
       };
       const isNewVideo = !state.currentVideo || state.currentVideo.id !== v.id;
       state.currentVideo = v; renderVideoList();
+      try {
+        if (isNewVideo) {
+          state.lastRecordingBlob = null;
+          if (state.lastRecordingUrl) {
+            try { URL.revokeObjectURL(state.lastRecordingUrl); } catch (_) {}
+          }
+          state.lastRecordingUrl = null;
+          state.lastRecordingSegmentIndex = null;
+          window.__lastShadowBlob = null;
+          window.__lastShadowUrl = '';
+          window.__lastShadowIndex = null;
+          if (typeof window.hydrateShadowRecording === 'function') {
+            window.hydrateShadowRecording(v.id).catch(() => {});
+          }
+        }
+      } catch (_) {}
       let lastLoadedUrl = '';
 
       // Always show friendly loading overlay immediately (covers YouTube API wait too)
@@ -17800,12 +17816,13 @@
   <script src="./js/video-reader/sentence-analysis.js?v=20261018"></script>
   <script src="./js/audio-cues.js?v=1"></script>
   <script src="./js/practice/shadow-mic.js?v=20261030-desk-ktv"></script>
+  <script src="./js/practice/shadow-recording-cache.js?v=20261030-ttl7"></script>
   <script src="./js/practice/voice-chat-coach.js?v=20261030-vocab-card"></script>
-  <script src="./js/practice/voice-chat-bridge.js?v=20261030-hold-no-popup"></script>
+  <script src="./js/practice/voice-chat-bridge.js?v=20261030-ttl7"></script>
   <script src="./js/practice/pronunciation-coach-ui.js?v=20261030-weakness"></script>
   <script src="./js/practice/pronunciation-profile-ui.js?v=20261030-weakness"></script>
   <link rel="stylesheet" href="./styles/pronunciation-coach.css?v=20261030-weakness">
-  <script src="./js/video-reader/desktop-x-hold.js?v=20261030-host-avatar"></script>
+  <script src="./js/video-reader/desktop-x-hold.js?v=20261030-ttl7"></script>
   <script src="./js/video-reader/coaching-dock.js?v=20261030-weakness" defer></script>
   <script src="./js/video-reader/sentence-path.js?v=20261030-clean-caption" defer></script>
   <script src="./js/video-reader/pro-controls.js?v=20261030-desk-ktv" defer></script>

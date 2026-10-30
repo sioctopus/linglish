@@ -251,9 +251,17 @@
       hearBtn.disabled = true;
       hearBtn.title = '回听刚才 Hold 录下的声音';
       dock.appendChild(hearBtn);
-      hearBtn.addEventListener('click', () => {
-        const url = root.__lastShadowUrl
-          || ((root.__vrdPro && root.__vrdPro.state && root.__vrdPro.state.lastRecordingUrl) || '');
+      hearBtn.addEventListener('click', async () => {
+        let url = '';
+        try {
+          if (typeof root.resolvePlayableShadowUrl === 'function') {
+            url = await root.resolvePlayableShadowUrl();
+          }
+        } catch (_) {}
+        if (!url) {
+          url = root.__lastShadowUrl
+            || ((root.__vrdPro && root.__vrdPro.state && root.__vrdPro.state.lastRecordingUrl) || '');
+        }
         if (!url) {
           toast('还没有跟读录音', 'warn');
           return;

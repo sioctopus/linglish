@@ -15,6 +15,116 @@
     return root.LinglishVideoReaderState || root.state || {};
   }
 
+  function resolveVideoId() {
+    const st = readerState();
+    if (st.currentVideo && st.currentVideo.id != null) return String(st.currentVideo.id);
+    if (st.selectedVideoId != null && st.selectedVideoId !== '') return String(st.selectedVideoId);
+    try {
+      if (root.LinglishStudyVideoId) return String(root.LinglishStudyVideoId);
+    } catch (_) {}
+    return '';
+  }
+
+  function recordingCache() {
+    return root.LinglishShadowRecordingCache || null;
+  }
+
+  function markHearEnabled(enabled) {
+    const hear = document.getElementById('mobile-hear-me-btn');
+    if (hear) hear.disabled = !enabled;
+    if (typeof root.syncDesktopHearMe === 'function') {
+      try { root.syncDesktopHearMe(!!enabled); } catch (_) {}
+    }
+  }
+
+  async function persistShadowRecording(blob, index) {
+    const cache = recordingCache();
+    if (!cache || typeof cache.save !== 'function' || !blob) return null;
+    const videoId = resolveVideoId();
+    if (!videoId || !Number.isFinite(Number(index))) return null;
+    try {
+      return await cache.save({
+        videoId,
+        segmentIndex: Number(index),
+        blob,
+        mimeType: blob.type || 'audio/webm',
+      });
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function hydrateShadowRecording(videoId, preferredIndex) {
+    const cache = recordingCache();
+    if (!cache) return false;
+    const id = videoId != null && String(videoId) !== '' ? String(videoId) : resolveVideoId();
+    if (!id) return false;
+    let record = null;
+    try {
+      const prefer = Number.isFinite(Number(preferredIndex))
+        ? Number(preferredIndex)
+        : currentSegmentIndex();
+      if (Number.isFinite(prefer) && prefer >= 0 && typeof cache.get === 'function') {
+        record = await cache.get({ videoId: id, segmentIndex: prefer });
+      }
+      if (!record && typeof cache.getLatestForVideo === 'function') {
+        record = await cache.getLatestForVideo(id);
+      }
+    } catch (_) {
+      return false;
+    }
+    if (!record || !record.blob) return false;
+    const st = readerState();
+    if (typeof cache.applyToState === 'function') {
+      cache.applyToState(st, record);
+    } else {
+      st.lastRecordingBlob = record.blob;
+      st.lastRecordingSegmentIndex = Number(record.segmentIndex);
+      try {
+        if (st.lastRecordingUrl) URL.revokeObjectURL(st.lastRecordingUrl);
+      } catch (_) {}
+      try {
+        st.lastRecordingUrl = URL.createObjectURL(record.blob);
+      } catch (_) {
+        st.lastRecordingUrl = '';
+      }
+    }
+    root.__lastShadowBlob = record.blob;
+    root.__lastShadowUrl = st.lastRecordingUrl || '';
+    root.__lastShadowIndex = Number(record.segmentIndex);
+    markHearEnabled(true);
+    return true;
+  }
+
+  async function resolvePlayableShadowUrl(preferredIndex) {
+    const st = readerState();
+    const videoId = resolveVideoId();
+    const prefer = Number.isFinite(Number(preferredIndex))
+      ? Number(preferredIndex)
+      : currentSegmentIndex();
+    const cache = recordingCache();
+    if (cache && videoId) {
+      try {
+        let record = null;
+        if (Number.isFinite(prefer) && prefer >= 0) {
+          record = await cache.get({ videoId, segmentIndex: prefer });
+        }
+        if (!record) record = await cache.getLatestForVideo(videoId);
+        if (record && record.blob) {
+          cache.applyToState(st, record);
+          root.__lastShadowBlob = record.blob;
+          root.__lastShadowUrl = st.lastRecordingUrl || '';
+          root.__lastShadowIndex = Number(record.segmentIndex);
+          markHearEnabled(true);
+          return st.lastRecordingUrl || '';
+        }
+      } catch (_) {}
+    }
+    return root.__lastShadowUrl
+      || st.lastRecordingUrl
+      || (st.lastRecordingBlob ? URL.createObjectURL(st.lastRecordingBlob) : '');
+  }
+
   function isMobileReader() {
     return /(?:^|\/)video-reader\.html$/i.test(root.location.pathname || '');
   }
@@ -443,11 +553,8 @@
             st.lastRecordingUrl = url || (blob ? URL.createObjectURL(blob) : '');
             st.lastRecordingSegmentIndex = index;
           }
-          const hear = document.getElementById('mobile-hear-me-btn');
-          if (hear) hear.disabled = false;
-          if (typeof root.syncDesktopHearMe === 'function') {
-            try { root.syncDesktopHearMe(true); } catch (_) {}
-          }
+          markHearEnabled(true);
+          await persistShadowRecording(blob, index);
         } catch (_) {}
         // Hold only records — do not auto-open the DM sheet. User opens via @linglish.
         if (sessionIsOpen()) seedChatWindow();
@@ -571,7 +678,13 @@
     isCoachMode,
     seedChatWindow,
     getChat: () => chat,
+    persistShadowRecording,
+    hydrateShadowRecording,
+    resolvePlayableShadowUrl,
+    resolveVideoId,
   };
+  root.hydrateShadowRecording = hydrateShadowRecording;
+  root.resolvePlayableShadowUrl = resolvePlayableShadowUrl;
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

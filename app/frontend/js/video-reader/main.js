@@ -2342,13 +2342,39 @@ function rememberLastRecording(blob, segmentIndex) {
   state.lastRecordingSegmentIndex = Number.isFinite(segmentIndex) ? segmentIndex : mobileSegmentPosition;
   if (mobileHearMeBtn) mobileHearMeBtn.disabled = false;
   try { syncMobileReviewSheet(); } catch (_) {}
+  try {
+    const bridge = window.LinglishVoiceChatBridge;
+    if (bridge && typeof bridge.persistShadowRecording === 'function') {
+      bridge.persistShadowRecording(blob, state.lastRecordingSegmentIndex);
+    } else if (window.LinglishShadowRecordingCache && typeof window.LinglishShadowRecordingCache.save === 'function') {
+      const videoId = state.currentVideo?.id || state.selectedVideoId || window.LinglishStudyVideoId;
+      if (videoId != null) {
+        window.LinglishShadowRecordingCache.save({
+          videoId,
+          segmentIndex: state.lastRecordingSegmentIndex,
+          blob,
+          mimeType: blob.type || 'audio/webm',
+        });
+      }
+    }
+  } catch (_) {}
 }
 try { window.rememberLastRecording = rememberLastRecording; } catch (_) {}
 
-function playLastRecordingPreview() {
+async function playLastRecordingPreview() {
+  if (!state.lastRecordingUrl && !state.lastRecordingBlob) {
+    try {
+      if (typeof window.resolvePlayableShadowUrl === 'function') {
+        const restored = await window.resolvePlayableShadowUrl(state.lastRecordingSegmentIndex);
+        if (restored) state.lastRecordingUrl = restored;
+      } else if (typeof window.hydrateShadowRecording === 'function') {
+        await window.hydrateShadowRecording(state.currentVideo?.id || state.selectedVideoId);
+      }
+    } catch (_) {}
+  }
   if (!state.lastRecordingUrl && !state.lastRecordingBlob) {
     setMobileSpeakHint('先跟读一句，再听自己的声音');
-    return Promise.resolve(false);
+    return false;
   }
   try {
     if (mobilePreviewAudio) {
@@ -2361,15 +2387,16 @@ function playLastRecordingPreview() {
   const audio = new Audio(url);
   mobilePreviewAudio = audio;
   setMobileSpeakHint('');
-  return audio.play().then(() => {
+  try {
+    await audio.play();
     audio.onended = () => {
       if (mobilePreviewAudio === audio) mobilePreviewAudio = null;
     };
     return true;
-  }).catch(() => {
+  } catch (_) {
     setMobileSpeakHint('预听失败，请再试一次');
     return false;
-  });
+  }
 }
 
 function resolveMobileSegmentIndexAtTime(t) {
@@ -4911,6 +4938,19 @@ async function selectVideo(idOrVideo) {
       window.LinglishStudyMedia = mediaSnapshotFromVideo(video);
     }
     if (video) rememberStudySelection(video);
+  } catch (_) {}
+  try {
+    if (isNewVideo) {
+      state.lastRecordingBlob = null;
+      if (state.lastRecordingUrl) {
+        try { URL.revokeObjectURL(state.lastRecordingUrl); } catch (_) {}
+      }
+      state.lastRecordingUrl = null;
+      state.lastRecordingSegmentIndex = null;
+      if (typeof window.hydrateShadowRecording === 'function') {
+        window.hydrateShadowRecording(id).catch(() => {});
+      }
+    }
   } catch (_) {}
   state.segmentSpeakerMap = {};
   state.waitingForPractice = false;
