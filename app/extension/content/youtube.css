@@ -1,0 +1,42 @@
+.linglish-yt-save {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: 100%;
+  align-self: flex-start;
+  margin: 8px 8px 8px 0;
+  padding: 8px 14px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  font: 600 13px/1.2 Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: #fff;
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.22);
+  z-index: 2147483000;
+  white-space: nowrap;
+}
+
+.linglish-yt-save:hover {
+  filter: brightness(1.03);
+}
+
+.linglish-yt-save:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+ytd-watch-metadata .linglish-yt-save,
+#actions .linglish-yt-save,
+#owner .linglish-yt-save {
+  vertical-align: middle;
+}
+
+.linglish-yt-save.is-fixed {
+  position: fixed;
+  top: 88px;
+  right: 24px;
+  margin: 0;
+}

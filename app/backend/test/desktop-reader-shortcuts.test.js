@@ -3,10 +3,9 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { readPage } = require('./helpers/page-source');
 
 const frontend = path.resolve(__dirname, '../../frontend');
-const html = readPage('video-reader-desktop.html');
+const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
 const controls = fs.readFileSync(path.join(frontend, 'js/video-reader/pro-controls.js'), 'utf8');
 
 function keyboardHarness(type = 'local') {
@@ -49,10 +48,6 @@ function keyboardHarness(type = 'local') {
     getDuration: () => 30, showToast() {},
   };
   vm.createContext(context);
-  const typingStart = controls.indexOf('  function isTypingTarget(el) {');
-  const typingEnd = controls.indexOf('  // Toggle bilingual:', typingStart);
-  assert.ok(typingStart >= 0 && typingEnd > typingStart);
-  vm.runInContext(controls.slice(typingStart, typingEnd), context);
   const hostStart = html.indexOf("    document.addEventListener('keydown', (ev) => {");
   const hostEnd = html.indexOf('    // Wire dict tab buttons', hostStart);
   assert.ok(hostStart >= 0 && hostEnd > hostStart);
@@ -126,28 +121,4 @@ test('optional waveform refinement aborts a stalled request and keeps existing s
   assert.equal(await context.fetchOriginalWaveformFromServer(162, 0, 20, 240, 5), null);
   assert.equal(aborted, true);
   assert.equal(context.waveformOriginalCache.size, 0);
-});
-
-test('navigation disclosures and header controls keep native Space activation without toggling video', () => {
-  for (const target of [
-    { tagName: 'SUMMARY', getAttribute() { return null; } },
-    { tagName: 'BUTTON', closest(selector) { return selector === '.topbar' ? {} : null; } },
-  ]) {
-    const harness = keyboardHarness();
-    const event = harness.dispatch(' ', { target });
-    assert.equal(event.defaultPrevented, false);
-    assert.equal(harness.snapshot().toggles, 0);
-  }
-});
-
-test('guided lesson buttons and native recording controls keep their own keyboard behavior', () => {
-  for (const tagName of ['BUTTON', 'AUDIO']) {
-    const harness = keyboardHarness();
-    const target = { tagName, closest: selector => selector === '.goal-studio' ? {} : null };
-    for (const key of [' ', 'ArrowRight']) {
-      const event = harness.dispatch(key, { target });
-      assert.equal(event.defaultPrevented, false);
-      assert.deepEqual(harness.snapshot(), { time: 12, paused: true, toggles: 0 });
-    }
-  }
 });

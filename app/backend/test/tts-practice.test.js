@@ -19,6 +19,12 @@ test('practice speech accepts the natural British voices', () => {
   assert.equal(request.voice, 'en-GB-LibbyNeural');
 });
 
+test('practice speech accepts podcast-like Jenny, Roger and Sonia', () => {
+  assert.equal(practiceRequest({ text: 'Hello.', voice: 'en-US-JennyNeural' }).voice, 'en-US-JennyNeural');
+  assert.equal(practiceRequest({ text: 'Hello.', voice: 'en-US-RogerNeural' }).voice, 'en-US-RogerNeural');
+  assert.equal(practiceRequest({ text: 'Hello.', voice: 'en-GB-SoniaNeural' }).voice, 'en-GB-SoniaNeural');
+});
+
 test('practice speech uses Ava when the voice is not one of the practice voices', () => {
   const request = practiceRequest({ text: 'Hello.', voice: 'en-AU-NatashaNeural' });
   assert.equal(request.voice, 'en-US-AvaMultilingualNeural');

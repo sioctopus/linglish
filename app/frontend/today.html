@@ -12,22 +12,22 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Linglish">
-  <link rel="stylesheet" href="/css/install-desktop.css?v=3">
-  <script src="/js/install-desktop.js?v=3" defer></script>
+  <link rel="stylesheet" href="/css/install-desktop.css?v=4">
+  <script src="/js/install-desktop.js?v=6" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <script src="/env.js"></script>
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <script src="./js/visitor-context.js?v=1"></script>
-  <script src="./js/first-lesson-entry.js?v=20261019"></script>
+  <script src="./js/first-lesson-entry.js?v=1"></script>
   <script src="./js/video-reader/missed-words.js?v=20261015"></script>
   <script src="./js/starter-sentence.js?v=20261015"></script>
   <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-  <script src="./js/video-reader/first-lesson-goal.js?v=2026102804"></script>
-  <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026102803">
+  <script src="./js/video-reader/first-lesson-goal.js?v=20261015"></script>
+  <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=20260922">
   <script src="./js/page-tracker.js?v=1"></script>
   <script src="./js/video-recommendation-client.js?v=20260925"></script>
   <style>
@@ -76,10 +76,14 @@
       top: 0;
       z-index: 20;
       display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
-      padding: 0 clamp(18px, 5vw, 64px);
+      gap: 8px;
+      height: 56px;
+      min-height: 56px;
+      padding: 0 clamp(12px, 4vw, 48px);
       background: rgba(255, 255, 255, 0.9);
       border-bottom: 1px solid var(--line);
       backdrop-filter: blur(16px);
@@ -87,15 +91,17 @@
 
     .brand {
       display: inline-flex;
+      flex: 0 0 auto;
       align-items: center;
-      gap: 10px;
+      gap: 8px;
       font-weight: 850;
+      white-space: nowrap;
     }
 
     .brand-mark {
       display: grid;
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       place-items: center;
       border-radius: var(--radius);
       color: #ffffff;
@@ -105,18 +111,46 @@
 
     .nav-actions {
       display: flex;
+      flex: 1 1 auto;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      gap: 4px;
+      min-width: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-actions::-webkit-scrollbar {
+      display: none;
     }
 
     .nav-link {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 10px;
+      border-radius: 999px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 750;
+      line-height: 1;
+      white-space: nowrap;
+      writing-mode: horizontal-tb;
     }
 
     .nav-link:hover {
       color: var(--teal-strong);
+      background: #f0fdfa;
+    }
+
+    .nav-end {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 6px;
     }
 
     .btn {
@@ -1099,10 +1133,13 @@
       }
 
       .topbar {
-        padding: 0 16px;
+        padding: 0 12px;
+        flex-direction: row;
+        height: 56px;
+        min-height: 56px;
       }
 
-      .nav-actions .nav-link {
+      .brand span:last-child {
         display: none;
       }
 
@@ -1333,15 +1370,18 @@
 </head>
 <body>
   <header class="topbar">
-    <a class="brand" href="./index-desktop.html" aria-label="Linglish 首页">
+    <a class="brand" href="./index-desktop.html" aria-label="Linglish 学习首页">
       <span class="brand-mark">L</span>
       <span>Linglish</span>
     </a>
     <nav class="nav-actions">
-      <a class="nav-link" data-nav="back" href="./index-desktop.html">返回</a>
-      <a class="nav-link" href="./video-reader-desktop.html" data-track="nav_video" data-section="topbar">精选视频库</a>
-      <a class="btn btn-secondary" id="auth-action" href="./desktop-auth.html?next=./today.html" data-track="auth_action" data-section="topbar">登录</a>
+      <a class="nav-link" href="./index-desktop.html" data-track="nav_home" data-section="topbar">学习首页</a>
+      <a class="nav-link" href="./pricing.html" data-track="nav_plans" data-section="topbar">方案</a>
+      <a class="nav-link" href="./landing.html" data-track="nav_product" data-section="topbar">产品介绍</a>
     </nav>
+    <div class="nav-end">
+      <a class="btn btn-secondary" id="auth-action" href="./desktop-auth.html?next=./today.html" data-track="auth_action" data-section="topbar">登录</a>
+    </div>
   </header>
 
   <main class="page">
@@ -2981,7 +3021,7 @@
         currentLevel: { level, name: meta.name, description: meta.desc },
         recommendation: interest
           ? `围绕「${interest}」先完成一个轻量训练闭环：看一段真实视频、跟读 5 句、复习 3 个表达。`
-          : '先完成一个轻量训练闭环：看一段真实视频、跟读 5 句、复习 3 个表达。',
+          : '先完成一个轻量训练闭环：看一段真实视频、跟读 5 句、复习 3 个表达。`,
         estimatedMinutes: Math.max(10, Math.min(dailyGoal, 30)),
         summary: '今日轻量计划：1 个视频 + 5 句跟读 + 3 个复习',
         profile: { dailyGoal, interests: interest ? [interest] : [] },

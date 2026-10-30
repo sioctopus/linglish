@@ -206,3 +206,65 @@
     scroll-behavior: auto;
   }
 }
+
+.pronunciation-feedback-panel {
+  margin: 0 0 14px;
+  padding: 0;
+}
+
+.pronunciation-feedback-panel[hidden] {
+  display: none !important;
+}
+
+.pronunciation-feedback-body .pronunciation-coach-host {
+  margin: 0;
+}
+
+.pronunciation-skill-update {
+  margin: 8px 0 0;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: #f0fdfa;
+  color: #0f766e;
+  font-size: 0.86rem;
+  font-weight: 650;
+  line-height: 1.45;
+}
+
+.pronunciation-weakness-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.pronunciation-weakness-actions[hidden] {
+  display: none !important;
+}
+
+.pronunciation-weakness-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 1rem;
+  background: linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%);
+  color: #fff;
+  font-weight: 750;
+  font-size: 0.88rem;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(15, 118, 110, 0.22);
+}
+
+.pronunciation-weakness-btn:hover {
+  filter: brightness(1.04);
+}
+
+.pronunciation-weakness-link {
+  border: 1px solid #cbd5e1;
+  border-radius: 999px;
+  padding: 0.5rem 0.9rem;
+  background: #fff;
+  color: #334155;
+  font-weight: 650;
+  font-size: 0.84rem;
+  cursor: pointer;
+}

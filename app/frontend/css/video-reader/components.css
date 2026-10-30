@@ -223,25 +223,26 @@
         transform: rotate(180deg);
       }
 
-      /* 上传表单区域 */
+      /* 上传表单区域（勿用偏小的 max-height，否则会裁掉提交按钮） */
       .video-upload {
         background: white;
         border-radius: 10px;
         padding: 1rem;
         margin-bottom: 1.5rem;
         box-shadow: var(--shadow-sm);
-        overflow: hidden;
-        transition: all var(--transition-normal);
-        max-height: 500px;
+        overflow: visible;
+        max-height: none;
         opacity: 1;
       }
 
       .video-upload.collapsed {
+        display: none;
         max-height: 0;
-        padding: 0 1rem;
+        padding: 0;
         margin-bottom: 0;
         opacity: 0;
         pointer-events: none;
+        overflow: hidden;
       }
 
       .video-upload label {
@@ -2087,16 +2088,11 @@
           transform: translateX(0);
         }
 
-        /* 添加遮罩层 */
+        /* 遮罩改由 #mobile-library-backdrop 承担，避免 ::before 拦截侧栏点击 */
         .video-sidebar:not(.hidden)::before {
-          content: '';
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.5);
-          z-index: -1;
+          content: none;
+          display: none;
+          pointer-events: none;
         }
 
         .video-main {
@@ -2449,38 +2445,9 @@
           border-color: transparent;
         }
 
+        /* Player already has its own scrubber; keep bottom dock free of a duplicate bar. */
         .mobile-progress-row {
-          display: grid;
-          grid-template-columns: auto 1fr auto;
-          align-items: center;
-          gap: 0.75rem;
-          color: #475569;
-          font-size: 0.85rem;
-        }
-
-        #mobile-progress {
-          -webkit-appearance: none;
-          appearance: none;
-          width: 100%;
-          height: 6px;
-          border-radius: 999px;
-          background: #e2e8f0;
-        }
-
-        #mobile-progress::-webkit-slider-thumb {
-          -webkit-appearance: none;
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: #0284c7;
-          box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.25);
-        }
-
-        #mobile-progress::-moz-range-thumb {
-          width: 16px;
-          height: 16px;
-          border-radius: 50%;
-          background: #0284c7;
+          display: none !important;
         }
 
         .mobile-replay-btn {

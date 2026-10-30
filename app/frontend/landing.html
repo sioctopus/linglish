@@ -2025,9 +2025,8 @@
   </footer>
 
   <script src="./js/visitor-context.js?v=1"></script>
-  <script src="./js/auth-manager.js?v=20261019"></script>
-<script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/first-lesson-entry.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2"></script>
+  <script src="./js/first-lesson-entry.js?v=1"></script>
   <script>
     const VISITOR_ID_KEY = 'linglish_visitor_id';
     const landingParams = new URLSearchParams(window.location.search || '');
@@ -2159,7 +2158,8 @@
     }
 
     function landingStarterHref(source) {
-      return `today.html?from=${encodeURIComponent(source)}&starter=1`;
+      const page = isMobile() ? 'mobile-today.html' : 'today.html';
+      return `${page}?from=${encodeURIComponent(source)}&starter=1`;
     }
 
     function startLandingFirstLesson(event, source) {

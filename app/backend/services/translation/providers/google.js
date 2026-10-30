@@ -151,4 +151,5 @@ async function translateWithGoogle(text) {
 
 module.exports = {
   translateWithGoogle,
+  translateViaGoogle,
 };

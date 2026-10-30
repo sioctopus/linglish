@@ -260,9 +260,9 @@ async function getTranscriptViaInnertube(videoId, language = 'en') {
     console.log(`[YouTube] Raw segments: ${rawSegments.length}, applying smart merge...`);
     const normalizedSegments = normalizeSegmentsTiming(rawSegments);
     const segments = mergeIncompleteSegments(normalizedSegments, {
-      maxMergeGap: 3,           // YouTube字幕间隔较小，使用3秒
-      maxSegmentDuration: 25,   // 限制单句最大长度
-      minSegmentDuration: 0.8,  // 过短的segment强制合并
+      maxMergeGap: 0.9,
+      maxSegmentDuration: 6,
+      minSegmentDuration: 0.45,
     });
 
     // Combine all text
@@ -304,11 +304,36 @@ async function getTranscriptViaInnertube(videoId, language = 'en') {
  * @param {string} language - Language code (default: 'en')
  * @returns {Promise<Object>} Transcript data with segments
  */
+function resolveYtDlpBin() {
+  if (process.env.YT_DLP_PATH) return process.env.YT_DLP_PATH;
+  // Prefer the Python Scripts shim on Windows after `pip install yt-dlp`.
+  try {
+    const fsSync = require('fs');
+    const candidates = process.platform === 'win32'
+      ? [
+        path.join(process.env.LOCALAPPDATA || '', 'Programs', 'Python', 'Python314', 'Scripts', 'yt-dlp.exe'),
+        'C:\\Python314\\Scripts\\yt-dlp.exe',
+        'C:\\Python313\\Scripts\\yt-dlp.exe',
+        'C:\\Python312\\Scripts\\yt-dlp.exe',
+        'yt-dlp.exe',
+        'yt-dlp',
+      ]
+      : ['yt-dlp'];
+    for (const candidate of candidates) {
+      if (!candidate) continue;
+      if (candidate === 'yt-dlp' || candidate === 'yt-dlp.exe') return candidate;
+      if (fsSync.existsSync(candidate)) return candidate;
+    }
+  } catch (_) {}
+  return process.platform === 'win32' ? 'yt-dlp.exe' : 'yt-dlp';
+}
+
 async function getTranscriptViaYtDlp(videoId, language = 'en') {
   const { execFile } = require('child_process');
   const fsp = require('fs/promises');
   const osMod = require('os');
   const pathMod = require('path');
+  const ytDlpBin = resolveYtDlpBin();
 
   // Exact language codes only — never wildcards. YouTube exposes hundreds of
   // "translated from English" tracks (en-en-US, ab-en-US, ...) and a pattern
@@ -336,13 +361,13 @@ async function getTranscriptViaYtDlp(videoId, language = 'en') {
   }
 
   try {
-    console.log(`[YouTube] Fetching transcript via yt-dlp captions for: ${videoId}`);
+    console.log(`[YouTube] Fetching transcript via yt-dlp captions for: ${videoId} (${ytDlpBin})`);
     // Don't reject on a non-zero exit: yt-dlp may fail on ONE requested track
     // (e.g. a 429 on a secondary language) after having already written a
     // perfectly good one. What matters is whether a caption file landed on
     // disk, which we check next.
     const cliError = await new Promise((resolve) => {
-      execFile('yt-dlp', args, { timeout: 60000 }, (error, stdout, stderr) => {
+      execFile(ytDlpBin, args, { timeout: 60000, windowsHide: true }, (error, stdout, stderr) => {
         resolve(error ? (stderr?.trim() || error.message) : null);
       });
     });
@@ -383,9 +408,9 @@ async function getTranscriptViaYtDlp(videoId, language = 'en') {
     console.log(`[YouTube] Raw segments from yt-dlp: ${rawSegments.length}, applying smart merge...`);
     const normalizedSegments = normalizeSegmentsTiming(rawSegments);
     const segments = mergeIncompleteSegments(normalizedSegments, {
-      maxMergeGap: 3,
-      maxSegmentDuration: 25,
-      minSegmentDuration: 0.8,
+      maxMergeGap: 0.9,
+      maxSegmentDuration: 6,
+      minSegmentDuration: 0.45,
     });
     const fullText = segments.map(seg => seg.text).join(' ');
 
@@ -410,64 +435,303 @@ async function getTranscriptViaYtDlp(videoId, language = 'en') {
  * @param {string} language - Language code (default: 'en')
  * @returns {Promise<Object>} Transcript data with segments
  */
-async function getTranscript(url, language = 'en') {
+function withTimeout(promise, ms, label) {
+  let timer = null;
+  return Promise.race([
+    Promise.resolve(promise).finally(() => {
+      if (timer) clearTimeout(timer);
+    }),
+    new Promise((_, reject) => {
+      timer = setTimeout(() => {
+        reject(new Error(`${label || 'operation'} timed out after ${ms}ms`));
+      }, ms);
+    }),
+  ]);
+}
+
+function httpsGetText(url, timeoutMs = 8000) {
+  const https = require('https');
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      try { req.destroy(); } catch (_) {}
+      reject(new Error('Request timeout'));
+    }, timeoutMs);
+    const req = https.get(url, {
+      timeout: timeoutMs,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        Accept: 'application/json, text/vtt, text/plain, */*',
+      },
+      agent: agent || undefined,
+    }, (res) => {
+      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        clearTimeout(timer);
+        settled = true;
+        httpsGetText(res.headers.location, timeoutMs).then(resolve, reject);
+        res.resume();
+        return;
+      }
+      if (res.statusCode !== 200) {
+        clearTimeout(timer);
+        settled = true;
+        reject(new Error(`HTTP ${res.statusCode}`));
+        res.resume();
+        return;
+      }
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(Buffer.concat(chunks).toString('utf8'));
+      });
+    });
+    req.on('error', (err) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(err);
+    });
+  });
+}
+
+function parseVttOrSrtToSegments(raw) {
+  const text = String(raw || '').replace(/^\uFEFF/, '').trim();
+  if (!text) return [];
+  const blocks = text
+    .replace(/\r/g, '')
+    .split(/\n\n+/)
+    .map((b) => b.trim())
+    .filter(Boolean);
+  const segments = [];
+  const timeRe = /(\d{1,2}:)?\d{1,2}:\d{2}[.,]\d{2,3}\s*-->\s*(\d{1,2}:)?\d{1,2}:\d{2}[.,]\d{2,3}/;
+  const toSec = (stamp) => {
+    const clean = String(stamp || '').replace(',', '.');
+    const parts = clean.split(':').map(Number);
+    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2];
+    if (parts.length === 2) return parts[0] * 60 + parts[1];
+    return Number(clean) || 0;
+  };
+  for (const block of blocks) {
+    if (/^WEBVTT/i.test(block) || /^NOTE\b/i.test(block) || /^STYLE\b/i.test(block)) continue;
+    const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+    if (!lines.length) continue;
+    let timeLine = lines.find((l) => timeRe.test(l));
+    if (!timeLine && timeRe.test(lines[0])) timeLine = lines[0];
+    if (!timeLine) continue;
+    const m = timeLine.match(/((?:\d{1,2}:)?\d{1,2}:\d{2}[.,]\d{2,3})\s*-->\s*((?:\d{1,2}:)?\d{1,2}:\d{2}[.,]\d{2,3})/);
+    if (!m) continue;
+    const start = toSec(m[1]);
+    const end = toSec(m[2]);
+    const body = lines
+      .filter((l) => l !== timeLine && !/^\d+$/.test(l))
+      .join(' ')
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!body) continue;
+    segments.push({
+      index: segments.length,
+      text: decodeHtmlEntities(body),
+      start,
+      end: end > start ? end : start + 1.5,
+      speaker: null,
+    });
+  }
+  return segments;
+}
+
+function parseJson3CaptionEvents(raw) {
+  let data = raw;
+  if (typeof raw === 'string') {
+    try { data = JSON.parse(raw); } catch (_) { return []; }
+  }
+  const events = Array.isArray(data && data.events) ? data.events : [];
+  const segments = [];
+  for (const ev of events) {
+    if (!Array.isArray(ev.segs)) continue;
+    const text = decodeHtmlEntities(ev.segs.map((s) => s.utf8 || '').join('').trim());
+    if (!text) continue;
+    const start = (Number(ev.tStartMs) || 0) / 1000;
+    const end = start + (Number(ev.dDurationMs) || 0) / 1000;
+    segments.push({
+      index: segments.length,
+      text,
+      start,
+      end: end > start ? end : start + 1.2,
+      speaker: null,
+    });
+  }
+  return segments;
+}
+
+function finalizeCaptionSegments(rawSegments, language, source) {
+  if (!rawSegments.length) throw new Error('No caption segments from ' + source);
+  const normalizedSegments = normalizeSegmentsTiming(rawSegments);
+  const segments = mergeIncompleteSegments(normalizedSegments, {
+    maxMergeGap: 0.9,
+    maxSegmentDuration: 6,
+    minSegmentDuration: 0.45,
+  });
+  return {
+    success: true,
+    transcript: segments.map((s) => s.text).join(' '),
+    segments,
+    language,
+    source,
+  };
+}
+
+async function getTranscriptViaMirrors(videoId, language = 'en') {
+  const lang = String(language || 'en').toLowerCase();
+  const invidiousHosts = [
+    'yewtu.be',
+    'invidious.nerdvpn.de',
+    'inv.perditum.com',
+    'invidious.f5.si',
+    'inv.nadeko.net',
+  ];
+  const pipedHosts = [
+    'pipedapi.adminforge.de',
+    'pipedapi.kavin.rocks',
+    'api.piped.private.coffee',
+  ];
+
+  for (const host of invidiousHosts) {
+    try {
+      console.log(`[YouTube] Trying Invidious captions via ${host}...`);
+      const listRaw = await httpsGetText(`https://${host}/api/v1/captions/${encodeURIComponent(videoId)}`, 7000);
+      const list = JSON.parse(listRaw);
+      if (!Array.isArray(list) || !list.length) continue;
+      const preferred =
+        list.find((t) => String(t.languageCode || '').toLowerCase() === lang) ||
+        list.find((t) => String(t.language_code || '').toLowerCase() === lang) ||
+        list.find((t) => /en/i.test(String(t.languageCode || t.language_code || t.label || ''))) ||
+        list[0];
+      const label = preferred.label || preferred.languageCode || preferred.language_code || 'en';
+      const captionUrl = preferred.url
+        ? (preferred.url.startsWith('http') ? preferred.url : `https://${host}${preferred.url}`)
+        : `https://${host}/api/v1/captions/${encodeURIComponent(videoId)}?label=${encodeURIComponent(label)}`;
+      const body = await httpsGetText(captionUrl, 8000);
+      const rawSegments = body.trim().startsWith('{')
+        ? parseJson3CaptionEvents(body)
+        : parseVttOrSrtToSegments(body);
+      return finalizeCaptionSegments(rawSegments, lang, `invidious:${host}`);
+    } catch (err) {
+      console.warn(`[YouTube] Invidious ${host} failed:`, err.message);
+    }
+  }
+
+  for (const host of pipedHosts) {
+    try {
+      console.log(`[YouTube] Trying Piped captions via ${host}...`);
+      const raw = await httpsGetText(`https://${host}/streams/${encodeURIComponent(videoId)}`, 8000);
+      const data = JSON.parse(raw);
+      const bags = [data.subtitles || {}, data.automaticCaptions || data.autoCaptions || {}];
+      let trackUrl = null;
+      for (const bag of bags) {
+        const keys = Object.keys(bag || {});
+        const key =
+          keys.find((k) => k.toLowerCase() === lang) ||
+          keys.find((k) => k.toLowerCase().startsWith('en')) ||
+          keys[0];
+        if (!key) continue;
+        const tracks = Array.isArray(bag[key]) ? bag[key] : [];
+        const hit = tracks.find((t) => /json3|vtt|srt|text/i.test(String(t.mimeType || t.url || ''))) || tracks[0];
+        if (hit && hit.url) {
+          trackUrl = hit.url;
+          break;
+        }
+      }
+      if (!trackUrl) continue;
+      const body = await httpsGetText(trackUrl, 8000);
+      const rawSegments = body.trim().startsWith('{')
+        ? parseJson3CaptionEvents(body)
+        : parseVttOrSrtToSegments(body);
+      return finalizeCaptionSegments(rawSegments, lang, `piped:${host}`);
+    } catch (err) {
+      console.warn(`[YouTube] Piped ${host} failed:`, err.message);
+    }
+  }
+
+  throw new Error('All caption mirrors failed');
+}
+
+async function getTranscriptInner(url, language = 'en') {
   const videoId = extractVideoId(url);
   if (!videoId) {
     throw new Error('Invalid YouTube URL');
   }
 
-  // Try Innertube API first (more reliable for fetching transcripts)
-  // Re-enabled 2024-12-02: Test if youtubei.js now works with current YouTube format
-  const ENABLE_INNERTUBE = true;
-
-  // Try Innertube API first (more reliable) - currently disabled
-  if (ENABLE_INNERTUBE) {
-    try {
-      console.log('[YouTube] Attempting transcript fetch via Innertube API...');
-      const result = await getTranscriptViaInnertube(videoId, language);
-      return result;
-    } catch (innertubeError) {
-      console.log('[YouTube] Innertube API failed, trying yt-dlp captions:', innertubeError.message);
-    }
-  }
-
-  // Tier 2: yt-dlp caption download (proven reliable behind geo/parser issues).
+  // Prefer yt-dlp first: on restricted networks Node fetch/Innertube often time out,
+  // while yt-dlp still reaches caption tracks. Keep Innertube as a fast secondary.
   try {
     const result = await getTranscriptViaYtDlp(videoId, language);
     return result;
   } catch (ytDlpError) {
-    console.log('[YouTube] yt-dlp caption fetch failed, falling back to web scraping:', ytDlpError.message);
+    console.log('[YouTube] yt-dlp caption fetch failed, trying Innertube:', ytDlpError.message);
+  }
+
+  const ENABLE_INNERTUBE = process.env.YOUTUBE_ENABLE_INNERTUBE !== '0';
+  const INNERTUBE_TIMEOUT_MS = Number(process.env.YOUTUBE_INNERTUBE_TIMEOUT_MS) || 8000;
+
+  if (ENABLE_INNERTUBE) {
+    try {
+      console.log('[YouTube] Attempting transcript fetch via Innertube API...');
+      const result = await withTimeout(
+        getTranscriptViaInnertube(videoId, language),
+        INNERTUBE_TIMEOUT_MS,
+        'Innertube transcript'
+      );
+      return result;
+    } catch (innertubeError) {
+      console.log('[YouTube] Innertube API failed, trying mirror captions:', innertubeError.message);
+    }
+  }
+
+  // Invidious / Piped mirrors (helps when youtube.com is blocked but mirrors work).
+  try {
+    const result = await withTimeout(
+      getTranscriptViaMirrors(videoId, language),
+      12000,
+      'mirror transcript'
+    );
+    return result;
+  } catch (mirrorError) {
+    console.log('[YouTube] Mirror caption fetch failed, falling back to web scraping:', mirrorError.message);
   }
 
   // Use web scraping method directly
   try {
-    // Try multiple language options as fallback
+    // Prefer requested language, then English / auto. Keep the list short so
+    // unreachable networks fail fast instead of retrying every locale.
     const languagesToTry = [
-      language,                    // User-specified language
-      'en',                        // English
-      'en-US',                     // US English
-      'en-GB',                     // British English
-      null,                        // Auto-generated (no language specified)
-    ];
-
-      // Remove duplicates while preserving order
-      const uniqueLanguages = [...new Set(languagesToTry)];
+      language,
+      language === 'en' ? null : 'en',
+      null,
+    ].filter((lang, index, arr) => arr.indexOf(lang) === index);
 
       let transcript = null;
       let usedLanguage = null;
       let lastError = null;
 
-      // Try each language option until one works (with retry)
-      for (const lang of uniqueLanguages) {
+      for (const lang of languagesToTry) {
         try {
           console.log(`[YouTube] Trying to fetch transcript with language: ${lang || 'auto'}`);
 
           const options = lang ? { lang } : {};
 
-          // Retry up to 3 times for transcript fetching
-          transcript = await retryWithDelay(async () => {
-            return await YoutubeTranscript.fetchTranscript(videoId, options);
-          }, 3, 2000);
+          // One retry is enough when YouTube is reachable; network failures
+          // should not burn 3×N language attempts.
+          transcript = await withTimeout(
+            retryWithDelay(async () => YoutubeTranscript.fetchTranscript(videoId, options), 1, 800),
+            6000,
+            `web transcript (${lang || 'auto'})`
+          );
 
           if (transcript && transcript.length > 0) {
             usedLanguage = lang || 'auto';
@@ -477,7 +741,9 @@ async function getTranscript(url, language = 'en') {
         } catch (err) {
           lastError = err;
           console.log(`[YouTube] Failed with language ${lang || 'auto'}: ${err.message}`);
-          // Continue to next language option
+          if (/fetch failed|timed out|ECONN|ENOTFOUND|network/i.test(String(err && err.message))) {
+            break;
+          }
         }
       }
 
@@ -501,9 +767,9 @@ async function getTranscript(url, language = 'en') {
       console.log(`[YouTube] Raw segments from web-scraping: ${rawSegments.length}, applying smart merge...`);
       const normalizedSegments = normalizeSegmentsTiming(rawSegments);
       const segments = mergeIncompleteSegments(normalizedSegments, {
-        maxMergeGap: 3,           // YouTube字幕间隔较小，使用3秒
-        maxSegmentDuration: 25,   // 限制单句最大长度
-        minSegmentDuration: 0.8,  // 过短的segment强制合并
+        maxMergeGap: 0.9,
+        maxSegmentDuration: 6,
+        minSegmentDuration: 0.45,
       });
 
       // Combine all text
@@ -532,6 +798,20 @@ async function getTranscript(url, language = 'en') {
 
       throw new Error(`Failed to fetch YouTube transcript: ${error.message}`);
     }
+}
+
+async function getTranscript(url, language = 'en') {
+  // yt-dlp alone often needs ~10–20s; leave room after failed Node-fetch tiers.
+  const overallMs = Number(process.env.YOUTUBE_TRANSCRIPT_TIMEOUT_MS) || 45000;
+  try {
+    return await withTimeout(getTranscriptInner(url, language), overallMs, 'YouTube transcript');
+  } catch (error) {
+    const message = error && error.message ? String(error.message) : 'Failed to fetch YouTube transcript';
+    if (/timed out/i.test(message)) {
+      throw new Error('字幕拉取超时。当前网络可能无法访问 YouTube，请配置代理、安装 yt-dlp，或改用已上传的本地视频。');
+    }
+    throw error;
+  }
 }
 
 /**

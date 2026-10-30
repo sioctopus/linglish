@@ -4,8 +4,25 @@
 <head>
   <script src="./js/auth-manager.js?v=20261019"></script>
 <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/tts-voice.js?v=2"></script>
+  <script src="./js/tts-voice.js?v=3"></script>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <script>
+    // Pick content via video/channel/podcast library — never show the old picker modal.
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search || '');
+        if (params.get('videoId') || params.get('source') === 'external') return;
+        var study = params.get('mode') === 'dialogue' || params.get('mode') === 'arena' ? 'arena' : 'coach';
+        var next = new URLSearchParams();
+        next.set('study', study);
+        if (params.get('from')) next.set('from', params.get('from'));
+        var ua = navigator.userAgent || '';
+        var mobile = window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad/i.test(ua);
+        window.location.replace((mobile ? './video-reader.html' : './video-reader-desktop.html') + '?' + next.toString());
+      } catch (e) {}
+    })();
+  </script>
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: data: blob:; media-src 'self' https: data: blob:; img-src 'self' https: data: blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;">
   <script>
@@ -218,11 +235,7 @@
         }
 
           , (_, i) => ({
-            speaker: `Speaker $ {
-          i+1
-        }
-
-        `, lines: []
+            speaker: `Speaker ${i + 1}`, lines: []
           }));
         const offset = Math.abs(state.roleRotation) % k;
         let curRole = offset;
@@ -1891,6 +1904,16 @@
       font-weight: 600;
       text-align: center;
       word-break: break-word;
+    }
+
+    .role-count {
+      font-size: 12px;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+
+    .role-button.selected .role-count {
+      color: rgba(255, 255, 255, 0.9);
     }
 
     .role-hint {
@@ -3810,65 +3833,10 @@
 </head>
 
 <body>
-  <!-- Video Selection Modal -->
-  <div id="video-select-modal"
-    style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-    <div
-      style="background: white; border-radius: 16px; max-width: 600px; width: 100%; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
-      <div style="padding: 20px; border-bottom: 1px solid #e0e0e0;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h2 style="margin: 0; font-size: 20px; display: flex; align-items: center; gap: 8px;">
-            🎬 <span id="video-select-title">选择学习视频</span>
-          </h2>
-          <div style="display:flex; gap:0.5rem; align-items:center;">
-            <!-- Translation Toggle (Desktop) -->
-            <button id="translation-toggle-btn" class="translation-toggle-btn" style="display: none;">
-              <span class="icon">文</span>
-              <span class="text">译</span>
-            </button>
-
-            <a href="./index-desktop.html"
-              style="display:inline-flex; align-items:center; gap:6px; padding:0.45rem 0.75rem; border:1px solid #e5e7eb; border-radius:10px; text-decoration:none; color:#111827; font-size:0.9rem; background:#f8fafc;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 12l9-9 9 9" />
-                <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-              </svg>
-              <span data-i18n="nav.home">主页</span>
-            </a>
-          </div>
-          <!-- 语言选择器 -->
-          <div class="lang-selector" style="position: relative; display: inline-block;">
-            <button id="lang-btn-practice"
-              style="padding: 0.4rem 0.8rem; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;">
-              <span>🌐</span>
-              <span id="current-lang-practice">中文</span>
-            </button>
-            <div id="lang-dropdown-practice"
-              style="position: absolute; top: calc(100% + 0.5rem); right: 0; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 0.5rem; min-width: 120px; display: none; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-              <div class="lang-option active" data-lang="zh"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">
-                <span>🇨🇳</span>
-                <span>中文</span>
-              </div>
-              <div class="lang-option" data-lang="en"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">
-                <span>🇺🇸</span>
-                <span>English</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p style="margin: 0; color: #666; font-size: 14px;">精选视频可直接学习，点一个就开始。</p>
-      </div>
-      <div id="video-list-container" style="flex: 1; overflow-y: auto; padding: 16px;">
-        <div style="text-align: center; padding: 40px; color: #999;">
-          <div style="font-size: 24px; margin-bottom: 8px;">⏳</div>
-          <div data-i18n="common.loading">正在加载视频列表...</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- video-select-modal removed: use video-reader library (视频/频道/播客) -->
+  <div id="video-select-modal" hidden style="display:none!important"></div>
+  <div id="video-list-container" hidden style="display:none!important"></div>
+  <button id="translation-toggle-btn" class="translation-toggle-btn" type="button" hidden style="display:none!important"></button>
 
   <!-- Back Header -->
   <div class="back-header">
@@ -4665,10 +4633,11 @@
       </a>
     </nav>
 
-    <script src="./js/pages/practice-session-app.js?v=1"></script>
+    <script src="./js/pages/practice-session-app.js?v=20261030-arena-real"></script>
     <script src="./js/page-tracker.js"></script>
 
   <script src="./js/icons.js?v=1"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"129320643cd548dd92038c4e1e9cf253","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 
 </html>

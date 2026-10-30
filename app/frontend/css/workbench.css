@@ -22,6 +22,34 @@ body.wb-page {
     #f8fafc;
   color: #0f172a;
   font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wb-nav-tools {
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.wb-nav-tools[hidden] {
+  display: none !important;
+}
+
+.wb-nav-tools .wb-btn,
+.wb-nav-tools .wb-btn-outline {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.wb-preview-label {
+  display: none;
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
 }
 
 .wb-nav {
@@ -34,6 +62,8 @@ body.wb-page {
   height: auto;
   box-sizing: border-box;
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -51,6 +81,8 @@ body.wb-page {
   margin: 0 auto;
   padding: 6px 10px;
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
@@ -62,10 +94,12 @@ body.wb-page {
 
 .wb-export-inline {
   display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 8px;
   min-width: 0;
-  flex: 1;
+  flex: 1 1 auto;
   justify-content: flex-end;
 }
 
@@ -149,15 +183,21 @@ body.wb-page {
 
 .wb-nav-actions {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+  min-width: 0;
 }
 
 .wb-role,
 .wb-tool {
   display: inline-flex;
+  flex: 0 0 auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
   padding: 4px;
   border-radius: 999px;
   background: #f0fdfa;
@@ -171,14 +211,19 @@ body.wb-page {
 
 .wb-role button,
 .wb-tool button {
+  flex: 0 0 auto;
   border: 0;
   background: transparent;
   border-radius: 999px;
   padding: 8px 14px;
   font: inherit;
   font-weight: 700;
+  line-height: 1;
   color: #64748b;
   cursor: pointer;
+  white-space: nowrap;
+  writing-mode: horizontal-tb;
+  text-orientation: mixed;
 }
 
 .wb-role button.active,
@@ -941,6 +986,20 @@ body.wb-page {
   border: 1px solid var(--wb-block-border, rgba(15, 118, 110, 0.2));
   border-bottom-width: 3px;
   box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
+  overflow: visible;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+.wb-canvas .wb-block:has(.wb-sentence-layered) {
+  padding-bottom: 36px;
+}
+
+.wb-canvas[data-orient="landscape"] .wb-word-pill {
+  min-height: 26px;
+  padding: 3px 5px;
+  font-size: 0.95em;
 }
 
 .wb-block-head {
@@ -984,6 +1043,8 @@ body.wb-page {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .wb-canvas .wb-empty,
@@ -1017,6 +1078,18 @@ body.wb-page {
   border-radius: 14px;
   background: var(--wb-sentence-bg, rgba(15, 23, 42, 0.04));
   border: 1px solid var(--wb-rule, rgba(15, 23, 42, 0.08));
+}
+
+/* 精读逐词行：去掉内框，整组居中，宽度受卡片约束以免裁切 */
+.wb-canvas .wb-sentence.wb-sentence-layered {
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
 
 .wb-sentence-plain {
@@ -1288,29 +1361,47 @@ body.wb-page {
 }
 
 .wb-sentence-layered {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
-  gap: 8px;
-  align-items: start;
-  overflow: visible;
-}
-
-.wb-word-row {
   display: flex;
   flex-wrap: wrap;
+  justify-content: center;
   align-items: flex-start;
-  gap: 8px 6px;
-  min-width: 0;
+  align-content: flex-start;
+  gap: 12px 1px;
+  overflow: visible;
+  padding-bottom: 52px;
+}
+
+.wb-sentence-layered > .wb-sentence-index {
+  margin-top: 22px;
+  flex: 0 0 auto;
+}
+
+/* 子项并入上层 flex，与序号一起作为整体居中，避免偏左留白 */
+.wb-word-row {
+  display: contents;
 }
 
 .wb-word-col {
+  position: relative;
+  display: block;
+  flex: 0 0 auto;
+  width: max-content;
+  max-width: none;
+  text-align: center;
+  z-index: 1;
+}
+
+.wb-word-col:hover,
+.wb-word-col:focus-within {
+  z-index: 6;
+}
+
+.wb-word-core {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
-  min-width: 52px;
-  max-width: 120px;
-  text-align: center;
+  gap: 2px;
+  width: max-content;
 }
 
 .wb-word-sep {
@@ -1318,37 +1409,42 @@ body.wb-page {
   padding-top: 28px;
   color: #94a3b8;
   font-weight: 700;
+  flex: 0 0 auto;
 }
 
 .wb-ipa {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 20px;
-  padding: 2px 7px;
-  border-radius: 8px;
-  background: #f1f5f9;
+  box-sizing: border-box;
+  width: 0;
+  min-width: 100%;
+  min-height: 18px;
+  padding: 1px 0;
+  border-radius: 6px;
   color: #64748b;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   line-height: 1.2;
   white-space: nowrap;
+  overflow: visible;
 }
 
 .wb-ipa-empty {
-  opacity: 0.35;
+  opacity: 0.28;
 }
 
 .wb-word-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  min-height: 34px;
-  padding: 6px 10px;
-  border-radius: 10px;
+  gap: 2px;
+  min-height: 28px;
+  padding: 4px 6px;
+  /* 允许换行完整显示时，每词小圆角，避免截断后直角难看 */
+  border-radius: 6px;
   font-weight: 800;
-  line-height: 1.2;
+  line-height: 1.15;
   color: #0f172a;
   background: #e2e8f0;
 }
@@ -1372,19 +1468,29 @@ body.wb-page {
   font-weight: 800;
   color: #64748b;
   letter-spacing: 0.02em;
+  width: 0;
+  min-width: 100%;
+  text-align: center;
+  overflow: visible;
+  white-space: nowrap;
 }
 
 .wb-pos {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 20px;
-  padding: 2px 8px;
+  box-sizing: border-box;
+  width: 0;
+  min-width: 100%;
+  min-height: 18px;
+  padding: 2px 0;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
   color: #fff;
+  white-space: nowrap;
+  overflow: visible;
 }
 
 .wb-pos-bar {
@@ -1395,12 +1501,42 @@ body.wb-page {
   opacity: 0.85;
 }
 
+/* 释义错开叠显：不占用词块宽度，避免拉开色块间距 */
 .wb-gloss-line {
-  font-size: 12px;
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 2px);
+  transform: translateX(-50%);
+  box-sizing: border-box;
+  width: max-content;
+  max-width: 92px;
+  padding: 3px 5px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 1px 0 rgba(15, 23, 42, 0.04);
+  font-size: 11px;
   font-weight: 600;
   color: #334155;
   line-height: 1.25;
+  text-align: center;
   word-break: break-word;
+  pointer-events: none;
+}
+
+.wb-word-col:nth-child(odd) .wb-gloss-line {
+  top: calc(100% + 2px);
+  z-index: 2;
+}
+
+.wb-word-col:nth-child(even) .wb-gloss-line {
+  top: calc(100% + 28px);
+  z-index: 3;
+  transform: translateX(-42%);
+}
+
+.wb-word-col:nth-child(3n) .wb-gloss-line {
+  transform: translateX(-58%);
+  max-width: 100px;
 }
 
 .wb-pos.pos-noun,
@@ -1745,47 +1881,189 @@ body.wb-page {
 }
 
 @media (max-width: 1100px) {
+  html {
+    height: auto !important;
+    min-height: 100%;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+  }
+
   body.wb-page {
-    height: auto;
-    max-height: none;
-    overflow: auto;
-    padding: 10px 12px 12px;
+    height: auto !important;
+    min-height: 100dvh;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 10px 12px calc(12px + env(safe-area-inset-bottom, 0px));
   }
 
   .wb-mode {
-    flex: none;
-    overflow: visible;
+    flex: none !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
   }
 
-  .wb-tool-bar {
-    flex-wrap: wrap;
+  .wb-nav {
+    flex-direction: column;
+    flex-wrap: nowrap;
     align-items: stretch;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 20px;
   }
 
-  .wb-export-inline {
-    flex-wrap: wrap;
+  .wb-nav-left,
+  .wb-nav-actions {
+    width: 100%;
     justify-content: flex-start;
   }
 
+  .wb-nav-actions {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .wb-role {
+    width: 100%;
+    flex: none;
+  }
+
+  .wb-nav-tools {
+    width: 100%;
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+  }
+
+  .wb-nav-tools .wb-btn,
+  .wb-nav-tools .wb-btn-outline {
+    width: 100%;
+    min-width: 0;
+    min-height: 36px;
+    padding: 0 8px;
+    font-size: 13px;
+    justify-content: center;
+  }
+
+  .wb-tool-bar {
+    flex-direction: column;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .wb-tool {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .wb-tool button {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  .wb-export-inline {
+    width: 100%;
+    flex: none;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
   .wb-export-inline #wb-link-output {
+    flex: 1 1 100%;
     max-width: none;
+    min-width: 0;
   }
 
   .wb-shell {
-    grid-template-columns: 1fr;
-    flex: none;
-    overflow: visible;
-    height: auto;
+    display: flex !important;
+    flex-direction: column;
+    grid-template-columns: none;
+    flex: none !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    height: auto !important;
+    gap: 10px;
   }
 
-  .wb-panel,
-  .wb-center,
-  .wb-preview-wrap {
+  /* Mobile order: input → preview → templates → saved → styles */
+  .wb-panel.wb-stack {
+    display: contents !important;
+  }
+
+  .wb-block {
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+    padding: 14px 16px;
     overflow: visible;
     max-height: none;
   }
 
+  .wb-block-input {
+    order: 1;
+  }
+
+  .wb-center {
+    order: 2;
+    background: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+    padding: 14px 16px;
+    min-height: auto !important;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .wb-preview-label {
+    display: block !important;
+  }
+
+  .wb-block-templates {
+    order: 3;
+  }
+
+  .wb-block-saved {
+    order: 4;
+  }
+
+  .wb-panel.wb-styles {
+    order: 5;
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
+  .wb-panel,
+  .wb-preview-wrap {
+    overflow: visible !important;
+    max-height: none !important;
+  }
+
   .wb-canvas {
-    width: min(100%, 480px);
+    width: 100%;
+    max-width: 480px;
+  }
+}
+
+@media (max-width: 640px) {
+  .wb-brand {
+    font-size: 15px;
+  }
+
+  .wb-role button,
+  .wb-tool button {
+    padding: 8px 10px;
+    font-size: 13px;
+  }
+
+  .wb-export-inline strong {
+    width: 100%;
   }
 }

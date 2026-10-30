@@ -219,16 +219,7 @@
       if ('speechSynthesis' in window) {
         try {
           const utterance = new SpeechSynthesisUtterance(text);
-          const tts = window.LinglishTtsVoice;
-          if (tts && typeof tts.synthesisLang === 'function') {
-            utterance.lang = tts.synthesisLang();
-            const systemVoice = typeof tts.findSystemVoice === 'function'
-              ? tts.findSystemVoice(window.speechSynthesis.getVoices())
-              : null;
-            if (systemVoice) utterance.voice = systemVoice;
-          } else {
-            utterance.lang = 'en-US';
-          }
+          utterance.lang = 'en-US';
           window.speechSynthesis.cancel();
           window.speechSynthesis.speak(utterance);
         } catch (e) {
@@ -696,7 +687,7 @@
         this.phoneticEl.textContent = this.currentReview.phonetic || '';
       }
       if (this.contextPreviewEl) {
-        this.contextPreviewEl.textContent = '加载中...';
+        this.contextPreviewEl.textContent = '加载中....';
       }
 
       console.log('[ReviewManager] Front rendered:', {
@@ -943,16 +934,7 @@
       if (!text) return;
       try {
         const utterance = new SpeechSynthesisUtterance(text);
-        const tts = window.LinglishTtsVoice;
-        if (tts && typeof tts.synthesisLang === 'function') {
-          utterance.lang = tts.synthesisLang();
-          const systemVoice = typeof tts.findSystemVoice === 'function'
-            ? tts.findSystemVoice(speechSynthesis.getVoices())
-            : null;
-          if (systemVoice) utterance.voice = systemVoice;
-        } else {
-          utterance.lang = 'en-US';
-        }
+        utterance.lang = 'en-US';
         speechSynthesis.cancel();
         speechSynthesis.speak(utterance);
       } catch (err) {

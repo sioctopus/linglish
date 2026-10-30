@@ -40,14 +40,16 @@
 /* Safe Area Support for Notched Devices */
 @supports (padding: max(0px)) {
   .mobile-header {
-    padding-top: max(16px, env(safe-area-inset-top));
+    padding-top: max(12px, env(safe-area-inset-top, 0px));
+    min-height: calc(var(--header-height, 56px) + env(safe-area-inset-top, 0px));
   }
 
   .bottom-nav {
-    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    min-height: calc(var(--bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px));
   }
 
   body {
-    padding-bottom: max(70px, calc(70px + env(safe-area-inset-bottom)));
+    padding-bottom: calc(var(--bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px) + 8px);
   }
 }

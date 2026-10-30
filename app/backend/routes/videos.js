@@ -505,6 +505,7 @@ async function clearVideoResourceCaches(videoId) {
   try {
     await Promise.all([
       cacheService.del(`video:detail:${videoId}`),
+      cacheService.del(`transcript:${videoId}`),
       cacheService.del('videos:public:lite'),
       cacheService.del('videos:public:full'),
     ]);
@@ -745,31 +746,53 @@ function mergeSentenceSegments(segments) {
   return merged;
 }
 
+function coerceTranscriptSegments(raw) {
+  let segments = raw;
+  if (typeof segments === 'string') {
+    if (segments === 'undefined' || segments === 'null' || segments === '') return [];
+    try { segments = JSON.parse(segments); } catch (_) { return []; }
+  }
+  if (Array.isArray(segments)) return segments;
+  if (segments && Array.isArray(segments.segments)) return segments.segments;
+  if (segments && typeof segments === 'object') {
+    const vals = Object.keys(segments)
+      .filter((k) => /^\d+$/.test(k))
+      .sort((a, b) => Number(a) - Number(b))
+      .map((k) => segments[k])
+      .filter((v) => v && typeof v === 'object');
+    if (vals.length) return vals;
+  }
+  return [];
+}
+
+function sentencesToSegments(rows) {
+  return (Array.isArray(rows) ? rows : []).map((row, index) => ({
+    index: row.sentence_index != null ? row.sentence_index : index,
+    text: row.text || '',
+    start: Number(row.start_time_sec) || 0,
+    end: Number(row.end_time_sec) || 0,
+    start_sec: Number(row.start_time_sec) || 0,
+    end_sec: Number(row.end_time_sec) || 0,
+    speaker: row.speaker || null,
+  })).filter((seg) => String(seg.text || '').trim());
+}
+
+async function resolveTranscriptSegments(resource) {
+  let segments = coerceTranscriptSegments(resource && resource.transcript_segments);
+  if (segments.length || !resource || resource.id == null) return segments;
+  try {
+    if (typeof dataStore.getVideoSentences === 'function') {
+      const rows = await dataStore.getVideoSentences(resource.id);
+      segments = sentencesToSegments(rows);
+    }
+  } catch (_) { /* table may not exist yet */ }
+  return segments;
+}
+
 function serializeVideoResource(resource) {
   if (!resource) return null;
 
-  let segments = [];
-  if (Array.isArray(resource.transcript_segments)) {
-    segments = resource.transcript_segments;
-  } else if (resource.transcript_segments) {
-    if (typeof resource.transcript_segments === 'string') {
-      // Handle "undefined", "null", or empty string
-      if (resource.transcript_segments === 'undefined' ||
-          resource.transcript_segments === 'null' ||
-          resource.transcript_segments === '') {
-        segments = [];
-      } else {
-        try {
-          segments = JSON.parse(resource.transcript_segments);
-        } catch (err) {
-          console.warn('[Serialize] Failed to parse transcript_segments for video', resource.id, ':', err.message);
-          segments = [];
-        }
-      }
-    } else {
-      segments = resource.transcript_segments;
-    }
-  }
+  let segments = coerceTranscriptSegments(resource.transcript_segments);
 
   // Parse tags if stored as string
   let tags = [];
@@ -2289,6 +2312,7 @@ async function registerVideoRoutes(pathname, req, res) {
             console.log('[YouTube Update] Update payload keys:', Object.keys(updateData).join(', '));
 
             await dataStore.updateVideoResource(resource.id, updateData);
+            await clearVideoResourceCaches(resource.id);
 
             console.log('[YouTube Update] ✓ Successfully updated video resource');
 
@@ -2527,6 +2551,7 @@ async function registerVideoRoutes(pathname, req, res) {
           console.log('[YouTube New] transcript_segments type:', typeof updateData.transcript_segments, 'isArray:', Array.isArray(updateData.transcript_segments), 'length:', updateData.transcript_segments.length);
 
           await dataStore.updateVideoResource(resource.id, updateData);
+          await clearVideoResourceCaches(resource.id);
 
           console.log('[YouTube New] ✓ Successfully saved transcript segments');
           console.log('[YouTube New] Video ID:', resource.id);
@@ -2826,7 +2851,7 @@ async function registerVideoRoutes(pathname, req, res) {
       // Try cache first (2 minute TTL for video details)
       const cacheKey = `video:detail:${id}`;
       const cached = await cacheService.get(cacheKey);
-      if (cached) {
+      if (cached && Array.isArray(cached.transcript_segments) && cached.transcript_segments.length) {
         return sendJson(res, 200, {
           video: cached,
           isMainlandUser: isMainlandUser
@@ -2834,6 +2859,13 @@ async function registerVideoRoutes(pathname, req, res) {
       }
 
       const serialized = serializeVideoResource(resource);
+      // If JSONB captions are empty, rebuild from video_sentences when available.
+      if (!Array.isArray(serialized.transcript_segments) || !serialized.transcript_segments.length) {
+        serialized.transcript_segments = await resolveTranscriptSegments(resource);
+        if (serialized.transcript_segments.length) {
+          serialized.has_subtitles = true;
+        }
+      }
       // Cache the serialized result
       await cacheService.set(cacheKey, serialized, 120); // 2 minute TTL
 
@@ -2882,22 +2914,7 @@ async function registerVideoRoutes(pathname, req, res) {
         return sendJson(res, 200, cached);
       }
 
-      let segments = [];
-      if (Array.isArray(resource.transcript_segments)) {
-        segments = resource.transcript_segments;
-      } else if (resource.transcript_segments) {
-        if (typeof resource.transcript_segments === 'string' &&
-            resource.transcript_segments !== 'undefined' &&
-            resource.transcript_segments !== 'null' &&
-            resource.transcript_segments !== '') {
-          try {
-            segments = JSON.parse(resource.transcript_segments);
-          } catch (err) {
-            console.warn('[Transcript] Failed to parse transcript_segments for video', id, ':', err.message);
-            segments = [];
-          }
-        }
-      }
+      const segments = await resolveTranscriptSegments(resource);
 
       const result = {
         videoId: id,

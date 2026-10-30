@@ -534,11 +534,11 @@
         <button class="btn btn-outline" id="backBtn" disabled>上一步</button>
         <button class="btn btn-primary" id="nextBtn" disabled>下一步</button>
       </div>
-      <a href="./today.html?from=onboarding_skip" class="skip-link" id="skipLink">跳过引导，直接开始</a>
+      <a href="./index-desktop.html?from=onboarding_skip&first=1" class="skip-link" id="skipLink">跳过引导，直接开始</a>
     </div>
   </div>
 
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <script src="./js/oauth-bootstrap.js"></script>
   <script>
@@ -558,7 +558,6 @@
     const loginSaveBtn = document.getElementById('loginSaveBtn');
     let currentStep = 0;
     let resultViewTracked = false;
-    const TODAY_PAGE = './today.html';
     const VISITOR_ID_KEY = 'linglish_visitor_id';
     const PENDING_PROFILE_SYNC_KEY = 'linglish_onboarding_pending_profile_sync';
 
@@ -614,12 +613,17 @@
       return null;
     }
 
+    function homePage() {
+      return './index-desktop.html';
+    }
+
     function getTodayHref(level, source = 'onboarding') {
-      const params = new URLSearchParams({ from: source });
+      const params = new URLSearchParams({ from: source, first: '1' });
       const lv = normalizeLevel(level);
       if (lv) params.set('level', lv);
-      return `${TODAY_PAGE}?${params.toString()}`;
+      return `${homePage()}?${params.toString()}`;
     }
+    if (skipLink) skipLink.href = getTodayHref(null, 'onboarding_skip');
 
     function getToken() {
       try {

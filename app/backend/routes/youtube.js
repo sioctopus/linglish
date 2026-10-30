@@ -222,7 +222,9 @@ async function getVideoInfo(req, res) {
  */
 async function getTranscript(req, res) {
   try {
-    await authenticate(req);
+    // Prefer auth when present, but allow public caption reads so learning pages
+    // can still recover subtitles for library YouTube rows.
+    try { await authenticate(req); } catch (_) { /* optional */ }
     const body = await parseBody(req);
     const { url, language = 'en' } = body;
 
@@ -242,6 +244,7 @@ async function getTranscript(req, res) {
     const uniqueWordCount = new Set(words).size;
 
     return sendJson(res, 200, {
+      success: true,
       ...transcript,
       wordCount,
       uniqueWordCount,
@@ -421,6 +424,16 @@ async function importVideo(req, res) {
           status: 'completed',
           failure_reason: null,
         });
+
+        try {
+          const cacheService = require('../services/cache');
+          await Promise.all([
+            cacheService.del(`video:detail:${resource.id}`),
+            cacheService.del(`transcript:${resource.id}`),
+            cacheService.del('videos:public:lite'),
+            cacheService.del('videos:public:full'),
+          ]);
+        } catch (_) { /* cache best-effort */ }
 
         await applyAutoDifficulty(resource.id, transcriptData);
 

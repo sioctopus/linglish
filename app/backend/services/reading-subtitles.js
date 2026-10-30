@@ -1,7 +1,35 @@
 const zlib = require('zlib');
 
+function decodeHtmlEntities(value) {
+  return String(value || '')
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+      const code = parseInt(hex, 16);
+      if (!Number.isFinite(code) || code < 0 || code > 0x10ffff) return _;
+      try {
+        return String.fromCodePoint(code);
+      } catch (_) {
+        return _;
+      }
+    })
+    .replace(/&#(\d+);/g, (_, dec) => {
+      const code = Number(dec);
+      if (!Number.isFinite(code) || code < 0 || code > 0x10ffff) return _;
+      try {
+        return String.fromCodePoint(code);
+      } catch (_) {
+        return _;
+      }
+    })
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'");
+}
+
 function buildReadingSubtitles(text) {
-  const normalized = String(text || '')
+  const normalized = decodeHtmlEntities(String(text || ''))
     .replace(/\r/g, '\n')
     .replace(/[ \t]+\n/g, '\n')
     .replace(/[^\S\n]+/g, ' ')
@@ -21,12 +49,26 @@ function buildReadingSubtitles(text) {
   return cues;
 }
 
+function isChineseCue(line) {
+  const text = String(line || '').trim();
+  if (!text) return false;
+  const cjk = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+  if (cjk < 4) return false;
+  const latin = (text.match(/[A-Za-z]/g) || []).length;
+  return cjk >= latin;
+}
+
 function isEnglishCue(line) {
-  const words = String(line || '').match(/[A-Za-z][A-Za-z']*/g) || [];
+  const text = String(line || '').trim();
+  if (!text) return false;
+  // Undecoded hex entities contain the letter "x" and used to pass as English.
+  if ((text.match(/&#x[0-9a-f]+;/gi) || []).length >= 3) return false;
+  if (isChineseCue(text)) return false;
+  const words = text.match(/[A-Za-z][A-Za-z']*/g) || [];
   if (words.join('').length < 6) return false;
-  const lowered = words.map(word => word.toLowerCase());
+  const lowered = words.map((word) => word.toLowerCase());
   const filler = new Set(['of', 'page', 'pages']);
-  if (lowered.every(word => filler.has(word))) return false;
+  if (lowered.every((word) => filler.has(word))) return false;
   return true;
 }
 
@@ -34,11 +76,8 @@ function subtitleContent(cues) {
   return cues.join('\n');
 }
 
-function readZipEntries(buffer, { include = () => true } = {}) {
+function readZipEntries(buffer) {
   const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
-  const maxEntryBytes = 8 * 1024 * 1024;
-  const maxExpandedBytes = 32 * 1024 * 1024;
-  if (buf.length > 20 * 1024 * 1024) throw new Error('压缩文档过大');
   let eocd = -1;
   const min = Math.max(0, buf.length - 22 - 65535);
   for (let i = buf.length - 22; i >= min; i -= 1) {
@@ -52,112 +91,67 @@ function readZipEntries(buffer, { include = () => true } = {}) {
   }
 
   const count = buf.readUInt16LE(eocd + 10);
-  if (count > 2048) throw new Error('压缩文档条目数量过多');
   let offset = buf.readUInt32LE(eocd + 16);
-  const directoryStart = offset;
-  const directoryEnd = offset + buf.readUInt32LE(eocd + 12);
-  if (buf.readUInt16LE(eocd + 4) !== 0 || buf.readUInt16LE(eocd + 6) !== 0
-      || buf.readUInt16LE(eocd + 8) !== count || directoryEnd > eocd
-      || eocd + 22 + buf.readUInt16LE(eocd + 20) !== buf.length) {
-    throw new Error('不是有效的压缩文档');
-  }
   const files = new Map();
-  const names = new Set();
-  let expandedBytes = 0;
   for (let index = 0; index < count; index += 1) {
-    if (offset + 46 > directoryEnd || buf.readUInt32LE(offset) !== 0x02014b50) {
-      throw new Error('不是有效的压缩文档');
-    }
-    const flags = buf.readUInt16LE(offset + 8);
+    if (offset + 46 > buf.length || buf.readUInt32LE(offset) !== 0x02014b50) break;
     const method = buf.readUInt16LE(offset + 10);
     const compSize = buf.readUInt32LE(offset + 20);
-    const expandedSize = buf.readUInt32LE(offset + 24);
     const nameLen = buf.readUInt16LE(offset + 28);
     const extraLen = buf.readUInt16LE(offset + 30);
     const commentLen = buf.readUInt16LE(offset + 32);
     const localOffset = buf.readUInt32LE(offset + 42);
-    if (offset + 46 + nameLen + extraLen + commentLen > directoryEnd) {
-      throw new Error('不是有效的压缩文档');
-    }
-    const name = buf.subarray(offset + 46, offset + 46 + nameLen).toString('utf8').replace(/\\/g, '/');
+    const name = buf.slice(offset + 46, offset + 46 + nameLen).toString('utf8');
     offset += 46 + nameLen + extraLen + commentLen;
-    if (names.has(name) || (flags & 1) || localOffset + 30 > directoryStart
-        || buf.readUInt32LE(localOffset) !== 0x04034b50) {
-      throw new Error('不是有效的压缩文档');
-    }
-    names.add(name);
+
+    if (localOffset + 30 > buf.length) continue;
     const localNameLen = buf.readUInt16LE(localOffset + 26);
     const localExtraLen = buf.readUInt16LE(localOffset + 28);
     const dataStart = localOffset + 30 + localNameLen + localExtraLen;
-    const localName = buf.subarray(localOffset + 30, localOffset + 30 + localNameLen).toString('utf8').replace(/\\/g, '/');
-    if (dataStart + compSize > directoryStart || localName !== name
-        || buf.readUInt16LE(localOffset + 8) !== method || (buf.readUInt16LE(localOffset + 6) & 1)) {
-      throw new Error('不是有效的压缩文档');
-    }
-    // Skip embedded images and other binary assets without decompressing them.
-    if (!include(name)) continue;
-    if (expandedSize > maxEntryBytes || expandedBytes + expandedSize > maxExpandedBytes) {
-      throw new Error('文档展开内容过大');
-    }
-    const compressed = buf.subarray(dataStart, dataStart + compSize);
-    const remaining = Math.min(maxEntryBytes, maxExpandedBytes - expandedBytes);
-    let data;
-    if (method === 0) {
-      if (compressed.length > remaining) throw new Error('文档展开内容过大');
-      data = compressed;
-    } else if (method === 8) {
-      try {
-        data = zlib.inflateRawSync(compressed, { maxOutputLength: remaining });
-      } catch (error) {
-        if (error.code === 'ERR_BUFFER_TOO_LARGE' || remaining === 0) throw new Error('文档展开内容过大');
-        throw new Error('不是有效的压缩文档');
-      }
-    } else {
-      throw new Error('不支持这份压缩文档的格式');
-    }
-    if (data.length !== expandedSize) throw new Error('不是有效的压缩文档');
-    expandedBytes += data.length;
-    files.set(name, data);
+    const compressed = buf.slice(dataStart, dataStart + compSize);
+    let data = null;
+    if (method === 0) data = compressed;
+    else if (method === 8) data = zlib.inflateRawSync(compressed);
+    if (data) files.set(name.replace(/\\/g, '/'), data);
   }
-  if (offset !== directoryEnd) throw new Error('不是有效的压缩文档');
   return files;
 }
 
-function decodeXmlText(value) {
-  return String(value || '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'");
-}
-
 function extractDocxText(buffer) {
-  const files = readZipEntries(buffer, { include: name => name === 'word/document.xml' });
+  const files = readZipEntries(buffer);
   const xml = files.get('word/document.xml');
   if (!xml) throw new Error('这份 Word 里没有可读取的正文');
-  return decodeXmlText(xml.toString('utf8'))
+  return decodeHtmlEntities(xml.toString('utf8'))
     .replace(/<w:tab\/>/g, ' ')
     .replace(/<w:br\/>/g, '\n')
-    .replace(/<\/w:p>/g, '\n')
-    .replace(/<[^>]+>/g, '');
+    .replace(/<\/w:p>/g, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 function extractEpubText(buffer) {
-  const files = readZipEntries(buffer, { include: name => /\.(xhtml|html|htm)$/i.test(name) });
+  const files = readZipEntries(buffer);
   const parts = [];
   for (const [name, data] of files) {
     if (!/\.(xhtml|html|htm)$/i.test(name)) continue;
-    const html = data.toString('utf8');
-    const body = html.match(/<body\b[^>]*>([\s\S]*?)<\/body\s*>/i);
-    const text = decodeXmlText(body ? body[1] : html)
+    const text = decodeHtmlEntities(data.toString('utf8'))
       .replace(/<script[\s\S]*?<\/script>/gi, ' ')
       .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-      .replace(/<[^>]+>/g, ' ');
-    if (text.trim()) parts.push(text);
+      .replace(/<\/(p|div|h[1-6]|li|tr|blockquote|section|article)>/gi, '\n\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/[^\S\n]+/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    if (text) parts.push(text);
   }
   if (!parts.length) throw new Error('这本电子书里没有可读取的正文');
-  return parts.join('\n');
+  return parts.join('\n\n');
 }
 
 function storeZip(files) {
@@ -201,9 +195,11 @@ function storeZip(files) {
 }
 
 module.exports = {
+  decodeHtmlEntities,
   buildReadingSubtitles,
   subtitleContent,
   isEnglishCue,
+  isChineseCue,
   readZipEntries,
   extractDocxText,
   extractEpubText,

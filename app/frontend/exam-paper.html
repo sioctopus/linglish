@@ -345,7 +345,6 @@
       body.focusing .nav { display: flex; }
     }
   </style>
-  <script src="./js/auth-manager.js?v=20261019"></script>
   <script src="./js/nav-back.js?v=1"></script>
 </head>
 <body>
@@ -819,7 +818,14 @@
     }
 
     function readToken() {
-      return window.AuthManager ? window.AuthManager.getToken() || '' : '';
+      const keys = ['linglish_token', 'authToken'];
+      for (const key of keys) {
+        try {
+          const value = localStorage.getItem(key) || sessionStorage.getItem(key);
+          if (value && value !== 'null' && value !== 'undefined') return value;
+        } catch (_) {}
+      }
+      return '';
     }
 
     function setStatus(text) {

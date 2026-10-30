@@ -1,260 +1,372 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh-CN">
 <head>
-  <script src="./js/auth-manager.js?v=20261019"></script>
-<script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/auth-manager.js?v=2"></script>
+  <script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
-  <script>
-    // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
-    // IMPORTANT: This must be the first script to catch extension errors
-    (function(){
-      try {
-        const patterns = [
-          /\"undefined\" is not valid JSON/i,
-          /\"null\" is not valid JSON/i,
-          /Unexpected token 'u'.*JSON/i,
-          /Unexpected token 'n'.*JSON/i,
-          /SyntaxError.*undefined.*JSON/i,
-          /SyntaxError.*null.*JSON/i,
-          /JSON\.parse/i,
-          /updateConfig/i,
-          /initConfig/i,
-          /metadata\.js/i,
-          /content\.js/i,
-        ];
-        const matchMsg = (msg) => {
-          try { return patterns.some((re) => re.test(String(msg || ''))); } catch { return false; }
-        };
-
-        // Check if error is from extension (check stack trace)
-        const isExtensionError = (error) => {
-          try {
-            if (!error) return false;
-            const stack = error.stack || error.toString();
-            // Check for common extension patterns
-            if (/chrome-extension:\/\//i.test(stack)) return true;
-            if (/moz-extension:\/\//i.test(stack)) return true;
-            if (/safari-extension:\/\//i.test(stack)) return true;
-            if (/webkit-masked-url:\/\//i.test(stack)) return true;
-            if (/metadata\.js/i.test(stack)) return true;
-            if (/content\.js/i.test(stack)) return true;
-            if (/updateConfig|initConfig/i.test(stack)) return true;
-            return false;
-          } catch (_) {
-            return false;
-          }
-        };
-
-        // Override console methods
-        const ce = console.error ? console.error.bind(console) : null;
-        const cw = console.warn ? console.warn.bind(console) : null;
-        if (ce) {
-          console.error = function(...args){
-            const head = args && args.length ? String(args[0]) : '';
-            if (matchMsg(head)) return;
-            // Check if it's an error object
-            if (args[0] instanceof Error && isExtensionError(args[0])) return;
-            return ce(...args);
-          };
-        }
-        if (cw) {
-          console.warn = function(...args){
-            const head = args && args.length ? String(args[0]) : '';
-            if (matchMsg(head)) return;
-            if (args[0] instanceof Error && isExtensionError(args[0])) return;
-            return cw(...args);
-          };
-        }
-
-        // Catch unhandled promise rejections
-        window.addEventListener('unhandledrejection', (ev) => {
-          try {
-            const reason = ev?.reason;
-            // Check message
-            const msg = reason?.message || reason?.toString?.() || reason;
-            if (matchMsg(String(msg||''))) {
-              ev.preventDefault();
-              return;
-            }
-            // Check if from extension
-            if (isExtensionError(reason)) {
-              ev.preventDefault();
-              return;
-            }
-          } catch(_) {}
-        });
-
-        // Catch error events
-        window.addEventListener('error', (ev) => {
-          try {
-            const msg = ev?.message || '';
-            if (matchMsg(String(msg))) {
-              ev.preventDefault();
-              return;
-            }
-            // Check if error is from extension
-            if (ev?.error && isExtensionError(ev.error)) {
-              ev.preventDefault();
-              return;
-            }
-            // Check filename for extension patterns
-            const filename = ev?.filename || '';
-            if (/chrome-extension|moz-extension|safari-extension|webkit-masked-url|metadata\.js|content\.js/i.test(filename)) {
-              ev.preventDefault();
-              return;
-            }
-          } catch(_) {}
-        }, true);
-      } catch (_) {}
-    })();
-  </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>我的图书馆 - Linglish | 个人学习收藏与进度管理</title>
-  <meta name="description" content="在Linglish图书馆管理你收藏的视频、文章和学习材料。追踪学习进度，复习生词，查看学习统计。个性化的学习内容库，随时随地继续学习。">
-  <meta name="keywords" content="学习图书馆,收藏夹,学习进度,词汇复习,个人学习中心,learning library">
-  <meta name="author" content="Linglish">
-  <meta name="google-site-verification" content="google5a3b03e17f3c3f2c">
-
-  <!-- Open Graph -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://example.com/mobile-library.html">
-  <meta property="og:title" content="我的图书馆 - Linglish">
-  <meta property="og:description" content="管理学习收藏，追踪进度，个性化学习内容库">
-  <meta property="og:image" content="https://example.com/og-image-library.jpg">
-
-  <!-- Canonical -->
-  <link rel="canonical" href="https://example.com/mobile-library.html">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>我的视频库 - Linglish</title>
+  <meta name="description" content="管理收藏的视频与学习进度。">
+  <meta name="theme-color" content="#0f766e">
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#0ea5e9">
-
-  <link rel="stylesheet" href="./mobile-styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./mobile-styles.css?v=20261023-library3">
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
   <script src="./guest-check.js"></script>
   <script src="./auth-helpers.js"></script>
-  <link rel="stylesheet" href="./styles/icons.css?v=1">
+  <style>
+    body {
+      margin: 0;
+      background: #f8fafc;
+      color: #0f172a;
+      font-family: "Manrope", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    .mobile-header.video-library-header {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+
+    .mobile-header.video-library-header .brand-section h1 {
+      color: #0f172a !important;
+      font-size: 18px !important;
+    }
+
+    .mobile-header.video-library-header .brand-sub {
+      color: #64748b !important;
+    }
+
+    .mobile-header.video-library-header .brand-icon {
+      width: 40px !important;
+      height: 40px !important;
+      color: #0f766e !important;
+      background: #f0fdfa !important;
+      border: 1px solid #ccfbf1 !important;
+      border-radius: 12px !important;
+      font-size: inherit !important;
+    }
+
+    .mobile-header.video-library-header .icon-btn {
+      color: #334155 !important;
+      background: transparent !important;
+    }
+
+    .library-page {
+      padding: 16px 20px calc(88px + env(safe-area-inset-bottom));
+    }
+
+    .library-hero {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #f0fdfa;
+      border: 1px solid #ccfbf1;
+    }
+
+    .library-hero-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f766e;
+      background: #ffffff;
+      border: 1px solid #99f6e4;
+      flex: 0 0 auto;
+    }
+
+    .library-hero h2 {
+      margin: 0 0 4px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .library-hero p {
+      margin: 0;
+      color: #64748b;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+
+    .progress-tracker {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      margin-bottom: 20px;
+      padding: 14px;
+      border-radius: 16px;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+
+    .progress-item {
+      text-align: center;
+    }
+
+    .progress-icon {
+      width: 36px;
+      height: 36px;
+      margin: 0 auto 6px;
+      border-radius: 10px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #0f766e;
+      background: #f0fdfa;
+    }
+
+    .progress-value {
+      font-size: 18px;
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .progress-label {
+      margin-top: 2px;
+      font-size: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .progress-arrow {
+      width: 48px;
+      height: 48px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #ffffff;
+      color: #0f766e;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      align-self: center;
+      cursor: pointer;
+    }
+
+    .section-header h2 {
+      margin: 0 0 12px;
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .section-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 14px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+
+    .section-tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      flex: 0 0 auto;
+      min-height: 40px;
+      padding: 8px 14px;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      background: #ffffff;
+      color: #64748b;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .tab.active {
+      border-color: transparent;
+      background: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%);
+      color: #ffffff;
+    }
+
+    .tab-link {
+      margin-left: auto;
+      align-self: center;
+      color: #0f766e;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .lesson-cards {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      scrollbar-width: none;
+    }
+
+    .lesson-cards::-webkit-scrollbar { display: none; }
+
+    .lesson-card {
+      min-width: 260px;
+      border-radius: 16px;
+      overflow: hidden;
+      background: #ffffff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
+    }
+
+    .lesson-image {
+      width: 100%;
+      height: 146px;
+      object-fit: cover;
+      display: block;
+      background: linear-gradient(135deg, #0f766e, #2dd4bf);
+    }
+
+    .lesson-stats {
+      display: flex;
+      gap: 8px;
+      padding: 12px 14px 0;
+    }
+
+    .stat-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      min-height: 28px;
+      padding: 0 8px;
+      border-radius: 999px;
+      background: #f0fdfa;
+      color: #0f766e;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .lesson-title {
+      margin: 0;
+      padding: 10px 14px 14px;
+      font-size: 15px;
+      font-weight: 700;
+      line-height: 1.35;
+    }
+
+    .floating-import {
+      position: fixed;
+      right: 16px;
+      bottom: calc(72px + env(safe-area-inset-bottom));
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 40;
+    }
+
+    .import-btn {
+      min-height: 48px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 700;
+      box-shadow: 0 8px 20px rgba(15, 118, 110, 0.25);
+      cursor: pointer;
+    }
+
+    .import-btn.secondary {
+      background: #ffffff;
+      color: #0f766e;
+      border: 1px solid #99f6e4;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+    }
+  </style>
 </head>
 <body>
-  <!-- Top Navigation Bar -->
-  <header class="mobile-header">
-    <div class="language-selector">
-      <img src="https://flagcdn.com/w40/gb.png" alt="English" class="flag-icon">
-      <div class="language-info">
-        <h1>English</h1>
-        <a href="#" class="change-language">Change Language &gt;</a>
+  <header class="mobile-header video-library-header">
+    <div class="brand-section">
+      <div class="brand-icon" data-lx-icon="library" data-lx-size="22" aria-hidden="true"></div>
+      <div>
+        <h1>我的视频库</h1>
+        <span class="brand-sub">收藏、进度和继续学</span>
       </div>
     </div>
     <div class="header-actions">
-      <button class="icon-btn search-btn">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <circle cx="11" cy="11" r="8"></circle>
-          <path d="m21 21-4.35-4.35"></path>
-        </svg>
+      <button class="icon-btn search-btn" type="button" aria-label="搜索" onclick="location.href='mobile-explore.html'">
+        <span data-lx-icon="search" data-lx-size="22"></span>
       </button>
-      <button class="icon-btn settings-btn" onclick="location.href='mobile-more.html'">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M12 1v6m0 6v6"></path>
-          <path d="m4.93 4.93 4.24 4.24m5.66 5.66 4.24 4.24"></path>
-          <path d="m1 12h6m6 0h6"></path>
-          <path d="m4.93 19.07 4.24-4.24m5.66-5.66 4.24-4.24"></path>
-        </svg>
+      <button class="icon-btn settings-btn" type="button" aria-label="更多" onclick="location.href='mobile-more.html'">
+        <span data-lx-icon="settings" data-lx-size="22"></span>
       </button>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="mobile-content">
-    <!-- Challenges Banner -->
-    <div class="challenges-banner">
-      <div class="banner-content">
-        <h2>November Challenges are open:</h2>
-        <p>Hit your targets, compete with fellow learners & make big progress!</p>
-        <div class="banner-actions">
-          <button class="btn-primary">Join a challenge</button>
-          <button class="btn-text">Dismiss</button>
-        </div>
-      </div>
-      <div class="banner-icon">
-        <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
-          <circle cx="40" cy="40" r="35" stroke="#667eea" stroke-width="3"/>
-          <circle cx="40" cy="40" r="25" stroke="#667eea" stroke-width="2"/>
-          <circle cx="40" cy="40" r="15" stroke="#667eea" stroke-width="2"/>
-          <circle cx="40" cy="40" r="5" fill="#667eea"/>
-          <path d="M 50 20 L 55 10 L 60 20 Z" fill="#667eea"/>
-        </svg>
+  <main class="library-page video-library-content">
+    <div class="library-hero">
+      <div class="library-hero-icon" data-lx-icon="video" data-lx-size="24"></div>
+      <div>
+        <h2>继续你的视频学习</h2>
+        <p>从收藏里挑一条，听一句、跟一句。</p>
       </div>
     </div>
 
-    <!-- Progress Tracker -->
     <div class="progress-tracker">
       <div class="progress-item">
-        <div class="progress-icon fire">🔥</div>
+        <div class="progress-icon" data-lx-icon="fire" data-lx-size="18"></div>
         <div class="progress-value">0</div>
-        <div class="progress-label">Days</div>
+        <div class="progress-label">连续天数</div>
       </div>
       <div class="progress-item">
-        <div class="progress-icon coins">💎</div>
+        <div class="progress-icon" data-lx-icon="gem" data-lx-size="18"></div>
         <div class="progress-value">0 / 50</div>
-        <div class="progress-label">Coins</div>
+        <div class="progress-label">今日进度</div>
       </div>
-      <button class="progress-arrow">›</button>
+      <button class="progress-arrow" type="button" aria-label="查看统计" onclick="location.href='mobile-stats.html'">
+        <span data-lx-icon="chevron-right" data-lx-size="20"></span>
+      </button>
     </div>
 
-    <!-- Continue Studying Section -->
     <section class="section">
       <div class="section-header">
-        <h2>Continue Studying</h2>
+        <h2>继续学习</h2>
         <div class="section-tabs">
-          <button class="tab active">Lessons</button>
-          <button class="tab">Courses</button>
-          <button class="tab">Imported Lessons</button>
-          <a href="#" class="tab-link">All ›</a>
+          <button class="tab active" type="button">视频</button>
+          <button class="tab" type="button">合集</button>
+          <button class="tab" type="button">导入</button>
+          <a href="./mobile-explore.html" class="tab-link">全部</a>
         </div>
       </div>
 
-      <!-- Lesson Cards -->
       <div class="lesson-cards">
-        <div class="lesson-card">
-          <img src="https://via.placeholder.com/400x220/1a1a1a/fff?text=SUITS" alt="Suits" class="lesson-image">
+        <a class="lesson-card" href="./mobile-explore.html" style="text-decoration:none;color:inherit;">
+          <img class="lesson-image" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='220'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%230f766e'/%3E%3Cstop offset='1' stop-color='%232dd4bf'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect fill='url(%23g)' width='400' height='220'/%3E%3C/svg%3E" alt="">
           <div class="lesson-stats">
-            <span class="stat-badge blue">🔵 966</span>
-            <span class="stat-badge yellow">🟡 28</span>
-            <span class="stat-badge white">⚪ 198</span>
+            <span class="stat-badge"><span data-lx-icon="book" data-lx-size="12"></span> 词汇</span>
+            <span class="stat-badge"><span data-lx-icon="clock" data-lx-size="12"></span> 进度</span>
           </div>
-          <h3 class="lesson-title">Suits S1:E1 Pilot, Part 1</h3>
-        </div>
-
-        <div class="lesson-card">
-          <img src="https://via.placeholder.com/400x220/e8e8e8/333?text=Boston" alt="Boston" class="lesson-image">
-          <div class="lesson-stats">
-            <span class="stat-badge blue">🔵 18</span>
-            <span class="stat-badge yellow">🟡 11</span>
-            <span class="stat-badge white">⚪ 141</span>
-          </div>
-          <h3 class="lesson-title">Boston: our</h3>
-        </div>
+          <h3 class="lesson-title">打开视频库，选一条继续学</h3>
+        </a>
       </div>
     </section>
 
-    <!-- Import Button -->
     <div class="floating-import">
-      <button class="import-btn">
-        <span class="import-icon">🤖</span>
-        <span class="import-text">Lynx AI</span>
+      <button class="import-btn secondary" type="button" onclick="location.href='./youtube-import.html'">
+        <span data-lx-icon="upload" data-lx-size="18"></span>
+        <span>导入视频</span>
       </button>
-      <button class="import-btn">
-        <span class="import-text">Import</span>
-        <span class="import-icon">+</span>
+      <button class="import-btn" type="button" onclick="location.href='./mobile-explore.html'">
+        <span data-lx-icon="library" data-lx-size="18"></span>
+        <span>浏览视频库</span>
       </button>
     </div>
   </main>
 
-  <!-- Bottom Navigation -->
   <nav class="bottom-nav">
     <a href="mobile-today.html" class="nav-item">
       <div class="nav-icon" data-lx-icon="today"></div>
       <span>今日</span>
     </a>
-    <a href="mobile-explore.html" class="nav-item">
+    <a href="mobile-explore.html" class="nav-item active">
       <div class="nav-icon" data-lx-icon="explore"></div>
       <span>探索世界</span>
     </a>
@@ -271,8 +383,8 @@
       <span>成长中心</span>
     </a>
   </nav>
+
   <script src="./js/page-tracker.js"></script>
-<link rel="stylesheet" href="./styles/speak-ui.css?v=3">
-  <script src="./js/icons.js?v=1"></script>
+  <script src="./js/icons.js?v=20261023-library2"></script>
 </body>
 </html>

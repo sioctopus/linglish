@@ -146,7 +146,7 @@ class MobileLeaguePage {
     return `
       <div class="league-loading">
         <div class="loading-spinner"></div>
-        <p>加载中...</p>
+        <p>加载中....</p>
       </div>
     `;
   }

@@ -101,16 +101,16 @@
         MemoryStore.removeItem('linglish_token');
     }
 
-    function storageGet(type, key) {
-        try { return window[type].getItem(key); } catch (e) { return null; }
+    function storageGet(storage, key) {
+        try { return storage.getItem(key); } catch (e) { return null; }
     }
 
-    function storageSet(type, key, value) {
-        try { window[type].setItem(key, value); return true; } catch (e) { return false; }
+    function storageSet(storage, key, value) {
+        try { storage.setItem(key, value); return true; } catch (e) { return false; }
     }
 
-    function storageRemove(type, key) {
-        try { window[type].removeItem(key); } catch (e) { }
+    function storageRemove(storage, key) {
+        try { storage.removeItem(key); } catch (e) { }
     }
 
     function usable(value) {
@@ -149,8 +149,8 @@
 
     function readRawAccess() {
         const tiers = [];
-        if (useLocalStorage) tiers.push(storageGet('localStorage', 'authToken') || storageGet('localStorage', 'linglish_token'));
-        if (useSessionStorage) tiers.push(storageGet('sessionStorage', 'authToken') || storageGet('sessionStorage', 'linglish_token'));
+        if (useLocalStorage) tiers.push(storageGet(localStorage, 'authToken') || storageGet(localStorage, 'linglish_token'));
+        if (useSessionStorage) tiers.push(storageGet(sessionStorage, 'authToken') || storageGet(sessionStorage, 'linglish_token'));
         if (useCookies) tiers.push(CookieStore.getItem('authToken') || CookieStore.getItem('linglish_token'));
         tiers.push(MemoryStore.getItem('authToken') || MemoryStore.getItem('linglish_token'));
         for (let i = 0; i < tiers.length; i += 1) {
@@ -162,21 +162,21 @@
     function writeRefresh(token, remember) {
         if (!usable(token)) return;
         refreshPersistent = remember !== false;
-        storageRemove('localStorage', REFRESH_KEY);
-        storageRemove('sessionStorage', REFRESH_KEY);
+        storageRemove(localStorage, REFRESH_KEY);
+        storageRemove(sessionStorage, REFRESH_KEY);
         CookieStore.removeItem(REFRESH_KEY);
         MemoryStore.removeItem(REFRESH_KEY);
-        if (refreshPersistent && useLocalStorage && storageSet('localStorage', REFRESH_KEY, token)) return;
-        if (!refreshPersistent && useSessionStorage && storageSet('sessionStorage', REFRESH_KEY, token)) return;
+        if (refreshPersistent && useLocalStorage && storageSet(localStorage, REFRESH_KEY, token)) return;
+        if (!refreshPersistent && useSessionStorage && storageSet(sessionStorage, REFRESH_KEY, token)) return;
         if (useCookies && CookieStore.setItem(REFRESH_KEY, token, refreshPersistent ? SESSION_MAX_AGE : null)) return;
-        if (refreshPersistent && useLocalStorage === false && useSessionStorage && storageSet('sessionStorage', REFRESH_KEY, token)) return;
+        if (refreshPersistent && useLocalStorage === false && useSessionStorage && storageSet(sessionStorage, REFRESH_KEY, token)) return;
         MemoryStore.setItem(REFRESH_KEY, token);
     }
 
     function readRefresh() {
-        const local = useLocalStorage ? storageGet('localStorage', REFRESH_KEY) : null;
+        const local = useLocalStorage ? storageGet(localStorage, REFRESH_KEY) : null;
         if (usable(local)) { refreshPersistent = true; return local; }
-        const session = useSessionStorage ? storageGet('sessionStorage', REFRESH_KEY) : null;
+        const session = useSessionStorage ? storageGet(sessionStorage, REFRESH_KEY) : null;
         if (usable(session)) { refreshPersistent = false; return session; }
         const cookie = useCookies ? CookieStore.getItem(REFRESH_KEY) : null;
         if (usable(cookie)) { refreshPersistent = true; return cookie; }
@@ -186,21 +186,21 @@
     }
 
     function clearRefresh() {
-        storageRemove('localStorage', REFRESH_KEY);
-        storageRemove('sessionStorage', REFRESH_KEY);
+        storageRemove(localStorage, REFRESH_KEY);
+        storageRemove(sessionStorage, REFRESH_KEY);
         CookieStore.removeItem(REFRESH_KEY);
         MemoryStore.removeItem(REFRESH_KEY);
     }
 
     function writeDeviceId(id) {
         if (!usable(id)) return;
-        if (!(useLocalStorage && storageSet('localStorage', DEVICE_KEY, id))) {
+        if (!(useLocalStorage && storageSet(localStorage, DEVICE_KEY, id))) {
             MemoryStore.setItem(DEVICE_KEY, id);
         }
     }
 
     function getDeviceId() {
-        const existing = (useLocalStorage && storageGet('localStorage', DEVICE_KEY)) || MemoryStore.getItem(DEVICE_KEY);
+        const existing = (useLocalStorage && storageGet(localStorage, DEVICE_KEY)) || MemoryStore.getItem(DEVICE_KEY);
         if (usable(existing) && /^[A-Za-z0-9_-]{16,80}$/.test(existing)) return existing;
         const bytes = new Uint8Array(16);
         if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
@@ -307,10 +307,10 @@
             if (!token) return false;
             const refresh = readRefresh();
             if (refresh) writeRefresh(refresh, !!remember);
-            if (remember && useLocalStorage && storageSet('localStorage', 'authToken', token) && storageSet('localStorage', 'linglish_token', token)) {
+            if (remember && useLocalStorage && storageSet(localStorage, 'authToken', token) && storageSet(localStorage, 'linglish_token', token)) {
                 return true;
             }
-            if (!remember && useSessionStorage && storageSet('sessionStorage', 'authToken', token) && storageSet('sessionStorage', 'linglish_token', token)) {
+            if (!remember && useSessionStorage && storageSet(sessionStorage, 'authToken', token) && storageSet(sessionStorage, 'linglish_token', token)) {
                 return true;
             }
             if (useCookies && CookieStore.setItem('authToken', token, remember ? SESSION_MAX_AGE : null)) {
@@ -334,8 +334,8 @@
         getToken: function () {
             const refresh = readRefresh();
             const tiers = [
-                { name: 'local', read: function () { return useLocalStorage ? (storageGet('localStorage', 'authToken') || storageGet('localStorage', 'linglish_token')) : null; }, clear: function () { storageRemove('localStorage', 'authToken'); storageRemove('localStorage', 'linglish_token'); } },
-                { name: 'session', read: function () { return useSessionStorage ? (storageGet('sessionStorage', 'authToken') || storageGet('sessionStorage', 'linglish_token')) : null; }, clear: function () { storageRemove('sessionStorage', 'authToken'); storageRemove('sessionStorage', 'linglish_token'); } },
+                { name: 'local', read: function () { return useLocalStorage ? (storageGet(localStorage, 'authToken') || storageGet(localStorage, 'linglish_token')) : null; }, clear: function () { storageRemove(localStorage, 'authToken'); storageRemove(localStorage, 'linglish_token'); } },
+                { name: 'session', read: function () { return useSessionStorage ? (storageGet(sessionStorage, 'authToken') || storageGet(sessionStorage, 'linglish_token')) : null; }, clear: function () { storageRemove(sessionStorage, 'authToken'); storageRemove(sessionStorage, 'linglish_token'); } },
                 { name: 'cookie', read: function () { return useCookies ? (CookieStore.getItem('authToken') || CookieStore.getItem('linglish_token')) : null; }, clear: function () { CookieStore.removeItem('authToken'); CookieStore.removeItem('linglish_token'); } },
                 { name: 'memory', read: function () { return MemoryStore.getItem('authToken') || MemoryStore.getItem('linglish_token'); }, clear: function () { MemoryStore.removeItem('authToken'); MemoryStore.removeItem('linglish_token'); } }
             ];
@@ -406,15 +406,16 @@
 
         ensureSession: function (options) {
             const force = Boolean(options && options.force);
-            if (refreshInFlight) return refreshInFlight;
-            const current = readRawAccess();
-            if (!force && current && accessSecondsLeft(current) > 300) return Promise.resolve(current);
+            if (refreshInFlight) {
+                return refreshInFlight.then(function (token) {
+                    return force ? refreshAccess({ force: true }) : token;
+                });
+            }
             const run = refreshAccess({ force: force });
-            const tracked = run.finally(function () {
-                if (refreshInFlight === tracked) refreshInFlight = null;
+            refreshInFlight = run.finally(function () {
+                if (refreshInFlight === run) refreshInFlight = null;
             });
-            refreshInFlight = tracked;
-            return tracked;
+            return refreshInFlight;
         },
 
         healthCheck: function () {

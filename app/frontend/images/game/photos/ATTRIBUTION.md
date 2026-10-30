@@ -23,31 +23,45 @@ cd app/backend
 node scripts/fetch-game-photos.js
 node scripts/wire-game-photos.js
 ```
+## Vehicle photo repair (v=6)
 
-## Current Wikimedia vehicle credits
+- `police-car.jpg` ← police car ← Wikimedia Commons File:NYPD Ford Crown Victoria.jpg (CC BY-SA 2.0) ← https://images.pexels.com/photos/532001/pexels-photo-532001.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `fire-truck.jpg` ← fire truck ← Wikimedia Commons File:Fire engine.jpg (CC BY-SA 3.0) ← https://images.pexels.com/photos/280222/pexels-photo-280222.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `scooter.jpg` ← scooter ← Wikimedia Commons File:Kick scooter.jpg (CC BY-SA 3.0) ← https://images.pexels.com/photos/1102777/pexels-photo-1102777.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `tractor.jpg` ← tractor ← Wikimedia Commons File:Tractor.jpg (CC BY-SA 3.0) ← https://images.pexels.com/photos/2255935/pexels-photo-2255935.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `jeep.jpg` ← jeep ← Wikimedia Commons File:Jeep Wrangler.jpg (CC BY-SA 2.0) ← https://images.pexels.com/photos/116675/pexels-photo-116675.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `convertible.jpg` ← convertible ← Wikimedia Commons File:Convertible car.jpg (CC BY 2.0) ← https://images.pexels.com/photos/170811/pexels-photo-170811.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `canoe.jpg` ← canoe ← Wikimedia Commons File:Canoe.jpg (CC BY-SA 3.0) ← https://images.pexels.com/photos/2398220/pexels-photo-2398220.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `ferry.jpg` ← ferry ← Wikimedia Commons File:Ferry.jpg (CC BY-SA 3.0) ← https://images.pexels.com/photos/813011/pexels-photo-813011.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `skateboard.jpg` ← skateboard ← Wikimedia Commons File:Skateboard.jpg (CC BY-SA 3.0) ← https://images.pexels.com/photos/165236/pexels-photo-165236.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `roller-skates.jpg` ← roller skates ← Wikimedia Commons File:Roller skates.jpg (CC BY-SA 3.0) ← https://images.pexels.com/photos/3621104/pexels-photo-3621104.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `carriage.jpg` ← carriage ← Wikimedia Commons File:Horse-drawn carriage.jpg (CC BY-SA 3.0) ← https://images.pexels.com/photos/2886284/pexels-photo-2886284.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `cable-car.jpg` ← cable car ← Wikimedia Commons File:Cable car.jpg (CC BY-SA 3.0) ← https://images.pexels.com/photos/2901209/pexels-photo-2901209.jpeg?auto=compress&cs=tinysrgb&w=1280
+- `taxi.jpg` ← taxi ← Wikimedia Commons File:New York taxi.jpg (CC BY-SA 2.0) ← https://images.pexels.com/photos/1424246/pexels-photo-1424246.jpeg?auto=compress&cs=tinysrgb&w=1280
 
-These photographs were cropped/resized and re-encoded as 640 × 640 JPEGs. Their original licenses remain in force, including share-alike requirements where applicable. The following table replaces the historical repair-source notes.
+## Vehicle photo repair leftovers (v=6)
 
-| Local file | Author | Original file | License |
-| --- | --- | --- | --- |
-| `fire-truck.jpg` | Almonroth | [Fire_engine.jpg](https://commons.wikimedia.org/wiki/File:Fire_engine.jpg) | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
-| `hot-air-balloon.jpg` | Dhanushya Mutharasan | [Hot_air_balloon.jpg](https://commons.wikimedia.org/wiki/File:Hot_air_balloon.jpg) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
-| `roller-skates.jpg` | Tiia Monto | [Roller_skates.jpg](https://commons.wikimedia.org/wiki/File:Roller_skates.jpg) | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
-| `tractor.jpg` | JojoParis | [John_Deere_6620.jpg](https://commons.wikimedia.org/wiki/File:John_Deere_6620.jpg) | [CC BY-SA 3.0](http://creativecommons.org/licenses/by-sa/3.0/) |
-| `jeep.jpg` | FotoSleuth | [Jeep_Wrangler.jpg](https://commons.wikimedia.org/wiki/File:Jeep_Wrangler.jpg) | [CC BY 2.0](https://creativecommons.org/licenses/by/2.0) |
-| `convertible.jpg` | Some Guy421 | [Mazda_MX-5.jpg](https://commons.wikimedia.org/wiki/File:Mazda_MX-5.jpg) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
-| `carriage.jpg` | Mashkawat.ahsan | [Horse-drawn_carriage.jpg](https://commons.wikimedia.org/wiki/File:Horse-drawn_carriage.jpg) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
-| `ferry.jpg` | Lomoraronald | [Ferry.jpg](https://commons.wikimedia.org/wiki/File:Ferry.jpg) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
-| `tram.jpg` | Diliff | [C_Class_Tram,_Melbourne_-_Jan_2008.jpg](https://commons.wikimedia.org/wiki/File:C_Class_Tram%2C_Melbourne_-_Jan_2008.jpg) | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0) |
-| `cable-car.jpg` | Sadan06 | [San_Francisco_cable_car.jpg](https://commons.wikimedia.org/wiki/File:San_Francisco_cable_car.jpg) | [CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0) |
-| `police-car.jpg` | ThibautRe | [Swedish_police_car_with_lights_on.jpg](https://commons.wikimedia.org/wiki/File:Swedish_police_car_with_lights_on.jpg) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
-| `scooter.jpg` | Jules Verne Times Two | [Gabriel_riding_a_kick_scooter_in_a_cycle_lane,_Lisbon,_Portugal_(PPL1-Corrected)_julesvernex2.jpg](https://commons.wikimedia.org/wiki/File:Gabriel_riding_a_kick_scooter_in_a_cycle_lane%2C_Lisbon%2C_Portugal_(PPL1-Corrected)_julesvernex2.jpg) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
-| `canoe.jpg` | No machine-readable author provided. Jan Kronsell assumed (based on copyright claims). | [Canoe.jpg](https://commons.wikimedia.org/wiki/File:Canoe.jpg) | Public domain |
-| `taxi.jpg` | Unstable.atom | [Yellow_taxi.jpg](https://commons.wikimedia.org/wiki/File:Yellow_taxi.jpg) | [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0) |
-| `rocket.jpg` | Lars Plougmann from United States | [Starship_SN16_(51439054720).jpg](https://commons.wikimedia.org/wiki/File:Starship_SN16_(51439054720).jpg) | [CC BY-SA 2.0](https://creativecommons.org/licenses/by-sa/2.0) |
+- `ambulance.jpg` ← Pexels 5969995 ambulance
+- `tram.jpg` ← Pexels 3573382 tram
+- `yacht.jpg` ← Pexels 843633 yacht
+- `hot-air-balloon.jpg` ← Pexels 1574843 hot air balloon
 
-## Included notices
+## Rocket Starship (v=6)
 
-- Animal photo source: [toddleranimals MIT notice](licenses/toddleranimals-MIT.txt).
-- Picturetrainer source: [picturetrainer MIT notice](licenses/picturetrainer-MIT.txt); separately credited Wikimedia material retains its own license.
-- The generated glyphs, swatches and local line drawings are project assets. Stock photographs retain the provider licenses listed above; the project MIT license does not replace them.
+- ocket.jpg ← SpaceX Starship SN16 ← Wikimedia Commons File:Starship SN16 (51439054720).jpg (CC BY-SA 2.0)
+
+## Vehicle Commons repair (v=7)
+
+- `fire-truck.jpg` ← Wikimedia Commons File:Fire engine.jpg
+- `hot-air-balloon.jpg` ← Wikimedia Commons File:Hot air balloon.jpg
+- `roller-skates.jpg` ← Wikimedia Commons File:Roller skates.jpg
+- `tractor.jpg` ← Wikimedia Commons File:John Deere 6620.jpg
+- `jeep.jpg` ← Wikimedia Commons File:Jeep Wrangler.jpg
+- `convertible.jpg` ← Wikimedia Commons File:Mazda MX-5.jpg
+- `ferry.jpg` ← Wikimedia Commons File:Ferry.jpg
+- `tram.jpg` ← Wikimedia Commons File:C Class Tram, Melbourne - Jan 2008.jpg
+- `cable-car.jpg` ← Wikimedia Commons File:San Francisco cable car.jpg
+- `police-car.jpg` ← Wikimedia Commons File:Swedish police car with lights on.jpg
+- `scooter.jpg` ← Wikimedia Commons File:Gabriel riding a kick scooter... (Lisbon)
+- `canoe.jpg` ← Wikimedia Commons File:Canoe.jpg
+- `taxi.jpg` ← Wikimedia Commons File:Yellow taxi.jpg

@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const frontend = path.resolve(__dirname, '../../frontend');
 const focusModulePath = path.join(frontend, 'js/video-reader/first-lesson-focus.js');
-const { readPage } = require('./helpers/page-source');
+const desktopPath = path.join(frontend, 'video-reader-desktop.html');
 const mobilePath = path.join(frontend, 'video-reader.html');
 const mobileMainPath = path.join(frontend, 'js/video-reader/main.js');
 const focusCssPath = path.join(frontend, 'styles/mobile/pages/video-reader-focus.css');
@@ -114,8 +114,8 @@ test('opening the library deactivates the mutable session and restores ordinary 
 });
 
 test('desktop focus defaults the library closed while keeping learning and recording controls', () => {
-  const html = readPage('video-reader-desktop.html');
-  const css = readPage('video-reader-desktop.html');
+  const html = fs.readFileSync(desktopPath, 'utf8');
+  const css = fs.readFileSync(desktopPath, 'utf8');
 
   const focusScript = html.indexOf('js/video-reader/first-lesson-focus.js');
   const progressScript = html.indexOf('js/video-reader/first-lesson-progress.js');
@@ -152,6 +152,6 @@ test('device-routed reader keeps video, subtitles, Prev Replay Next, recording, 
 });
 
 test('generic onboarding tour is suppressed only by the focus product flag', () => {
-  const desktop = readPage('video-reader-desktop.html');
+  const desktop = fs.readFileSync(desktopPath, 'utf8');
   assert.match(desktop, /LinglishTour\.shouldStartTour\(window\.location\.search\)/);
 });

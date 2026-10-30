@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 
 <head>
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <script>
@@ -109,21 +109,22 @@
       } catch (_) { }
     })();
   </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
   <title>linglish - 成长中心</title>
-  <link rel="preload" href="./mobile-styles.css?v=2" as="style">
-  <link rel="preload" href="./i18n.js?v=20261019" as="script">
+  <link rel="preload" href="./mobile-styles.css?v=20261028-shell2" as="style">
+  <link rel="preload" href="./i18n.js?v=20250114e" as="script">
   <link rel="preload" href="./global-ui.js?v=20250108" as="script">
   <link rel="preload" href="./mobile-treasure.js?v=1" as="script">
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
   <noscript>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap">
   </noscript>
-  <link rel="stylesheet" href="./mobile-styles.css?v=2">
-  <script src="./auth-helpers.js?v=1"></script>
+  <link rel="stylesheet" href="./mobile-styles.css?v=20261028-shell2">
+  <script src="./auth-helpers.js?v=2"></script>
   <script src="./guest-check.js?v=1"></script>
-  <script src="./mobile-auth.js?v=20261019"></script>
-  <script src="./i18n.js?v=20261019"></script>
+  <script src="./mobile-auth.js?v=3"></script>
+  <script src="./i18n.js?v=20250114e"></script>
   <script src="./global-ui.js?v=20250108"></script>
   <style>
     /* ==================== 2025 Premium Treasure Theme ==================== */
@@ -161,30 +162,23 @@
       font-family: var(--lx-font-body, 'Manrope', sans-serif);
       background-color: var(--bg-page);
       margin: 0;
-      padding-bottom: 90px;
-      /* Golden Mesh Gradient */
+      padding-bottom: calc(var(--bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px) + 12px);
+      /* Soft mesh avoid background-attachment:fixed (breaks iOS scroll) */
       background-image:
         radial-gradient(at 0% 0%, rgba(245, 158, 11, 0.08) 0px, transparent 50%),
         radial-gradient(at 100% 100%, rgba(45, 212, 191, 0.08) 0px, transparent 50%);
-      background-attachment: fixed;
+      background-attachment: scroll;
+      overflow-x: hidden;
+      overflow-y: auto;
+      min-height: 100dvh;
     }
 
-    /* Header */
-    .treasure-header {
-      padding: 16px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .brand-icon {
-      font-size: 28px;
-    }
 
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 16px;
+      gap: 12px;
+      min-width: 0;
     }
 
     /* Profile Card */
@@ -450,46 +444,6 @@
       color: var(--text-main);
     }
 
-    /* Bottom Nav */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 80px;
-      background: rgba(255, 255, 255, 0.95);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(0, 0, 0, 0.05);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding-bottom: 16px;
-      z-index: 100;
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      color: #afafaf;
-      font-size: 10px;
-      font-weight: 800;
-      transition: color 0.2s;
-    }
-
-    .nav-icon {
-      font-size: 24px;
-      margin-bottom: 4px;
-      transition: transform 0.2s;
-    }
-
-    .nav-item.active {
-      color: var(--primary);
-    }
-
-    .nav-item.active .nav-icon {
-      transform: translateY(-4px) scale(1.1);
-    }
 
     /* ==================== REWARD MODAL & CHEST ANIMATION ==================== */
     .reward-modal {
@@ -695,8 +649,14 @@
 
     .intent-actions {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 10px;
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    @media (min-width: 380px) {
+      .intent-actions {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
     }
 
     .intent-btn {
@@ -704,18 +664,20 @@
       align-items: center;
       justify-content: center;
       gap: 6px;
-      padding: 10px 6px;
+      min-height: 48px;
+      padding: 10px 12px;
       border-radius: 12px;
-      border: 1px solid rgba(245, 158, 11, 0.25);
-      background: #fff8ed;
-      color: #9a4b0b;
-      font-size: 0.85rem;
+      border: 1px solid rgba(15, 118, 110, 0.2);
+      background: #fff;
+      color: #0f766e;
+      font-size: 0.9rem;
       font-weight: 700;
       text-decoration: none;
+      box-sizing: border-box;
     }
 
     .intent-btn.primary {
-      background: linear-gradient(135deg, #f59e0b, #2dd4bf);
+      background: linear-gradient(90deg, #0d9488, #2dd4bf);
       color: white;
       border: none;
     }
@@ -869,31 +831,25 @@
       color: #475569;
     }
   </style>
-  <link rel="stylesheet" href="./styles/icons.css?v=1">
+  <link rel="stylesheet" href="./styles/icons.css?v=20261028-shell2">
 </head>
 
 <body>
   <!-- Top Navigation Bar -->
   <header class="mobile-header treasure-header">
-    <div class="brand-section">
-      <div class="brand-icon">🪴</div>
-    </div>
-    <div class="header-actions" style="gap: 18px !important;">
-      <!-- User Info -->
+    <h1 class="page-title">成长中心</h1>
+    <div class="header-actions">
       <div id="mobile-user-info" class="mobile-user-info" style="display: none;">
         <span id="mobile-user-name" class="mobile-user-name"></span>
         <a href="./membership.html" id="mobile-vip-badge" class="mobile-vip-badge" style="display: none;">
-          <span class="vip-icon">👑</span>
+          <span class="vip-icon" aria-hidden="true">VIP</span>
           <span class="vip-text">VIP</span>
         </a>
       </div>
-      <button class="icon-btn settings-btn">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <button class="icon-btn settings-btn" type="button" title="设置" aria-label="设置">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
           <circle cx="12" cy="12" r="3"></circle>
-          <path d="M12 1v6m0 6v6"></path>
-          <path d="m4.93 4.93 4.24 4.24m5.66 5.66 4.24 4.24"></path>
-          <path d="m1 12h6m6 0h6"></path>
-          <path d="m4.93 19.07 4.24-4.24m5.66-5.66 4.24-4.24"></path>
+          <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"></path>
         </svg>
       </button>
     </div>
@@ -908,7 +864,7 @@
         <div class="level-badge" id="level-badge">Lv. 1</div>
       </div>
       <div class="profile-info">
-        <h2 class="profile-name" id="profile-name">语言探索者</h2>
+        <h2 class="profile-name" id="profile-name">语言探索者/h2>
 
         <!-- XP Progress Bar -->
         <div class="xp-container">
@@ -932,8 +888,8 @@
     </div>
 
     <section class="intent-card" id="intent-card">
-      <div class="intent-title">你在「成长中心」页面</div>
-      <div class="intent-subtitle">想做什么？选择一个入口，立即开始。</div>
+      <div class="intent-title">你在「成长中心」页/div>
+      <div class="intent-subtitle">想做什么？选择一个入口，立即开始/div>
       <div class="intent-actions">
         <a class="intent-btn primary" href="mobile-today.html">继续学习</a>
         <a class="intent-btn" href="#learning-stats">查看进度</a>
@@ -946,7 +902,7 @@
       style="margin-top: -12px; margin-bottom: 20px; background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
       <div class="goal-info">
         <h3 style="color: white; opacity: 0.9;">下个称号</h3>
-        <p id="next-achievement-name" style="color: white; font-weight: 800; font-size: 1.1rem; margin-top: 2px;">加载中...
+        <p id="next-achievement-name" style="color: white; font-weight: 800; font-size: 1.1rem; margin-top: 2px;">加载...
         </p>
         <p id="next-achievement-desc" style="color: rgba(255,255,255,0.8); font-size: 0.85rem;">正在计算进度...</p>
         <div class="next-achievement-hint">点击查看详情</div>
@@ -966,8 +922,8 @@
     <div class="daily-goal-card" id="daily-goal">
       <div class="goal-info">
         <h3>今日目标</h3>
-        <p id="daily-goal-text">加油！还差 15 分钟</p>
-        <div class="daily-goal-meta" id="daily-goal-meta">继续学习，解锁今日奖励</div>
+        <p id="daily-goal-text">加油！还15 分钟</p>
+        <div class="daily-goal-meta" id="daily-goal-meta">继续学习，解锁今日奖/div>
         <div class="reward-preview">🎁 完成后：+50 金币 · +20 XP</div>
       </div>
       <div class="progress-ring">
@@ -984,7 +940,7 @@
     <a class="game-entry-card" href="/game.html">
       <span class="game-entry-card__badge">NEW</span>
       <span class="game-entry-card__title">闯关词汇游戏</span>
-      <span class="game-entry-card__desc">玩小游戏解锁伙伴的身体部位，通关掌握 180 个单词</span>
+      <span class="game-entry-card__desc">玩小游戏解锁伙伴的身体部位，通关掌握 180 个单/span>
     </a>
 
     <!-- Quick Actions Grid -->
@@ -995,7 +951,7 @@
       </a>
       <a href="./feedback.html" class="action-tile">
         <div class="action-icon">💬</div>
-        <span class="action-text">反馈与帮助</span>
+        <span class="action-text">反馈与帮/span>
       </a>
     </section>
 
@@ -1013,7 +969,7 @@
         <div class="achievement-card unlocked"
           style="grid-column: span 2; background: linear-gradient(135deg, #0284c7 0%, #0b3f3a 100%); color: white;">
           <div class="achievement-icon">⏱️</div>
-          <div class="achievement-name" style="color: rgba(255,255,255,0.9);">学习总时长</div>
+          <div class="achievement-name" style="color: rgba(255,255,255,0.9);">学习总时/div>
           <div class="achievement-date" style="color: white; font-size: 1.5rem; font-weight: 800;"><span
               id="stat-total-time">0 分钟</span></div>
         </div>
@@ -1022,14 +978,14 @@
         <div class="achievement-card unlocked">
           <div class="achievement-icon">🔥</div>
           <div class="achievement-name">连续天数</div>
-          <div class="achievement-date"><span id="stat-streak">0 天</span></div>
+          <div class="achievement-date"><span id="stat-streak">0 /span></div>
         </div>
 
         <!-- Words -->
         <div class="achievement-card unlocked">
           <div class="achievement-icon">📚</div>
           <div class="achievement-name">掌握单词</div>
-          <div class="achievement-date"><span id="stat-words">0 个</span></div>
+          <div class="achievement-date"><span id="stat-words">0 /span></div>
         </div>
 
         <!-- Video Time -->
@@ -1052,7 +1008,7 @@
     <!-- App Info -->
     <div class="app-info-box">
       <p>🌟 享受沉浸式语言学习体验</p>
-      <p class="app-slogan">让学习更有趣，让进步看得见</p>
+      <p class="app-slogan">让学习更有趣，让进步看得/p>
     </div>
     <!-- Reward Modal -->
     <div id="reward-modal" class="reward-modal">
@@ -1067,11 +1023,11 @@
               <div class="reward-value">+50</div>
             </div>
             <div class="reward-item">
-              <span class="reward-icon">⚡</span>
+              <span class="reward-icon">/span>
               <div class="reward-value">+20 XP</div>
             </div>
           </div>
-          <button class="claim-btn" id="claim-btn">开心收下</button>
+          <button class="claim-btn" id="claim-btn">开心收/button>
         </div>
       </div>
     </div>
@@ -1080,13 +1036,13 @@
       <div class="sheet">
         <div class="sheet-handle"></div>
         <div class="sheet-title" id="achievement-sheet-title">下个称号</div>
-        <div class="sheet-desc" id="achievement-sheet-desc">正在加载…</div>
+        <div class="sheet-desc" id="achievement-sheet-desc">正在加载/div>
         <div class="sheet-progress">
           <div class="sheet-progress-bar"><span id="achievement-sheet-bar"></span></div>
           <div class="sheet-progress-text" id="achievement-sheet-progress">进度 0 / 0</div>
         </div>
         <div class="sheet-actions">
-          <a class="primary" id="achievement-sheet-action" href="mobile-today.html">去完成</a>
+          <a class="primary" id="achievement-sheet-action" href="mobile-today.html">去完/a>
           <button class="ghost" id="achievement-sheet-close" type="button">稍后再说</button>
         </div>
       </div>
@@ -1107,14 +1063,6 @@
     <a href="mobile-power.html" class="nav-item">
       <div class="nav-icon" data-lx-icon="power"></div>
       <span data-i18n="mobile.power.title">能量站</span>
-    </a>
-    <a href="mobile-arena.html" class="nav-item">
-      <div class="nav-icon" data-lx-icon="arena"></div>
-      <span data-i18n="mobile.arena.title">实战场</span>
-    </a>
-    <a href="mobile-treasure.html" class="nav-item active">
-      <div class="nav-icon" data-lx-icon="growth"></div>
-      <span data-i18n="mobile.treasure.title">成长中心</span>
     </a>
   </nav>
 

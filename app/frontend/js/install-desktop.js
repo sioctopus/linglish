@@ -36,17 +36,61 @@
     return 'other';
   }
 
-  function ensureManifest() {
+  function currentTarget() {
+    var info = window.LxDevice && window.LxDevice.apply ? window.LxDevice.apply(window) : null;
+    if (window.LxDevice && window.LxDevice.installTarget) return window.LxDevice.installTarget(info);
+    return { surface: 'desktop', manifest: '/manifest-desktop.json' };
+  }
+
+  function isHomeSurface(target) {
+    if (target && target.surface === 'home') return true;
+    // Fallback when device adapt is unavailable: hide install UI on touch phones/tablets.
+    try {
+      if (window.matchMedia('(pointer: coarse)').matches && window.innerWidth <= 1024) return true;
+    } catch (_) {}
+    var form = document.documentElement.getAttribute('data-lx-form') || '';
+    return form === 'phone' || form === 'tablet' || form.indexOf('tablet') === 0;
+  }
+
+  function osName() {
+    var os = document.documentElement.getAttribute('data-lx-os') || '';
+    if (os && os !== 'other') return os;
+    var ua = navigator.userAgent || '';
+    if (/Windows/i.test(ua)) return 'windows';
+    if (/Macintosh|Mac OS X/i.test(ua) && !/iPad|iPhone|Android/i.test(ua)) return 'mac';
+    if (/CrOS/i.test(ua)) return 'chromeos';
+    if (/Linux/i.test(ua) && !/Android/i.test(ua)) return 'linux';
+    return os || 'other';
+  }
+
+  function isDesktopComputer() {
+    var os = osName();
+    return os === 'windows' || os === 'mac' || os === 'chromeos' || os === 'linux';
+  }
+
+  // Safari on a Mac has no install event, but File → Add to Dock still installs.
+  function isMacSafari() {
+    return browserKind() === 'safari' && osName() === 'mac' && isDesktopComputer();
+  }
+
+  function canOfferDesktopInstall() {
+    if (window.top !== window.self || isStandalone()) return false;
+    if (!isDesktopComputer()) return false;
+    if (isHomeSurface(currentTarget())) return false;
+    return true;
+  }
+
+  function ensureManifest(target) {
+    if (target.surface === 'home') target.manifest = '/manifest.json';
     var existing = document.querySelector('link[rel="manifest"]');
     if (existing) {
-      if (!/manifest-desktop\.json/.test(existing.getAttribute('href') || '')) {
-        existing.href = '/manifest-desktop.json';
-      }
+      var href = existing.getAttribute('href') || '';
+      if (href.indexOf(target.manifest) === -1) existing.href = target.manifest;
       return;
     }
     var link = document.createElement('link');
     link.rel = 'manifest';
-    link.href = '/manifest-desktop.json';
+    link.href = target.manifest;
     document.head.appendChild(link);
   }
 
@@ -54,7 +98,7 @@
     if (document.querySelector('link[data-install-desktop]')) return;
     var link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = '/css/install-desktop.css?v=3';
+    link.href = '/css/install-desktop.css?v=4';
     link.setAttribute('data-install-desktop', '1');
     document.head.appendChild(link);
   }
@@ -74,11 +118,30 @@
     button.setAttribute('aria-expanded', open ? 'true' : 'false');
   }
 
-  function manualSteps() {
+  function manualSteps(target) {
     var kind = browserKind();
+    var os = document.documentElement.getAttribute('data-lx-os') || '';
+    if (target.surface === 'home') {
+      if (os === 'ios' || kind === 'safari') {
+        return text(
+          '点分享按钮，选择「添加到主屏幕」，再点「添加」。iPhone 和 iPad 都用这一步。',
+          'Tap Share, choose Add to Home Screen, then tap Add. This is the same step on iPhone and iPad.'
+        );
+      }
+      if (os === 'android') {
+        return text(
+          '点浏览器菜单里的「安装应用」或「添加到主屏幕」。安卓手机会把 Linglish 放到主屏幕。',
+          'Open the browser menu and choose Install app or Add to Home screen.'
+        );
+      }
+      return text(
+        '点浏览器菜单里的「安装应用」或「添加到主屏幕」。',
+        'Open the browser menu and choose Install app or Add to Home screen.'
+      );
+    }
     if (kind === 'chrome' || kind === 'edge') {
       return text(
-        '如果没有弹出安装窗口，点地址栏右侧的安装图标，或打开浏览器菜单，选择「安装 Linglish」。',
+        '如果没有弹出安装窗口，点地址栏右侧的安装图标，或打开浏览器菜单，选择「安装 Linglish」。Windows 和 Mac 都是这个入口。',
         'If no install window appears, use the install icon in the address bar, or open the browser menu and choose “Install Linglish”.'
       );
     }
@@ -96,14 +159,24 @@
 
   function renderCopy() {
     if (!button || !panel) return;
-    button.querySelector('.lx-install-desktop-label').textContent = text('安装到桌面', 'Install app');
-    button.title = text('把 Linglish 安装到桌面，用独立窗口打开', 'Install Linglish and open it in its own window');
-    panel.querySelector('[data-install-title]').textContent = text('安装到桌面', 'Install app');
-    panel.querySelector('[data-install-body]').textContent = text(
-      '安装后，Linglish 会出现在桌面和开始菜单里，并用自己的窗口打开。这不是单独的客户端。',
-      'After installing, Linglish shows up on the desktop and in the Start menu, and opens in its own window. It is still this website.'
-    );
-    panel.querySelector('[data-install-steps]').textContent = manualSteps();
+    var target = currentTarget();
+    var home = target.surface === 'home';
+    var label = home ? text('添加到主屏幕', 'Add to Home Screen') : text('安装到桌面', 'Install app');
+    button.querySelector('.lx-install-desktop-label').textContent = label;
+    button.title = home
+      ? text('把 Linglish 加到主屏幕，用独立窗口打开', 'Add Linglish to the home screen and open it in its own window')
+      : text('把 Linglish 安装到桌面，用独立窗口打开', 'Install Linglish and open it in its own window');
+    panel.querySelector('[data-install-title]').textContent = label;
+    panel.querySelector('[data-install-body]').textContent = home
+      ? text(
+        '加上之后，Linglish 会出现在主屏幕上，并用自己的窗口打开。这仍是现在的网站。',
+        'After adding it, Linglish appears on the home screen and opens in its own window. It is still this website.'
+      )
+      : text(
+        '安装后，Linglish 会出现在桌面和开始菜单里，并用自己的窗口打开。这不是单独的客户端。',
+        'After installing, Linglish shows up on the desktop and in the Start menu, and opens in its own window. It is still this website.'
+      );
+    panel.querySelector('[data-install-steps]').textContent = manualSteps(target);
     panel.querySelector('[data-install-close]').setAttribute('aria-label', text('关闭', 'Close'));
   }
 
@@ -166,11 +239,21 @@
       if (event.key === 'Escape') setExpanded(false);
     });
 
+    var target = currentTarget();
+    var shellHost = document.getElementById('lx-shell-install-host');
     var navbar = document.querySelector('.navbar');
     var topNav = document.querySelector('body > .topbar > .nav, header.topbar > .nav, header.topbar > .nav-actions');
-    restingParent = navbar || topNav || document.body;
-    if (!navbar && topNav) slot.classList.add('lx-install-desktop-slot--bar');
-    if (!navbar && !topNav) slot.classList.add('lx-install-desktop-slot--float');
+    if (shellHost) {
+      restingParent = shellHost;
+      slot.classList.add('lx-install-desktop-slot--shell');
+    } else if (target.surface === 'home') {
+      restingParent = document.body;
+      slot.classList.add('lx-install-desktop-slot--float', 'lx-install-desktop-slot--home');
+    } else {
+      restingParent = navbar || topNav || document.body;
+      if (!navbar && topNav) slot.classList.add('lx-install-desktop-slot--bar');
+      if (!navbar && !topNav) slot.classList.add('lx-install-desktop-slot--float');
+    }
     restingParent.appendChild(slot);
     placeInstall();
 
@@ -192,10 +275,11 @@
       ? document.querySelector('.transcript .header-top')
       : null;
     var modeToggle = focusHead && focusHead.querySelector('.mode-toggle');
+    var videoEntry = focusHead && focusHead.querySelector('#focus-video-entry');
     if (focusHead && modeToggle) {
       slot.classList.add('lx-install-desktop-slot--focus');
       slot.classList.remove('lx-install-desktop-slot--bar', 'lx-install-desktop-slot--float');
-      focusHead.insertBefore(slot, modeToggle);
+      focusHead.insertBefore(slot, videoEntry || modeToggle);
       return;
     }
     slot.classList.remove('lx-install-desktop-slot--focus');
@@ -206,13 +290,31 @@
     restingParent.appendChild(slot);
   }
 
+  function reveal() {
+    var target = currentTarget();
+    if (isHomeSurface(target)) {
+      hideInstall();
+      return;
+    }
+    if (!canOfferDesktopInstall() || (!deferredPrompt && !isMacSafari())) {
+      hideInstall();
+      return;
+    }
+    ensureStyles();
+    mount();
+    if (slot) slot.hidden = false;
+  }
+
   function boot() {
     if (window.top !== window.self) return;
     if (isStandalone()) return;
-    ensureManifest();
-    ensureStyles();
+    var target = currentTarget();
+    ensureManifest(target);
     registerWorker();
-    mount();
+    window.addEventListener('resize', reveal);
+    // Phones and tablets: no install control, so it never takes space.
+    if (isHomeSurface(target)) return;
+    reveal();
     if (!navigator.getInstalledRelatedApps) return;
     navigator.getInstalledRelatedApps().then(function (apps) {
       if (Array.isArray(apps) && apps.some(function (app) { return app && app.platform === 'webapp'; })) {
@@ -224,7 +326,7 @@
   window.addEventListener('beforeinstallprompt', function (event) {
     event.preventDefault();
     deferredPrompt = event;
-    if (slot) slot.hidden = false;
+    reveal();
   });
 
   window.addEventListener('appinstalled', function () {

@@ -676,14 +676,21 @@ async function registerDictionaryRoutes(pathname, req, res, url) {
 
         if (!text) return sendError(res, 400, 'text is required');
 
-        // Use translation service; it supports phrases/sentences as well.
-        const result = await translationService.translateWord(text, { userLabel });
+        // Sentence UI needs a hard deadline; keep room for MyMemory after a slow Google attempt.
+        const budgetMs = Number(process.env.TRANSLATE_TEXT_BUDGET_MS || 12000);
+        const result = await Promise.race([
+          translationService.translateWord(text, { userLabel, mode: 'sentence' }),
+          new Promise((resolve) => {
+            setTimeout(() => resolve({ translation: '', timedOut: true, source: 'timeout' }), budgetMs);
+          })
+        ]);
         const translation = (result && result.translation) ? String(result.translation) : '';
         const hasChinese = translation && /[\u4e00-\u9fa5]/.test(translation);
         if (!hasChinese) {
           return sendJson(res, 200, {
             success: false,
-            message: '翻译暂不可用',
+            message: result && result.timedOut ? '翻译超时，请稍后再试' : '翻译暂不可用',
+            timedOut: Boolean(result && result.timedOut),
             translationAttempted: translation
           });
         }

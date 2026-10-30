@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const os = require('os');
+const { spawn } = require('child_process');
 const { PassThrough } = require('stream');
 const ffmpeg = require('fluent-ffmpeg');
 const OpenAI = require('openai');
@@ -15,6 +16,8 @@ const { mergeIncompleteSegments, normalizeSegmentsTiming } = require('../utils/s
 let openaiClient = null;
 let openaiWhisperClient = null;
 let geminiApiKey = null;
+let localWhisperChecked = false;
+let localWhisperAvailable = false;
 
 function getOpenAIClient() {
   if (openaiClient) return openaiClient;
@@ -30,17 +33,36 @@ function getOpenAIClient() {
   return openaiClient;
 }
 
+function resolveWhisperCredentials() {
+  const cfg = getSpeechConfig();
+  const directKey = process.env.OPENAI_WHISPER_API_KEY || aiConfig.openai.apiKey;
+  if (directKey) {
+    return {
+      apiKey: directKey,
+      baseURL: process.env.OPENAI_WHISPER_API_BASE || 'https://api.openai.com/v1',
+      model: process.env.OPENAI_WHISPER_MODEL || cfg.model || 'whisper-1',
+      via: 'openai',
+    };
+  }
+  const openRouterKey = process.env.OPENROUTER_API_KEY;
+  if (openRouterKey) {
+    return {
+      apiKey: openRouterKey,
+      baseURL: process.env.OPENROUTER_API_BASE || 'https://openrouter.ai/api/v1',
+      model: process.env.OPENROUTER_WHISPER_MODEL || 'qwen/qwen3-asr-0.6b',
+      via: 'openrouter',
+    };
+  }
+  return null;
+}
+
 function getOpenAIWhisperClient() {
   if (openaiWhisperClient) return openaiWhisperClient;
 
-  const apiKey = process.env.OPENAI_WHISPER_API_KEY || aiConfig.openai.apiKey;
-  if (!apiKey) {
+  const creds = resolveWhisperCredentials();
+  if (!creds) {
     throw new Error('OPENAI_WHISPER_API_KEY / OPENAI_API_KEY is not configured');
   }
-
-  // Whisper API should use official OpenAI endpoint by default, not custom proxies
-  // Custom proxies often don't support Whisper API endpoints
-  const baseURL = process.env.OPENAI_WHISPER_API_BASE || 'https://api.openai.com/v1';
 
   // Important: Disable proxy for Whisper API calls
   // OpenAI SDK (v4+) uses fetch API which respects HTTPS_PROXY env var
@@ -56,13 +78,21 @@ function getOpenAIWhisperClient() {
     delete process.env.OPENAI_PROXY;
 
     openaiWhisperClient = new OpenAI({
-      apiKey,
-      baseURL,
-      timeout: 60000,  // 60 second timeout for audio processing
-      maxRetries: 2
+      apiKey: creds.apiKey,
+      baseURL: creds.baseURL,
+      timeout: Number(process.env.OPENAI_WHISPER_TIMEOUT_MS) || 600000,
+      maxRetries: 2,
+      defaultHeaders: creds.via === 'openrouter'
+        ? {
+          'HTTP-Referer': process.env.OPENROUTER_SITE_URL || 'https://linglish.app',
+          'X-Title': process.env.OPENROUTER_APP_TITLE || 'Linglish',
+        }
+        : undefined,
     });
+    openaiWhisperClient.__linglishWhisperModel = creds.model;
+    openaiWhisperClient.__linglishWhisperVia = creds.via;
 
-    console.log('[Whisper Client] Initialized with baseURL:', baseURL, '(proxy disabled)');
+    console.log('[Whisper Client] Initialized with baseURL:', creds.baseURL, 'via:', creds.via, '(proxy disabled)');
   } finally {
     // Restore proxy env vars
     if (savedProxy) process.env.HTTPS_PROXY = savedProxy;
@@ -686,10 +716,18 @@ async function transcribeWithBaidu(filePath, options = {}) {
 }
 
 async function transcribeWithOpenAI(filePath, options = {}) {
-  const client =
-    normalizeProviderLabel(options.provider) === 'whisper'
-      ? getOpenAIWhisperClient()
-      : getOpenAIClient();
+  const preferWhisper = normalizeProviderLabel(options.provider) === 'whisper'
+    || (!aiConfig.openai.apiKey && Boolean(process.env.OPENROUTER_API_KEY));
+  let client;
+  try {
+    client = preferWhisper ? getOpenAIWhisperClient() : getOpenAIClient();
+  } catch (err) {
+    if (!preferWhisper && /not configured/i.test(String(err && err.message || ''))) {
+      client = getOpenAIWhisperClient();
+    } else {
+      throw err;
+    }
+  }
   const cfg = getSpeechConfig();
   const {
     language = 'en',
@@ -699,7 +737,10 @@ async function transcribeWithOpenAI(filePath, options = {}) {
     triedProviderFallback = false,
   } = options;
 
-  const targetModel = model || cfg.model || 'whisper-1';
+  const targetModel = model
+    || client.__linglishWhisperModel
+    || cfg.model
+    || 'whisper-1';
 
   try {
     // OpenAI SDK v4+ uses toFile() helper for proper file handling
@@ -1142,6 +1183,88 @@ async function transcribeWithCustom(filePath, options = {}) {
   }
 }
 
+function localWhisperScriptPath() {
+  return path.join(__dirname, '..', 'scripts', 'local-whisper-transcribe.py');
+}
+
+async function hasLocalWhisper() {
+  if (localWhisperChecked) return localWhisperAvailable;
+  localWhisperChecked = true;
+  const script = localWhisperScriptPath();
+  if (!fs.existsSync(script)) {
+    localWhisperAvailable = false;
+    return false;
+  }
+  localWhisperAvailable = true;
+  return true;
+}
+
+async function transcribeWithLocalWhisper(filePath, options = {}) {
+  const script = localWhisperScriptPath();
+  if (!fs.existsSync(script)) {
+    throw new Error('本地 Whisper 脚本不存在');
+  }
+  const model = process.env.LOCAL_WHISPER_MODEL || options.localModel || 'tiny';
+  const language = options.language || 'en';
+  const pythonBin = process.env.LOCAL_WHISPER_PYTHON || process.env.PYTHON || 'python';
+  const timeoutMs = Number(process.env.LOCAL_WHISPER_TIMEOUT_MS) || 900000;
+
+  console.log(`[Local Whisper] Transcribing with model=${model} language=${language}`);
+
+  const result = await new Promise((resolve, reject) => {
+    const child = spawn(pythonBin, [
+      script,
+      '--file', filePath,
+      '--language', language,
+      '--model', model,
+    ], {
+      windowsHide: true,
+      env: {
+        ...process.env,
+        PYTHONIOENCODING: 'utf-8',
+        PYTHONUTF8: '1',
+      },
+    });
+    let stdout = '';
+    let stderr = '';
+    const timer = setTimeout(() => {
+      try { child.kill(); } catch (_) {}
+      reject(new Error('本地 Whisper 超时'));
+    }, timeoutMs);
+    child.stdout.on('data', (chunk) => { stdout += String(chunk || ''); });
+    child.stderr.on('data', (chunk) => { stderr += String(chunk || ''); });
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      const lines = String(stdout || '').trim().split(/\r?\n/).filter(Boolean);
+      const last = lines[lines.length - 1] || '';
+      let payload = null;
+      try { payload = JSON.parse(last); } catch (_) {}
+      if (!payload || payload.ok !== true) {
+        const message = (payload && payload.error)
+          || stderr.trim()
+          || `本地 Whisper 失败 (code=${code})`;
+        reject(new Error(message));
+        return;
+      }
+      resolve(payload);
+    });
+  });
+
+  const segments = Array.isArray(result.segments) ? result.segments : [];
+  return {
+    text: String(result.text || ''),
+    segments,
+    duration: Number(result.duration) || null,
+    language: result.language || language,
+    model: result.model || model,
+    provider: 'local-whisper',
+  };
+}
+
 /**
  * 转录音频/视频文件
  * @param {string} filePath - 文件路径
@@ -1152,22 +1275,41 @@ async function transcribeWithCustom(filePath, options = {}) {
 async function transcribeVideoFile(filePath, options = {}) {
   const scenario = options.scenario || 'video-upload';
   const provider = normalizeProviderLabel(options.provider || getPrimaryProvider(scenario));
+  const allowLocalFallback = options.allowLocalFallback !== false;
 
   console.log(`[Transcribe] Scenario: ${scenario}, Using provider: ${provider}`);
 
-  if (provider === 'gemini') {
-    return transcribeWithGemini(filePath, options);
+  const runCloud = async () => {
+    if (provider === 'gemini') {
+      return transcribeWithGemini(filePath, options);
+    }
+    if (provider === 'custom') {
+      return transcribeWithCustom(filePath, options);
+    }
+    if (provider === 'baidu') {
+      return transcribeWithBaidu(filePath, options);
+    }
+    if (provider === 'local' || provider === 'local-whisper') {
+      return transcribeWithLocalWhisper(filePath, options);
+    }
+    if (provider === 'whisper') {
+      return transcribeWithOpenAI(filePath, { ...options, provider: 'whisper' });
+    }
+    return transcribeWithOpenAI(filePath, options);
+  };
+
+  try {
+    return await runCloud();
+  } catch (err) {
+    if (!allowLocalFallback || provider === 'local' || provider === 'local-whisper') {
+      throw err;
+    }
+    if (!(await hasLocalWhisper())) {
+      throw err;
+    }
+    console.warn('[Transcribe] Cloud STT failed, falling back to local Whisper:', err && err.message);
+    return transcribeWithLocalWhisper(filePath, options);
   }
-  if (provider === 'custom') {
-    return transcribeWithCustom(filePath, options);
-  }
-  if (provider === 'baidu') {
-    return transcribeWithBaidu(filePath, options);
-  }
-  if (provider === 'whisper') {
-    return transcribeWithOpenAI(filePath, { ...options, provider: 'whisper' });
-  }
-  return transcribeWithOpenAI(filePath, options);
 }
 
 async function translateTextToEnglish(text) {
@@ -1326,4 +1468,6 @@ module.exports = {
   transcribeVideoFile,
   transcribePracticeWav,
   transcribeAndStore,
+  transcribeWithLocalWhisper,
+  hasLocalWhisper,
 };

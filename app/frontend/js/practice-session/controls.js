@@ -307,6 +307,13 @@ export async function startAutoRecording(state, updateAutoStatus, handleRecordin
     state.recordingStartAt = Date.now();
     state.firstVoiceAt = null;
     state.voicedMs = 0;
+    try {
+      if (typeof window !== 'undefined'
+        && window.LinglishAudioCues
+        && typeof window.LinglishAudioCues.playMicReadyCue === 'function') {
+        window.LinglishAudioCues.playMicReadyCue();
+      }
+    } catch (_) {}
 
     updateAutoStatus('🎤', '正在录音，请说话...');
 

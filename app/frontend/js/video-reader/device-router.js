@@ -9,14 +9,29 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const MOBILE_UA =
-    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Silk/i;
+  function deviceInfo(input) {
+    const adapt = typeof module === 'object' && module.exports
+      ? require('../device-adapt')
+      : (typeof globalThis !== 'undefined' ? globalThis.LxDevice : null);
+    if (adapt && typeof adapt.classify === 'function') return adapt.classify(input);
+    return null;
+  }
 
-  function isMobileTarget({ userAgent = '', viewportWidth, mediaMatches = false } = {}) {
+  function isMobileTarget({
+    userAgent = '',
+    viewportWidth,
+    mediaMatches = false,
+    maxTouchPoints = 0,
+    pointer = '',
+    hover = ''
+  } = {}) {
+    const info = deviceInfo({ userAgent, viewportWidth, maxTouchPoints, pointer, hover });
+    if (info) return info.tier === 'phone' || info.tier === 'tablet-portrait';
     const narrowViewport =
       mediaMatches === true ||
       (Number.isFinite(Number(viewportWidth)) && Number(viewportWidth) <= 768);
-    return MOBILE_UA.test(String(userAgent)) || narrowViewport;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Silk/i.test(String(userAgent))
+      || narrowViewport;
   }
 
   function pageName(pathname) {
@@ -38,12 +53,22 @@
     hash = '',
     userAgent = '',
     viewportWidth,
-    mediaMatches = false
+    mediaMatches = false,
+    maxTouchPoints = 0,
+    pointer = '',
+    hover = ''
   } = {}) {
     const currentPage = pageName(pathname);
     if (!currentPage || hasDesktopOverride(search)) return null;
 
-    const mobile = isMobileTarget({ userAgent, viewportWidth, mediaMatches });
+    const mobile = isMobileTarget({
+      userAgent,
+      viewportWidth,
+      mediaMatches,
+      maxTouchPoints,
+      pointer,
+      hover
+    });
     const suffix = `${String(search || '')}${String(hash || '')}`;
 
     if (currentPage === 'video-reader-desktop.html' && mobile) {
@@ -60,17 +85,21 @@
   function redirectIfNeeded(windowObject) {
     try {
       if (!windowObject || !windowObject.location) return null;
-      const mediaMatches =
+      const matches = (query) => (
         typeof windowObject.matchMedia === 'function'
-          ? windowObject.matchMedia('(max-width: 768px)').matches
-          : false;
+          ? windowObject.matchMedia(query).matches
+          : false
+      );
       const target = getRedirectTarget({
         pathname: windowObject.location.pathname,
         search: windowObject.location.search,
         hash: windowObject.location.hash,
         userAgent: windowObject.navigator && windowObject.navigator.userAgent,
         viewportWidth: windowObject.innerWidth,
-        mediaMatches
+        mediaMatches: matches('(max-width: 768px)'),
+        maxTouchPoints: windowObject.navigator && windowObject.navigator.maxTouchPoints,
+        pointer: matches('(pointer: coarse)') ? 'coarse' : 'fine',
+        hover: matches('(hover: hover)') ? 'hover' : 'none'
       });
 
       if (target && typeof windowObject.location.replace === 'function') {

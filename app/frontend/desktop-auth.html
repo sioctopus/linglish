@@ -3,9 +3,9 @@
 
 <head>
   <script src="/env.js"></script>
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=3"></script>
 <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/oauth-bootstrap.js?v=1"></script>
+  <script src="./js/oauth-bootstrap.js?v=2"></script>
   <script src="./js/storage-helper.js"></script>
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
@@ -168,15 +168,15 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Linglish">
-  <link rel="stylesheet" href="/css/install-desktop.css?v=3">
-  <script src="/js/install-desktop.js?v=3" defer></script>
+  <link rel="stylesheet" href="/css/install-desktop.css?v=4">
+  <script src="/js/install-desktop.js?v=6" defer></script>
   <title>Linglish - 账号登录（桌面版）</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap">
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
-  <script src="./i18n.js?v=20261019"></script>
-  <script src="./auth-helpers.js?v=2026102102"></script>
+  <script src="./i18n.js"></script>
+  <script src="./auth-helpers.js"></script>
   <script src="./guest-check.js"></script>
   <style>
     :root {
@@ -246,7 +246,9 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 22px 28px;
+      flex-wrap: nowrap;
+      gap: 12px;
+      padding: 14px 22px;
       border-bottom: 1px solid rgba(148, 163, 184, 0.25);
       background: linear-gradient(110deg, rgba(15, 118, 110, 0.08), rgba(14, 165, 233, 0.08));
     }
@@ -275,6 +277,29 @@
       font-weight: 700;
       letter-spacing: 0.4px;
       color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .social-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .social-row .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex: 1 1 0;
+      width: auto;
+      min-width: 0;
+      padding: 12px 10px;
+      font-size: 14px;
+    }
+
+    .btn.wechat {
+      color: #065f46;
+      border-color: rgba(7, 193, 96, 0.45);
     }
 
     .content {
@@ -542,6 +567,11 @@
       width: auto;
     }
 
+    .btn.secondary.wechat {
+      color: #065f46;
+      border-color: rgba(7, 193, 96, 0.55);
+    }
+
     .btn.full {
       width: 100%;
     }
@@ -559,6 +589,20 @@
       color: #64748b;
       font-size: 12px;
       line-height: 1.55;
+    }
+
+    .form-error {
+      margin: 10px 0 0;
+      color: #b91c1c;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .btn:disabled {
+      cursor: wait;
+      opacity: 0.75;
+      transform: none;
     }
 
     .divider::before,
@@ -687,9 +731,17 @@
       }
 
       .card-head {
+        flex-direction: row;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #back-link {
+        width: auto;
+      }
+
+      .social-row {
         flex-direction: column;
-        gap: 14px;
-        align-items: flex-start;
       }
 
       .hero h2 {
@@ -760,7 +812,10 @@
 
           <form id="form-login" class="auth-form" autocomplete="on">
             <div id="oauthErrorBanner" role="status" style="color:#b91c1c;"></div>
-            <button type="button" class="btn secondary full" id="google-login-btn">使用 Google 登录</button>
+            <div class="social-row">
+              <button type="button" class="btn secondary" id="google-login-btn">使用 Google 登录</button>
+              <button type="button" class="btn secondary wechat" id="wechat-login-btn">微信登录 / 绑定</button>
+            </div>
             <div class="divider">或使用邮箱 / 手机号</div>
             <div class="form-group">
               <label class="label" for="login-account">邮箱或手机号</label>
@@ -776,6 +831,7 @@
               <a href="./reset-password.html?from=desktop_auth">忘记密码？</a>
             </div>
             <button type="submit" class="btn" id="login-submit">立即登录</button>
+            <p class="form-error" id="login-error" hidden></p>
             <div class="form-note" id="login-note">登录后会自动回到当前训练路径。</div>
             <div class="divider">或者</div>
             <button type="button" class="btn secondary full" id="guest-btn">注册账号</button>
@@ -837,6 +893,23 @@
     const VISITOR_ID_KEY = 'linglish_visitor_id';
     const PENDING_PROFILE_SYNC_KEY = 'linglish_onboarding_pending_profile_sync';
     function toast(msg, type = 'info') { toastEl.textContent = msg; toastEl.style.display = 'block'; toastEl.style.background = type === 'error' ? '#b91c1c' : (type === 'success' ? '#065f46' : '#111827'); setTimeout(() => toastEl.style.display = 'none', 2200); }
+    function authErrorText(message, fallback) {
+      const code = String(message || '').trim();
+      try {
+        if (typeof i18n !== 'undefined' && i18n && typeof i18n.t === 'function') {
+          const translated = i18n.t('error.' + code);
+          if (translated && translated !== 'error.' + code) return translated;
+        }
+      } catch (_) { }
+      if (code === 'INVALID_CREDENTIALS') return '账号或密码不正确';
+      return code && !/^[A-Z0-9_]+$/.test(code) ? code : fallback;
+    }
+    function showLoginError(message) {
+      const error = document.getElementById('login-error');
+      if (!error) return;
+      error.hidden = !message;
+      error.textContent = message || '';
+    }
     function getSafeNext(fallback) {
       try {
         const raw = new URLSearchParams(location.search || '').get('next');
@@ -859,14 +932,55 @@
       googleLoginBtn.textContent = '正在打开 Google 登录…';
       const params = new URLSearchParams({
         flow: 'cookie_v1',
-        redirect: getSafeNext('./today.html'),
+        redirect: getSafeNext('./index-desktop.html?from=google&first=1'),
       });
       location.href = `/auth/oauth/google?${params.toString()}`;
+    });
+    const wechatLoginBtn = document.getElementById('wechat-login-btn');
+    wechatLoginBtn.addEventListener('click', async () => {
+      if (wechatLoginBtn.disabled) return;
+      const env = window.__LINGLISH_ENV__ || {};
+      if (env.enableWechatOAuth !== true) {
+        toast('微信扫码还需要微信开放平台的 AppID 和 AppSecret。填好之前，请先用邮箱登录。', 'error');
+        return;
+      }
+      wechatLoginBtn.disabled = true;
+      wechatLoginBtn.textContent = '正在打开微信扫码…';
+      const token = (window.AuthManager && AuthManager.getToken && AuthManager.getToken()) || null;
+      if (token) {
+        try {
+          const response = await fetch('/auth/oauth/wechat/start?redirect=' + encodeURIComponent('/index-desktop.html?from=wechat_bind'), {
+            method: 'POST',
+            headers: { Authorization: 'Bearer ' + token },
+          });
+          const data = await response.json().catch(() => ({}));
+          if (!response.ok || !data.url) {
+            toast(data.message || '微信绑定暂时不可用', 'error');
+            wechatLoginBtn.disabled = false;
+            wechatLoginBtn.textContent = '微信登录 / 绑定';
+            return;
+          }
+          location.href = data.url;
+          return;
+        } catch (_) {
+          toast('微信绑定暂时不可用', 'error');
+          wechatLoginBtn.disabled = false;
+          wechatLoginBtn.textContent = '微信登录 / 绑定';
+          return;
+        }
+      }
+      const params = new URLSearchParams({
+        flow: 'cookie_v1',
+        redirect: getSafeNext('./index-desktop.html?from=wechat&first=1'),
+      });
+      location.href = `/auth/oauth/wechat?${params.toString()}`;
     });
     window.addEventListener('pageshow', () => {
       googleLoginBtn.disabled = false;
       googleLoginBtn.removeAttribute('aria-busy');
       googleLoginBtn.textContent = '使用 Google 登录';
+      wechatLoginBtn.disabled = false;
+      wechatLoginBtn.textContent = '微信登录 / 绑定';
     });
     function hasCompletedOnboarding() {
       try {
@@ -878,10 +992,10 @@
     }
     function getDefaultAuthNext(source = 'auth') {
       if (source === 'login' || source === 'guest' || source === 'auth_cached') {
-        return `./today.html?from=${encodeURIComponent(source)}`;
+        return `./index-desktop.html?from=${encodeURIComponent(source)}&first=1`;
       }
       return hasCompletedOnboarding()
-        ? `./today.html?from=${encodeURIComponent(source)}`
+        ? `./index-desktop.html?from=${encodeURIComponent(source)}&first=1`
         : `./welcome.html?from=${encodeURIComponent(source)}`;
     }
     function getAuthTrackingContext() {
@@ -972,15 +1086,15 @@
           intentCopy: '注册后会进入测评，生成等级、目标和每日训练时长。'
         };
       }
-      if (normalized === '/' || normalized.startsWith('/index-desktop') || normalized.startsWith('/landing')) {
+      if (normalized === '/' || normalized.includes('index-desktop') || normalized.includes('landing')) {
         return {
           target,
           label: '首页',
           badge: 'Next: Home',
           title: '账号将回到首页',
-          copy: '登录后回到首页，不会自动进入今日训练。',
+          copy: '登录后回到首页。这台设备会保持登录，手机和电脑可以同时在线。',
           intentTitle: '回到首页',
-          intentCopy: '登录完成后留在首页。'
+          intentCopy: '登录完成后留在首页。其他设备不会被挤下线。'
         };
       }
       return {
@@ -1027,7 +1141,7 @@
         : '已有账号登录后会回到刚才的训练或购买页面。';
       const loginNote = document.getElementById('login-note');
       const registerNote = document.getElementById('register-note');
-      if (loginNote) loginNote.textContent = `登录后自动回到${destination.label}。`;
+      if (loginNote) loginNote.textContent = `登录后自动回到${destination.label}。这台设备会保持登录，其他设备不会被挤下线。`;
       if (registerNote) {
         registerNote.textContent = savingPlan
           ? (isGuestCachedSession() ? '注册后会把游客体验进度转为正式账号记录。' : '注册时会同步测评等级、每日目标和学习兴趣。')
@@ -1143,24 +1257,33 @@
       const account = document.getElementById('login-account').value.trim();
       const password = document.getElementById('login-password').value;
       const remember = document.getElementById('remember-me').checked;
+      const submitBtn = document.getElementById('login-submit');
       const payload = { password };
       if (account.includes('@')) payload.email = account; else payload.phone = account;
+      showLoginError('');
+      if (submitBtn) {
+        submitBtn.disabled = true;
+        submitBtn.textContent = '正在登录…';
+      }
       postPublicAuthEvent('auth_submit_attempt', { method: 'login', remember });
 
       // IMPORTANT: Clear old tokens BEFORE login to prevent expired token issues
       console.log('[Login] Clearing old tokens before login...');
       try {
-        AuthManager.clearToken();
+        if (window.AuthManager) AuthManager.clearToken({ skipRevoke: true, skipMediaSession: true });
       } catch (e) {
         console.warn('[Login] Failed to clear old tokens:', e.message);
       }
 
+      let signedIn = false;
       try {
         const r = await fetch('/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-        const j = await r.json();
+        const j = await r.json().catch(() => ({}));
         if (!r.ok) {
+          const message = authErrorText(j.message, '登录失败，请检查账号或密码');
           postPublicAuthEvent('auth_submit_error', { method: 'login', status: r.status, message: j.message || 'LOGIN_FAILED' });
-          toast(j.message || '登录失败，请检查账号或密码', 'error');
+          showLoginError(message);
+          toast(message, 'error');
           return;
         }
         try {
@@ -1169,10 +1292,11 @@
           try { sessionStorage.removeItem('is_guest'); } catch (_) { }
 
           const token = j.access_token || j.token;
-          if (!token) { toast('登录失败：缺少令牌', 'error'); return; }
+          if (!token) { showLoginError('登录失败：缺少令牌'); toast('登录失败：缺少令牌', 'error'); return; }
 
           console.log('[Login] Got token, saving with remember=' + remember);
-          AuthManager.setToken(token, remember);
+          if (typeof AuthManager.saveLogin === 'function') await AuthManager.saveLogin(j, remember);
+          else AuthManager.setToken(token, remember);
 
           // Save user email
           if (remember) {
@@ -1189,11 +1313,18 @@
           // Still show success if we got this far
         }
         await postAuthEvent('login_success', { remember });
+        signedIn = true;
         toast('登录成功！', 'success'); setTimeout(() => { location.href = getSafeNext(getDefaultAuthNext('login')); }, 500);
       } catch (err) {
         postPublicAuthEvent('auth_submit_error', { method: 'login', status: 'network', message: 'NETWORK_ERROR' });
         console.error('Login error', err);
+        showLoginError('网络异常，请稍后重试');
         toast('网络异常，请稍后重试', 'error');
+      } finally {
+        if (!signedIn && submitBtn) {
+          submitBtn.disabled = false;
+          submitBtn.textContent = '立即登录';
+        }
       }
     });
 
@@ -1252,8 +1383,8 @@
         const token = j.access_token || j.token;
         if (token) {
           try {
-            AuthManager.clearToken();
-            AuthManager.setToken(token, true);
+            if (typeof AuthManager.saveLogin === 'function') await AuthManager.saveLogin(j, true);
+            else AuthManager.setToken(token, true);
             localStorage.setItem('userEmail', account);
             localStorage.removeItem('is_guest');
             localStorage.removeItem('guest_id');
@@ -1293,6 +1424,15 @@
 
     // If already logged in, continue the requested training or purchase flow.
     (async function () {
+      function prefillSavedAccount() {
+        try {
+          const input = document.getElementById('login-account');
+          if (!input || input.value) return;
+          const saved = localStorage.getItem('userEmail') || sessionStorage.getItem('userEmail') || '';
+          if (saved && !/@temp\.linglish\.local$/i.test(saved)) input.value = saved;
+        } catch (_) { }
+      }
+      prefillSavedAccount();
       if (window.LinglishOAuthBootstrap) await window.LinglishOAuthBootstrap.ready;
       if (window.AuthManager && AuthManager.ready && typeof AuthManager.ready.then === 'function') {
         try { await AuthManager.ready; } catch (_) { }
@@ -1301,14 +1441,18 @@
         const params = new URLSearchParams(location.search || '');
         const wantsRegister = (params.get('mode') || '').toLowerCase() === 'register';
         if (wantsRegister || isGuestCachedSession()) return;
-        // 必须走 AuthManager.getToken():它校验 JWT exp 并自动清过期 token。
-        // 裸读 localStorage 会拿到过期 token → 立刻弹回目标页 → 目标页 401 又显示
-        // "登录" → 点登录又被弹回,死循环("点登录一直跳转"就是这个)。
-        const t = (window.AuthManager && typeof AuthManager.getToken === 'function')
-          ? AuthManager.getToken()
-          : (localStorage.getItem('authToken') || sessionStorage.getItem('authToken')
-            || localStorage.getItem('linglish_token') || sessionStorage.getItem('linglish_token'));
-        if (t) location.replace(getSafeNext(getDefaultAuthNext('auth_cached')));
+        // Renew the saved login before leaving. An expired access token alone
+        // must not bounce back to this form and make the user type the password again.
+        let t = null;
+        if (window.AuthManager && typeof AuthManager.isLoggedIn === 'function' && AuthManager.isLoggedIn()
+          && typeof AuthManager.ensureSession === 'function') {
+          t = await AuthManager.ensureSession();
+        } else if (window.AuthManager && typeof AuthManager.getToken === 'function') {
+          t = AuthManager.getToken();
+        }
+        if (t && !(window.AuthManager && AuthManager.isTokenExpired && AuthManager.isTokenExpired(t))) {
+          location.replace(getSafeNext(getDefaultAuthNext('auth_cached')));
+        }
       } catch (_) { }
     })();
   </script>

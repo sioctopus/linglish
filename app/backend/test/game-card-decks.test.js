@@ -162,7 +162,7 @@ test('reading cards move with arrow keys and toggle speech with space', () => {
   const views = require(path.resolve(__dirname, '../../frontend/js/game/game-views.js'));
   assert.equal(views.cardKeyAction({ key: 'ArrowUp', target: { tagName: 'BUTTON' } }), 'prev');
   assert.equal(views.cardKeyAction({ key: 'ArrowDown', target: { tagName: 'BODY' } }), 'next');
-  assert.equal(views.cardKeyAction({ key: ' ', code: 'Space', target: { tagName: 'BODY' } }), 'toggle');
+  assert.equal(views.cardKeyAction({ key: ' ', code: 'Space', target: { tagName: 'BUTTON' } }), 'toggle');
   assert.equal(views.cardKeyAction({ key: 'ArrowDown', target: { tagName: 'INPUT' } }), null);
   assert.equal(views.cardKeyAction({ key: 'ArrowUp', ctrlKey: true, target: { tagName: 'BODY' } }), null);
   const source = fs.readFileSync(path.resolve(__dirname, '../../frontend/js/game/game-views.js'), 'utf8');

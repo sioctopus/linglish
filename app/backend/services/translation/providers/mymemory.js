@@ -112,4 +112,5 @@ async function translateWithMyMemory(text) {
 
 module.exports = {
   translateWithMyMemory,
+  translateViaMyMemory,
 };

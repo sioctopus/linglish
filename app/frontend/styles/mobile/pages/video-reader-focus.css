@@ -11,6 +11,14 @@
   display: none;
 }
 
+.mobile-library-quick {
+  display: none;
+}
+
+.podcast-faceplate {
+  display: none;
+}
+
 html[data-learning-focus="first-lesson"] #video-upload,
 html[data-learning-focus="first-lesson"] #tag-filter-section,
 html[data-learning-focus="first-lesson"] #upload-toggle-btn {
@@ -28,34 +36,41 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
 
 @media (max-width: 768px), (max-height: 500px) and (hover: none) and (pointer: coarse) {
   :root {
-    --vrf-ink: #14213d;
-    --vrf-muted: #64748b;
-    --vrf-teal: #0f766e;
-    --vrf-mint: #2dd4bf;
-    --vrf-sky: #0ea5e9;
-    --vrf-canvas: #edf7f7;
-    --vrf-line: #d7e8e7;
-    --vrf-card: #ffffff;
-    --vrf-header-height: 52px;
+    --vrf-ink: var(--lx-ink-900, #0f172a);
+    --vrf-muted: var(--lx-ink-500, #64748b);
+    --vrf-teal: var(--lx-primary, #0f766e);
+    --vrf-mint: var(--lx-teal-300, #5eead4);
+    --vrf-sky: var(--lx-sky, #0ea5e9);
+    --vrf-canvas: var(--lx-paper, #f8fafc);
+    --vrf-line: var(--lx-line, #e2e8f0);
+    --vrf-card: var(--lx-surface, #ffffff);
+    --vrf-soft: var(--lx-soft-teal, #f0fdfa);
+    --vrf-header-height: calc(48px + env(safe-area-inset-top, 0px));
+    --vrf-library-quick-height: 46px;
+    /* YouTube-like mobile player: full-bleed 16:9 from viewport width */
+    --vrf-player-height: calc(100vw * 9 / 16);
   }
 
   html,
   body.video-reader-mobile-focus {
     width: 100%;
     max-width: 100%;
+    height: 100%;
     min-height: 100%;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
   body.video-reader-mobile-focus {
+    display: flex;
+    flex-direction: column;
     margin: 0;
+    height: 100dvh;
+    max-height: 100dvh;
     color: var(--vrf-ink);
-    background:
-      radial-gradient(circle at 92% 4%, rgba(14, 165, 233, 0.12), transparent 32%),
-      var(--vrf-canvas);
+    background: var(--vrf-canvas);
     background-attachment: scroll;
-    font-family: "Avenir Next", "SF Pro Display", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    overscroll-behavior-x: none;
+    font-family: var(--lx-font-body, Manrope, "PingFang SC", "Microsoft YaHei", sans-serif);
+    overscroll-behavior: none;
   }
 
   body.video-reader-mobile-focus *,
@@ -64,92 +79,175 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     box-sizing: border-box;
   }
 
+  /* One-line top: back + Linglish | centered 视频学习 | library on the right */
   body.video-reader-mobile-focus .mobile-reader-header {
-    position: sticky;
-    top: 0;
+    position: relative;
+    flex: 0 0 auto;
     z-index: 1000;
-    display: grid;
-    grid-template-columns: 44px minmax(0, 1fr) auto;
+    display: grid !important;
+    grid-template-columns: 48px minmax(0, 1fr) auto;
+    grid-template-rows: 48px;
     align-items: center;
-    min-height: calc(var(--vrf-header-height) + env(safe-area-inset-top));
-    padding: env(safe-area-inset-top) 10px 0;
-    background: rgba(247, 253, 252, 0.94);
-    border-bottom: 1px solid rgba(15, 118, 110, 0.13);
-    box-shadow: 0 4px 18px rgba(15, 55, 62, 0.07);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
+    gap: 0;
+    width: 100%;
+    max-width: 100%;
+    min-height: calc(48px + env(safe-area-inset-top));
+    padding: env(safe-area-inset-top) 8px 0;
+    background: #ffffff;
+    border-bottom: 1px solid var(--vrf-line);
+    box-shadow: none;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    writing-mode: horizontal-tb;
+    flex-direction: row;
   }
 
   body.video-reader-mobile-focus .mobile-reader-home {
+    grid-column: 1;
+    grid-row: 1;
+    z-index: 2;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 44px;
-    min-height: 44px;
+    width: 48px;
+    min-height: 48px;
     color: var(--vrf-ink);
-    font-size: 30px;
+    font-size: 28px;
     font-weight: 500;
     line-height: 1;
     text-decoration: none;
-    border-radius: 14px;
+    border-radius: 999px;
     -webkit-tap-highlight-color: transparent;
   }
 
-  body.video-reader-mobile-focus .mobile-reader-heading {
-    min-width: 0;
-    padding: 4px 8px;
-    line-height: 1.05;
+  body.video-reader-mobile-focus .mobile-reader-home:active {
+    background: #f1f5f9;
   }
 
-  body.video-reader-mobile-focus .mobile-reader-heading strong,
-  body.video-reader-mobile-focus .mobile-reader-heading span {
-    display: block;
+  body.video-reader-mobile-focus .mobile-reader-brand {
+    grid-column: 2;
+    grid-row: 1;
+    z-index: 2;
+    justify-self: start;
+    margin: 0;
+    padding: 0 4px;
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  body.video-reader-mobile-focus .mobile-reader-heading strong {
-    font-size: 15px;
+    color: var(--vrf-ink);
+    font-size: 16px;
     font-weight: 800;
-    letter-spacing: 0.01em;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    white-space: nowrap;
+    writing-mode: horizontal-tb;
+    text-overflow: ellipsis;
   }
 
-  body.video-reader-mobile-focus .mobile-reader-heading span {
-    margin-top: 4px;
-    color: var(--vrf-muted);
-    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  body.video-reader-mobile-focus .mobile-reader-title,
+  body.video-reader-mobile-focus .mobile-reader-header .study-switch {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    z-index: 4;
+    justify-self: center;
+    align-self: center;
+    max-width: min(52vw, 190px);
+    overflow: visible;
+    color: var(--vrf-ink);
+    font-size: 16px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    writing-mode: horizontal-tb;
+    text-align: center;
+    pointer-events: auto;
+  }
+
+  body.video-reader-mobile-focus .mobile-reader-header .study-switch-trigger {
+    height: 34px;
+    padding: 0 12px 0 14px;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--vrf-ink);
+    font-size: 16px;
+    font-weight: 700;
+    box-shadow: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body.video-reader-mobile-focus .mobile-reader-header .study-switch-trigger:hover,
+  body.video-reader-mobile-focus .mobile-reader-header .study-switch-trigger[aria-expanded="true"] {
+    filter: none;
+    background: #f1f5f9;
+    box-shadow: none;
+  }
+
+  body.video-reader-mobile-focus .mobile-reader-header .study-switch-caret {
     font-size: 11px;
-    font-weight: 600;
+    color: #64748b;
+  }
+
+  body.video-reader-mobile-focus .mobile-reader-header .study-switch-menu {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    min-width: 156px;
+    z-index: 60;
+  }
+
+  body.video-reader-mobile-focus .mobile-reader-heading {
+    display: none;
   }
 
   body.video-reader-mobile-focus .toggle-sidebar-btn {
+    grid-column: 3;
+    grid-row: 1;
     position: relative;
     inset: auto;
-    z-index: 1300;
+    z-index: 3;
+    justify-self: end;
     display: inline-flex !important;
     align-items: center;
     justify-content: center;
-    gap: 5px;
-    min-width: 78px;
-    min-height: 44px;
-    margin: 0;
+    gap: 0;
+    width: auto;
+    min-width: 0;
+    min-height: 36px;
+    margin: 0 4px 0 0;
     padding: 0 12px;
-    border: 1px solid rgba(15, 118, 110, 0.22);
-    border-radius: 14px;
-    color: var(--vrf-teal);
-    background: #ffffff;
-    box-shadow: 0 3px 0 rgba(15, 118, 110, 0.18);
+    border: 0;
+    border-radius: 999px;
+    color: #0f766e;
+    background: rgba(15, 118, 110, 0.12);
+    box-shadow: none;
     font-size: 13px;
     font-weight: 800;
+    letter-spacing: -0.02em;
     transform: none;
     -webkit-tap-highlight-color: transparent;
   }
 
   body.video-reader-mobile-focus .toggle-sidebar-btn:active {
+    background: rgba(15, 118, 110, 0.2);
     box-shadow: none;
-    transform: translateY(3px);
+    transform: none;
   }
+
+  body.video-reader-mobile-focus .toggle-sidebar-btn.is-library-open {
+    color: #0f172a;
+    background: #e2e8f0;
+  }
+
+  body.video-reader-mobile-focus .mobile-reader-lib-label {
+    display: inline;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  body.video-reader-mobile-focus .mobile-reader-lib-ico {
+    display: none !important;
+  }
+
+  /* Library quick entry removed — open via header「视频库」 */
 
   body.video-reader-mobile-focus .video-lab-container,
   body.video-reader-mobile-focus .video-main,
@@ -158,67 +256,73 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     width: 100%;
     max-width: 100%;
     min-width: 0;
-    height: auto;
     min-height: 0;
-    overflow-x: hidden;
+    overflow: hidden;
   }
 
   body.video-reader-mobile-focus .video-lab-container {
-    display: block;
-    min-height: calc(100svh - var(--vrf-header-height));
-    overflow-y: visible;
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    height: auto;
+    overflow: hidden;
     background: transparent;
   }
 
-  body.video-reader-mobile-focus .video-main {
-    display: block;
+  body.video-reader-mobile-focus .video-main,
+  body.video-reader-mobile-focus .video-stage {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+    margin: 0;
     padding: 0;
-    overflow-y: visible;
+    overflow: hidden;
   }
 
   body.video-reader-mobile-focus .video-toolbar {
     display: none !important;
   }
 
-  body.video-reader-mobile-focus .video-stage {
-    display: block;
-    margin: 0;
-    padding: 0;
-    overflow-y: visible;
-  }
-
   body.video-reader-mobile-focus .video-player-area {
     display: flex;
+    flex: 1 1 auto;
     flex-direction: column;
     gap: 0;
-    padding: 0 0 calc(18px + env(safe-area-inset-bottom));
-    overflow-y: visible;
+    min-height: 0;
+    /* Bottom safe-area is owned by sticky .mobile-player-controls */
+    padding: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
 
+  /* Fixed YouTube-sized player under the header — never resized by coaching UI */
   body.video-reader-mobile-focus .video-wrapper {
-    position: relative;
+    position: sticky;
+    top: 0;
     order: 1;
-    width: 100%;
-    height: auto;
-    max-height: none;
-    aspect-ratio: 16 / 9;
+    z-index: 40;
     flex: 0 0 auto;
+    width: 100%;
+    max-width: 100%;
+    height: var(--vrf-player-height);
+    max-height: var(--vrf-player-height);
+    min-height: var(--vrf-player-height);
+    aspect-ratio: 16 / 9;
     margin: 0;
+    padding: 0;
     border: 0;
-    border-radius: 0 0 18px 18px;
-    background: #050807;
-    box-shadow: 0 14px 30px rgba(15, 55, 62, 0.16);
+    border-radius: 0;
+    background: #0f172a;
+    box-shadow: none;
     overflow: hidden;
   }
 
   body.video-reader-mobile-focus .video-wrapper::after {
-    content: "";
-    position: absolute;
-    inset: auto 0 0;
-    height: 3px;
-    z-index: 12;
-    pointer-events: none;
-    background: linear-gradient(90deg, var(--vrf-sky), var(--vrf-mint), var(--vrf-teal));
+    display: none;
   }
 
   body.video-reader-mobile-focus #video-player,
@@ -229,17 +333,196 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     max-width: 100%;
   }
 
-  body.video-reader-mobile-focus #video-player {
+  body.video-reader-mobile-focus #video-player,
+  body.video-reader-mobile-focus #youtube-player-wrapper {
     object-fit: contain;
-    background: #050807;
+    background: var(--lx-ink-700, #334155);
   }
 
-  body.video-reader-mobile-focus #play-overlay {
+  /* Podcasts are audio-only — keep a cover faceplate over the blank video surface. */
+  body.video-reader-mobile-focus .video-wrapper.is-podcast #video-player {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  body.video-reader-mobile-focus .podcast-faceplate {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 20px;
+    box-sizing: border-box;
+    background:
+      radial-gradient(circle at 50% 28%, rgba(45, 212, 191, 0.22), transparent 55%),
+      linear-gradient(160deg, #0f172a 0%, #1e293b 55%, #0f766e 140%);
+    color: #f8fafc;
+    text-align: center;
+    pointer-events: auto;
+    cursor: pointer;
+    border: 0;
+    width: 100%;
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  body.video-reader-mobile-focus .podcast-faceplate-play {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    margin-top: 4px;
+    border-radius: 999px;
+    background: rgba(248, 250, 252, 0.18);
+    border: 1px solid rgba(248, 250, 252, 0.28);
+    color: #fff;
+    font-size: 22px;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  body.video-reader-mobile-focus .video-wrapper.is-podcast.is-playing .podcast-faceplate-play {
+    opacity: 0.55;
+  }
+
+  body.video-reader-mobile-focus .podcast-faceplate[hidden] {
     display: none !important;
   }
+
+  body.video-reader-mobile-focus .podcast-faceplate-art {
+    width: min(42vw, 128px);
+    height: min(42vw, 128px);
+    object-fit: cover;
+    border-radius: 18px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+    background: #334155;
+  }
+
+  body.video-reader-mobile-focus .podcast-faceplate-art:not([src]),
+  body.video-reader-mobile-focus .podcast-faceplate-art[src=''] {
+    display: none;
+  }
+
+  body.video-reader-mobile-focus .podcast-faceplate-copy {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 92%;
+  }
+
+  body.video-reader-mobile-focus .podcast-faceplate-copy strong {
+    font-size: 15px;
+    font-weight: 800;
+    line-height: 1.35;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  body.video-reader-mobile-focus .podcast-faceplate-copy span {
+    font-size: 12px;
+    color: #cbd5e1;
+  }
+
+  body.video-reader-mobile-focus .podcast-faceplate-error {
+    margin: 0;
+    max-width: 92%;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(239, 68, 68, 0.18);
+    color: #fecaca;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  body.video-reader-mobile-focus .podcast-faceplate-error[hidden] {
+    display: none !important;
+  }
+
+  /* No center play/pause chrome on the video surface (native or custom). */
+  body.video-reader-mobile-focus #play-overlay {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+  }
+
+  body.video-reader-mobile-focus #video-player::-webkit-media-controls-overlay-play-button,
+  body.video-reader-mobile-focus #video-player::-webkit-media-controls-start-playback-button,
+  body.video-reader-mobile-focus #video-player::-webkit-media-controls-play-button {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    -webkit-appearance: none;
+  }
+
+  /* Panel stays visible for timeline; only the center play chrome is suppressed above. */
 
   body.video-reader-mobile-focus .mobile-back-btn {
     display: none !important;
+  }
+
+  body.video-reader-mobile-focus .yt-embed-fallback {
+    position: absolute;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    z-index: 12;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(15, 23, 42, 0.92);
+    color: #f8fafc;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  }
+
+  body.video-reader-mobile-focus .yt-embed-fallback[hidden] {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .yt-embed-fallback__text {
+    margin: 0 0 8px;
+    font-size: 12px;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  body.video-reader-mobile-focus .yt-embed-fallback__text strong {
+    color: #5eead4;
+    font-weight: 800;
+  }
+
+  body.video-reader-mobile-focus .yt-embed-fallback__actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  body.video-reader-mobile-focus .yt-embed-fallback__btn {
+    flex: 1 1 0;
+    min-height: 36px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0d9488, #2dd4bf);
+    color: #fff;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+  }
+
+  body.video-reader-mobile-focus .yt-embed-fallback__btn--ghost {
+    background: rgba(248, 250, 252, 0.12);
+    color: #e2e8f0;
   }
 
   body.video-reader-mobile-focus .speed-control-overlay {
@@ -299,59 +582,167 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     background: #ffffff;
   }
 
-  body.video-reader-mobile-focus .mobile-transcript-view {
+  /* Coaching chrome sizing owned by coaching-dock.css; only place it in the stack here. */
+  body.video-reader-mobile-focus .video-player-area > .coach-dock {
     order: 2;
-    display: flex !important;
-    flex: 0 0 auto;
-    flex-direction: column;
-    gap: 10px;
-    width: calc(100% - 20px);
-    height: clamp(220px, 34svh, 300px);
-    min-height: 220px;
-    margin: 12px 10px 0;
-    padding: 12px;
-    overflow: hidden;
-    border: 1px solid var(--vrf-line);
-    border-radius: 18px 18px 8px 8px;
-    background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 10px 24px rgba(15, 55, 62, 0.08);
   }
 
-  body.video-reader-mobile-focus .mobile-view-toggle {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+  body.video-reader-mobile-focus .video-player-area > .coach-dock .coach-rows {
+    display: none !important;
+  }
+
+  /* Voice chat lives in the ⋯ session sheet — never inline above the player. */
+  body.video-reader-mobile-focus .video-player-area > .voice-chat,
+  body.video-reader-mobile-focus .video-player-area > #voice-chat-coach {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus #first-lesson-goal {
+    order: 3;
+  }
+
+  body.video-reader-mobile-focus .mobile-voice-session {
+    z-index: 1500;
+  }
+
+  /* X DM session chrome lives in practice-voice-chat-x.css */
+  body.video-reader-mobile-focus #mobile-shadow-btn,
+  body.video-reader-mobile-focus .mobile-speak-tool.is-integrated-off,
+  body.video-reader-mobile-focus .mobile-speak-tools {
+    display: none !important;
+  }
+
+  /* Outside the open WeChat session, hide any stray hold dock. */
+  body.video-reader-mobile-focus:not(.voice-session-open) .voice-chat-dock {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-play-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+
+  body.video-reader-mobile-focus .mobile-play-hold-label {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    color: #0f766e;
+    font-size: 11px;
+    font-weight: 700;
+    pointer-events: none;
+  }
+
+  body.video-reader-mobile-focus .mobile-play-hold-label[hidden] {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus.has-voice-chat .mobile-speak-hint {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-transcript-view {
+    --vrf-cue-rows: 2;
+    --vrf-cue-row: 5.25rem;
+    --vrf-cue-gap: 10px;
+    --vrf-cue-pad-y: 4px;
+    --vrf-cue-list-h: calc(
+      (var(--vrf-cue-row) * var(--vrf-cue-rows)) +
+      (var(--vrf-cue-gap) * (var(--vrf-cue-rows) - 1))
+    );
+    order: 3;
+    display: flex !important;
+    /* Fill leftover space between player and sticky bottom controls */
+    flex: 1 1 0;
+    flex-direction: column;
+    gap: 0;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    max-height: none;
+    margin: 4px 0 0;
+    padding: 4px 14px 8px;
+    overflow: hidden;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  /* One row: 1x + 英文/双语/上一句/下一句 */
+  body.video-reader-mobile-focus .mobile-transcript-view > .mobile-view-toggle,
+  body.video-reader-mobile-focus .coach-dock > .mobile-view-toggle,
+  body.video-reader-mobile-focus .coach-dock .coach-chrome .mobile-view-toggle {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
     flex: 0 0 auto;
-    gap: 5px;
-    padding: 4px;
-    border: 1px solid rgba(14, 165, 233, 0.12);
-    border-radius: 14px;
-    background: #eef9fb;
+    gap: 2px;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+  }
+
+  body.video-reader-mobile-focus .mobile-view-toggle > .mobile-speed-controls {
+    position: relative;
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+  }
+
+  body.video-reader-mobile-focus .mobile-view-toggle > .mobile-view-btn {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  body.video-reader-mobile-focus .mobile-view-toggle .mobile-speed-trigger {
+    min-width: 40px;
+    min-height: 34px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 999px;
+    color: #0f766e;
+    background: transparent;
+    font-size: 13px;
+    font-weight: 700;
   }
 
   body.video-reader-mobile-focus .mobile-view-btn {
     min-width: 0;
-    min-height: 44px;
+    min-height: 34px;
     padding: 0 4px;
     border: 0;
-    border-radius: 11px;
-    color: #486477;
+    border-radius: 999px;
+    color: #64748b;
     background: transparent;
-    font-size: 12px;
-    font-weight: 750;
+    font-size: 13px;
+    font-weight: 650;
     white-space: nowrap;
   }
 
   body.video-reader-mobile-focus .mobile-view-btn.active {
-    color: var(--vrf-teal);
-    background: #ffffff;
-    box-shadow: 0 3px 10px rgba(15, 118, 110, 0.12);
+    color: #0f766e;
+    background: rgba(15, 118, 110, 0.1);
+    box-shadow: none;
+    font-weight: 750;
   }
 
   body.video-reader-mobile-focus .mobile-transcript-list-wrapper {
     display: block;
     flex: 1 1 auto;
+    width: 100%;
     min-width: 0;
+    height: auto;
     min-height: 0;
+    max-height: none;
     overflow: hidden;
   }
 
@@ -362,17 +753,17 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
   body.video-reader-mobile-focus .mobile-transcript-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: var(--vrf-cue-gap);
     width: 100%;
     height: 100%;
     min-width: 0;
     min-height: 0;
     margin: 0;
-    padding: 0 0 6px;
+    padding: 0;
     overflow-x: hidden;
     overflow-y: auto;
     list-style: none;
-    scroll-padding: 8px;
+    scroll-padding: 4px;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
   }
@@ -384,149 +775,614 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
   body.video-reader-mobile-focus .mobile-transcript-item {
     position: relative;
     flex: 0 0 auto;
+    box-sizing: border-box;
+    width: 100%;
     min-width: 0;
+    min-height: var(--vrf-cue-row);
+    max-height: none;
     margin: 0;
-    padding: 11px 12px 11px 15px;
+    padding: 10px 4px 10px 14px;
+    overflow: hidden;
     overflow-wrap: anywhere;
-    border: 1px solid #e5efef;
-    border-radius: 13px;
+    border: 0;
+    border-radius: 0;
     color: #405467;
-    background: #f8fbfb;
+    background: transparent;
     box-shadow: none;
-    font-family: "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family: var(--lx-font-body, Manrope, "PingFang SC", "Microsoft YaHei", sans-serif);
     font-size: 15px;
     font-weight: 500;
-    line-height: 1.48;
+    line-height: 1.4;
+    letter-spacing: 0;
+    word-spacing: normal;
   }
 
   body.video-reader-mobile-focus .mobile-transcript-item.active {
-    padding-left: 18px;
-    border-color: rgba(15, 118, 110, 0.28);
+    padding: 8px 4px 8px 14px;
+    border: 0;
     color: var(--vrf-ink);
-    background: #ffffff;
-    box-shadow: 0 8px 18px rgba(15, 118, 110, 0.11);
-    font-size: 20px;
-    font-weight: 750;
+    background: transparent;
+    box-shadow: none;
+    font-size: 23px;
+    font-weight: 600;
+    letter-spacing: 0;
+    word-spacing: normal;
   }
 
   body.video-reader-mobile-focus .mobile-transcript-item.active::before {
     content: "";
     position: absolute;
-    top: 10px;
-    bottom: 10px;
-    left: 6px;
-    width: 4px;
+    top: 12px;
+    bottom: 12px;
+    left: 0;
+    width: 3px;
     border-radius: 999px;
     background: linear-gradient(180deg, var(--vrf-sky), var(--vrf-mint));
   }
 
   body.video-reader-mobile-focus .mobile-transcript-item .mobile-segment-time {
     display: inline-flex;
-    margin: 0 0 6px;
-    padding: 2px 7px;
-    border-radius: 999px;
-    color: var(--vrf-muted);
-    background: #edf4f5;
-    font-size: 10px;
-    font-weight: 800;
-    letter-spacing: 0.04em;
+    margin: 0 0 4px;
+    padding: 0;
+    border-radius: 0;
+    color: #94a3b8;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
   }
 
   body.video-reader-mobile-focus .mobile-transcript-item .mobile-segment-text {
     display: block;
     min-width: 0;
+    overflow: visible;
     color: inherit;
+    font-family: inherit;
     font-size: inherit;
+    font-weight: inherit;
     line-height: inherit;
+    letter-spacing: inherit;
+    word-spacing: inherit;
+    white-space: normal;
+  }
+
+  body.video-reader-mobile-focus .mobile-transcript-item.active .mobile-segment-text {
+    display: block;
+    -webkit-line-clamp: unset;
+  }
+
+  /* Kill per-word padding that stretches cues apart */
+  body.video-reader-mobile-focus .mobile-segment-text .transcript-word,
+  body.video-reader-mobile-focus .mobile-segment-text .vc-kword {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    border-radius: 0;
+    letter-spacing: inherit;
+    word-spacing: normal;
   }
 
   body.video-reader-mobile-focus .mobile-transcript-item .mobile-segment-translation {
     display: block;
-    margin-top: 7px;
-    padding-top: 7px;
-    border-top: 1px solid #e8f0f0;
-    color: var(--vrf-muted);
+    margin-top: 4px;
+    padding-top: 0;
+    overflow: visible;
+    border-top: 0;
+    color: #475569;
+    font-family: "PingFang SC", "Noto Sans SC", "Microsoft YaHei", sans-serif;
     font-size: 13px;
     font-weight: 500;
-    line-height: 1.4;
+    line-height: 1.35;
+    letter-spacing: 0;
+    word-spacing: 0;
+  }
+
+  body.video-reader-mobile-focus .mobile-transcript-item.active .mobile-segment-translation {
+    color: #0f766e;
+    font-size: 17px;
+    font-weight: 700;
+  }
+
+  body.video-reader-mobile-focus .mobile-transcript-item .mobile-segment-translation.is-pending {
+    color: #94a3b8;
+    font-weight: 500;
+    font-style: italic;
+  }
+
+  body.video-reader-mobile-focus .mobile-transcript-item .mobile-segment-translation.is-failed {
+    color: #94a3b8;
+    font-weight: 500;
+    font-style: normal;
+  }
+
+  /* 双语：加高字幕行，避免中文被裁切 */
+  body.video-reader-mobile-focus.vrf-bilingual .mobile-transcript-view {
+    --vrf-cue-row: 7.25rem;
+  }
+
+  body.video-reader-mobile-focus.vrf-bilingual .mobile-transcript-item {
+    overflow: visible;
   }
 
   body.video-reader-mobile-focus .mobile-transcript-item.empty {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100px;
+    flex: 1 1 auto;
+    min-height: var(--vrf-cue-list-h);
+    max-height: none;
+    height: 100%;
+    padding: 16px 8px;
     color: var(--vrf-muted);
     background: transparent;
+    font-size: 16px;
     text-align: center;
   }
 
   body.video-reader-mobile-focus .mobile-player-controls {
-    order: 3;
-    display: grid !important;
-    grid-template-columns: minmax(0, 1fr) 44px;
-    gap: 9px 10px;
-    width: calc(100% - 20px);
-    margin: 0 10px;
-    padding: 11px 12px 12px;
-    border: 1px solid var(--vrf-line);
-    border-top: 0;
-    border-radius: 0 0 18px 18px;
+    position: sticky;
+    bottom: 0;
+    z-index: 45;
+    order: 4;
+    display: flex !important;
+    flex: 0 0 auto;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin: 0;
+    /* Extra bottom room for mobile browser nav chrome (back/forward bar) */
+    padding: 10px 16px calc(14px + env(safe-area-inset-bottom, 0px) + 36px);
+    border: 0;
+    border-top: 1px solid rgba(226, 232, 240, 0.9);
+    border-radius: 0;
     background: #ffffff;
-    box-shadow: 0 12px 24px rgba(15, 55, 62, 0.08);
+    box-shadow: 0 -8px 24px rgba(15, 23, 42, 0.06);
+    pointer-events: auto;
   }
 
-  body.video-reader-mobile-focus .mobile-speed-controls {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 6px;
+  /* 收起的右侧抽屉不能挡底部按钮点击 */
+  body.video-reader-mobile-focus .right-sidebar:not(.visible) {
+    pointer-events: none !important;
   }
 
-  body.video-reader-mobile-focus .mobile-speed-btn,
-  body.video-reader-mobile-focus .mobile-replay-btn {
+  /* Speed tabs live in coach chrome; hide the old dock speed row. */
+  body.video-reader-mobile-focus .mobile-player-controls > .mobile-speed-controls {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-speed-btn {
     min-width: 0;
-    min-height: 44px;
-    border: 1px solid #dce9e8;
-    border-radius: 12px;
-    color: #486477;
-    background: #f7fbfb;
+    min-height: 36px;
+    border: 1px solid var(--vrf-line);
+    border-radius: var(--lx-radius-pill, 999px);
+    color: var(--vrf-muted);
+    background: var(--vrf-soft);
     font-size: 12px;
     font-weight: 800;
+    pointer-events: auto;
+    touch-action: manipulation;
+    cursor: pointer;
   }
 
   body.video-reader-mobile-focus .mobile-speed-btn.active {
     border-color: transparent;
     color: #ffffff;
-    background: linear-gradient(135deg, var(--vrf-sky), var(--vrf-teal));
-    box-shadow: 0 5px 12px rgba(14, 165, 233, 0.2);
+    background: var(--lx-grad-fresh, linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%));
+    box-shadow: var(--lx-shadow-brand, 0 8px 24px rgba(15, 118, 110, 0.18));
   }
 
+  /* No scrubber in the dock — tiny clock under Hold only. */
   body.video-reader-mobile-focus .mobile-progress-row {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    display: none !important;
+  }
+
+  /* Karaoke sync while Hold (player dock = X DM hold) */
+  body.video-reader-mobile-focus .mobile-segment-text.is-karaoke .vc-kword {
+    color: inherit;
+    transition: color 0.14s ease;
+  }
+
+  body.video-reader-mobile-focus .mobile-segment-text.is-karaoke .vc-kword.is-hit {
+    color: #1d9bf0;
+  }
+
+  body.video-reader-mobile-focus .mobile-segment-text.is-karaoke .vc-kword.is-partial {
+    background-image: linear-gradient(
+      90deg,
+      #1d9bf0 0%,
+      #1d9bf0 calc(var(--p, 0.4) * 100%),
+      currentColor calc(var(--p, 0.4) * 100%)
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Keep native timeline/time on the video; dock still owns big play/pause. */
+  body.video-reader-mobile-focus #video-player::-webkit-media-controls-enclosure,
+  body.video-reader-mobile-focus #video-player::-webkit-media-controls-panel {
+    display: flex !important;
+    opacity: 1 !important;
+  }
+
+  body.video-reader-mobile-focus #video-player::-webkit-media-controls-timeline,
+  body.video-reader-mobile-focus #video-player::-webkit-media-controls-current-time-display,
+  body.video-reader-mobile-focus #video-player::-webkit-media-controls-time-remaining-display {
+    display: flex !important;
+    opacity: 1 !important;
+  }
+
+  /* X DM compose strip: replay · play · Hold to record · more */
+  body.video-reader-mobile-focus .mobile-speak-dock,
+  body.video-reader-mobile-focus .mobile-speak-dock.is-x-compose {
+    order: 2;
+    display: flex;
     align-items: center;
-    gap: 7px;
-    min-width: 0;
-    color: var(--vrf-muted);
-    font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
-    font-size: 10px;
-    font-variant-numeric: tabular-nums;
-  }
-
-  body.video-reader-mobile-focus #mobile-progress {
+    justify-content: center;
+    gap: 8px;
     width: 100%;
-    min-width: 0;
-    height: 6px;
-    margin: 0;
-    accent-color: var(--vrf-teal);
+    padding: 0 2px;
   }
 
-  body.video-reader-mobile-focus .mobile-replay-btn {
-    align-self: center;
-    padding: 0;
-    color: var(--vrf-teal);
-    font-size: 21px;
+  body.video-reader-mobile-focus .mobile-replay-btn,
+  body.video-reader-mobile-focus .mobile-play-btn,
+  body.video-reader-mobile-focus .mobile-continue-btn {
+    position: relative;
+    z-index: 1;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    color: #0f766e;
+    background: transparent;
+    box-shadow: none;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+
+  body.video-reader-mobile-focus .mobile-hold-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 44px;
+    margin: 0;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 999px;
+    background: #eff3f4;
+    color: #0f1419;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0;
+    line-height: 1;
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: none;
+    -webkit-tap-highlight-color: transparent;
+    display: grid;
+    place-items: center;
+  }
+
+  body.video-reader-mobile-focus .mobile-hold-main {
+    display: block;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  body.video-reader-mobile-focus .mobile-hold-btn.is-mic-warming {
+    background: #eff3f4;
+    color: #536471;
+  }
+
+  body.video-reader-mobile-focus .mobile-hold-btn.is-holding,
+  body.video-reader-mobile-focus .mobile-hold-btn:active {
+    background: #1d9bf0;
+    color: #fff;
+  }
+
+  body.video-reader-mobile-focus .mobile-hold-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  body.video-reader-mobile-focus .mobile-speak-dock.is-x-compose .mobile-play-hold-label {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-clock-line {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-feature-sheet {
+    position: fixed;
+    inset: 0;
+    z-index: 1400;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  body.video-reader-mobile-focus .mobile-feature-sheet[hidden] {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-feature-backdrop {
+    position: absolute;
+    inset: 0;
+    border: 0;
+    background: rgba(15, 23, 42, 0.42);
+    cursor: pointer;
+  }
+
+  body.video-reader-mobile-focus .mobile-feature-panel {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(100%, 420px);
+    margin: 0;
+    padding: 14px 14px calc(14px + env(safe-area-inset-bottom));
+    border-radius: 18px 18px 0 0;
+    background: #fff;
+    box-shadow: 0 -12px 36px rgba(15, 23, 42, 0.18);
+  }
+
+  body.video-reader-mobile-focus .mobile-feature-title {
+    margin: 0 0 4px;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 800;
+    text-align: center;
+  }
+
+  body.video-reader-mobile-focus .mobile-review-panel {
+    gap: 10px;
+  }
+
+  body.video-reader-mobile-focus .mobile-review-hint {
+    margin: 0 0 4px;
+    padding: 0 6px;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  body.video-reader-mobile-focus .mobile-review-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+  }
+
+  body.video-reader-mobile-focus .mobile-review-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 4px;
+    min-height: 72px;
+    padding: 12px 14px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #f8fafc;
+    color: #0f172a;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body.video-reader-mobile-focus .mobile-review-btn-kicker {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  body.video-reader-mobile-focus .mobile-review-btn strong {
+    font-size: 16px;
+    font-weight: 800;
+  }
+
+  body.video-reader-mobile-focus .mobile-review-btn-original {
+    border-color: rgba(15, 118, 110, 0.22);
+    background: linear-gradient(180deg, #f0fdfa 0%, #ecfeff 100%);
+    color: #0f766e;
+  }
+
+  body.video-reader-mobile-focus .mobile-review-btn-mine {
+    border-color: rgba(37, 99, 235, 0.18);
+    background: linear-gradient(180deg, #eff6ff 0%, #f8fafc 100%);
+    color: #1d4ed8;
+  }
+
+  body.video-reader-mobile-focus .mobile-review-btn:disabled {
+    opacity: 0.42;
+    cursor: not-allowed;
+    filter: grayscale(0.2);
+  }
+
+  body.video-reader-mobile-focus .mobile-review-btn:not(:disabled):active {
+    transform: scale(0.98);
+  }
+
+  body.video-reader-mobile-focus .mobile-feature-item,
+  body.video-reader-mobile-focus .mobile-feature-cancel {
+    min-height: 46px;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    color: #0f172a;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  body.video-reader-mobile-focus .mobile-feature-item:active,
+  body.video-reader-mobile-focus .mobile-feature-cancel:active {
+    background: #ecfeff;
+    border-color: #99f6e4;
+  }
+
+  body.video-reader-mobile-focus .mobile-feature-cancel {
+    margin-top: 4px;
+    background: #fff;
+    color: #64748b;
+  }
+
+  body.video-reader-mobile-focus .mobile-replay-btn,
+  body.video-reader-mobile-focus .mobile-continue-btn {
+    width: 44px;
+    height: 44px;
+    color: #64748b;
+    font-size: 20px;
+    font-weight: 500;
+  }
+
+  body.video-reader-mobile-focus .mobile-replay-btn:active,
+  body.video-reader-mobile-focus .mobile-continue-btn:active {
+    color: #0f766e;
+    background: rgba(15, 118, 110, 0.08);
+  }
+
+  body.video-reader-mobile-focus .mobile-play-btn {
+    width: 40px;
+    height: 40px;
+    color: #0f1419;
+    background: #eff3f4;
+    box-shadow: none;
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  body.video-reader-mobile-focus .mobile-play-btn.is-playing {
+    background: #1d9bf0;
+    color: #fff;
+  }
+
+  /* Keep a one-line status during 跟读 so iPhone users know when to speak. */
+  body.video-reader-mobile-focus .mobile-speak-hint {
+    order: 4;
+    display: block;
+    margin: 2px 0 0;
+    padding: 0 8px;
+    color: #0f766e;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.35;
+    text-align: center;
+    min-height: 16px;
+  }
+
+  body.video-reader-mobile-focus .mobile-speak-hint:empty {
+    display: none;
+  }
+
+  body.video-reader-mobile-focus .mobile-speak-tools {
+    order: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 36px;
+    width: 100%;
+    margin: 0;
+    padding-bottom: 2px;
+  }
+
+  body.video-reader-mobile-focus .mobile-speak-tool {
+    position: relative;
+    z-index: 1;
+    min-height: 36px;
+    min-width: 64px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #0f766e;
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    pointer-events: auto;
+    touch-action: manipulation;
+  }
+
+  body.video-reader-mobile-focus .mobile-speak-tool:disabled {
+    opacity: 0.38;
+    color: #94a3b8;
+    cursor: not-allowed;
+  }
+
+  body.video-reader-mobile-focus .mobile-speak-tool.is-busy,
+  body.video-reader-mobile-focus .mobile-speak-tool:not(:disabled):active {
+    background: transparent;
+    border-color: transparent;
+    color: #0d9488;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* WeChat-like hold-to-talk affordance for 跟读.
+     No transform/scale while holding — iOS drops touchcancel if the target moves. */
+  body.video-reader-mobile-focus #mobile-shadow-btn.is-await-hold,
+  body.video-reader-mobile-focus #mobile-shadow-btn.is-holding {
+    min-width: 168px;
+    min-height: 48px;
+    padding: 0 20px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #0d9488, #2dd4bf);
+    color: #fff !important;
+    text-decoration: none !important;
+    box-shadow: 0 8px 20px rgba(13, 148, 136, 0.28);
+    touch-action: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  body.video-reader-mobile-focus #mobile-shadow-btn.is-mic-warming {
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+  }
+
+  body.video-reader-mobile-focus #mobile-shadow-btn.is-holding:not(.is-mic-warming) {
+    background: linear-gradient(135deg, #b45309, #f59e0b);
+    box-shadow: 0 8px 20px rgba(245, 158, 11, 0.35);
+  }
+
+  body.video-reader-mobile-focus .mobile-mic-hint {
+    margin: 0 0 10px;
+    padding: 0 4px;
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: #64748b;
+    text-align: left;
+  }
+
+  body.video-reader-mobile-focus .mobile-mic-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+    max-height: 42vh;
+    overflow: auto;
+  }
+
+  body.video-reader-mobile-focus .mobile-mic-list .mobile-feature-item.is-selected {
+    border-color: rgba(13, 148, 136, 0.45);
+    color: #0f766e;
+    font-weight: 600;
   }
 
   body.video-reader-mobile-focus .transcript-panel {
@@ -534,10 +1390,12 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
   }
 
   body.video-reader-mobile-focus .practice-panel {
-    order: 4;
+    order: 5;
+    flex: 0 0 auto;
     width: calc(100% - 20px);
-    max-height: none;
+    max-height: min(28svh, 220px);
     margin: 12px 10px 0;
+    overflow: auto;
   }
 
   body.video-reader-mobile-focus .right-sidebar {
@@ -567,26 +1425,434 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     position: fixed;
     inset: 0 auto 0 0;
     z-index: 1200;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
     width: min(88vw, 360px);
     max-width: 360px;
     height: 100svh;
-    padding: calc(18px + env(safe-area-inset-top)) 16px calc(20px + env(safe-area-inset-bottom));
-    overflow-x: hidden;
-    overflow-y: auto;
+    padding: calc(14px + env(safe-area-inset-top)) 14px calc(16px + env(safe-area-inset-bottom));
+    overflow: hidden;
     border: 0;
-    border-right: 1px solid rgba(15, 118, 110, 0.16);
-    border-radius: 0 22px 22px 0;
-    background: #f8fdfc;
-    box-shadow: 18px 0 44px rgba(15, 35, 45, 0.22);
+    border-right: 1px solid var(--lx-line, #e2e8f0);
+    border-radius: 0 20px 20px 0;
+    background: var(--lx-grad-hero, linear-gradient(160deg, #f0fdfa 0%, #f0f9ff 55%, #ffffff 100%));
+    box-shadow: var(--lx-shadow-lg, 18px 0 44px rgba(15, 35, 45, 0.16));
     transform: translateX(0);
     transition: transform 220ms ease;
   }
 
   body.video-reader-mobile-focus .video-sidebar.hidden {
-    display: block;
+    display: flex;
     z-index: 1200;
     transform: translateX(-105%);
+  }
+
+  /* 旧遮罩伪元素会挡住列表点击，移动端改用独立 backdrop */
+  body.video-reader-mobile-focus .video-sidebar::before {
+    content: none !important;
+    display: none !important;
+    pointer-events: none !important;
+  }
+
+  body.video-reader-mobile-focus .sidebar-lab-head {
+    margin: 0 56px 0 0;
+    flex: 0 0 auto;
+  }
+
+  body.video-reader-mobile-focus .sidebar-lab-head h2 {
+    margin: 0;
+    color: var(--lx-ink-900, #0f172a);
+    background: none;
+    -webkit-text-fill-color: currentColor;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  body.video-reader-mobile-focus .stats-panel {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0;
+    flex: 0 0 auto;
+  }
+
+  body.video-reader-mobile-focus .stat-card {
+    min-width: 0;
+    padding: 8px 6px;
+    border: 1px solid var(--lx-line, #e2e8f0);
+    border-radius: var(--lx-radius-md, 12px);
+    background: var(--lx-surface, #fff);
+    box-shadow: var(--lx-shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.05));
+    gap: 4px;
+  }
+
+  body.video-reader-mobile-focus .stat-card:nth-child(1),
+  body.video-reader-mobile-focus .stat-card:nth-child(2),
+  body.video-reader-mobile-focus .stat-card:nth-child(3) {
+    background: var(--lx-surface, #fff);
+  }
+
+  body.video-reader-mobile-focus .stat-card:hover {
+    transform: none;
+  }
+
+  body.video-reader-mobile-focus .stat-icon {
+    font-size: 14px;
+    filter: none;
+  }
+
+  body.video-reader-mobile-focus .stat-value {
+    color: var(--lx-primary, #0f766e);
+    font-size: 16px;
+    line-height: 1.1;
+  }
+
+  body.video-reader-mobile-focus .stat-label {
+    color: var(--lx-ink-500, #64748b);
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  body.video-reader-mobile-focus .library-source-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    border-radius: var(--lx-radius-pill, 999px);
+    background: rgba(15, 118, 110, 0.08);
+    flex: 0 0 auto;
+  }
+
+  body.video-reader-mobile-focus .library-source-tab {
+    min-width: 0;
+    min-height: 34px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: var(--lx-radius-pill, 999px);
+    background: transparent;
+    color: var(--lx-ink-500, #64748b);
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  body.video-reader-mobile-focus .library-source-tab.active {
+    background: var(--lx-grad-fresh, linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%));
+    color: #fff;
+    box-shadow: var(--lx-shadow-brand, 0 6px 16px rgba(15, 118, 110, 0.22));
+  }
+
+  body.video-reader-mobile-focus .library-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+  }
+
+  body.video-reader-mobile-focus .library-panel[hidden] {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .upload-toggle-btn {
+    width: 100%;
+    min-height: 40px;
+    margin: 0;
+    border: 0;
+    border-radius: var(--lx-radius-md, 12px);
+    background: var(--lx-grad-brand, linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%));
+    color: #fff;
+    box-shadow: var(--lx-shadow-brand, 0 8px 24px rgba(15, 118, 110, 0.18));
+    flex: 0 0 auto;
+  }
+
+  body.video-reader-mobile-focus .video-upload {
+    display: block;
+    max-height: none !important;
+    overflow: visible !important;
+    margin: 0;
+    padding: 12px;
+    border: 1px solid var(--lx-line, #e2e8f0);
+    border-radius: var(--lx-radius-md, 12px);
+    background: var(--lx-surface, #fff);
+    box-shadow: none;
+  }
+
+  body.video-reader-mobile-focus .video-upload.collapsed {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .video-upload label {
+    color: var(--lx-ink-700, #334155);
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  body.video-reader-mobile-focus .video-upload input[type="text"],
+  body.video-reader-mobile-focus .video-upload select,
+  body.video-reader-mobile-focus .video-upload input[type="file"] {
+    margin-bottom: 10px;
+  }
+
+  body.video-reader-mobile-focus .video-upload #upload-submit-btn,
+  body.video-reader-mobile-focus .video-upload button[type="submit"] {
+    min-height: 44px;
+    margin-top: 4px;
+    border-radius: 12px;
+    background: var(--lx-grad-fresh, linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%));
+  }
+
+  body.video-reader-mobile-focus #upload-status {
+    margin: 8px 0 0;
+    color: var(--lx-ink-500, #64748b);
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  body.video-reader-mobile-focus .tag-management {
+    margin: 0;
+    padding: 10px 12px 12px;
+    border: 1px solid var(--lx-line, #e2e8f0);
+    border-radius: var(--lx-radius-md, 12px);
+    background: var(--lx-surface, #fff);
+    box-shadow: none;
+    flex: 0 0 auto;
+  }
+
+  body.video-reader-mobile-focus .tag-management h4 {
+    margin: 0 0 8px;
+    color: var(--lx-ink-900, #0f172a);
+    font-size: 13px;
+    font-weight: 750;
+  }
+
+  body.video-reader-mobile-focus .tag-list {
+    gap: 6px;
+    margin-bottom: 10px;
+  }
+
+  body.video-reader-mobile-focus .tag-item {
+    min-height: 28px;
+    padding: 0 10px;
+    border: 1px solid rgba(14, 165, 233, 0.18);
+    border-radius: 999px;
+    background: #eff8ff;
+    color: #0369a1;
+    font-size: 12px;
+    font-weight: 650;
+    line-height: 28px;
+  }
+
+  body.video-reader-mobile-focus .tag-item.active {
+    border-color: transparent;
+    background: var(--lx-grad-brand, linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%));
+    color: #fff;
+  }
+
+  body.video-reader-mobile-focus .tag-add-form {
+    display: flex;
+    align-items: stretch;
+    gap: 8px;
+    margin-top: 0;
+  }
+
+  body.video-reader-mobile-focus .tag-add-form input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 40px;
+    min-height: 40px;
+    max-height: 40px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0 12px;
+    border: 1px solid var(--lx-line, #e2e8f0);
+    border-radius: 12px;
+    background: #f8fafc;
+    color: var(--lx-ink-900, #0f172a);
+    font: inherit;
+    font-size: 14px;
+    line-height: 1.2;
+    outline: none;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  body.video-reader-mobile-focus .tag-add-form input::placeholder {
+    color: #94a3b8;
+  }
+
+  body.video-reader-mobile-focus .tag-add-form input:focus {
+    border-color: rgba(14, 165, 233, 0.55);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+  }
+
+  body.video-reader-mobile-focus .tag-add-form button {
+    flex: 0 0 40px;
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 12px;
+    background: var(--lx-grad-brand, linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%));
+    color: #fff;
+    font-size: 22px;
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  body.video-reader-mobile-focus .tag-add-form button:active {
+    transform: scale(0.96);
+    opacity: 0.92;
+  }
+
+  body.video-reader-mobile-focus .video-list,
+  body.video-reader-mobile-focus .media-shelf {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 0 0 auto;
+  }
+
+  body.video-reader-mobile-focus .video-list[hidden],
+  body.video-reader-mobile-focus .media-shelf[hidden] {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .video-item,
+  body.video-reader-mobile-focus .media-shelf-item {
+    margin: 0;
+    padding: 0;
+    border: 1px solid var(--lx-line, #e2e8f0);
+    border-radius: var(--lx-radius-md, 12px);
+    background: var(--lx-surface, #fff);
+    box-shadow: var(--lx-shadow-xs, 0 1px 2px rgba(15, 23, 42, 0.05));
+    overflow: hidden;
+  }
+
+  body.video-reader-mobile-focus .video-item {
+    padding: 10px 12px;
+    cursor: pointer;
+  }
+
+  body.video-reader-mobile-focus .video-item:hover {
+    transform: none;
+  }
+
+  body.video-reader-mobile-focus .video-item.active {
+    border-color: var(--lx-teal-300, #5eead4);
+    background: var(--lx-teal-50, #f0fdfa);
+    box-shadow: var(--lx-shadow-sm, 0 1px 3px rgba(15, 23, 42, 0.06));
+  }
+
+  body.video-reader-mobile-focus .video-item h3,
+  body.video-reader-mobile-focus .video-item-title {
+    color: var(--lx-ink-900, #0f172a);
+    font-size: 14px;
+    line-height: 1.35;
+  }
+
+  body.video-reader-mobile-focus .media-shelf-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px;
+    border: 0;
+    background: transparent;
+    text-align: left;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+  }
+
+  body.video-reader-mobile-focus .media-shelf-thumb {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    overflow: hidden;
+    color: var(--lx-primary, #0f766e);
+    background: var(--lx-teal-50, #f0fdfa);
+    font-weight: 800;
+  }
+
+  body.video-reader-mobile-focus .media-shelf-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  body.video-reader-mobile-focus .media-shelf-copy {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  body.video-reader-mobile-focus .media-shelf-copy strong {
+    color: var(--lx-ink-900, #0f172a);
+    font-size: 14px;
+    line-height: 1.3;
+  }
+
+  body.video-reader-mobile-focus .media-shelf-copy em {
+    color: var(--lx-ink-500, #64748b);
+    font-size: 12px;
+    font-style: normal;
+    line-height: 1.3;
+  }
+
+  body.video-reader-mobile-focus .media-shelf-back,
+  body.video-reader-mobile-focus .media-shelf-empty {
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  body.video-reader-mobile-focus .media-shelf-back-btn {
+    min-height: 36px;
+    padding: 0 4px;
+    border: 0;
+    background: transparent;
+    color: var(--lx-primary, #0f766e);
+    font: inherit;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  body.video-reader-mobile-focus .media-shelf-empty,
+  body.video-reader-mobile-focus .video-list .empty-state {
+    padding: 16px 8px;
+    color: var(--lx-ink-500, #64748b);
+    text-align: center;
+    font-size: 13px;
+    line-height: 1.45;
   }
 
   body.video-reader-mobile-focus .mobile-library-backdrop {
@@ -614,15 +1880,7 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
   }
 
   body.video-reader-mobile-focus .video-sidebar h2 {
-    margin: 0 80px 16px 0;
-    color: var(--vrf-ink);
-    background: none;
-    -webkit-text-fill-color: currentColor;
-    font-size: 20px;
-  }
-
-  body.video-reader-mobile-focus .stats-panel {
-    margin-bottom: 14px;
+    margin: 0;
   }
 
   body.video-reader-mobile-focus .bottom-nav {
@@ -648,32 +1906,75 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
 }
 
 @media (max-width: 360px) {
-  body.video-reader-mobile-focus .mobile-reader-heading span {
-    display: none;
+  body.video-reader-mobile-focus .mobile-reader-brand {
+    max-width: 72px;
   }
 
   body.video-reader-mobile-focus .mobile-transcript-view {
-    height: clamp(210px, 32svh, 250px);
-    min-height: 210px;
+    --vrf-cue-row: 4.75rem;
+  }
+
+  body.video-reader-mobile-focus.vrf-bilingual .mobile-transcript-view {
+    --vrf-cue-row: 6.75rem;
   }
 
   body.video-reader-mobile-focus .mobile-transcript-item.active {
-    font-size: 18px;
+    font-size: 21px;
   }
 
-  body.video-reader-mobile-focus .toggle-sidebar-btn {
-    min-width: 72px;
-    padding: 0 9px;
+  body.video-reader-mobile-focus .mobile-play-btn {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-height: 700px) and (orientation: portrait) and (hover: none) {
+  body.video-reader-mobile-focus .mobile-transcript-view {
+    --vrf-cue-rows: 2;
+    --vrf-cue-row: 4.6rem;
+  }
+
+  body.video-reader-mobile-focus.vrf-bilingual .mobile-transcript-view {
+    --vrf-cue-row: 6.5rem;
+  }
+
+  body.video-reader-mobile-focus .mobile-player-controls {
+    gap: 6px;
+    padding-top: 8px;
+  }
+
+  body.video-reader-mobile-focus .mobile-play-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 15px;
+  }
+
+  body.video-reader-mobile-focus .mobile-hold-btn {
+    height: 40px;
+  }
+
+  body.video-reader-mobile-focus .mobile-hold-main {
+    font-size: 14px;
   }
 }
 
 @media (max-height: 500px) and (orientation: landscape) and (hover: none) {
-  body.video-reader-mobile-focus .video-wrapper {
-    max-height: 72svh;
+  body.video-reader-mobile-focus {
+    --vrf-player-height: min(calc(100vw * 9 / 16), 52svh);
   }
 
   body.video-reader-mobile-focus .mobile-transcript-view {
-    height: 260px;
+    --vrf-cue-rows: 1;
+    --vrf-cue-row: 3.8rem;
+  }
+
+  body.video-reader-mobile-focus.vrf-bilingual .mobile-transcript-view {
+    --vrf-cue-row: 5.75rem;
+  }
+
+  body.video-reader-mobile-focus .mobile-player-controls {
+    gap: 4px;
+    padding-top: 6px;
   }
 }
 

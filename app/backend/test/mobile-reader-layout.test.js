@@ -23,7 +23,13 @@ test('opening a closed library returns synchronized visual and accessible state'
     hidden: false,
     expanded: true,
     label: '关闭视频库',
-    text: '✕ 关闭'
+    text: '关闭'
+  });
+  assert.deepEqual(MobileReaderLayout.openSidebarState(), {
+    hidden: false,
+    expanded: true,
+    label: '关闭视频库',
+    text: '关闭'
   });
 });
 
@@ -32,7 +38,7 @@ test('closing an open library returns the reusable closed state', () => {
     hidden: true,
     expanded: false,
     label: '打开视频库',
-    text: '☰ 视频库'
+    text: '视频库'
   };
 
   assert.deepEqual(MobileReaderLayout.nextSidebarState(false), expected);

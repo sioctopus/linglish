@@ -31,7 +31,9 @@
     const token = payload && (payload.access_token || payload.token);
     if (!token) throw new Error('OAUTH_SESSION_INVALID');
 
-    if (global.AuthManager && typeof global.AuthManager.setToken === 'function') {
+    if (global.AuthManager && typeof global.AuthManager.saveLogin === 'function') {
+      await global.AuthManager.saveLogin(payload, true);
+    } else if (global.AuthManager && typeof global.AuthManager.setToken === 'function') {
       await global.AuthManager.setToken(token, true);
     } else {
       writeStorage(global.localStorage, 'linglish_token', token);

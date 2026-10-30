@@ -123,7 +123,7 @@ test('create/update/list/delete workbench document with injected query', async (
   assert.equal(created.document.role, 'teacher');
   assert.equal(created.document.templateId, 'homework');
   assert.match(created.document.openUrl, /workbench\.html\?id=/);
-  assert.equal(created.document.shareToken, null);
+  assert.ok(created.document.shareToken);
 
   const updated = await updateDocument(created.document.id, {
     title: 'Cafe dialogue v2',
@@ -202,7 +202,7 @@ test('frontend entry and route wiring stay connected', () => {
   assert.match(page, /课后微信笔记/);
   assert.match(page, /wb-tool-class-note/);
   assert.match(page, /AI 标注/);
-  assert.match(page, /生成练习链接/);
+  assert.match(page, /生成链接/);
   assert.match(page, /html2canvas/);
   assert.match(app, /\/api\/workbench\/annotate/);
   assert.match(app, /\/api\/workbench\/\$\{state\.documentId\}\/practice-link/);
@@ -241,18 +241,18 @@ test('frontend entry and route wiring stay connected', () => {
   const importBridge = fs.readFileSync(path.join(root, 'frontend/js/workbench/import-bridge.js'), 'utf8');
   assert.match(importBridge, /openIntensiveNote/);
   assert.match(importBridge, /linglish-workbench-import/);
+  assert.match(importBridge, /localStorage/);
+  assert.match(importBridge, /sameTab/);
+  assert.match(importBridge, /backHrefForSource/);
+  assert.match(app, /wireBackLink/);
   const dailySpeaking = fs.readFileSync(path.join(root, 'frontend/daily-speaking.html'), 'utf8');
-  const dailySpeakingApp = fs.readFileSync(path.join(root, 'frontend/js/pages/daily-speaking-app.js'), 'utf8');
-  assert.match(dailySpeaking + dailySpeakingApp, /note-scene-btn|整段精读/);
-  assert.match(dailySpeaking + dailySpeakingApp, /WorkbenchImport/);
-  const videoReader = fs.readFileSync(path.join(root, 'frontend/video-reader-desktop.html'), 'utf8');
-  const videoReaderApp = fs.readFileSync(path.join(root, 'frontend/js/pages/video-reader-desktop-app.js'), 'utf8');
-  assert.match(videoReader + videoReaderApp, /subtitle-intensive-note/);
-  assert.match(videoReader + videoReaderApp, /WorkbenchImport/);
+  assert.match(dailySpeaking, /note-scene-btn|整段精读/);
+  assert.match(dailySpeaking, /WorkbenchImport/);
+  assert.match(dailySpeaking, /sameTab:\s*true/);
   const practicePage = fs.readFileSync(path.join(root, 'frontend/practice-session-desktop.html'), 'utf8');
-  const practiceApp = fs.readFileSync(path.join(root, 'frontend/js/pages/practice-session-desktop-app.js'), 'utf8');
-  assert.match(practicePage + practiceApp, /practice-intensive-note/);
-  assert.match(practicePage + practiceApp, /WorkbenchImport/);
+  assert.match(practicePage, /practice-intensive-note/);
+  assert.match(practicePage, /WorkbenchImport/);
+  assert.match(practicePage, /sameTab:\s*true/);
   assert.match(templates, /wb-block/);
   assert.match(templates, /wb-card-head-hero/);
   assert.match(templates, /wb-task-card/);

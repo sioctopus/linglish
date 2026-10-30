@@ -14,7 +14,7 @@ function queryStub(recorder, row) {
 
 test('pasted lesson text becomes one readable article', async () => {
   const recorder = [];
-  const result = await importLearningDocument({ ownerUserId: 7,
+  const result = await importLearningDocument({
     title: 'Unit 3 Dialogue',
     text: 'Good morning. How are you today? I am fine, thank you.',
   }, {
@@ -38,7 +38,7 @@ test('pasted lesson text becomes one readable article', async () => {
 
 test('a text file is read from disk and stored as the lesson', async () => {
   const recorder = [];
-  const result = await importLearningDocument({ ownerUserId: 7,
+  const result = await importLearningDocument({
     title: '',
     file: { path: '/tmp/lesson.txt', originalFilename: 'lesson.txt', size: 40 },
   }, {
@@ -60,7 +60,7 @@ test('a text file is read from disk and stored as the lesson', async () => {
 test('pdf import keeps the original file and opens the page reader', async () => {
   const recorder = [];
   const copied = [];
-  const result = await importLearningDocument({ ownerUserId: 7,
+  const result = await importLearningDocument({
     title: '课本第一课',
     file: { path: '/tmp/book.pdf', originalFilename: 'book.pdf', size: 1200 },
   }, {
@@ -87,7 +87,7 @@ test('pdf import keeps the original file and opens the page reader', async () =>
 
 test('a scanned pdf is still saved so the class can open the pages', async () => {
   const recorder = [];
-  const result = await importLearningDocument({ ownerUserId: 7,
+  const result = await importLearningDocument({
     title: '期中试卷',
     file: { path: '/tmp/exam.pdf', originalFilename: 'exam.pdf', size: 2000 },
   }, {
@@ -112,17 +112,17 @@ test('a scanned pdf is still saved so the class can open the pages', async () =>
 
 test('ppt and empty imports are rejected with a teacher-facing reason', async () => {
   await assert.rejects(
-    () => importLearningDocument({ ownerUserId: 7,
+    () => importLearningDocument({
       file: { path: '/tmp/slides.pptx', originalFilename: 'slides.pptx', size: 10 },
     }),
     /PPT 和旧版 doc 请先另存成 PDF 或 docx/
   );
   await assert.rejects(
-    () => importLearningDocument({ ownerUserId: 7, text: '   ' }),
+    () => importLearningDocument({ text: '   ' }),
     /请上传英语图片、PDF、Word、电子书，或粘贴课文/
   );
   await assert.rejects(
-    () => importLearningDocument({ ownerUserId: 7, text: 'hi' }),
+    () => importLearningDocument({ text: 'hi' }),
     /文档内容太短/
   );
 });
@@ -137,7 +137,7 @@ test('desktop home links document import and the page posts lessons to the impor
   assert.match(home, /id="hero-guest-document"[^>]*href="\.\/document-import\.html"/);
   assert.match(home, /id="hero-user-document"[^>]*href="\.\/document-import\.html"/);
   assert.match(page, /\/documents\/import/);
-  assert.match(page, /accept="\.pdf,\.txt,\.docx,\.epub,\.html,\.htm,\.png,\.jpg,\.jpeg,\.webp"/);
+  assert.match(page, /accept="\.pdf,\.txt,\.md,\.markdown,\.docx,\.epub,\.html,\.htm,\.png,\.jpg,\.jpeg,\.webp"/);
   assert.match(page, /daily-speaking\.html\?material=/);
   assert.match(server, /registerDocumentRoutes/);
   assert.match(server, /pathname === '\/ocr\/extract'/);
@@ -147,7 +147,7 @@ test('desktop home links document import and the page posts lessons to the impor
 
 test('page-marker pdf text is replaced by recognized English subtitles', async () => {
   const recorder = [];
-  const result = await importLearningDocument({ ownerUserId: 7,
+  const result = await importLearningDocument({
     title: '期中试卷',
     file: { path: '/tmp/exam.pdf', originalFilename: 'exam.pdf', size: 2000 },
   }, {
@@ -181,7 +181,7 @@ test('a word document and an image become English reading cues', async () => {
   );
 
   const recorder = [];
-  const word = await importLearningDocument({ ownerUserId: 7,
+  const word = await importLearningDocument({
     title: '课堂对话',
     file: { path: '/tmp/lesson.docx', originalFilename: 'lesson.docx', size: docx.length },
   }, {
@@ -198,7 +198,7 @@ test('a word document and an image become English reading cues', async () => {
   assert.match(recorder[0].params[1], /Good morning class\./);
   assert.equal(word.document.openUrl, './daily-speaking.html?material=31');
 
-  const image = await importLearningDocument({ ownerUserId: 7,
+  const image = await importLearningDocument({
     title: '图片课文',
     file: { path: '/tmp/page.png', originalFilename: 'page.png', size: 100 },
   }, {
@@ -219,11 +219,9 @@ test('rebuilding subtitles updates an imported exam', async () => {
   const recorder = [];
   const result = await rebuildReadingSubtitles({
     id: 4,
-    owner_user_id: 7,
     title: '2026附中七下期中英语（含答案）',
     pdf_path: '/pdfs/exam.pdf',
   }, {
-    user: { id: 7 },
     extractText: async () => '-- 1 of 10 --',
     ocrText: async () => 'What time does Ann usually go to bed in the evening?',
     query: queryStub(recorder, {
@@ -251,7 +249,7 @@ test('an exam web page becomes a readable paper instead of loose sentences', asy
       <div class="options"><div>A. Chinese.</div><div>B. English.</div><div>C. Math.</div></div></div>
     <div class="answer-key"><h2>参考答案</h2><p>1-3 BAC</p></div></div>`;
   const recorder = [];
-  const result = await importLearningDocument({ ownerUserId: 7,
+  const result = await importLearningDocument({
     title: '期中试卷',
     file: { path: '/tmp/exam.html', originalFilename: 'exam.html', size: html.length },
   }, {

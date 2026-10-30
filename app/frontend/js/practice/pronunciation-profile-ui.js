@@ -400,23 +400,23 @@
           <div class="pronunciation-profile-focus-note">本轮练习重点 <span>${escapeHtml(FOCUS_TYPE_LABELS[focus.skill_type])} · ${escapeHtml(evidenceTag(focus.evidence_level))} · ${escapeHtml(FOCUS_STATUS_LABELS[focus.status])}</span></div>
           <h3>${escapeHtml(focusTitle(focus))}</h3>
           ${focus.sample_text ? `<p>来自：${escapeHtml(focus.sample_text)}</p>` : ''}
-          ${href ? `<a class="pronunciation-profile-focus-cta" data-pronunciation-focus-cta="true" href="${escapeHtml(href)}">开始这一次重点练习 <span aria-hidden="true">→</span></a>` : ''}
+          ${href ? `<a class="pronunciation-profile-focus-cta" data-pronunciation-focus-cta="true" href="${escapeHtml(href)}">课后弱点练习 <span aria-hidden="true">→</span></a>` : ''}
         </article>`
       : `<article class="pronunciation-profile-focus pronunciation-profile-focus--quiet">
           <div class="pronunciation-profile-focus-note">下一步</div>
           <h3>${ready ? '继续保持这份清晰感' : '完成下一次可信练习'}</h3>
           <p>${ready ? '新的练习会让这份观察更贴近你的现在。' : '录完后，我们会把观察补成一张更完整的地图。'}</p>
-          <a class="pronunciation-profile-focus-cta" href="${escapeHtml(buildPracticeHref(options))}">开始普通跟读 <span aria-hidden="true">→</span></a>
+          <a class="pronunciation-profile-focus-cta" href="${escapeHtml(buildPracticeHref(options))}">去视频跟读 <span aria-hidden="true">→</span></a>
         </article>`;
     const statusMarkup = ready
-      ? '<p class="pronunciation-profile-summary">这是你最近练习留下的可用线索。先照着一件事练，不必一次看完所有维度。</p>'
-      : `<p class="pronunciation-profile-summary">还差 ${remaining} 次可信练习，才会开始显示稳定的分数。</p>`;
+      ? '<p class="pronunciation-profile-summary">跟读留下的弱点会收在这里。先练一件事，练完再回来看变化。</p>'
+      : `<p class="pronunciation-profile-summary">还差 ${remaining} 次可信练习，才会攒出可练的弱点清单。</p>`;
 
     return `<section class="pronunciation-profile-card" aria-labelledby="pronunciation-profile-title">
       <header class="pronunciation-profile-header">
-        <p class="pronunciation-profile-kicker">发音观察笔记</p>
-        <span class="pronunciation-profile-status" data-status="${profile.status}">${ready ? '已有线索' : '收集中'}</span>
-        <h2 id="pronunciation-profile-title">${ready ? '下一步，练得更有把握' : '先积累三次可信练习'}</h2>
+        <p class="pronunciation-profile-kicker">课后弱点练习</p>
+        <span class="pronunciation-profile-status" data-status="${profile.status}">${ready ? '可练' : '收集中'}</span>
+        <h2 id="pronunciation-profile-title">${ready ? '先练最需要补的一点' : '先跟读三次，攒弱点'}</h2>
         ${statusMarkup}
       </header>
       ${focusMarkup}

@@ -1,6 +1,6 @@
 /**
  * Workbench · 课后微信笔记
- * Reuses POST /class-notes and owner-authorized /articles/:id links.
+ * Reuses POST /class-notes + public /articles/:id share links.
  */
 (function (global) {
   'use strict';
@@ -20,57 +20,15 @@
   }
 
   function readToken() {
-    return window.AuthManager ? window.AuthManager.getToken() || '' : '';
-  }
-
-  async function privateNoteFetch(url, options = {}) {
-    if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') {
-      await window.AuthManager.ensureSession();
+    const keys = ['linglish_token', 'authToken'];
+    for (const key of keys) {
+      try {
+        const value = localStorage.getItem(key) || sessionStorage.getItem(key);
+        if (value && value !== 'null' && value !== 'undefined') return value;
+      } catch (_) {}
     }
-    const token = readToken();
-    if (!token) throw new Error('请先登录后再查看笔记。');
-    const headers = new Headers(options.headers || {});
-    headers.set('Authorization', 'Bearer ' + token);
-    return fetch(url, { ...options, headers, cache: 'no-store' });
+    return '';
   }
-
-  let noteImageGeneration = 0;
-  let noteImageUrl = '';
-
-  function releaseNoteImage() {
-    noteImageGeneration += 1;
-    if (noteImageUrl) {
-      URL.revokeObjectURL(noteImageUrl);
-      noteImageUrl = '';
-    }
-  }
-
-  async function loadPrivateNoteImage(source, host, generation) {
-    if (!source) return;
-    try {
-      const url = new URL(source, location.origin);
-      if (url.origin !== location.origin || !url.pathname.startsWith('/note-images/')) {
-        throw new Error('图片地址无效');
-      }
-      const response = await privateNoteFetch(url.pathname + url.search);
-      if (!response.ok) throw new Error('图片加载失败');
-      const blob = await response.blob();
-      if (generation !== noteImageGeneration) return;
-      if (!/^image\/(png|jpeg|webp)$/i.test(blob.type)) throw new Error('图片格式无效');
-      const image = host.querySelector('img[data-note-image]');
-      if (!image) return;
-      noteImageUrl = URL.createObjectURL(blob);
-      image.src = noteImageUrl;
-      image.hidden = false;
-    } catch (_) {
-      if (generation === noteImageGeneration) setViewStatus('图片暂时无法加载，请确认已登录后重试。');
-    }
-  }
-
-  window.addEventListener('pagehide', releaseNoteImage);
-  window.addEventListener('pageshow', (event) => {
-    if (event.persisted && lastNote && !$('wb-cn-viewer').hidden) showNote(lastNote, false);
-  });
 
   function defaultLines(word) {
     const spoken = String(word || '').trim().replace(/\s+/g, ' ');
@@ -236,8 +194,6 @@
 
   function showNote(note, share) {
     stopSpeaking();
-    releaseNoteImage();
-    const imageGeneration = noteImageGeneration;
     lastNote = {
       id: note.id || noteId || '',
       word: note.word || '',
@@ -248,27 +204,25 @@
     $('wb-cn-composer').hidden = true;
     $('wb-cn-viewer').hidden = false;
     const image = note.image
-      ? `<img data-note-image hidden alt="${escapeHtml(note.word)}">`
+      ? `<img src="${escapeHtml(note.image)}" alt="${escapeHtml(note.word)}">`
       : '';
     const lines = (note.lines || []).map((line) => (
       `<div class="line"><button class="horn" type="button" data-speak="${escapeHtml(line)}" aria-label="朗读">${(window.LxIcon && window.LxIcon.html) ? window.LxIcon.html('play', { className: 'lx-icon--sm' }) : '▶'}</button><div>${escapeHtml(line)}</div></div>`
     )).join('');
     $('wb-cn-note').innerHTML = `${image}<p class="word">${escapeHtml(note.word || '')}</p>${lines}`;
-    loadPrivateNoteImage(note.image, $('wb-cn-note'), imageGeneration);
     const id = note.id || noteId;
     if (id) noteId = String(id);
-    // Keep the private note URL stable when reopening an existing note.
+    // Keep parent-facing share URL on class-note.html so existing WeChat links stay valid.
     const link = `${location.origin}/class-note.html?id=${encodeURIComponent(noteId || '')}`;
     $('wb-cn-share-link').textContent = link;
     showShare(true);
     setViewStatus(share
-      ? '私有链接已准备好，仅本人或管理员登录后可查看。'
-      : '点每一句前面的按钮听一听。笔记仅本人或管理员登录后可查看。');
+      ? '链接已准备好。粘贴到微信群后，家长点开就能看今天的卡片，并听每一句。'
+      : '点每一句前面的按钮听一听。也可复制链接再发给家长。');
   }
 
   function showComposer(note) {
     stopSpeaking();
-    releaseNoteImage();
     $('wb-cn-viewer').hidden = true;
     $('wb-cn-composer').hidden = false;
     const word = String(note?.word || '').trim();
@@ -340,7 +294,7 @@
         if (!response.ok) throw new Error(result.message || '笔记没有生成');
         let note = { ...result.note, lines: currentLines() };
         try {
-          const articleRes = await privateNoteFetch(`/articles/${encodeURIComponent(result.note.id)}`);
+          const articleRes = await fetch(`/articles/${encodeURIComponent(result.note.id)}`, { cache: 'no-store' });
           if (articleRes.ok) {
             const article = await articleRes.json();
             note = JSON.parse(article.content || '{}');
@@ -367,9 +321,9 @@
       const link = $('wb-cn-share-link').textContent;
       try {
         await navigator.clipboard.writeText(link);
-        setViewStatus('私有链接已复制，仅本人或管理员登录后可查看。');
+        setViewStatus('链接已复制。打开微信群，粘贴发送。');
       } catch (_) {
-        setViewStatus('请长按下面的私有链接复制，仅本人或管理员登录后可查看。');
+        setViewStatus('请长按下面的链接，复制后发到微信群。');
         showShare(true);
       }
     });
@@ -387,7 +341,7 @@
   }
 
   async function loadNote(id) {
-    const response = await privateNoteFetch(`/articles/${encodeURIComponent(id)}`);
+    const response = await fetch(`/articles/${encodeURIComponent(id)}`, { cache: 'no-store' });
     if (!response.ok) throw new Error('找不到这条笔记');
     const article = await response.json();
     const note = JSON.parse(article.content || '{}');
@@ -407,14 +361,11 @@
       });
     } else if (!lastNote) {
       showComposer({ word: '', lines: defaultLines('cola') });
-    } else if (!$('wb-cn-viewer').hidden) {
-      showNote(lastNote, false);
     }
   }
 
   function deactivate() {
     stopSpeaking();
-    releaseNoteImage();
   }
 
   global.WorkbenchClassNote = {

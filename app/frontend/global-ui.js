@@ -23,7 +23,7 @@
       spinnerBorder: '#e2e8f0',
       spinnerColor: '#0f766e',
       textColor: '#64748b',
-      defaultText: '加载中...'
+      defaultText: '加载中....'
     },
     brand: {
       background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -51,7 +51,7 @@
     loadingOverlay.innerHTML = `
       <div class="global-loading-content">
         <div class="global-loading-spinner"></div>
-        <div class="global-loading-text">加载中...</div>
+        <div class="global-loading-text">加载中....</div>
       </div>
     `;
 
@@ -164,13 +164,13 @@
     loadingCount++;
     const overlay = createLoadingOverlay();
 
-    let text = '加载中...';
+    let text = '加载中....';
     let mode = 'default';
 
     if (typeof options === 'string') {
       text = options;
     } else if (options && typeof options === 'object') {
-      text = options.text || loadingConfig[options.mode]?.defaultText || '加载中...';
+      text = options.text || loadingConfig[options.mode]?.defaultText || '加载中....';
       mode = options.mode || 'default';
     }
 
@@ -214,7 +214,7 @@
   function resetLoadingState() {
     if (!loadingOverlay) return;
     const textEl = loadingOverlay.querySelector('.global-loading-text');
-    if (textEl) textEl.textContent = '加载中...';
+    if (textEl) textEl.textContent = '加载中....';
     applyLoadingStyle('default');
   }
 

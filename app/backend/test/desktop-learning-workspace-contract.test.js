@@ -2,7 +2,6 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { readPage } = require('./helpers/page-source');
 
 const frontend = path.resolve(__dirname, '../../frontend');
 
@@ -22,7 +21,7 @@ function extractCssBlock(css, selector) {
 }
 
 test('desktop video reader keeps transcript and sticky core controls in focus mode', () => {
-  const html = readPage('video-reader-desktop.html');
+  const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
   const css = fs.readFileSync(path.join(frontend, 'styles/video-reader-pro.css'), 'utf8');
   const controls = fs.readFileSync(path.join(frontend, 'js/video-reader/pro-controls.js'), 'utf8');
 
@@ -45,7 +44,7 @@ test('desktop video reader keeps transcript and sticky core controls in focus mo
 });
 
 test('desktop player preserves 16:9 when viewport height limits its size', () => {
-  const html = readPage('video-reader-desktop.html');
+  const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
   const workspaceCss = html.match(
     /\/\* ={10,}\s*Desktop learning workspace[\s\S]*?<\/style>/
   );
@@ -105,7 +104,7 @@ test('desktop player preserves 16:9 when viewport height limits its size', () =>
 });
 
 test('desktop practice keeps a compact top mode bar and shared replay controller', () => {
-  const html = readPage('practice-session-desktop.html');
+  const html = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
   const css = fs.readFileSync(path.join(frontend, 'styles/practice-session-desktop.css'), 'utf8');
 
   assert.match(html, /js\/practice\/original-audio-replay\.js/);
@@ -131,7 +130,7 @@ test('desktop practice keeps a compact top mode bar and shared replay controller
   const tokens = fs.readFileSync(path.join(frontend, 'styles/tokens.css'), 'utf8');
   assert.match(tokens, /--lx-focus-inset:\s*24px/);
   assert.match(tokens, /--lx-focus-gap:\s*16px/);
-  const readerHtml = readPage('video-reader-desktop.html');
+  const readerHtml = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
   assert.match(readerHtml, /body\.focus-mode \.layout\s*\{[^}]*padding:\s*var\(--lx-focus-inset,\s*24px\)/s);
   assert.match(css, /body\.practice-focus-active \.mode-top-bar/);
   assert.match(css, /\.practice-focus-badge\s*\{[^}]*#0f766e/s);
@@ -142,7 +141,7 @@ test('desktop practice keeps a compact top mode bar and shared replay controller
 });
 
 test('desktop video reader exposes one canonical playback progress rail', () => {
-  const html = readPage('video-reader-desktop.html');
+  const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
   const controls = fs.readFileSync(path.join(frontend, 'js/video-reader/pro-controls.js'), 'utf8');
 
   assert.match(controls, /scrub\.className = 'vrp-scrub'/);
@@ -158,20 +157,23 @@ test('desktop video reader exposes one canonical playback progress rail', () => 
 });
 
 test('video learning and AI practice share one workspace switch', () => {
-  const reader = readPage('video-reader-desktop.html');
-  const practice = readPage('practice-session-desktop.html');
+  const reader = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const practice = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
   const markup = /id="study-switch"[\s\S]*data-study="video"[\s\S]*data-study="coach"[\s\S]*data-study="arena"/;
 
   assert.match(reader, markup);
   assert.match(practice, markup);
-  assert.match(practice, /data-library="videos"[\s\S]*data-library="channels"[\s\S]*data-library="podcasts"/);
+  assert.match(practice, /id="nav-library-switch"[\s\S]*data-library="videos"[\s\S]*选择视频库[\s\S]*data-library="channels"[\s\S]*选择频道库[\s\S]*data-library="podcasts"[\s\S]*选择播客/);
+  assert.match(reader, /id="nav-library-switch"[\s\S]*选择视频库[\s\S]*选择频道库[\s\S]*选择播客/);
+  assert.doesNotMatch(reader, /id="open-channel-browser"/);
+  assert.doesNotMatch(reader, /id="open-podcast-browser"/);
   assert.match(reader, /returnTo'\) === 'coach'/);
   assert.match(practice, /source'\) === 'external'/);
 });
 
 test('study menu switches without a loader delay', () => {
-  const reader = readPage('video-reader-desktop.html');
-  const practice = readPage('practice-session-desktop.html');
+  const reader = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const practice = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
   const study = fs.readFileSync(path.join(frontend, 'js/study-switch.js'), 'utf8');
 
   assert.match(reader, /getElementById\('pageLoader'\)\?\.remove\(\)/);
@@ -180,5 +182,31 @@ test('study menu switches without a loader delay', () => {
   assert.doesNotMatch(practice, /setTimeout\(hidePageLoader/);
   assert.match(study, /switchPracticeMode/);
   assert.match(study, /prefetchDocument/);
+  assert.match(study, /switchVideoStudyMode/);
+  assert.match(study, /onVideoReader/);
   assert.match(reader, /openCoachLibraryIfRequested\(\)/);
+  assert.match(reader, /js\/video-reader\/sentence-path\.js/);
+  const sentencePath = fs.readFileSync(path.join(frontend, 'js/video-reader/sentence-path.js'), 'utf8');
+  assert.match(sentencePath, /id="sentence-listen"/);
+  assert.match(sentencePath, /id="sentence-shadow"/);
+  assert.match(sentencePath, /id="sentence-review"/);
+  assert.match(sentencePath, /重复播放/);
+  assert.match(sentencePath, /toggleRepeatPractice|startRepeatPractice/);
+  assert.match(sentencePath, /existing\.remove\(\)|sentence-path[\s\S]*remove/);
+  assert.doesNotMatch(sentencePath, /复习这句的词/);
+  assert.doesNotMatch(sentencePath, /#vocabulary/);
+  assert.match(sentencePath, /switchVideoStudyMode/);
+  assert.match(sentencePath, /shadowCurrent/);
+  assert.doesNotMatch(sentencePath, /practice-session-desktop\.html/);
+  const coachingDock = fs.readFileSync(path.join(frontend, 'js/video-reader/coaching-dock.js'), 'utf8');
+  assert.match(coachingDock, /function shadowCurrent/);
+  assert.match(coachingDock, /function listenCurrent/);
+  assert.match(coachingDock, /openToolsFor\(index,\s*\{\s*force:\s*true\s*\}\)/);
+  assert.match(coachingDock, /practiceSegment/);
+  assert.match(coachingDock, /LinglishShadowMic|recordShadow/);
+  assert.match(coachingDock, /compareShadowWithOriginal|data-action="compare"|'compare'/);
+  assert.match(reader, /js\/practice\/shadow-mic\.js/);
+  assert.match(practice, /js\/practice\/shadow-mic\.js/);
+  assert.match(practice, /id="sentence-hear-me"/);
+  assert.match(practice, /id="sentence-compare"/);
 });

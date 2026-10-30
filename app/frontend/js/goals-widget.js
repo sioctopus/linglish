@@ -39,7 +39,7 @@ class GoalsWidget {
           <span class="goals-widget-title">本周目标</span>
         </div>
         <div class="goals-widget-content" id="goals-widget-content">
-          <div class="goals-widget-loading">加载中...</div>
+          <div class="goals-widget-loading">加载中....</div>
         </div>
       </div>
     `;

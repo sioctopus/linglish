@@ -3957,10 +3957,92 @@
         font-size: 0.95rem;
       }
 
-      /* Current Line Focus Box - Optional, can be integrated into list or kept sticky */
-      .practice-current-line {
+      /* Right-rail current-line box stays hidden; focus caption lives under the player. */
+      .lines-container > .practice-current-line {
         display: none !important;
-        /* Hide the separate box, we highlight in list */
+      }
+
+      .practice-caption-focus {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        width: 100%;
+        margin: 10px 0 0;
+        padding: 14px 16px;
+        border: 1px solid rgba(15, 118, 110, 0.18);
+        border-radius: 14px;
+        background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 70%);
+        box-sizing: border-box;
+        min-height: 72px;
+        cursor: pointer;
+      }
+
+      .practice-caption-focus:hover {
+        border-color: rgba(15, 118, 110, 0.35);
+        box-shadow: 0 8px 18px rgba(15, 118, 110, 0.08);
+      }
+
+      .practice-caption-en {
+        color: #0f172a;
+        font-size: 20px;
+        font-weight: 750;
+        line-height: 1.45;
+        word-break: break-word;
+      }
+
+      .practice-caption-en.is-karaoke .vc-kword.is-hit {
+        color: #1d9bf0;
+      }
+
+      .practice-caption-en.is-karaoke .vc-kword.is-partial {
+        color: color-mix(in srgb, #1d9bf0 55%, #0f172a);
+      }
+
+      .practice-caption-zh {
+        color: #475569;
+        font-size: 14px;
+        font-weight: 600;
+        line-height: 1.45;
+      }
+
+      .practice-caption-tools {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        margin-top: 4px;
+      }
+
+      .practice-caption-tools button {
+        height: 28px;
+        padding: 0 10px;
+        border: 1px solid rgba(15, 118, 110, 0.22);
+        border-radius: 999px;
+        background: #fff;
+        color: #0f766e;
+        font: inherit;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .practice-caption-tools button:hover:not(:disabled) {
+        background: #f0fdfa;
+      }
+
+      .practice-caption-tools button:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+      }
+
+      .practice-caption-focus.is-empty .practice-caption-en {
+        color: #94a3b8;
+        font-size: 15px;
+        font-weight: 650;
+      }
+
+      .practice-caption-focus.is-empty .practice-caption-tools {
+        display: none;
       }
 
       /* Hide mobile elements */
@@ -6118,6 +6200,33 @@ body[data-theme="dark"] #desktop-controls-container .dialogue-onboard-step {
   min-width: 0;
 }
 
+.practice-lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 2px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  flex: 0 0 auto;
+}
+
+.practice-lang-toggle button {
+  height: 26px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #64748b;
+  font: 700 12px/1 "Manrope", "PingFang SC", "Microsoft YaHei", sans-serif;
+  cursor: pointer;
+}
+
+.practice-lang-toggle button.is-on {
+  background: #0f766e;
+  color: #ffffff;
+}
+
 .practice-focus-toggle {
   display: inline-flex;
   align-items: center;
@@ -6281,6 +6390,29 @@ body.dialogue-focus-layout #desktop-controls-container {
   .practice-grid {
     grid-template-columns: 1fr !important;
     overflow: auto !important;
+  }
+
+  body.practice-focus-active .practice-grid {
+    overflow: hidden !important;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto minmax(0, 1fr) !important;
+    height: calc(100dvh - (var(--lx-focus-inset, 12px) * 2)) !important;
+  }
+
+  body.practice-focus-active .practice-left {
+    overflow: hidden !important;
+  }
+
+  body.practice-focus-active .practice-right,
+  body.practice-focus-active .lines-card {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body.practice-focus-active .lines-container {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
   }
 }
 
@@ -6687,6 +6819,21 @@ body > .topbar .brand h1 {
   white-space: nowrap;
 }
 
+body > .topbar .brand .learning-compact-brand {
+  margin: 0;
+  color: #0f172a;
+  font-size: 1.05rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+body > .topbar .brand .learning-compact-brand:hover {
+  color: #0f766e;
+}
+
 body > .topbar .nav {
   display: flex;
   align-items: center;
@@ -6702,7 +6849,8 @@ body > .topbar .theme-toggle,
 body > .topbar .daily-goal,
 body > .topbar .lang-selector,
 body > .topbar .vip-badge,
-body > .topbar .study-switch {
+body > .topbar .study-switch,
+body > .topbar .upload-switch {
   flex: 0 0 auto;
 }
 
@@ -6763,11 +6911,13 @@ body[data-theme="dark"] > .topbar .icon-moon {
 body > .topbar .daily-goal {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.18rem;
-  min-width: 148px;
-  padding: 0.28rem 0.65rem;
+  width: max-content;
+  min-width: 0;
+  padding: 0.28rem 0.85rem;
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border-radius: 999px;
   background: #f8fafc;
 }
 
@@ -6776,9 +6926,11 @@ body > .topbar .daily-goal-label {
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+  text-align: center;
 }
 
 body > .topbar .daily-goal-bar {
+  align-self: stretch;
   height: 6px;
   overflow: hidden;
   border-radius: 999px;
@@ -8326,4 +8478,265 @@ body.practice-focus-active.dialogue-focus-layout .practice-right > #asr-comparis
   max-height: none !important;
   overflow: auto !important;
   margin: 0 !important;
+}
+
+/* Keep player pinned; only the script / ASR rail scrolls (YouTube-like). */
+body.practice-focus-active .practice-grid {
+  overflow: hidden !important;
+}
+
+body.practice-focus-active .lines-container {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+}
+
+body.practice-focus-active.dialogue-focus-layout .lines-container {
+  overflow-y: auto !important;
+}
+
+/* 跟学习和 AI 陪练同一条播放条。实战场只保留角色和播放设置。 */
+.practice-transport,
+#practice-mode-selector,
+.start-practice-container,
+body.mode-shadowing #desktop-controls-container {
+  display: none !important;
+}
+
+body.mode-dialogue #desktop-controls-container {
+  display: block !important;
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9)) !important;
+  margin: 8px auto 0 !important;
+}
+
+body.mode-dialogue #shadowing-controls,
+body.mode-dialogue #mode-live-header {
+  display: none !important;
+}
+
+.coach-learning-stage {
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9));
+  margin: 8px auto 0;
+}
+
+/* Keep Hold dock inside the clipped practice-left column (was overflow-cut below fold). */
+body.mode-shadowing.has-voice-chat .coach-learning-stage,
+body.mode-dialogue.has-voice-chat .coach-learning-stage {
+  display: flex;
+  flex-direction: column;
+  /* Don't flex-shrink when subtitle-study method body grows — keeps Hold steady. */
+  flex: 0 0 auto !important;
+  align-self: center;
+  min-height: 0 !important;
+  overflow: visible;
+}
+
+body.mode-shadowing.has-voice-chat .coach-learning-stage .vrp-control-dock,
+body.mode-shadowing.has-voice-chat .coach-learning-stage .practice-caption-focus,
+body.mode-dialogue.has-voice-chat .coach-learning-stage .vrp-control-dock,
+body.mode-dialogue.has-voice-chat .coach-learning-stage .practice-caption-focus {
+  flex: 0 0 auto;
+}
+
+body.mode-shadowing.has-voice-chat .coach-learning-stage .sentence-path,
+body.mode-dialogue.has-voice-chat .coach-learning-stage .sentence-path {
+  display: none !important;
+}
+
+/* Desktop AI陪练: same X DM window as mobile — cue bubbles left, voice takes right. */
+body.mode-shadowing.has-voice-chat .coach-learning-stage #voice-chat-coach,
+body.mode-dialogue.has-voice-chat .coach-learning-stage #voice-chat-coach {
+  display: flex !important;
+  flex-direction: column;
+  flex: 0 0 auto;
+  min-height: 0;
+  height: auto !important;
+  max-height: min(420px, 48dvh) !important;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 0;
+  border: 1px solid #e2e8f0;
+  border-radius: 24px;
+  background: #f8fafc;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+body.mode-shadowing.has-voice-chat .voice-chat.is-xdm .voice-chat-picker,
+body.mode-shadowing.has-voice-chat .voice-chat.is-xdm .voice-chat-focus,
+body.mode-shadowing.has-voice-chat .voice-chat.is-xdm .voice-chat-hint,
+body.mode-dialogue.has-voice-chat .voice-chat.is-xdm .voice-chat-picker,
+body.mode-dialogue.has-voice-chat .voice-chat.is-xdm .voice-chat-focus,
+body.mode-dialogue.has-voice-chat .voice-chat.is-xdm .voice-chat-hint {
+  display: none !important;
+}
+
+/* @linglish handle was decorative only — hide it */
+body.mode-shadowing.has-voice-chat .voice-chat.is-xdm .voice-chat-head,
+body.mode-dialogue.has-voice-chat .voice-chat.is-xdm .voice-chat-head {
+  display: none !important;
+}
+
+body.mode-shadowing.has-voice-chat .voice-chat.is-xdm .voice-chat-nav,
+body.mode-dialogue.has-voice-chat .voice-chat.is-xdm .voice-chat-nav {
+  display: none !important;
+}
+
+body.mode-shadowing.has-voice-chat .voice-chat.is-xdm .voice-chat-stream,
+body.mode-dialogue.has-voice-chat .voice-chat.is-xdm .voice-chat-stream {
+  display: block !important;
+  flex: 1 1 auto;
+  min-height: 160px;
+  max-height: min(320px, 36dvh);
+  overflow-y: auto;
+  padding: 12px 14px 16px;
+  background: #f8fafc;
+}
+
+body.mode-shadowing.has-voice-chat .voice-chat.is-xdm .voice-chat-dock.x-dm-compose,
+body.mode-dialogue.has-voice-chat .voice-chat.is-xdm .voice-chat-dock.x-dm-compose {
+  flex: 0 0 auto;
+  display: flex !important;
+  padding: 10px 14px 12px;
+  border-top: 1px solid #e2e8f0;
+  background: #fff;
+}
+
+body.mode-shadowing.has-voice-chat .voice-chat.is-xdm .voice-chat-hold.x-dm-hold,
+body.mode-dialogue.has-voice-chat .voice-chat.is-xdm .voice-chat-hold.x-dm-hold {
+  flex: 0 0 auto;
+  width: auto;
+  height: 36px;
+  font-size: 13px;
+  padding: 0 12px;
+}
+
+body.mode-shadowing.has-voice-chat .practice-caption-focus,
+body.mode-dialogue.has-voice-chat .practice-caption-focus {
+  cursor: pointer;
+}
+
+body.mode-shadowing #subtitle-study-host,
+body.mode-shadowing .subtitle-study {
+  flex: 0 0 auto !important;
+  min-width: 0;
+  max-width: min(100%, calc(min(60dvh, 620px) * 16 / 9));
+  width: min(100%, calc(min(60dvh, 620px) * 16 / 9));
+  margin-inline: auto;
+}
+
+body.mode-shadowing .subtitle-study-methods {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  flex-wrap: nowrap;
+}
+
+/* AI陪练：Hold = 开麦跟读，不再另放麦克风选择/测试/悬浮录音钮 / 字幕区 🎤 */
+body.mode-shadowing #mic-select,
+body.mode-shadowing #test-mic-btn,
+body.mode-shadowing .setting-row:has(#mic-select),
+body.mode-shadowing .start-recording-fab,
+body.mode-shadowing .fab-record-container,
+body.mode-shadowing #play-my-recording-btn,
+body.mode-shadowing .subtitle-study-mic {
+  display: none !important;
+}
+
+.coach-learning-stage .sentence-path {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+}
+
+.coach-learning-stage .sentence-path-label {
+  display: none !important;
+}
+
+/* Desktop: OS picks the input device — no in-page mic dropdown. */
+.coach-learning-stage .sentence-mic-picker {
+  display: none !important;
+}
+
+.coach-learning-stage .sentence-path button {
+  height: 32px;
+  padding: 0 12px;
+  border: 1px solid #99f6e4;
+  border-radius: 999px;
+  background: #f0fdfa;
+  color: #0f766e;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.coach-learning-stage .sentence-path button:hover {
+  background: #ccfbf1;
+}
+
+.coach-learning-stage .sentence-path button.is-on,
+.coach-learning-stage .sentence-path #sentence-study-toggle[aria-pressed="true"] {
+  background: #0f766e;
+  border-color: #0f766e;
+  color: #fff;
+}
+
+.coach-learning-stage .sentence-path #sentence-extract {
+  border-color: #fcd34d;
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.practice-line-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+#play-overlay.coach-empty {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+  color: #e2e8f0;
+  text-align: center;
+}
+
+.coach-empty-icon {
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: rgba(45, 212, 191, 0.12);
+  color: #2dd4bf;
+}
+
+.coach-empty-title {
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.coach-empty-desc {
+  max-width: 28em;
+  color: #94a3b8;
+  font-size: 13px;
+  line-height: 1.5;
+}
 }

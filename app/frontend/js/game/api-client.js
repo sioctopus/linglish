@@ -157,11 +157,16 @@
       }
     }
 
-    // A stable media URL lets the browser start loading inside the original tap.
+    // 一局连连看里同一个词会被念很多次,不缓存就是几十次 TTS 生成请求。
+    const audioUrls = new Map();
+    const inflightUrls = new Map();
     let speakGeneration = 0;
     let locallyPaused = false;
     let onSpeakIdle = null;
-    let speechSource = null;
+    // 整页会话锁死一个神经音色，避免翻卡时 Ava/浏览器音来回跳
+    let lockedVoiceId = null;
+    let lockedLocalVoice = null;
+    const DEFAULT_VOICE = 'en-US-AvaMultilingualNeural';
 
     function synthesisHost() {
       const host = typeof window !== 'undefined' ? window : null;
@@ -169,6 +174,40 @@
         return null;
       }
       return host;
+    }
+
+    // 与会员页 LinglishTtsVoice 共用同一把钥匙；首次选用后本页不再换。
+    function selectedVoice() {
+      if (lockedVoiceId) return lockedVoiceId;
+      const host = typeof window !== 'undefined' ? window : null;
+      let voice = DEFAULT_VOICE;
+      if (host && host.LinglishTtsVoice && typeof host.LinglishTtsVoice.current === 'function') {
+        const picked = host.LinglishTtsVoice.current();
+        if (picked) voice = picked;
+      }
+      lockedVoiceId = voice;
+      return lockedVoiceId;
+    }
+
+    function pickLocalVoice(host) {
+      if (lockedLocalVoice) return lockedLocalVoice;
+      try {
+        const list = host.speechSynthesis.getVoices() || [];
+        const wantUk = /en-GB/i.test(selectedVoice());
+        const langPref = wantUk ? /^en(-GB)?$/i : /^en(-US)?$/i;
+        const ranked = list.filter(function (v) { return langPref.test(v.lang || ''); });
+        const pool = ranked.length ? ranked : list.filter(function (v) { return /^en/i.test(v.lang || ''); });
+        // 优先女声名，尽量贴近 Ava/Libby；选中后锁定
+        const preferred = pool.find(function (v) {
+          return /Ava|Jenny|Sara|Emma|Libby|Zira|Samantha|Google US English|Microsoft Aria/i.test(v.name || '');
+        }) || pool.find(function (v) {
+          return /female|woman|girl/i.test(v.name || '');
+        }) || pool[0] || null;
+        lockedLocalVoice = preferred;
+        return lockedLocalVoice;
+      } catch (_) {
+        return null;
+      }
     }
 
     function noteIdle(generation) {
@@ -179,35 +218,20 @@
       onSpeakIdle = typeof fn === 'function' ? fn : null;
     }
 
-    // 词卡发音跟随全站所选音色；后端只认白名单内的音色，未加载模块时回退默认 Ava。
-    function wordAudioVoice() {
-      const host = typeof window !== 'undefined' ? window : null;
-      const tts = host && host.LinglishTtsVoice;
-      return (tts && typeof tts.current === 'function') ? tts.current() : 'en-US-AvaMultilingualNeural';
-    }
-
-    function speakLocally(text) {
+    function speakLocally(text, generation, rate) {
       const host = synthesisHost();
       if (!host) return false;
+      const token = generation == null ? ++speakGeneration : generation;
       locallyPaused = false;
-      speechSource = 'local';
-      const generation = ++speakGeneration;
       host.speechSynthesis.cancel();
       const utter = new host.SpeechSynthesisUtterance(String(text));
-      const tts = host.LinglishTtsVoice;
-      if (tts && typeof tts.synthesisLang === 'function') {
-        utter.lang = tts.synthesisLang();
-        try {
-          const systemVoice = typeof tts.findSystemVoice === 'function'
-            ? tts.findSystemVoice(host.speechSynthesis.getVoices())
-            : null;
-          if (systemVoice) utter.voice = systemVoice;
-        } catch (_) { }
-      } else {
-        utter.lang = 'en-US';
-      }
-      utter.rate = 0.92;
-      utter.onend = function () { noteIdle(generation); };
+      utter.lang = /en-GB/i.test(selectedVoice()) ? 'en-GB' : 'en-US';
+      const localVoice = pickLocalVoice(host);
+      if (localVoice) utter.voice = localVoice;
+      const speed = Number(rate);
+      // 本地合成略慢于 1.0 更稳；新手句再按传入 rate 压低
+      utter.rate = speed > 0 ? Math.min(1.15, Math.max(0.55, speed)) : 0.92;
+      utter.onend = function () { noteIdle(token); };
       host.speechSynthesis.speak(utter);
       return true;
     }
@@ -220,72 +244,111 @@
       return Boolean(audio && typeof audio.playing === 'function' && audio.playing());
     }
 
-    function audioState() {
-      return audioIsPlaying() ? 'playing' : (audioIsPaused() ? 'paused' : 'idle');
+    // 生成与预取共用同一路请求,翻卡时不必再等一轮。
+    function ensureAudioUrl(text) {
+      const voice = selectedVoice();
+      const cacheKey = voice + '\n' + String(text);
+      if (audioUrls.has(cacheKey)) return Promise.resolve(audioUrls.get(cacheKey));
+      if (inflightUrls.has(cacheKey)) return inflightUrls.get(cacheKey);
+      const pending = postJson('/tts/generate', { text: String(text), lang: 'en', voice })
+        .then(function (body) {
+          const url = body && body.audioUrl ? body.audioUrl : null;
+          if (url) audioUrls.set(cacheKey, url);
+          return url;
+        })
+        .finally(function () { inflightUrls.delete(cacheKey); });
+      inflightUrls.set(cacheKey, pending);
+      return pending;
     }
 
-    async function speak(text) {
+    function warmUrl(url) {
+      if (url && audio && typeof audio.warm === 'function') audio.warm(url);
+    }
+
+    function prefetchSpeak(texts) {
+      if (!audio || !Array.isArray(texts)) return;
+      texts.forEach(function (text) {
+        if (!text) return;
+        ensureAudioUrl(text).then(warmUrl).catch(function () {});
+      });
+    }
+
+    async function speak(text, options) {
       if (!text) return false;
+      const rate = options && Number(options.rate) > 0 ? Number(options.rate) : 1;
+      // 先占住 generation:快速翻卡时丢弃过期请求,避免旧词后响。
       const generation = ++speakGeneration;
       locallyPaused = false;
+      if (audio && audioIsPlaying() && typeof audio.pause === 'function') audio.pause();
       const host = synthesisHost();
       if (host) host.speechSynthesis.cancel();
-      if (audio) {
-        speechSource = 'audio';
-        if (typeof audio.setEnded === 'function') {
-          audio.setEnded(function () { noteIdle(generation); });
-        }
-        try {
-          // Do not await a JSON request before play(): iOS requires the original gesture.
-          // voice 进 URL，浏览器按 URL 缓存，同一文本在不同音色下不会互相污染。
-          await audio.play('/tts/word?text=' + encodeURIComponent(String(text)) + '&voice=' + encodeURIComponent(wordAudioVoice()) + '&v=2');
-          return generation === speakGeneration;
-        } catch (error) {
-          if (generation !== speakGeneration || (error && error.name === 'AbortError')) return false;
-          if (error && error.name === 'NotAllowedError') {
-            speechSource = null;
-            noteIdle(generation);
-            return false;
+      if (audio && typeof audio.setRate === 'function') audio.setRate(rate);
+
+      const voice = selectedVoice();
+      const cacheKey = voice + '\n' + String(text);
+
+      try {
+        if (audio) {
+          let url = audioUrls.get(cacheKey) || null;
+          if (!url) {
+            // 等神经 TTS 完成再播，不再用浏览器音垫播（垫播会造成一词一音色）
+            try {
+              url = await ensureAudioUrl(text);
+            } catch (_) {
+              url = null;
+            }
+            if (generation !== speakGeneration) return false;
           }
+          if (!url) {
+            // 仅在服务端彻底失败时才本地合成，并锁定同一本地音色
+            return speakLocally(text, generation, rate);
+          }
+          warmUrl(url);
+          if (typeof audio.setRate === 'function') audio.setRate(rate);
+          if (typeof audio.setEnded === 'function') {
+            audio.setEnded(function () { noteIdle(generation); });
+          }
+          await audio.play(url);
+          return generation === speakGeneration;
         }
+      } catch (_) {
+        if (generation !== speakGeneration) return false;
       }
-      if (speakLocally(text)) return true;
-      speechSource = null;
-      noteIdle(generation);
-      return false;
+      if (generation !== speakGeneration) return false;
+      // 神经 TTS 不可用时才回落浏览器合成。
+      return speakLocally(text, generation, rate);
     }
 
     // 空格:正在念就暂停,暂停中就续上,没在念就从头播放。
-    async function toggleSpeak(text) {
-      const host = synthesisHost();
-      if (speechSource === 'local' && host) {
-        const synth = host.speechSynthesis;
-        if (locallyPaused) {
+    async function toggleSpeak(text, options) {
+      if (audio) {
+        if (audioIsPaused()) {
           locallyPaused = false;
-          synth.resume();
+          if (typeof audio.resume === 'function') await audio.resume();
           return 'playing';
         }
-        if (synth.speaking || synth.pending) {
+        if (audioIsPlaying()) {
           locallyPaused = true;
-          synth.pause();
+          if (typeof audio.pause === 'function') audio.pause();
           return 'paused';
         }
-      } else if (audioIsPaused()) {
-        locallyPaused = false;
-        const generation = speakGeneration;
-        try {
-          if (typeof audio.resume === 'function') await audio.resume();
-        } catch (error) {
-          if (generation !== speakGeneration || (error && error.name === 'AbortError')) return audioState();
-          return (await speak(text)) ? 'playing' : 'idle';
+      } else {
+        const host = synthesisHost();
+        if (host) {
+          const synth = host.speechSynthesis;
+          if (locallyPaused) {
+            locallyPaused = false;
+            synth.resume();
+            return 'playing';
+          }
+          if (synth.speaking || synth.pending) {
+            locallyPaused = true;
+            synth.pause();
+            return 'paused';
+          }
         }
-        return audioState();
-      } else if (audioIsPlaying()) {
-        locallyPaused = true;
-        if (typeof audio.pause === 'function') audio.pause();
-        return 'paused';
       }
-      const started = await speak(text);
+      const started = await speak(text, options);
       return started ? 'playing' : 'idle';
     }
 
@@ -297,6 +360,7 @@
       flushRetryQueue,
       speak,
       toggleSpeak,
+      prefetchSpeak,
       setSpeakIdle,
       track,
     };

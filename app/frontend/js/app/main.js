@@ -100,7 +100,7 @@ function wireAuthForms() {
         if (state.token && state.token !== registration.access_token) await clearMediaSession();
         state.token = registration.access_token;
         state.userEmail = accountTrimmed;
-        persistAuthSession(state.token, accountTrimmed, { remember: true });
+        persistAuthSession(state.token, accountTrimmed, { remember: true, session: registration });
         await bootstrapApp();
         showToast('注册成功！今日训练已开启');
         return;
@@ -207,7 +207,7 @@ function wireAuthForms() {
       console.log('[Login] Authentication established:', Boolean(state.token));
       console.log('[Login] API_BASE:', API_BASE);
 
-      persistAuthSession(state.token, account, { remember: rememberPreference });
+      persistAuthSession(state.token, account, { remember: rememberPreference, session: tokens });
       const savedToken = readStoredToken();
       if (!savedToken) {
         console.error('[Login] CRITICAL: Token was not saved to storage layers!');

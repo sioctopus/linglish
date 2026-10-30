@@ -2,7 +2,7 @@
   'use strict';
 
   const PACK_URL = '/js/game/word-packs/pack-max.json?v=11';
-  const CARD_DECKS_URL = '/js/game/word-packs/card-decks.json?v=20';
+  const CARD_DECKS_URL = '/js/game/word-packs/card-decks.json?v=21';
   // 按屏宽选登录页:PC 落到 mobile-auth 会是被拉宽变形的手机版式。
   function requestedDeckId() {
     try {
@@ -81,17 +81,66 @@
     if (!token) { root.location.replace(LOGIN_URL); return; }
 
     // 共用一个 Audio 元素:每次 new Audio() 会在移动端堆出几十个解码器。
+    // 另用预热器把下一张 mp3 提前拉进浏览器缓存,点卡时几乎可立刻起播。
     // 不传 audio 的话 api.speak() 直接返回 false——拼写工坊没有发音就等于没有题面。
     const element = new root.Audio();
+    const warmer = new root.Audio();
+    warmer.preload = 'auto';
     api = root.GameApiClient.createApiClient({
       fetch: root.fetch.bind(root),
       getToken: function () { return root.AuthManager.getToken(); },
       storage: root.localStorage,
       audio: {
+        warm: function (url) {
+          if (!url || warmer.dataset.warmUrl === url) return;
+          warmer.dataset.warmUrl = url;
+          warmer.src = url;
+          try { warmer.load(); } catch (_) {}
+        },
         play: function (url) {
-          element.src = url;
-          element.playbackRate = 0.92;
-          return element.play();
+          return new Promise(function (resolve) {
+            if (!url) {
+              resolve();
+              return;
+            }
+            let settled = false;
+            function finish() {
+              if (settled) return;
+              settled = true;
+              resolve();
+            }
+            function startPlayback() {
+              try { element.currentTime = 0; } catch (_) {}
+              const playing = element.play();
+              if (playing && typeof playing.then === 'function') {
+                playing.then(finish).catch(finish);
+              } else {
+                finish();
+              }
+            }
+            if (element.dataset.playUrl !== url) {
+              element.dataset.playUrl = url;
+              element.src = url;
+              try { element.load(); } catch (_) {}
+            }
+            // 等有可播数据再 play，避免「画面已出、静音空等」
+            if (element.readyState >= 3) {
+              startPlayback();
+              return;
+            }
+            const onReady = function () {
+              element.removeEventListener('canplay', onReady);
+              element.removeEventListener('error', onReady);
+              startPlayback();
+            };
+            element.addEventListener('canplay', onReady);
+            element.addEventListener('error', onReady);
+            setTimeout(function () {
+              element.removeEventListener('canplay', onReady);
+              element.removeEventListener('error', onReady);
+              startPlayback();
+            }, 1800);
+          });
         },
         playing: function () {
           return Boolean(element.src) && !element.paused && !element.ended;
@@ -100,8 +149,12 @@
           return Boolean(element.src) && element.paused && element.currentTime > 0 && !element.ended;
         },
         pause: function () { element.pause(); },
-        resume: function () { return element.play(); },
+        resume: function () { return element.play().catch(function () {}); },
         setEnded: function (fn) { element.onended = fn; },
+        setRate: function (rate) {
+          const value = Number(rate);
+          try { element.playbackRate = value > 0 ? value : 1; } catch (_) {}
+        },
       },
     });
     store = root.GameProgressStore.createProgressStore(root.localStorage);
@@ -207,13 +260,14 @@
     const dailyDone = daily.isDailyDone(progress);
     const head = h('header', 'game-map-head');
     const kickerRow = h('div', 'game-map-kicker-row');
-    kickerRow.appendChild(h('p', 'game-map-kicker', '闯关词汇'));
+    const kicker = h('p', 'game-map-kicker', '闯关词汇');
+    kicker.appendChild(h('span', 'game-map-stars', '本章星星 ' + stars + ' / ' + gate));
+    kickerRow.appendChild(kicker);
     const home = h('a', 'game-home', '返回');
     bindHome(home);
     kickerRow.appendChild(home);
     head.appendChild(kickerRow);
     head.appendChild(h('h1', 'game-map-title', '第 ' + chapter + ' 章 · ' + (themes[chapter] || '')));
-    head.appendChild(h('p', 'game-map-stars', '本章星星 ' + stars + ' / ' + gate));
 
     const dailyBtn = button(
       'game-btn game-daily-btn' + (dailyDone ? ' game-daily-btn--done' : ''),
@@ -304,6 +358,16 @@
       scene: null,
     };
     const round = attachLeave(ctx);
+    // 词卡顶栏直接回首页;要回地图点侧栏/顶栏「闯关」即可,避免手机多绕一层。
+    ctx.backLabel = '返回';
+    ctx.onBack = function () {
+      if (round.stopped) return;
+      round.stopped = true;
+      const stop = round.stop;
+      round.stop = null;
+      if (typeof stop === 'function') stop();
+      root.location.assign(HOME_URL);
+    };
     track('game_card_deck_open', { deck: deck.id, words: (deck.words || []).length });
     await views.renderCardDeck(ctx, deck);
     if (!round.stopped) renderMap();

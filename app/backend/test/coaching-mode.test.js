@@ -38,25 +38,39 @@ test('free and expired members stay outside coaching mode', () => {
   assert.equal(canUseCoaching(expired, { now: new Date('2026-10-15T00:00:00Z') }), false);
 });
 
-test('three subtitle rows keep the previous, current, and next sentence', () => {
+test('fisheye rows grow toward the current sentence above and below', () => {
   const segments = [
-    { text: 'I missed the bus.', start: 0, end: 1.4, translation: '我错过了公交。' },
-    { text: 'Could you say that again?', start: 1.4, end: 3 },
-    { text: 'Sure, listen once more.', start: 3, end: 4.6 },
+    { text: 'One.', start: 0, end: 1 },
+    { text: 'Two.', start: 1, end: 2 },
+    { text: 'Three.', start: 2, end: 3 },
+    { text: 'Four.', start: 3, end: 4 },
+    { text: 'Five.', start: 4, end: 5 },
+    { text: 'Six.', start: 5, end: 6 },
+    { text: 'Seven.', start: 6, end: 7 },
   ];
-  const rows = mode.rollingRows(segments, 1);
-  assert.deepEqual(rows.map((row) => row.role), ['previous', 'current', 'next']);
-  assert.equal(rows[0].text, 'I missed the bus.');
-  assert.equal(rows[1].text, 'Could you say that again?');
-  assert.equal(rows[2].text, 'Sure, listen once more.');
+  const rows = mode.rollingRows(segments, 3);
+  assert.equal(rows.length, 7);
+  assert.deepEqual(rows.map((row) => row.depth), [3, 2, 1, 0, 1, 2, 3]);
+  assert.deepEqual(rows.map((row) => row.role), [
+    'previous', 'previous', 'previous', 'current', 'next', 'next', 'next',
+  ]);
+  assert.equal(rows[3].text, 'Four.');
+  assert.equal(rows[0].text, 'One.');
+  assert.equal(rows[6].text, 'Seven.');
+  // Edges pad with empty slots when the focus is near the start/end.
   assert.equal(mode.rollingRows(segments, 0)[0].text, '');
-  assert.equal(mode.rollingRows(segments, 2)[2].text, '');
+  assert.equal(mode.rollingRows(segments, 0)[3].text, 'One.');
+  assert.equal(mode.rollingRows(segments, 6)[6].text, '');
+  assert.equal(mode.rollingRows(segments, 6)[3].text, 'Seven.');
+  // Explicit radius=1 still returns the classic three-line window.
+  const triplet = mode.rollingRows(segments, 1, 1);
+  assert.deepEqual(triplet.map((row) => row.role), ['previous', 'current', 'next']);
   assert.equal(mode.indexAtTime(segments, 1.5), 1);
 });
 
-test('coaching actions cover copy, notes, marks, lookup, explain, translate, read, and shadow', () => {
+test('coaching actions cover copy, notes, marks, lookup, explain, translate, read, shadow, and compare', () => {
   assert.deepEqual(mode.ACTIONS.map((action) => action.label), [
-    '复制', '做笔记', '划线', 'AI查词', '讲解', '翻译', '逐句朗读', '跟读',
+    '复制', '做笔记', '划线', 'AI查词', '讲解', '翻译', '听原声', '跟读', '听自己', '对比',
   ]);
 });
 

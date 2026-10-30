@@ -112,7 +112,6 @@
     .horn.playing { background: #115e59; }
     .share { margin-top: 16px; word-break: break-all; color: #0f766e; }
   </style>
-  <script src="./js/auth-manager.js?v=20261019"></script>
   <script src="./js/nav-back.js?v=1"></script>
 </head>
 <body>
@@ -123,13 +122,13 @@
   <main>
     <section id="composer">
       <h1>课后微信笔记</h1>
-      <p class="lead">今天教了哪个单词，就拍下课堂上的单词卡片。系统会配上几句幼儿园能跟着说的话。笔记默认私有，仅本人或管理员登录后可查看。复制私有链接，方便自己回看。</p>
+      <p class="lead">今天教了哪个单词，就拍下课堂上的单词卡片。系统会配上几句幼儿园能跟着说的话。生成后复制链接，粘贴到微信群，家长点开就能看图、听句子。</p>
       <form class="card" id="note-form">
         <label for="word">今天教的单词</label>
         <input id="word" name="word" type="text" placeholder="例如 cola" autocomplete="off">
         <label for="photo">单词卡片照片</label>
         <input id="photo" name="file" type="file" accept="image/png,image/jpeg,image/webp">
-        <label>课堂练习句子</label>
+        <label>发给家长的句子</label>
         <div id="line-fields"></div>
         <div class="actions">
           <button class="btn-primary" id="save-btn" type="submit">生成笔记</button>
@@ -140,7 +139,7 @@
     <section id="viewer" hidden>
       <article class="note-card" id="note"></article>
       <div class="actions" id="share-actions" hidden>
-        <button class="btn-primary" id="copy-btn" type="button">复制私有链接</button>
+        <button class="btn-primary" id="copy-btn" type="button">复制链接，发到微信群</button>
         <button class="btn-outline" id="edit-btn" type="button">返回修改</button>
         <button class="btn-outline" id="another-btn" type="button">再做一条</button>
       </div>
@@ -165,57 +164,15 @@
     }
 
     function readToken() {
-      return window.AuthManager ? window.AuthManager.getToken() || '' : '';
-    }
-
-    async function privateNoteFetch(url, options = {}) {
-      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') {
-        await window.AuthManager.ensureSession();
+      const keys = ['linglish_token', 'authToken'];
+      for (const key of keys) {
+        try {
+          const value = localStorage.getItem(key) || sessionStorage.getItem(key);
+          if (value && value !== 'null' && value !== 'undefined') return value;
+        } catch (_) {}
       }
-      const token = readToken();
-      if (!token) throw new Error('请先登录后再查看笔记。');
-      const headers = new Headers(options.headers || {});
-      headers.set('Authorization', 'Bearer ' + token);
-      return fetch(url, { ...options, headers, cache: 'no-store' });
+      return '';
     }
-
-    let noteImageGeneration = 0;
-    let noteImageUrl = '';
-
-    function releaseNoteImage() {
-      noteImageGeneration += 1;
-      if (noteImageUrl) {
-        URL.revokeObjectURL(noteImageUrl);
-        noteImageUrl = '';
-      }
-    }
-
-    async function loadPrivateNoteImage(source, host, generation) {
-      if (!source) return;
-      try {
-        const url = new URL(source, location.origin);
-        if (url.origin !== location.origin || !url.pathname.startsWith('/note-images/')) {
-          throw new Error('图片地址无效');
-        }
-        const response = await privateNoteFetch(url.pathname + url.search);
-        if (!response.ok) throw new Error('图片加载失败');
-        const blob = await response.blob();
-        if (generation !== noteImageGeneration) return;
-        if (!/^image\/(png|jpeg|webp)$/i.test(blob.type)) throw new Error('图片格式无效');
-        const image = host.querySelector('img[data-note-image]');
-        if (!image) return;
-        noteImageUrl = URL.createObjectURL(blob);
-        image.src = noteImageUrl;
-        image.hidden = false;
-      } catch (_) {
-        if (generation === noteImageGeneration) document.getElementById('view-status').textContent = '图片暂时无法加载，请确认已登录后重试。';
-      }
-    }
-
-    window.addEventListener('pagehide', releaseNoteImage);
-    window.addEventListener('pageshow', (event) => {
-      if (event.persisted && lastNote && !document.getElementById('viewer').hidden) showNote(lastNote, false);
-    });
 
     function defaultLines(word) {
       const spoken = String(word || '').trim().replace(/\s+/g, ' ');
@@ -242,8 +199,6 @@
 
     function showNote(note, share) {
       stopSpeaking();
-      releaseNoteImage();
-      const imageGeneration = noteImageGeneration;
       lastNote = {
         id: note.id || noteId || '',
         word: note.word || '',
@@ -255,27 +210,25 @@
       document.getElementById('viewer').hidden = false;
       document.title = `${note.title || note.word} — Linglish`;
       const image = note.image
-        ? `<img data-note-image hidden alt="${escapeHtml(note.word)}">`
+        ? `<img src="${escapeHtml(note.image)}" alt="${escapeHtml(note.word)}">`
         : '';
       const lines = (note.lines || []).map((line) => (
         `<div class="line"><button class="horn" type="button" data-speak="${escapeHtml(line)}" aria-label="朗读">▶</button><div>${escapeHtml(line)}</div></div>`
       )).join('');
       document.getElementById('note').innerHTML = `${image}<p class="word">${escapeHtml(note.word || '')}</p>${lines}`;
-      loadPrivateNoteImage(note.image, document.getElementById('note'), imageGeneration);
       const id = note.id || noteId;
       if (id) noteId = String(id);
       const link = `${location.origin}/class-note.html?id=${encodeURIComponent(noteId || '')}`;
       document.getElementById('share-link').textContent = link;
-      // Keep the private link available after generating or reopening a note.
+      // Always keep copy actions visible so teachers can share after generate or reopen.
       showShare(true);
       document.getElementById('view-status').textContent = share
-        ? '私有链接已准备好，仅本人或管理员登录后可查看。'
-        : '点每一句前面的按钮听一听。笔记仅本人或管理员登录后可查看。';
+        ? '链接已准备好。粘贴到微信群后，家长点开就能看今天的卡片，并听每一句。'
+        : '点每一句前面的按钮听一听。也可复制链接再发给家长。';
     }
 
     function showComposer(note) {
       stopSpeaking();
-      releaseNoteImage();
       bindComposer();
       document.getElementById('viewer').hidden = true;
       document.getElementById('composer').hidden = false;
@@ -435,9 +388,9 @@
       const link = document.getElementById('share-link').textContent;
       try {
         await navigator.clipboard.writeText(link);
-        document.getElementById('view-status').textContent = '私有链接已复制，仅本人或管理员登录后可查看。';
+        document.getElementById('view-status').textContent = '链接已复制。打开微信群，粘贴发送。';
       } catch (_) {
-        document.getElementById('view-status').textContent = '请长按下面的私有链接复制，仅本人或管理员登录后可查看。';
+        document.getElementById('view-status').textContent = '请长按下面的链接，复制后发到微信群。';
         showShare(true);
       }
     });
@@ -495,7 +448,7 @@
           if (!response.ok) throw new Error(result.message || '笔记没有生成');
           let note = { ...result.note, lines: currentLines() };
           try {
-            const articleRes = await privateNoteFetch(`/articles/${encodeURIComponent(result.note.id)}`);
+            const articleRes = await fetch(`/articles/${encodeURIComponent(result.note.id)}`, { cache: 'no-store' });
             if (articleRes.ok) {
               const article = await articleRes.json();
               note = JSON.parse(article.content || '{}');
@@ -515,7 +468,7 @@
     }
 
     async function loadNote() {
-      const response = await privateNoteFetch(`/articles/${encodeURIComponent(noteId)}`);
+      const response = await fetch(`/articles/${encodeURIComponent(noteId)}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('找不到这条笔记');
       const article = await response.json();
       const note = JSON.parse(article.content || '{}');
@@ -524,7 +477,7 @@
       showNote(note, false);
     }
 
-    // Teacher create/edit lives in workbench; this page reopens the owner-authorized note.
+    // Teacher create/edit lives in workbench; this page keeps parent share viewing.
     if (noteId) {
       loadNote().catch((err) => {
         document.getElementById('composer').hidden = true;

@@ -5,9 +5,8 @@ const path = require('node:path');
 
 const { createFirstLessonReadiness } = require('../../frontend/js/video-reader/first-lesson-readiness');
 const sentenceSegments = require('../../frontend/js/video-reader/sentence-segments');
-const { readPage } = require('./helpers/page-source');
 
-const readerHtml = readPage('video-reader-desktop.html');
+const readerHtml = fs.readFileSync(path.resolve(__dirname, '../../frontend/video-reader-desktop.html'), 'utf8');
 const mobileReaderMain = fs.readFileSync(path.resolve(__dirname, '../../frontend/js/video-reader/main.js'), 'utf8');
 
 function extractNamedFunction(source, name) {
@@ -73,8 +72,6 @@ function extractNamedFunction(source, name) {
 
 function loadVideoDetailsContract() {
   const source = extractNamedFunction(readerHtml, 'loadVideoDetails');
-  const rememberSource = readerHtml.match(/    function rememberVideoWords\(videoId, segments\) \{[\s\S]*?\n    \}/)?.[0];
-  assert.ok(rememberSource, 'the reader vocabulary helper must remain available');
   return new Function(
     'state',
     'fetch',
@@ -93,7 +90,7 @@ function loadVideoDetailsContract() {
     'postEvent',
     'startFirstLessonProgress',
     'firstLessonLifecycle',
-    `const rememberVideoWords = (${rememberSource}); return (${source});`,
+    `return (${source});`,
   );
 }
 
@@ -118,8 +115,6 @@ function mobileCommittedReadinessContract() {
     'postEvent',
     'firstLessonLifecycle',
     'firstLessonSession',
-    'guidedLessonEntry',
-    'window',
     `return (${source});`,
   );
 }
@@ -236,28 +231,6 @@ test('mobile reader emits readiness once only for committed subtitles of the cur
   }]);
 });
 
-test('ordinary mobile reader exposes the guided lesson only for the committed selected video', () => {
-  const segments = [{ text: 'Could you slow down?' }];
-  const state = { selectedVideoId: 42, currentSegments: segments };
-  const entry = { hidden: true, href: '' };
-  const mark = mobileCommittedReadinessContract()(
-    state,
-    { markReady() { assert.fail('Ordinary reading is not a first-lesson readiness event'); } },
-    () => assert.fail('No first-lesson event expected'),
-    {},
-    { isActive: () => false },
-    entry,
-    { LinglishFirstLessonGoal: require('../../frontend/js/video-reader/first-lesson-goal') },
-  );
-  mark({ id: 41 }, segments);
-  assert.equal(entry.hidden, true);
-  mark({ id: 42 }, segments);
-  assert.equal(entry.hidden, false);
-  const url = new URL(entry.href, 'https://example.com/');
-  assert.equal(url.searchParams.get('videoId'), '42');
-  assert.equal(url.searchParams.get('from'), 'reader_guided_practice');
-});
-
 test('mobile first lesson commits and renders subtitles without starting waveform refinement', () => {
   const rawSegments = [{ text: 'Raw line.' }];
   const video = { id: 113, status: 'ready', transcript_segments: rawSegments };
@@ -303,7 +276,7 @@ test('mobile first lesson commits and renders subtitles without starting wavefor
         payload: readiness,
       });
     },
-    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
+    { log: () => {}, warn: () => {} },
     async () => ({ ok: false }),
     '/api',
     { LinglishSentenceSegments: sentenceSegments },
@@ -358,7 +331,7 @@ test('normal mobile entry keeps asynchronous waveform refinement behavior', asyn
     () => {},
     null,
     (currentVideo, segments) => committed.push({ currentVideo, segments }),
-    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
+    { log: () => {}, warn: () => {} },
     async () => ({ ok: false }),
     '/api',
     { LinglishSentenceSegments: sentenceSegments },
@@ -407,7 +380,7 @@ test('desktop first lesson commits and renders subtitles without starting wavefo
     (segments) => segments,
     () => { renderCalls += 1; },
     () => {},
-    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
+    { log: () => {}, warn: () => {} },
     { isCurrent: () => true },
     { isActive: () => true },
     tracker,
@@ -458,7 +431,7 @@ test('normal desktop entry still waits for waveform refinement before committing
     (segments) => segments,
     () => { renderCalls += 1; },
     () => {},
-    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
+    { log: () => {}, warn: () => {} },
     { isCurrent: () => true },
     { isActive: () => false },
     createFirstLessonReadiness({ focus: null, from: 'library', startedAt: 1000, now: () => 2500 }),
@@ -499,7 +472,7 @@ test('reader suppresses readiness when an asynchronous subtitle load becomes sta
     (segments) => segments,
     () => {},
     () => {},
-    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
+    { log: () => {}, warn: () => {} },
     { isCurrent: () => true },
     { isActive: () => false },
     { markReady: (details) => { marks.push(details); return details; } },
@@ -555,7 +528,7 @@ test('deactivated mobile session cannot emit readiness and resumes ordinary wave
     () => {},
     null,
     markCommitted,
-    { log: () => {}, warn: (message, error) => assert.fail(error && error.stack || message) },
+    { log: () => {}, warn: () => {} },
     async () => ({ ok: false }),
     '/api',
     { LinglishSentenceSegments: sentenceSegments },

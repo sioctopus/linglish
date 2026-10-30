@@ -4,7 +4,7 @@
 <head>
   <script src="./js/auth-manager.js?v=20261019"></script>
 <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/tts-voice.js?v=2"></script>
+  <script src="./js/tts-voice.js?v=3"></script>
   <meta charset="UTF-8">
   <script>
     // Minimal deep-link only; stay on Explore by default
@@ -121,29 +121,29 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>探索世界 - Linglish AI英语学习 | 真实原声视频内容库</title>
-  <meta name="description" content="浏览Linglish精选的海量原声英语视频内容。涵盖日常对话、商务英语、旅游场景等真实语境，通过沉浸式学习提升英语水平。AI智能推荐，个性化学习路径。">
-  <meta name="keywords" content="英语视频,原声视频,英语学习内容,沉浸式英语,真实场景英语,English videos,immersive content">
+  <title>探索世界 - Linglish AI英语学习 | 真实原声视频内容/title>
+  <meta name="description" content="浏览Linglish精选的海量原声英语视频内容。涵盖日常对话、商务英语、旅游场景等真实语境，通过沉浸式学习提升英语水平。AI智能推荐，个性化学习路径>
+  <meta name="keywords" content="英语视频,原声视频,英语学习内容,沉浸式英真实场景英语,English videos,immersive content">
   <meta name="author" content="Linglish">
   <meta name="google-site-verification" content="google5a3b03e17f3c3f2c">
 
   <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://example.com/mobile-explore.html">
+  <meta property="og:url" content="https://www.linglish.org/mobile-explore.html">
   <meta property="og:title" content="探索世界 - Linglish AI英语学习">
-  <meta property="og:description" content="浏览海量原声英语视频，在真实场景中学习地道英语表达">
-  <meta property="og:image" content="https://example.com/og-image-explore.jpg">
+  <meta property="og:description" content="浏览海量原声英语视频，在真实场景中学习地道英语表>
+  <meta property="og:image" content="https://www.linglish.org/og-image-explore.jpg">
   <meta property="og:locale" content="zh_CN">
 
   <!-- Twitter -->
   <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:url" content="https://example.com/mobile-explore.html">
+  <meta name="twitter:url" content="https://www.linglish.org/mobile-explore.html">
   <meta name="twitter:title" content="探索世界 - Linglish AI英语学习">
-  <meta name="twitter:description" content="浏览海量原声英语视频，在真实场景中学习地道英语表达">
-  <meta name="twitter:image" content="https://example.com/og-image-explore.jpg">
+  <meta name="twitter:description" content="浏览海量原声英语视频，在真实场景中学习地道英语表>
+  <meta name="twitter:image" content="https://www.linglish.org/og-image-explore.jpg">
 
   <!-- Canonical -->
-  <link rel="canonical" href="https://example.com/mobile-explore.html">
+  <link rel="canonical" href="https://www.linglish.org/mobile-explore.html">
   <link rel="manifest" href="/manifest.json">
   <meta name="theme-color" content="#0ea5e9">
   <meta name="view-transition" content="same-origin">
@@ -159,7 +159,7 @@
     "@type": "WebPage",
     "name": "探索世界 - Linglish",
     "description": "浏览Linglish精选的海量原声英语视频内容",
-    "url": "https://example.com/mobile-explore.html",
+    "url": "https://www.linglish.org/mobile-explore.html",
     "isPartOf": {
       "@type": "WebApplication",
       "name": "Linglish"
@@ -167,19 +167,19 @@
     "inLanguage": "zh-CN",
     "potentialAction": {
       "@type": "SearchAction",
-      "target": "https://example.com/mobile-explore.html?q={search_term_string}",
+      "target": "https://www.linglish.org/mobile-explore.html?q={search_term_string}",
       "query-input": "required name=search_term_string"
     }
   }
   </script>
 
-  <link rel="stylesheet" href="./mobile-styles.css?v=2">
+  <link rel="stylesheet" href="./mobile-styles.css?v=20261028-shell2">
 
   <!-- Resource Hints -->
-  <link rel="preconnect" href="https://example.com">
-  <link rel="dns-prefetch" href="https://example.com">
+  <link rel="preconnect" href="https://www.linglish.org">
+  <link rel="dns-prefetch" href="https://www.linglish.org">
   <link rel="preload" href="./i18n.js?v=20261019" as="script">
-  <link rel="preload" href="./mobile-styles.css?v=2" as="style">
+  <link rel="preload" href="./mobile-styles.css?v=20261028-shell2" as="style">
   <link rel="preload" href="./global-ui.js?v=20250108" as="script">
   <link rel="preload" href="./video-tag-system.js?v=20251223" as="script">
   <style>
@@ -268,50 +268,17 @@
       font-family: var(--lx-font-body, 'Manrope', system-ui, -apple-system, sans-serif);
     }
 
-    /* Search Bar Glassmorphism */
-    .search-container {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      padding: 12px 16px;
-      background: var(--glass-bg);
-      backdrop-filter: var(--glass-blur);
-      -webkit-backdrop-filter: var(--glass-blur);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-      transition: all 0.3s ease;
-    }
-
-    .search-input-wrapper {
-      background: var(--surface);
-      border-radius: var(--border-radius-lg);
-      box-shadow: var(--shadow-sm);
-      border: 1px solid var(--border-color);
-      display: flex;
-      align-items: center;
-      padding: 4px 16px;
-      transition: all 0.3s ease;
-    }
-
-    .search-input-wrapper:focus-within {
-      transform: translateY(-1px);
-      box-shadow: var(--shadow-md);
-      border-color: var(--primary-light);
-    }
-
-    .search-input {
-      border: none;
-      outline: none;
-      font-size: 16px;
-      width: 100%;
-      padding: 12px 0;
-      color: #1e293b;
-      background: transparent;
-    }
+    /* Search field styles live in styles/mobile/components/header.css */
 
     .search-icon {
-      color: #94a3b8;
-      font-size: 20px;
-      margin-right: 12px;
+      color: transparent;
+      font-size: 0;
+      width: 18px;
+      height: 18px;
+      margin: 0;
+      flex: 0 0 auto;
+      background: no-repeat center / 18px 18px;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
     }
 
     /* Video Grid Layout */
@@ -510,7 +477,7 @@
     }
 
     /* Category Tabs */
-    /* 难度筛选标签 */
+    /* 难度筛选标*/
     .difficulty-filter-container {
       display: flex;
       gap: 8px;
@@ -624,32 +591,7 @@
       transform: translateY(-1px);
     }
 
-    /* Bottom Navigation (Glassmorphism) */
-    .bottom-nav {
-      background: rgba(255, 255, 255, 0.9) !important;
-      backdrop-filter: blur(20px) !important;
-      -webkit-backdrop-filter: blur(20px) !important;
-      border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
-      padding-bottom: env(safe-area-inset-bottom) !important;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      z-index: 1000;
-    }
-
-    .nav-item {
-      color: #94a3b8 !important;
-      transition: all 0.3s ease !important;
-    }
-
-    .nav-item.active {
-      color: #0ea5e9 !important;
-    }
-
-    .nav-item.active .nav-icon {
-      transform: translateY(-2px);
-      filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.3));
-    }
+    /* Bottom nav styles live in styles/mobile/components/navigation.css */
 
     /* Animations */
     @keyframes fadeIn {
@@ -695,7 +637,7 @@
       font-size: 11px !important;
     }
 
-    /* 预设标签（子标签）- 更小尺寸 */
+    /* 预设标签（子标签 更小尺寸 */
     .video-tag-chip.video-tag-preset {
       font-size: 9px !important;
       padding: 1.5px 5px !important;
@@ -1112,39 +1054,25 @@
       white-space: nowrap !important;
     }
   </style>
-  <link rel="stylesheet" href="./styles/icons.css?v=1">
+  <link rel="stylesheet" href="./styles/icons.css?v=20261028-shell2">
 </head>
 
 <body>
   <!-- Top Navigation Bar -->
-  <header class="mobile-header explore-header" style="padding: 12px 16px 10px;">
-    <div class="brand-section" style="gap: 8px;">
-      <div class="brand-icon" style="width: 36px; height: 36px; font-size: 18px;">🌍</div>
-    </div>
-    <div class="header-actions" style="gap: 18px !important;">
-      <!-- User Info -->
+  <header class="mobile-header explore-header">
+    <h1 class="page-title">探索世界</h1>
+    <div class="header-actions">
       <div id="mobile-user-info" class="mobile-user-info">
         <span id="mobile-user-name" class="mobile-user-name"></span>
         <a href="./membership.html" id="mobile-vip-badge" class="mobile-vip-badge">
-          <span class="vip-icon">👑</span>
+          <span class="vip-icon" aria-hidden="true">VIP</span>
           <span class="vip-text">VIP</span>
         </a>
       </div>
       <button class="icon-btn refresh-btn" id="refresh-videos-btn" title="刷新" aria-label="刷新">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="23 4 23 10 17 10"></polyline>
-          <polyline points="1 20 1 14 7 14"></polyline>
-          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
-        </svg>
-      </button>
-      <button class="icon-btn lang-selector-btn" id="lang-selector-btn" title="语言" aria-label="语言">
-        🌐
-      </button>
-      <button class="icon-btn logout-btn" id="logout-btn" title="退出" aria-label="退出">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-          <polyline points="16 17 21 12 16 7"></polyline>
-          <line x1="21" y1="12" x2="9" y2="12"></line>
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-2.6-6.4"></path>
+          <path d="M21 3v6h-6"></path>
         </svg>
       </button>
     </div>
@@ -1398,8 +1326,7 @@
         }
         return false;
       },
-      // 清理所有认证相关数据
-      clearAuth: function () {
+      // 清理所有认证相关数      clearAuth: function () {
         const keys = ['authToken', 'linglish_token', 'userEmail', 'is_guest', 'guest_id', 'isGuest'];
         keys.forEach(key => {
           this.remove(localStorage, key);
@@ -1459,18 +1386,18 @@
 
     <!-- Video Categories Section (Compact) -->
     <section class="video-categories" style="padding: 0 16px; margin-bottom: 12px;">
-      <!-- 标签筛选区域 (Unified Filter Bar) -->
+      <!-- 标签筛选区(Unified Filter Bar) -->
       <div class="tag-filter-tabs" id="tag-filter-tabs" style="padding: 4px 0 !important;">
-        <!-- 标签筛选将在这里动态生成 -->
+        <!-- 标签筛选将在这里动态生-->
       </div>
-      <!-- 合集（二级标签）筛选（当选中某个标签且存在合集时显示） -->
+      <!-- 合集（二级标签）筛选（当选中某个标签且存在合集时显示-->
       <div class="collection-filter-tabs" id="collection-filter-tabs"></div>
     </section>
 
     <!-- Status Filter Modal -->
     <div class="tag-manager-modal" id="status-filter-modal">
       <div class="tag-manager-header">
-        <h3 class="tag-manager-title">按状态筛选</h3>
+        <h3 class="tag-manager-title">按状态筛/h3>
         <button class="tag-manager-close"
           onclick="document.getElementById('status-filter-modal').classList.remove('show')">×</button>
       </div>
@@ -1481,13 +1408,13 @@
             <span class="tag-item-name">全部视频</span>
           </div>
           <div class="tag-item-actions">
-            <span class="tag-check" id="status-check-all">✓</span>
+            <span class="tag-check" id="status-check-all">/span>
           </div>
         </div>
         <div class="tag-item" onclick="selectStatusFilter('not-started')">
           <div class="tag-item-left">
-            <span class="tag-item-icon">⚪</span>
-            <span class="tag-item-name">未开始</span>
+            <span class="tag-item-icon">/span>
+            <span class="tag-item-name">未开/span>
           </div>
           <div class="tag-item-actions">
             <span class="tag-check" id="status-check-not-started"></span>
@@ -1495,8 +1422,8 @@
         </div>
         <div class="tag-item" onclick="selectStatusFilter('in-progress')">
           <div class="tag-item-left">
-            <span class="tag-item-icon">⏳</span>
-            <span class="tag-item-name">学习中</span>
+            <span class="tag-item-icon">/span>
+            <span class="tag-item-name">学习/span>
           </div>
           <div class="tag-item-actions">
             <span class="tag-check" id="status-check-in-progress"></span>
@@ -1504,8 +1431,8 @@
         </div>
         <div class="tag-item" onclick="selectStatusFilter('completed')">
           <div class="tag-item-left">
-            <span class="tag-item-icon">✅</span>
-            <span class="tag-item-name">已完成</span>
+            <span class="tag-item-icon">/span>
+            <span class="tag-item-name">已完/span>
           </div>
           <div class="tag-item-actions">
             <span class="tag-check" id="status-check-completed"></span>
@@ -1519,10 +1446,10 @@
       <div class="section-title-row">
         <h3 class="section-title"><span>🎬</span> <span data-i18n="mobile.explore.native_videos">原声视频</span></h3>
         <span class="video-count" id="video-count"><span>0</span> <span
-            data-i18n="mobile.explore.video_count">个视频</span></span>
+            data-i18n="mobile.explore.video_count">个视/span></span>
       </div>
 
-      <!-- 难度筛选 -->
+      <!-- 难度筛-->
       <div class="difficulty-filter-container" id="difficulty-filter-container">
         <button class="difficulty-tab active" data-difficulty="">全部</button>
         <button class="difficulty-tab" data-difficulty="a1">A1</button>
@@ -1586,8 +1513,7 @@
 
       <div class="video-grid-placeholder hidden" id="video-grid-placeholder" data-i18n="mobile.explore.loading">
         正在加载视频...</div>
-      <div class="video-grid-empty hidden" id="video-grid-empty" data-i18n="mobile.explore.no_videos">暂时没有可用的视频，试试上传一个吧！
-      </div>
+      <div class="video-grid-empty hidden" id="video-grid-empty" data-i18n="mobile.explore.no_videos">暂时没有可用的视频，试试上传一个吧      </div>
     </section>
 
     <!-- Quick Stats Summary -->
@@ -1595,18 +1521,18 @@
       <div class="stats-preview">
         <div class="stat-preview-item">
           <span class="stat-icon-mini">🔥</span>
-          <span class="stat-text-mini">2天连击</span>
+          <span class="stat-text-mini">2天连/span>
         </div>
         <div class="stat-preview-item">
-          <span class="stat-icon-mini">⭐</span>
-          <span class="stat-text-mini">1个单词</span>
+          <span class="stat-icon-mini">/span>
+          <span class="stat-text-mini">1个单/span>
         </div>
         <div class="stat-preview-item">
           <span class="stat-icon-mini">🎯</span>
-          <span class="stat-text-mini">0个完成</span>
+          <span class="stat-text-mini">0个完/span>
         </div>
       </div>
-      <span class="view-details">查看详细统计 ›</span>
+      <span class="view-details">查看详细统计 /span>
     </div>
   </main>
 
@@ -1614,7 +1540,7 @@
   <div id="review-overlay" class="vocab-detail-overlay" hidden>
     <div class="vocab-detail-backdrop"></div>
     <div class="vocab-detail-card" role="dialog" aria-modal="true">
-      <button type="button" class="detail-close-btn" id="review-close" aria-label="关闭">✕</button>
+      <button type="button" class="detail-close-btn" id="review-close" aria-label="关闭">/button>
       <div class="detail-header">
         <div>
           <h2 class="detail-word" id="review-word"></h2>
@@ -1623,7 +1549,7 @@
         <span class="detail-status reviewing" id="review-status">复习</span>
       </div>
       <div class="detail-contexts" id="review-contexts">
-        <div class="detail-context-empty">加载上下文…</div>
+        <div class="detail-context-empty">加载上下文/div>
       </div>
       <div class="review-actions">
         <button class="review-action-btn danger" id="review-fail-btn">再来</button>
@@ -1636,7 +1562,7 @@
   <div class="voice-modal-backdrop" id="tag-manager-backdrop"></div>
   <div class="tag-manager-modal" id="tag-manager-modal">
     <div class="tag-manager-header">
-      <h3 class="tag-manager-title">🏷️ 管理标签</h3>
+      <h3 class="tag-manager-title">🏷管理标签</h3>
       <button class="tag-manager-close" id="tag-manager-close">×</button>
     </div>
 
@@ -1648,13 +1574,13 @@
     </div>
 
     <div class="tag-manager-section">
-      <div class="tag-manager-section-title">自定义标签</div>
+      <div class="tag-manager-section-title">自定义标/div>
       <button class="tag-add-btn" id="add-custom-tag-btn">
-        <span>➕</span>
-        <span>添加自定义标签</span>
+        <span>/span>
+        <span>添加自定义标/span>
       </button>
       <div class="tag-list" id="custom-tags-list" style="margin-top: 12px;">
-        <!-- 自定义标签列表将在这里生成 -->
+        <!-- 自定义标签列表将在这里生-->
       </div>
     </div>
   </div>
@@ -1663,7 +1589,7 @@
   <div class="voice-modal-backdrop" id="video-tag-selector-backdrop"></div>
   <div class="video-tag-selector-modal" id="video-tag-selector-modal">
     <div class="tag-manager-header">
-      <h3 class="tag-manager-title">🏷️ 选择标签</h3>
+      <h3 class="tag-manager-title">🏷选择标签</h3>
       <button class="tag-manager-close" id="video-tag-selector-close">×</button>
     </div>
 
@@ -1685,14 +1611,6 @@
     <a href="mobile-power.html" class="nav-item">
       <div class="nav-icon" data-lx-icon="power"></div>
       <span data-i18n="mobile.power.title">能量站</span>
-    </a>
-    <a href="mobile-arena.html" class="nav-item">
-      <div class="nav-icon" data-lx-icon="arena"></div>
-      <span data-i18n="mobile.arena.title">实战场</span>
-    </a>
-    <a href="mobile-treasure.html" class="nav-item">
-      <div class="nav-icon" data-lx-icon="growth"></div>
-      <span data-i18n="mobile.treasure.title">成长中心</span>
     </a>
   </nav>
 
@@ -1889,7 +1807,7 @@
         return t('mobile.arena.card.duration_unknown', '时长未知');
       }
       if (seconds < 60) {
-        const unit = t('mobile.arena.card.seconds', '秒');
+        const unit = t('mobile.arena.card.seconds', ');
         return `${Math.max(1, Math.round(seconds))} ${unit}`;
       }
       const mins = Math.max(1, Math.round(seconds / 60));
@@ -1947,8 +1865,7 @@
       const isYouTubeThumb = candidateUrl ? /(?:img\.youtube\.com|ytimg\.com)/i.test(candidateUrl) : false;
       const avoidYouTubeThumb = isMainlandUser && hasLocalCopy;
 
-      // 优先使用YouTube缩略图（如果是YouTube视频）
-      let youtubeVideoId = video && video.youtube_video_id;
+      // 优先使用YouTube缩略图（如果是YouTube视频      let youtubeVideoId = video && video.youtube_video_id;
 
       // 如果没有 youtube_video_id，尝试从 youtube_url 提取
       if (!youtubeVideoId && video && video.youtube_url) {
@@ -1968,14 +1885,13 @@
         }
       }
 
-      // 如果有 YouTube 视频并且不需要规避，优先用官方缩略图，避免缺失的本地文件
+      // 如果YouTube 视频并且不需要规避，优先用官方缩略图，避免缺失的本地文件
       if (youtubeVideoId && !avoidYouTubeThumb) {
         console.log('[Thumbnail] Using YouTube thumbnail for:', youtubeVideoId);
         return `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`;
       }
 
-      // 否则再尝试存储的缩略图（无论是否 /static/ 路径，都尝试加载）
-      if (candidateUrl) {
+      // 否则再尝试存储的缩略图（无论是否 /static/ 路径，都尝试加载      if (candidateUrl) {
         console.log('[Thumbnail] Stored thumbnail available:', Boolean(candidateUrl));
         return candidateUrl;
       }
@@ -1999,8 +1915,7 @@
         console.log('[Thumbnail] Skipping YouTube thumbnail for mainland/local mode, using fallback');
       }
 
-      // 使用简化的SVG占位符
-      const videoId = (video && video.id) || '';
+      // 使用简化的SVG占位      const videoId = (video && video.id) || '';
       console.log('[Thumbnail] Using SVG fallback for video:', videoId);
       return placeholderSvg;
     }
@@ -2012,25 +1927,25 @@
         case 'ready':
           return {
             badgeClass: 'ready',
-            badgeLabel: t('mobile.explore.status.ready', '已就绪'),
+            badgeLabel: t('mobile.explore.status.ready', '已就),
             progressPercent: '0%',
-            progressText: t('mobile.explore.status.not_started', '未开始'),
+            progressText: t('mobile.explore.status.not_started', '未开),
             category: 'not-started',
           };
         case 'processing':
           return {
             badgeClass: 'processing',
-            badgeLabel: t('mobile.explore.status.processing', '处理中'),
+            badgeLabel: t('mobile.explore.status.processing', '处理),
             progressPercent: '35%',
-            progressText: t('mobile.explore.status.processing', '处理中'),
+            progressText: t('mobile.explore.status.processing', '处理),
             category: 'in-progress',
           };
         case 'completed':
           return {
             badgeClass: 'completed',
-            badgeLabel: t('mobile.explore.status.completed', '已完成'),
+            badgeLabel: t('mobile.explore.status.completed', '已完),
             progressPercent: '100%',
-            progressText: t('mobile.explore.status.completed', '已完成'),
+            progressText: t('mobile.explore.status.completed', '已完),
             category: 'completed',
           };
         case 'failed':
@@ -2044,9 +1959,9 @@
         default:
           return {
             badgeClass: 'ready',
-            badgeLabel: t('mobile.explore.status.uploaded', '已上传'),
+            badgeLabel: t('mobile.explore.status.uploaded', '已上),
             progressPercent: '5%',
-            progressText: t('mobile.explore.status.preparing', '准备中'),
+            progressText: t('mobile.explore.status.preparing', '准备),
             category: 'not-started',
           };
       }
@@ -2081,11 +1996,10 @@
         return;
       }
 
-      // 使用全局 state 对象，以便标签系统可以访问
-      window.state = {
+      // 使用全局 state 对象，以便标签系统可以访      window.state = {
         videos: [],
         currentFilter: 'all',
-        currentDifficulty: null, // 难度筛选: null/'beginner'/'intermediate'/'advanced'
+        currentDifficulty: null, // 难度筛 null/'beginner'/'intermediate'/'advanced'
         isMainlandUser: false,
         currentUserId: null,
         difficultyStats: null, // 难度统计
@@ -2112,7 +2026,7 @@
               // Clear all possible token storage locations
               safeStorage.clearAuth();
 
-              alert('登录已过期，请重新登录');
+              alert('登录已过期，请重新登);
               window.location.href = 'mobile-auth.html';
             }
           }
@@ -2151,7 +2065,7 @@
 
       function showEmpty(message) {
         if (!emptyEl) return;
-        emptyEl.textContent = message || '暂时没有可用的视频。';
+        emptyEl.textContent = message || '暂时没有可用的视频;
         emptyEl.classList.remove('hidden');
       }
 
@@ -2246,8 +2160,7 @@
         }
       }
 
-      // 难度筛选函数
-      function setDifficultyFilter(difficulty) {
+      // 难度筛选函      function setDifficultyFilter(difficulty) {
         state.currentDifficulty = difficulty || null;
         updateDifficultyTabs();
         const filtered = filterVideos(state.currentFilter);
@@ -2260,16 +2173,14 @@
         }
       }
 
-      // 更新难度筛选标签的激活状态
-      function updateDifficultyTabs() {
+      // 更新难度筛选标签的激活状      function updateDifficultyTabs() {
         document.querySelectorAll('.difficulty-tab').forEach(tab => {
           const tabDiff = tab.dataset.difficulty || null;
           tab.classList.toggle('active', tabDiff === state.currentDifficulty);
         });
       }
 
-      // 渲染难度筛选标签
-      function renderDifficultyFilters() {
+      // 渲染难度筛选标      function renderDifficultyFilters() {
         const container = document.getElementById('difficulty-filter-container');
         if (!container) return;
 
@@ -2306,7 +2217,7 @@
         const totalCount = Array.isArray(videos) ? videos.length : 0;
         if (countEl) {
           const t = (key, fallback) => (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : fallback;
-          const videoCountText = t('mobile.explore.video_count', '个视频');
+          const videoCountText = t('mobile.explore.video_count', '个视);
           countEl.innerHTML = `<span>${totalCount}</span> <span data-i18n="mobile.explore.video_count">${videoCountText}</span>`;
         }
 
@@ -2314,10 +2225,10 @@
           const t = (key, fallback) => (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : fallback;
           const hasExisting = Array.isArray(state.videos) && state.videos.length > 0;
           if (hasExisting) {
-            const msg = t('mobile.explore.no_videos_category', '该分类暂无视频。');
+            const msg = t('mobile.explore.no_videos_category', '该分类暂无视频);
             showEmpty(msg);
           } else {
-            const msg = t('mobile.explore.no_videos', '暂时还没有可用的视频，试试上传一个吧！');
+            const msg = t('mobile.explore.no_videos', '暂时还没有可用的视频，试试上传一个吧);
             showEmpty(msg);
           }
           return;
@@ -2337,7 +2248,7 @@
           const durationLabel = formatDuration(durationSec);
           const durationText = formatDurationText(durationSec);
           const wordCount = estimateWordCount(video && video.transcript);
-          const wordsSuffix = t('mobile.explore.words_suffix', '词');
+          const wordsSuffix = t('mobile.explore.words_suffix', ');
           const languageLabel = formatLanguage(video && video.language);
           const thumbnail = resolveThumbnail(video, { isMainlandUser: state.isMainlandUser });
           const title = (video && video.title) || (video && video.original_filename) || `视频 ${(video && video.id) || ''}`;
@@ -2355,8 +2266,8 @@
           // Only show action buttons for owner's videos
           const actionButtonsHtml = isOwner ? `
             <div class="mobile-card-actions">
-              <button type="button" title="重命名" class="mobile-action-btn rename-btn" data-id="${(video && video.id) || ''}">✏️</button>
-              <button type="button" title="删除" class="mobile-action-btn danger delete-btn" data-id="${(video && video.id) || ''}">🗑️</button>
+              <button type="button" title="重命 class="mobile-action-btn rename-btn" data-id="${(video && video.id) || ''}">✏️</button>
+              <button type="button" title="删除" class="mobile-action-btn danger delete-btn" data-id="${(video && video.id) || ''}">🗑/button>
             </div>
           ` : '';
 
@@ -2402,7 +2313,7 @@
               if (!Number.isFinite(id)) return;
               const titleEl = card.querySelector('.video-title');
               const current = titleEl ? titleEl.textContent.trim() : '';
-              const promptText = t('mobile.explore.rename_video', '重命名视频');
+              const promptText = t('mobile.explore.rename_video', '重命名视);
               const next = window.prompt(promptText, current);
               if (next === null) return;
               const trimmed = String(next).trim();
@@ -2423,7 +2334,7 @@
                 const idx = state.videos.findIndex(v => String(v.id) === String(id));
                 if (idx >= 0) state.videos[idx].title = trimmed;
               } catch (err) {
-                const failedMsg = t('mobile.explore.rename_failed', '重命名失败');
+                const failedMsg = t('mobile.explore.rename_failed', '重命名失);
                 alert(`${failedMsg}: ` + ((err && err.message) || '未知错误'));
               }
             });
@@ -2435,7 +2346,7 @@
               const t = (key, fallback) => (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : fallback;
               const id = Number(deleteBtn.dataset.id);
               if (!Number.isFinite(id)) return;
-              const confirmMsg = t('mobile.explore.delete_confirm', '确定要删除这个视频吗？此操作无法撤销。');
+              const confirmMsg = t('mobile.explore.delete_confirm', '确定要删除这个视频吗？此操作无法撤销);
               if (!window.confirm(confirmMsg)) return;
               try {
                 const res = await fetch(`${API_BASE}/video-resources/${id}`, {
@@ -2553,8 +2464,7 @@
         hideEmpty();
 
         try {
-          // 添加时间戳和cache控制，确保获取最新数据
-          const timestamp = Date.now();
+          // 添加时间戳和cache控制，确保获取最新数          const timestamp = Date.now();
           const response = await fetch(`${API_BASE}/video-resources?lite=1&_t=${timestamp}`, {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -2564,14 +2474,14 @@
 
           if (response.status === 401) {
             console.warn('[Explore] Token expired, forcing logout');
-            const expiredMsg = t('mobile.explore.session_expired', '登录信息已过期，请重新登录。');
+            const expiredMsg = t('mobile.explore.session_expired', '登录信息已过期，请重新登录);
             showEmpty(expiredMsg);
             scheduleLogout();
             return;
           }
 
           if (!response.ok) {
-            const failedMsg = t('mobile.explore.load_failed', '加载失败，请稍后重试。');
+            const failedMsg = t('mobile.explore.load_failed', '加载失败，请稍后重试);
             throw new Error(failedMsg);
           }
 
@@ -2584,8 +2494,7 @@
           console.log('[Explore] Difficulty stats:', state.difficultyStats);
           // Render difficulty filters
           renderDifficultyFilters();
-          // 同步标签（全局/个人/偏好）
-          let tagLoadOk = false;
+          // 同步标签（全局/个人/偏好          let tagLoadOk = false;
           if (window.VideoTagSystem && typeof window.VideoTagSystem.loadFromServer === 'function') {
             try {
               console.log('[Mobile Tag System] loadFromServer start', { API_BASE, hasToken: !!token });
@@ -2607,21 +2516,19 @@
           const filtered = filterVideos(state.currentFilter);
           renderVideos(filtered);
 
-          // 更新标签筛选器的统计数据
-          if (typeof window.renderTagFilters === 'function') {
+          // 更新标签筛选器的统计数          if (typeof window.renderTagFilters === 'function') {
             window.renderTagFilters(state.videos);
           }
         } catch (err) {
           console.error('加载视频失败:', err);
-          const loadFailedMsg = t('mobile.explore.load_failed', '加载失败，请稍后重试。');
+          const loadFailedMsg = t('mobile.explore.load_failed', '加载失败，请稍后重试);
           showEmpty(loadFailedMsg);
         } finally {
           hidePlaceholder();
         }
       }
 
-      // 暴露 loadVideos 为全局函数，以便标签系统可以访问
-      window.loadVideos = loadVideos;
+      // 暴露 loadVideos 为全局函数，以便标签系统可以访      window.loadVideos = loadVideos;
 
       filterButtons.forEach((button) => {
         button.addEventListener('click', () => {
@@ -2715,14 +2622,14 @@
         try { return authManager && authManager.getUserInfo && (authManager.getUserInfo().token); } catch (_) { return null; }
       }
       async function fetchVocabDetail(lemma) {
-        const token = getToken(); if (!token) throw new Error('未登录');
+        const token = getToken(); if (!token) throw new Error('未登);
         const res = await fetch(`${API_BASE}/vocab/item?lemma=${encodeURIComponent(lemma)}`, { headers: { Authorization: `Bearer ${token}` } });
         if (!res.ok) throw new Error('加载失败');
         return res.json();
       }
       async function submitReview(outcome) {
         const token = getToken(); if (!token || !activeLemma) return;
-        const btn = outcome === 'pass' ? passBtn : failBtn; const old = btn.textContent; btn.disabled = true; btn.textContent = '…';
+        const btn = outcome === 'pass' ? passBtn : failBtn; const old = btn.textContent; btn.disabled = true; btn.textContent = ';
         try {
           const res = await fetch(`${API_BASE}/vocab/review`, { method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify({ lemma: activeLemma, outcome }) });
           if (!res.ok) throw new Error(await res.text());
@@ -2738,10 +2645,10 @@
       }
       async function openPrompt() {
         const t = (key, fallback) => (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : fallback;
-        const promptMsg = t('mobile.explore.review.input_prompt', '输入要复习/认识的单词');
+        const promptMsg = t('mobile.explore.review.input_prompt', '输入要复认识的单);
         let lemma = window.prompt(promptMsg);
         if (!lemma) return; lemma = String(lemma).trim().toLowerCase(); if (!lemma) return;
-        const loadingCtx = t('mobile.explore.review.loading_context', '加载上下文…');
+        const loadingCtx = t('mobile.explore.review.loading_context', '加载上下文);
         activeLemma = lemma; wordEl.textContent = lemma; transEl.textContent = ''; ctxEl.innerHTML = `<div class="detail-context-empty">${loadingCtx}</div>`; overlay.hidden = false;
         try {
           const d = await fetchVocabDetail(lemma);
@@ -2763,7 +2670,7 @@
             ctxEl.innerHTML = '';
             ctxEl.appendChild(f);
           } else {
-            const noCtxMsg = t('mobile.explore.review.no_context', '暂无上下文记录');
+            const noCtxMsg = t('mobile.explore.review.no_context', '暂无上下文记);
             ctxEl.innerHTML = `<div class="detail-context-empty">${noCtxMsg}</div>`;
           }
         } catch (_) {
@@ -2781,7 +2688,7 @@
         if (!activeLemma) return;
         wordEl.textContent = activeLemma;
         transEl.textContent = '';
-        const loadingCtx = t('mobile.explore.review.loading_context', '加载上下文…');
+        const loadingCtx = t('mobile.explore.review.loading_context', '加载上下文);
         ctxEl.innerHTML = `<div class="detail-context-empty">${loadingCtx}</div>`;
         overlay.hidden = false;
         fetchVocabDetail(activeLemma).then(d => {
@@ -2820,8 +2727,7 @@
     (function () {
       'use strict';
 
-      // 等待标签系统加载（添加超时和调试）
-      function waitForTagSystem(callback, attempts = 0, maxAttempts = 50) {
+      // 等待标签系统加载（添加超时和调试      function waitForTagSystem(callback, attempts = 0, maxAttempts = 50) {
         console.log(`[Mobile Tag System] Waiting for dependencies... (attempt ${attempts + 1}/${maxAttempts})`);
         console.log('[Mobile Tag System] VideoTagSystem available:', typeof window.VideoTagSystem !== 'undefined');
         console.log('[Mobile Tag System] renderVideos available:', typeof window.renderVideos !== 'undefined');
@@ -2843,9 +2749,7 @@
 
       waitForTagSystem(() => {
         const tagSystem = window.VideoTagSystem;
-        let currentTagFilter = null; // 当前选中的标签筛选
-        let currentCollectionFilter = null; // 当前选中的合集（二级标签）筛选
-        let currentVideoForTagging = null; // 当前正在打标签的视频
+        let currentTagFilter = null; // 当前选中的标签筛        let currentCollectionFilter = null; // 当前选中的合集（二级标签）筛        let currentVideoForTagging = null; // 当前正在打标签的视频
 
         // Toast 提示
         function showToast(message) {
@@ -2860,7 +2764,7 @@
           }
         }
 
-        // ===== 标签筛选 UI =====
+        // ===== 标签筛UI =====
         function renderTagFilters(videos) {
           window.renderTagFilters = renderTagFilters; // Expose to global scope
           const container = document.getElementById('tag-filter-tabs');
@@ -2870,16 +2774,13 @@
           const stats = tagSystem.getTagStatistics(videoList);
           const allTags = tagSystem.getVisibleTags ? tagSystem.getVisibleTags() : tagSystem.getAllTags();
 
-          // 分离全局标签和用户标签
-          let globalTags = allTags.filter(t => !(t.scope && String(t.scope).startsWith('user')));
+          // 分离全局标签和用户标          let globalTags = allTags.filter(t => !(t.scope && String(t.scope).startsWith('user')));
           let userTags = allTags.filter(t => t.scope && String(t.scope).startsWith('user'));
 
-          // 去除用户标签中与全局标签同名的（优先显示全局）
-          const globalNames = new Set(globalTags.map(t => t.name));
+          // 去除用户标签中与全局标签同名的（优先显示全局          const globalNames = new Set(globalTags.map(t => t.name));
           userTags = userTags.filter(t => !globalNames.has(t.name));
 
-          // 按计数排序
-          const sortByCount = (tags) => tags.sort((a, b) => {
+          // 按计数排          const sortByCount = (tags) => tags.sort((a, b) => {
             const countA = (stats[a.id] || { count: 0 }).count;
             const countB = (stats[b.id] || { count: 0 }).count;
             if (countB !== countA) return countB - countA;
@@ -2905,18 +2806,18 @@
 
           container.innerHTML = '';
 
-          // 1. 状态筛选 Chip
+          // 1. 状态筛Chip
           const statusChip = document.createElement('div');
           const currentStatus = (window.state && window.state.currentFilter) || 'all';
-          const statusLabels = { 'all': '状态', 'not-started': '未开始', 'in-progress': '学习中', 'completed': '已完成' };
-          const statusIcons = { 'all': '📊', 'not-started': '⚪', 'in-progress': '⏳', 'completed': '✅' };
+          const statusLabels = { 'all': '状, 'not-started': '未开, 'in-progress': '学习, 'completed': '已完 };
+          const statusIcons = { 'all': '📊', 'not-started': ', 'in-progress': ', 'completed': ' };
 
           statusChip.className = 'tag-filter-chip special-chip';
           if (currentStatus !== 'all') statusChip.classList.add('active');
           statusChip.innerHTML = `
             <span class="tag-icon">${statusIcons[currentStatus] || '📊'}</span>
-            <span>${statusLabels[currentStatus] || '状态'}</span>
-            <span style="font-size: 10px; margin-left: 2px; opacity: 0.6;">▼</span>
+            <span>${statusLabels[currentStatus] || '状}</span>
+            <span style="font-size: 10px; margin-left: 2px; opacity: 0.6;">/span>
           `;
           statusChip.onclick = () => {
             updateStatusModalUI();
@@ -2940,14 +2841,13 @@
           });
           container.appendChild(allChip);
 
-          // 3. "未标记" Chip（只在有未标记视频时显示）
-          const untaggedCount = stats['_untagged'] ? stats['_untagged'].count : 0;
+          // 3. "未标 Chip（只在有未标记视频时显示          const untaggedCount = stats['_untagged'] ? stats['_untagged'].count : 0;
           if (untaggedCount > 0) {
             const untaggedChip = document.createElement('div');
             untaggedChip.className = 'tag-filter-chip' + (currentTagFilter === '_untagged' ? ' active' : '');
             untaggedChip.innerHTML = `
               <span class="tag-icon">📋</span>
-              <span>未标记</span>
+              <span>未标/span>
               <span class="tag-count">(${untaggedCount})</span>
             `;
             untaggedChip.addEventListener('click', () => {
@@ -2959,13 +2859,12 @@
             container.appendChild(untaggedChip);
           }
 
-          // 4. 全局标签 Chips（按计数排序，有视频的+核心标签）
-          globalTagsFiltered.forEach(tag => {
+          // 4. 全局标签 Chips（按计数排序，有视频核心标签          globalTagsFiltered.forEach(tag => {
             const stat = stats[tag.id] || { count: 0 };
             const chip = document.createElement('div');
             chip.className = 'tag-filter-chip' + (currentTagFilter === tag.id ? ' active' : '');
             chip.innerHTML = `
-              <span class="tag-icon">${tag.icon || '🏷️'}</span>
+              <span class="tag-icon">${tag.icon || '🏷}</span>
               <span>${tag.displayName || tag.name}</span>
               <span class="tag-count">(${stat.count})</span>
             `;
@@ -2979,13 +2878,12 @@
             container.appendChild(chip);
           });
 
-          // 5. 用户标签 Chips（只显示有视频的）
-          userTagsFiltered.forEach(tag => {
+          // 5. 用户标签 Chips（只显示有视频的          userTagsFiltered.forEach(tag => {
             const stat = stats[tag.id] || { count: 0 };
             const chip = document.createElement('div');
             chip.className = 'tag-filter-chip' + (currentTagFilter === tag.id ? ' active' : '');
             chip.innerHTML = `
-              <span class="tag-icon">${tag.icon || '🏷️'}</span>
+              <span class="tag-icon">${tag.icon || '🏷}</span>
               <span>${tag.displayName || tag.name}</span>
               <span class="tag-count">(${stat.count})</span>
             `;
@@ -3103,7 +3001,7 @@
           const current = (window.state && window.state.currentFilter) || 'all';
           ['all', 'not-started', 'in-progress', 'completed'].forEach(s => {
             const check = document.getElementById(`status-check-${s}`);
-            if (check) check.textContent = s === current ? '✓' : '';
+            if (check) check.textContent = s === current ? ' : '';
 
             // Highlight selected row
             const row = check.closest('.tag-item');
@@ -3114,7 +3012,7 @@
           });
         }
 
-        // ===== 应用筛选 =====
+        // ===== 应用筛=====
         function applyFilters() {
           if (!window.state) {
             console.warn('[Mobile Tag System] window.state not available in applyFilters');
@@ -3170,8 +3068,7 @@
         `;
           }).join('');
 
-          // 子标签（预设标签）- 较小的尺寸
-          const presetTagsHtml = presetTags.map(tag => {
+          // 子标签（预设标签 较小的尺          const presetTagsHtml = presetTags.map(tag => {
             const label = tag.displayName || tag.name;
             return `
         <span class="video-tag-chip video-tag-preset" style="background-color: ${tag.color}10; color: ${tag.color}; border-color: ${tag.color}30;">
@@ -3250,7 +3147,7 @@
             btn.addEventListener('click', () => {
               const id = btn.dataset.tagId;
               const visible = tagSystem.toggleHide(id);
-              showToast(visible ? '已显示标签' : '已隐藏标签');
+              showToast(visible ? '已显示标 : '已隐藏标);
               renderTagManager();
               renderTagFilters(window.state ? window.state.videos : []);
               if (typeof tagSystem.savePreferencesToServer === 'function') {
@@ -3264,7 +3161,7 @@
             btn.addEventListener('click', () => {
               const id = btn.dataset.tagId;
               const pinned = tagSystem.togglePin(id);
-              showToast(pinned ? '已置顶' : '取消置顶');
+              showToast(pinned ? '已置 : '取消置顶');
               renderTagManager();
               renderTagFilters(window.state ? window.state.videos : []);
               if (typeof tagSystem.savePreferencesToServer === 'function') {
@@ -3278,7 +3175,7 @@
             btn.addEventListener('click', () => {
               const id = btn.dataset.tagId;
               const currentAlias = tagSystem.getPreferences().alias[id] || '';
-              const alias = prompt('为此标签设置别名（留空恢复默认）：', currentAlias);
+              const alias = prompt('为此标签设置别名（留空恢复默认）, currentAlias);
               if (alias === null) return;
               tagSystem.setAlias(id, alias);
               if (typeof tagSystem.savePreferencesToServer === 'function') {
@@ -3290,8 +3187,7 @@
             });
           });
 
-          // 渲染自定义标签
-          const customTagsList = document.getElementById('custom-tags-list');
+          // 渲染自定义标          const customTagsList = document.getElementById('custom-tags-list');
           if (!customTagsList) {
             console.error('[Mobile Tag System] custom-tags-list element not found');
             return;
@@ -3320,7 +3216,7 @@
                 const tagId = btn.dataset.tagId;
                 if (!tagId) return;
 
-                const confirmed = window.confirm('确定要删除这个标签吗？');
+                const confirmed = window.confirm('确定要删除这个标签吗);
                 if (!confirmed) return;
 
                 // Prevent double clicks while the async work runs in the background
@@ -3358,7 +3254,7 @@
                   const success = results.some(r => r.status === 'fulfilled' && r.value === true);
 
                   if (success) {
-                    showToast('标签已删除');
+                    showToast('标签已删);
                   } else {
                     alert('删除失败，请稍后重试');
                   }
@@ -3381,7 +3277,7 @@
                   const token = window.token || localStorage.getItem('linglish_token') || sessionStorage.getItem('linglish_token');
                   tagSystem.savePreferencesToServer(API_BASE, token);
                 }
-                showToast(pinned ? '已置顶' : '取消置顶');
+                showToast(pinned ? '已置 : '取消置顶');
                 renderTagManager();
                 renderTagFilters(window.state ? window.state.videos : []);
               });
@@ -3389,13 +3285,12 @@
           }
         }
 
-        // 添加自定义标签
-        if (addCustomTagBtn) {
+        // 添加自定义标        if (addCustomTagBtn) {
           addCustomTagBtn.addEventListener('click', async () => {
             const name = prompt('请输入标签名称：');
             if (!name) return;
 
-            const icon = prompt('请输入标签图标（emoji）：', '🏷️') || '🏷️';
+            const icon = prompt('请输入标签图标（emoji）：', '🏷) || '🏷;
 
             let tag = null;
             if (tagSystem.createPersonalTag) {
@@ -3425,7 +3320,7 @@
           tagManagerBackdrop.addEventListener('click', hideTagManager);
         }
 
-        // ===== 视频标签选择器 =====
+        // ===== 视频标签选择=====
         const videoTagSelectorModal = document.getElementById('video-tag-selector-modal');
         const videoTagSelectorBackdrop = document.getElementById('video-tag-selector-backdrop');
         const videoTagSelectorCloseBtn = document.getElementById('video-tag-selector-close');
@@ -3470,8 +3365,7 @@
             return;
           }
 
-          // 先加载后端标签映射
-          loadVideoTagsFromServer(currentVideoForTagging).then(() => {
+          // 先加载后端标签映          loadVideoTagsFromServer(currentVideoForTagging).then(() => {
             buildSelector();
           });
         }
@@ -3490,7 +3384,7 @@
             <span class="tag-item-icon">${tag.icon}</span>
             <span class="tag-item-name">${label}</span>
           </div>
-          <div class="video-tag-checkbox">${isSelected ? '✓' : ''}</div>
+          <div class="video-tag-checkbox">${isSelected ? ' : ''}</div>
         </div>
         `;
           }).join('');
@@ -3501,8 +3395,7 @@
               const tagId = item.dataset.tagId;
               tagSystem.toggleVideoTag(currentVideoForTagging, tagId);
               renderVideoTagSelector();
-              // 保存到后端
-              await saveVideoTagsToServer(currentVideoForTagging);
+              // 保存到后              await saveVideoTagsToServer(currentVideoForTagging);
             });
           });
         }
@@ -3548,7 +3441,7 @@
               body: JSON.stringify({ global_tag_ids: globalIds, user_tag_ids: personalIds })
             });
           } catch (e) {
-            console.warn('保存标签到后端失败', e);
+            console.warn('保存标签到后端失, e);
           }
         }
 
@@ -3591,7 +3484,7 @@
               const tagBtn = document.createElement('button');
               tagBtn.className = 'mobile-action-btn tag-video-btn';
               tagBtn.title = '管理标签';
-              tagBtn.innerHTML = '🏷️';
+              tagBtn.innerHTML = '🏷;
               tagBtn.dataset.id = videoId;
 
               tagBtn.addEventListener('click', (e) => {
@@ -3620,12 +3513,12 @@
           });
         }
 
-        // 初始化标签筛选 - 添加调试信息
+        // 初始化标签筛- 添加调试信息
         console.log('[Mobile Tag System] Starting initialization...');
         console.log('[Mobile Tag System] window.state available:', typeof window.state !== 'undefined');
         console.log('[Mobile Tag System] state.videos:', typeof window.state !== 'undefined' && window.state ? (window.state.videos || []).length : 'N/A');
 
-        // 立即尝试渲染，因为 loadVideos 可能已经执行过了
+        // 立即尝试渲染，因loadVideos 可能已经执行过了
         if (typeof window.state !== 'undefined' && window.state) {
           console.log('[Mobile Tag System] Immediate render attempt...');
           renderTagFilters(window.state.videos || []);
@@ -3638,8 +3531,7 @@
           }
         });
 
-        // 在视频加载完成后渲染标签筛选
-        const originalLoadVideos = window.loadVideos;
+        // 在视频加载完成后渲染标签筛        const originalLoadVideos = window.loadVideos;
         if (typeof originalLoadVideos === 'function') {
           console.log('[Mobile Tag System] Wrapping loadVideos function');
           window.loadVideos = async function () {
@@ -3725,7 +3617,7 @@
           console.log('[Mobile Explore Header] VIP badge hidden by default');
         }
 
-        // 游客模式：不请求 /users/me，避免 401 日志噪音
+        // 游客模式：不请求 /users/me，避401 日志噪音
         if (isGuestMode) {
           const userInfoEl = document.getElementById('mobile-user-info');
           const userNameEl = document.getElementById('mobile-user-name');
@@ -3826,6 +3718,7 @@
   <script src="./js/page-tracker.js?v=1"></script>
 <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
   <script src="./js/icons.js?v=1"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"129320643cd548dd92038c4e1e9cf253","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 
 </html>
