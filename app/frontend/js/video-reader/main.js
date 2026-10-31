@@ -572,8 +572,9 @@ const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.g
     firstLessonGoalCard.update(firstLessonGoal);
   },
 });
-const guidedReaderTools = document.getElementById('guided-reader-tools');
-if (guidedReaderTools) guidedReaderTools.open = !firstLessonSession.isActive();
+const guidedReaderTools = window.MobileReaderLayout.configureGuidedTools(
+  document.getElementById('guided-reader-tools'), firstLessonSession.isActive()
+);
 const guidedLessonEntry = document.getElementById('guided-lesson-entry');
 if (guidedLessonEntry) guidedLessonEntry.addEventListener('click', (event) => {
   const href = window.LinglishFirstLessonGoal.resumeHref({ videoId: String(state.selectedVideoId || '') }, true, 'reader_guided_practice');
@@ -604,7 +605,7 @@ function clearMobileFirstLessonState() {
   firstLessonGoal = null;
   firstLessonGoalBusy = false;
   firstLessonGoalCard.hide();
-  if (guidedReaderTools) guidedReaderTools.open = true;
+  window.MobileReaderLayout.configureGuidedTools(guidedReaderTools, false);
   const progress = document.getElementById('first-lesson-progress');
   if (progress) {
     progress.hidden = true;

@@ -84,10 +84,10 @@
 .goal-studio .first-lesson-goal-actions .goal-exit { color: #627589; border-color: transparent; background: #f4f7f9; }
 .goal-studio :is(button, a):focus-visible { outline: 3px solid #de9a37; outline-offset: 3px; }
 html[data-learning-focus="first-lesson"] :is(#coach-dock, #practice-section-right) { display: none !important; }
-.guided-reader-tools { display: contents; }
+.guided-reader-tools { display: block; }
 .guided-reader-tools > summary { display: none; }
 .guided-lesson-entry { display: none; }
-html[data-learning-focus="first-lesson"] .guided-reader-tools { display: block; }
+html[data-learning-focus="first-lesson"] .guided-reader-tools { display: block; order: 3; }
 html[data-learning-focus="first-lesson"] .guided-reader-tools > summary { display: flex; align-items: center; min-height: 48px; padding: 10px 14px; border: 1px solid #dce8ed; border-radius: 13px; color: #496477; background: #f7fafc; font-size: 13px; font-weight: 700; cursor: pointer; list-style: none; }
 html[data-learning-focus="first-lesson"] .guided-reader-tools > summary::marker { content: ''; }
 html[data-learning-focus="first-lesson"] .guided-reader-tools[open] > summary { margin-bottom: 10px; }
