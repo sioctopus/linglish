@@ -19,7 +19,7 @@
 
 // Import and re-export core modules
 export * from './js/app/state.js?v=20251126010';
-export * from './js/app/auth.js?v=2026103001';
+export * from './js/app/auth.js?v=20251126010';
 export * from './js/app/api.js?v=20251126010';
 
 // Import and re-export feature modules
@@ -31,11 +31,11 @@ export * from './js/app/ui-manager.js?v=20251126010';
 export * from './js/app/stats-refresh.js?v=20251126010';
 
 // Import main module (triggers DOMContentLoaded initialization)
-import './js/app/main.js?v=2026103001';
+import './js/app/main.js?v=20251126010';
 
 // Export main functions for backward compatibility
 export {
   bootstrapApp,
   refreshStats,
   refreshSessions,
-} from './js/app/main.js?v=2026103001';
+} from './js/app/main.js?v=20251126010';

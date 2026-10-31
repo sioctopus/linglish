@@ -30,8 +30,6 @@ __pycache__/
 
 # User content and database exports
 app/backend/uploads/
-app/backend/pdfs/
-app/backend/note-images/
 app/backend/public/videos/
 app/backend/public/recordings/
 app/backend/public/thumbnails/

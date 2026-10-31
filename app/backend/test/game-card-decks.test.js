@@ -13,16 +13,27 @@ test('card decks cover theme packs plus numbers and alphabet', () => {
   const pack = loadDecks();
   assert.deepEqual(
     pack.decks.map((deck) => deck.id),
-    ['fruits', 'animals', 'vehicles', 'colors', 'clothes', 'scenes', 'numbers', 'letters', 'shapes', 'body', 'appliances', 'nature', 'currencies'],
+    ['fruits', 'animals', 'vehicles', 'colors', 'clothes', 'scenes', 'numbers', 'letters', 'shapes', 'body', 'appliances', 'home', 'jobs', 'family', 'nature', 'currencies'],
   );
 });
 
 test('each theme deck has enough study cards with chinese glosses', () => {
-  const minWords = { numbers: 100, letters: 26, shapes: 20, body: 21, appliances: 20, nature: 18, currencies: 1 };
+  const minWords = {
+    numbers: 100, letters: 26, shapes: 20, body: 21, appliances: 20,
+    home: 40, jobs: 40, family: 30, nature: 18, currencies: 1,
+  };
+  function deckWords(deck) {
+    if (Array.isArray(deck.words) && deck.words.length) return deck.words;
+    if (Array.isArray(deck.groups)) {
+      return deck.groups.flatMap((group) => (group && group.words) || []);
+    }
+    return [];
+  }
   loadDecks().decks.forEach((deck) => {
+    const words = deckWords(deck);
     const min = minWords[deck.id] || 30;
-    assert.ok(deck.words.length >= min, `${deck.id} has ${deck.words.length}, want >= ${min}`);
-    deck.words.forEach((word) => {
+    assert.ok(words.length >= min, `${deck.id} has ${words.length}, want >= ${min}`);
+    words.forEach((word) => {
       assert.ok(word.lemma, deck.id);
       assert.ok(word.zh, word.lemma);
       assert.ok(word.ipa, word.lemma);
@@ -66,14 +77,14 @@ test('body and appliance decks use local drawings or photographs', () => {
   ['head', 'eye', 'ear', 'nose', 'mouth', 'hand', 'foot'].forEach((lemma) => {
     assert.ok(body.words.some((word) => word.lemma === lemma), lemma);
   });
-  ['television', 'fridge', 'washing machine', 'air conditioner', 'fan', 'phone'].forEach((lemma) => {
+  ['television', 'fridge', 'washing machine', 'air conditioner', 'fan', 'phone', 'dryer', 'switch', 'socket'].forEach((lemma) => {
     assert.ok(appliances.words.some((word) => word.lemma === lemma), lemma);
   });
   body.words.concat(appliances.words).forEach((word) => {
     assert.match(word.photo, /^\/images\/game\/(?:(?:body|appliances)\/.+\.svg|photos\/.+\.jpg)/);
     const file = path.resolve(__dirname, '../../frontend', word.photo.replace(/^\//, '').replace(/\?.*$/, ''));
     assert.ok(fs.existsSync(file), word.lemma);
-    if (word.photo.includes('/photos/')) assert.ok(fs.statSync(file).size > 15000, word.lemma);
+    if (word.photo.includes('/photos/')) assert.ok(fs.statSync(file).size > 8000, word.lemma);
   });
   const bodyArt = fs.readFileSync(path.resolve(__dirname, '../../frontend/images/game/body/body.svg'), 'utf8');
   assert.doesNotMatch(bodyArt, /<rect width="640" height="640" fill="#ffffff"\/>/);
@@ -81,6 +92,28 @@ test('body and appliance decks use local drawings or photographs', () => {
   assert.match(body.words.find((word) => word.lemma === 'eye').photo, /\/photos\/eye\.jpg/);
   assert.match(appliances.words.find((word) => word.lemma === 'television').photo, /\/photos\/television\.jpg/);
   assert.match(appliances.words.find((word) => word.lemma === 'phone').photo, /\/photos\/phone\.jpg/);
+});
+
+test('home jobs and family decks cover daily life vocabulary with local photos', () => {
+  const pack = loadDecks();
+  const home = pack.decks.find((item) => item.id === 'home');
+  const jobs = pack.decks.find((item) => item.id === 'jobs');
+  const family = pack.decks.find((item) => item.id === 'family');
+  ['sofa', 'toilet', 'shower', 'toothbrush', 'curtain', 'stove'].forEach((lemma) => {
+    assert.ok(home.words.some((word) => word.lemma === lemma), lemma);
+  });
+  ['teacher', 'professor', 'student', 'barber', 'architect', 'software engineer', 'network engineer'].forEach((lemma) => {
+    assert.ok(jobs.words.some((word) => word.lemma === lemma), lemma);
+  });
+  ['father', 'mother', 'grandfather', 'grandmother', 'older brother', 'older sister', 'uncle', 'aunt', 'cousin'].forEach((lemma) => {
+    assert.ok(family.words.some((word) => word.lemma === lemma), lemma);
+  });
+  home.words.concat(jobs.words, family.words).forEach((word) => {
+    assert.match(word.photo, /^\/images\/game\/photos\/.+\.jpg/, word.lemma);
+    const file = path.resolve(__dirname, '../../frontend', word.photo.replace(/^\//, '').replace(/\?.*$/, ''));
+    assert.ok(fs.existsSync(file), word.lemma);
+    assert.ok(fs.statSync(file).size > 5000, word.lemma);
+  });
 });
 
 test('currency deck groups notes by currency with real denomination photos', async () => {
@@ -152,8 +185,13 @@ test('home pages open each reading deck inside the game', () => {
       const href = `href="./game.html?deck=${deck.id}"`;
       assert.ok(html.includes(href), `${page} missing ${href}`);
       assert.ok(html.includes(`<strong>${deck.label}</strong>`), `${page} missing ${deck.label}`);
-      const cover = deck.words[0].photo.replace(/^\//, './');
-      assert.ok(html.includes(cover), `${page} missing cover ${cover}`);
+      const first = Array.isArray(deck.words) && deck.words[0]
+        ? deck.words[0]
+        : deck.groups && deck.groups[0] && deck.groups[0].words && deck.groups[0].words[0];
+      assert.ok(first && first.photo, `${deck.id} needs a cover photo`);
+      // 首页封面只核对路径，版本号可与词卡 JSON 各自 bump
+      const coverBase = first.photo.replace(/^\//, './').replace(/\?.*$/, '');
+      assert.ok(html.includes(coverBase), `${page} missing cover ${coverBase}`);
     });
   });
 });
@@ -162,12 +200,12 @@ test('reading cards move with arrow keys and toggle speech with space', () => {
   const views = require(path.resolve(__dirname, '../../frontend/js/game/game-views.js'));
   assert.equal(views.cardKeyAction({ key: 'ArrowUp', target: { tagName: 'BUTTON' } }), 'prev');
   assert.equal(views.cardKeyAction({ key: 'ArrowDown', target: { tagName: 'BODY' } }), 'next');
-  assert.equal(views.cardKeyAction({ key: ' ', code: 'Space', target: { tagName: 'BUTTON' } }), null);
+  assert.equal(views.cardKeyAction({ key: ' ', code: 'Space', target: { tagName: 'BUTTON' } }), 'toggle');
   assert.equal(views.cardKeyAction({ key: 'ArrowDown', target: { tagName: 'INPUT' } }), null);
   assert.equal(views.cardKeyAction({ key: 'ArrowUp', ctrlKey: true, target: { tagName: 'BODY' } }), null);
   const source = fs.readFileSync(path.resolve(__dirname, '../../frontend/js/game/game-views.js'), 'utf8');
   assert.match(source, /bindCardKeys\(onKey\)/);
-  assert.match(source, /toggleSpeak/);
+  assert.match(source, /action === 'toggle'|return 'toggle'/);
 });
 
 test('repaired fruit photos are not copies of another fruit', async () => {

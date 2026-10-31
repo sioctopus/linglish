@@ -7,7 +7,7 @@
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
   <link rel="stylesheet" href="./styles/tokens.css?v=1">
   <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
-  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
   <style>
     body {
       margin: 0;
@@ -277,9 +277,8 @@
       }
     }
   </style>
-  <script src="./js/auth-manager.js?v=2026103001"></script>
   <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/icons.js?v=2026103001"></script>
+  <script src="./js/icons.js?v=1"></script>
 </head>
 <body>
   <nav class="nav">
@@ -374,7 +373,14 @@
     });
 
     function readToken() {
-      return window.AuthManager ? window.AuthManager.getToken() || '' : '';
+      const keys = ['linglish_token', 'authToken'];
+      for (const key of keys) {
+        try {
+          const value = localStorage.getItem(key) || sessionStorage.getItem(key);
+          if (value && value !== 'null' && value !== 'undefined') return value;
+        } catch (_) {}
+      }
+      return '';
     }
 
     function showStatus(message, isError) {
@@ -402,7 +408,6 @@
 
     async function loadDocuments() {
       const list = document.getElementById('doc-list');
-      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') await window.AuthManager.ensureSession();
       const token = readToken();
       if (!token) {
         list.innerHTML = '<p class="hint">登录后可以查看已经导入的文档。</p>';
@@ -435,7 +440,6 @@
 
     document.getElementById('import-form').addEventListener('submit', async (event) => {
       event.preventDefault();
-      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') await window.AuthManager.ensureSession();
       const token = readToken();
       if (!token) {
         showStatus('请先登录，再导入学习文档。', true);

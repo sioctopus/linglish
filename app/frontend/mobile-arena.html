@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 
 <head>
-  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <script src="./js/auth-manager.js?v=2"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <script>
@@ -109,9 +109,9 @@
       } catch (_) { }
     })();
   </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>实战练习场 - Linglish | AI口语对话与场景模拟</title>
-  <meta name="description" content="在Linglish实战场进行AI对话练习，模拟真实场景对话，提升口语表达能力。AI实时反馈，发音评测，角色扮演练习，让你在实战中快速提升英语口语。">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>实战练习- Linglish | AI口语对话与场景模</title>
+  <meta name="description" content="在Linglish实战场进行AI对话练习，模拟真实场景对话，提升口语表达能力。AI实时反馈，发音评测，角色扮演练习，让你在实战中快速提升英语口语>
   <meta name="keywords" content="英语口语练习,AI对话,场景模拟,口语评测,实战练习,speaking practice">
   <meta name="author" content="Linglish">
   <meta name="google-site-verification" content="google5a3b03e17f3c3f2c">
@@ -119,23 +119,23 @@
   <!-- Open Graph -->
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://example.com/mobile-arena.html">
-  <meta property="og:title" content="实战练习场 - Linglish">
-  <meta property="og:description" content="AI对话练习，真实场景模拟，快速提升英语口语">
+  <meta property="og:title" content="实战练习- Linglish">
+  <meta property="og:description" content="AI对话练习，真实场景模拟，快速提升英语口>
   <meta property="og:image" content="https://example.com/og-image-arena.jpg">
 
   <!-- Canonical -->
   <link rel="canonical" href="https://example.com/mobile-arena.html">
-  <link rel="manifest" href="/manifest.json?v=2026103001">
-  <meta name="theme-color" content="#0ea5e9">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#ffffff">
   <meta name="view-transition" content="same-origin">
 
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
-  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
-  <link rel="stylesheet" href="./mobile-styles.css?v=2026103001">
-  <script src="./mobile-auth.js?v=2026103001"></script>
+  <link rel="stylesheet" href="./styles/icons.css?v=20261028-shell2">
+  <link rel="stylesheet" href="./mobile-styles.css?v=20261028-shell2">
+  <script src="./mobile-auth.js?v=3"></script>
   <script src="./guest-check.js"></script>
-  <script src="./auth-helpers.js?v=2026103001"></script>
-  <script src="./i18n.js?v=2026103001"></script>
+  <script src="./auth-helpers.js?v=2"></script>
+  <script src="./i18n.js?v=20250114e"></script>
   <script src="./js/ai-roleplay-entrypoints.js?v=20260821"></script>
   <style>
     /* Premium Theme Variables */
@@ -152,6 +152,11 @@
     body {
       background-color: var(--lx-paper, #f8fafc);
       font-family: var(--lx-font-body, 'Manrope', system-ui, -apple-system, sans-serif);
+      margin: 0;
+      min-height: 100dvh;
+      overflow-x: hidden;
+      overflow-y: auto;
+      padding-bottom: calc(var(--bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px) + 12px);
     }
 
     /* VIP Badge Styles */
@@ -214,13 +219,6 @@
       white-space: nowrap !important;
     }
 
-    /* Header Glassmorphism */
-    .mobile-header.arena-header {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-    }
 
     /* Scenarios Grid Layout */
     .scenarios-section {
@@ -520,32 +518,6 @@
       }
     }
 
-    /* Bottom Navigation (Glassmorphism) */
-    .bottom-nav {
-      background: rgba(255, 255, 255, 0.9) !important;
-      backdrop-filter: blur(20px) !important;
-      -webkit-backdrop-filter: blur(20px) !important;
-      border-top: 1px solid rgba(0, 0, 0, 0.05) !important;
-      padding-bottom: env(safe-area-inset-bottom) !important;
-      position: fixed;
-      bottom: 0;
-      width: 100%;
-      z-index: 1000;
-    }
-
-    .nav-item {
-      color: #94a3b8 !important;
-      transition: all 0.3s ease !important;
-    }
-
-    .nav-item.active {
-      color: #0ea5e9 !important;
-    }
-
-    .nav-item.active .nav-icon {
-      transform: translateY(-2px);
-      filter: drop-shadow(0 4px 8px rgba(14, 165, 233, 0.3));
-    }
 
     /* Category Pills */
     .category-pills {
@@ -821,23 +793,20 @@
 
 <body>
   <!-- Top Navigation Bar -->
-  <header class="mobile-header arena-header" style="padding: 12px 16px 10px;">
-    <div class="brand-section" style="gap: 8px;">
-      <h1 class="page-title">实战场</h1>
-    </div>
-    <div class="header-actions" style="gap: 18px !important;">
-      <!-- User Info -->
+  <header class="mobile-header arena-header">
+    <h1 class="page-title">实战场</h1>
+    <div class="header-actions">
       <div id="mobile-user-info" class="mobile-user-info" style="display: none;">
         <span id="mobile-user-name" class="mobile-user-name"></span>
         <a href="./membership.html" id="mobile-vip-badge" class="mobile-vip-badge" style="display: none;">
-          <span class="vip-icon">👑</span>
+          <span class="vip-icon" aria-hidden="true">VIP</span>
           <span class="vip-text">VIP</span>
         </a>
       </div>
-      <button class="icon-btn history-btn" title="历史" aria-label="历史">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
+      <button class="icon-btn history-btn" type="button" title="历史" aria-label="历史">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="9" />
+          <path d="M12 7v5l3 2" />
         </svg>
       </button>
     </div>
@@ -891,7 +860,7 @@
         </div>
         <div class="league-preview-footer">
           <span class="season-timer" id="season-timer">赛季剩余: --</span>
-          <a href="mobile-league.html" class="view-league-btn">查看完整排行 →</a>
+          <a href="mobile-league.html" class="view-league-btn">查看完整排行榜</a>
         </div>
       </div>
     </section>
@@ -900,23 +869,23 @@
       <div class="ai-missions-head">
         <div>
           <h3 id="ai-missions-title">AI 场景任务</h3>
-          <p>选择一个明确目标，在 4–8 轮真实应答中完成任务。</p>
+          <p>选择一个明确目标，4 轮真实应答中完成任务</p>
         </div>
-        <p class="ai-scenario-status" id="ai-scenario-status" aria-live="polite">登录后查看场景记录</p>
+        <p class="ai-scenario-status" id="ai-scenario-status" aria-live="polite">登录后查看场景记</p>
       </div>
       <div class="ai-scenario-list" id="ai-scenario-list" aria-live="polite" aria-busy="false">
-        <p class="ai-scenario-empty">正在检查可用场景...</p>
+        <p class="ai-scenario-empty">正在检查可用场..</p>
       </div>
     </section>
 
     <section class="legacy-roleplay-section" id="legacy-video-roleplay" aria-labelledby="legacy-roleplay-title">
       <div class="legacy-roleplay-head">
         <h3 id="legacy-roleplay-title">视频模仿练习</h3>
-        <p>沿用原视频台词进行模仿、跟读和角色练习。</p>
+        <p>沿用原视频台词进行模仿、跟读和角色练习</p>
       </div>
 
-      <section class="scenario-categories" aria-label="筛选视频模仿练习">
-        <h3 class="section-title">筛选视频</h3>
+      <section class="scenario-categories" aria-label="筛选视频模仿练>
+        <h3 class="section-title">筛选视</h3>
         <div class="category-pills">
           <button class="pill-btn active" data-filter="all" data-i18n="mobile.arena.filter.all">全部</button>
           <button class="pill-btn" data-filter="mine" data-i18n="mobile.arena.filter.my_videos">我的视频</button>
@@ -947,7 +916,7 @@
           </div>
         </div>
 
-        <div class="my-videos-empty hidden" id="my-videos-empty">登录后可查看「我的视频」。</div>
+        <div class="my-videos-empty hidden" id="my-videos-empty">登录后可查看「我的视频」</div>
         <div class="scenarios-section" id="my-video-list"></div>
       </section>
 
@@ -976,14 +945,6 @@
     <a href="mobile-power.html" class="nav-item">
       <div class="nav-icon" data-lx-icon="power"></div>
       <span data-i18n="mobile.power.title">能量站</span>
-    </a>
-    <a href="mobile-arena.html" class="nav-item active">
-      <div class="nav-icon" data-lx-icon="arena"></div>
-      <span data-i18n="mobile.arena.title">实战场</span>
-    </a>
-    <a href="mobile-treasure.html" class="nav-item">
-      <div class="nav-icon" data-lx-icon="growth"></div>
-      <span data-i18n="mobile.treasure.title">成长中心</span>
     </a>
   </nav>
   <script>
@@ -1080,11 +1041,10 @@
         userId: null,
         videos: [],
         scenarios: [],
-        currentDifficulty: null, // 难度筛选: null/'beginner'/'intermediate'/'advanced'
+        currentDifficulty: null, // 难度筛 null/'beginner'/'intermediate'/'advanced'
       };
 
-      // 从 localStorage 初始化用户等级
-      function initLevelFromStorage() {
+      // localStorage 初始化用户等      function initLevelFromStorage() {
         try {
           const activeLevel = localStorage.getItem('linglish_active_level');
           if (activeLevel && ['beginner', 'intermediate', 'advanced'].includes(activeLevel)) {
@@ -1182,7 +1142,7 @@
           return (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('mobile.arena.card.duration_unknown') : '时长未知';
         }
         if (seconds < 60) {
-          const unit = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('mobile.arena.card.seconds') : '秒';
+          const unit = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('mobile.arena.card.seconds') : ';
           return `${Math.max(1, Math.round(seconds))} ${unit}`;
         }
         const mins = Math.max(1, Math.round(seconds / 60));
@@ -1206,19 +1166,18 @@
         const t = (key, fallback) => (typeof i18n !== 'undefined' && i18n.t) ? i18n.t(key) : fallback;
         switch (status) {
           case 'ready':
-            return { label: `✅ ${t('mobile.arena.video.status.ready', '可练习')}`, width: '100%' };
+            return { label: `${t('mobile.arena.video.status.ready', '可练)}`, width: '100%' };
           case 'processing':
-            return { label: `⏳ ${t('mobile.arena.video.status.processing', '视频处理中')}`, width: '35%' };
+            return { label: `${t('mobile.arena.video.status.processing', '视频处理)}`, width: '35%' };
           case 'failed':
             return { label: `⚠️ ${t('mobile.arena.video.status.failed', '处理失败')}`, width: '0%' };
           default:
-            return { label: `📥 ${t('mobile.arena.video.status.uploaded', '已上传')}`, width: '15%' };
+            return { label: `📥 ${t('mobile.arena.video.status.uploaded', '已上)}`, width: '15%' };
         }
       }
 
       function resolveThumbnail(video) {
-        // 优先使用YouTube缩略图（如果是YouTube视频）
-        if (video && video.youtube_video_id) {
+        // 优先使用YouTube缩略图（如果是YouTube视频        if (video && video.youtube_video_id) {
           console.log('[Thumbnail] Using YouTube thumbnail for:', video.youtube_video_id);
           return `https://img.youtube.com/vi/${video.youtube_video_id}/hqdefault.jpg`;
         }
@@ -1231,8 +1190,7 @@
           return url;
         }
 
-        // 使用简化的SVG占位符
-        const videoId = video?.id || '';
+        // 使用简化的SVG占位        const videoId = video?.id || '';
         console.log('[Thumbnail] Using SVG fallback for video:', videoId);
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360"><defs><linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:rgb(102,126,234)"/><stop offset="100%" style="stop-color:rgb(118,75,162)"/></linearGradient></defs><rect width="640" height="360" fill="url(#g)"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="Arial" font-size="72" fill="white">🎬</text></svg>`)}`;
       }
@@ -1260,7 +1218,7 @@
 
       function showEmpty(message) {
         if (!emptyState) return;
-        const defaultMsg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('mobile.arena.empty_videos') : '暂时没有可用视频。';
+        const defaultMsg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('mobile.arena.empty_videos') : '暂时没有可用视频;
         emptyState.textContent = message || defaultMsg;
         emptyState.classList.remove('hidden');
       }
@@ -1281,7 +1239,7 @@
         myVideosList.innerHTML = '';
 
         if (!Array.isArray(videos) || videos.length === 0) {
-          const msg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('mobile.arena.my_videos.no_uploads') : '还没有上传过练习视频。';
+          const msg = (typeof i18n !== 'undefined' && i18n.t) ? i18n.t('mobile.arena.my_videos.no_uploads') : '还没有上传过练习视频;
           showEmpty(msg);
           return;
         }
@@ -1308,15 +1266,15 @@
           const statusInfo = mapStatus(video?.status);
           const thumbnailUrl = resolveThumbnail(video);
           const targetUrl = videoId != null && videoId !== ''
-            ? `practice-session.html?videoId=${encodeURIComponent(String(videoId))}&mode=arena`
-            : 'practice-session.html?mode=arena';
+            ? `practice-session.html?videoId=${encodeURIComponent(String(videoId))}&mode=dialogue`
+            : 'practice-session.html?mode=dialogue';
 
           card.innerHTML = `
             <div class="current-badge personal">🎬 我的作品</div>
             <div class="scenario-image">
               <img src="${thumbnailUrl}" alt="${escapeHtml(title)}" onerror="this.style.opacity='0';">
               <div class="scenario-image-fallback">🎬</div>
-              <div class="scenario-difficulty easy">⭐ <span data-i18n="mobile.arena.difficulty.custom">自制</span></div>
+              <div class="scenario-difficulty easy"><span data-i18n="mobile.arena.difficulty.custom">自制</span></div>
               <div class="video-duration-overlay">${durationLabel}</div>
             </div>
             <div class="scenario-info">
@@ -1364,8 +1322,8 @@
           const statusInfo = mapStatus(video?.status);
           const thumbnailUrl = resolveThumbnail(video);
           const targetUrl = videoId != null && videoId !== ''
-            ? `practice-session.html?videoId=${encodeURIComponent(String(videoId))}&mode=arena`
-            : 'practice-session.html?mode=arena';
+            ? `practice-session.html?videoId=${encodeURIComponent(String(videoId))}&mode=dialogue`
+            : 'practice-session.html?mode=dialogue';
 
           // Check if this is user's own video
           const isMyVideo = state.userId != null && Number(video?.uploader_id) === Number(state.userId);
@@ -1419,7 +1377,7 @@
             const profile = await profileResponse.json();
             state.userId = Number(profile?.id) || null;
           } else if (profileResponse.status === 401) {
-            showEmpty('登录信息已过期，请重新登录。');
+            showEmpty('登录信息已过期，请重新登录);
             scheduleLogout();
             return;
           }
@@ -1430,7 +1388,7 @@
         try {
           const res = await fetch(`${API_BASE}/video-resources?lite=1`, { headers });
           if (res.status === 401) {
-            showEmpty('登录信息已过期，请重新登录。');
+            showEmpty('登录信息已过期，请重新登录);
             scheduleLogout();
             return;
           }
@@ -1455,7 +1413,7 @@
           renderAllVideos(filteredByLevel);
         } catch (err) {
           console.warn('Failed to load video resources:', err);
-          showEmpty('加载失败，请稍后重试。');
+          showEmpty('加载失败，请稍后重试);
         } finally {
           hidePlaceholder();
         }
@@ -1586,7 +1544,7 @@
       const distance = end - now;
 
       if (distance < 0) {
-        element.textContent = '赛季已结束';
+        element.textContent = '赛季已结;
         return;
       }
 
@@ -1594,7 +1552,7 @@
       const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
 
       if (days > 0) {
-        element.textContent = `赛季剩余: ${days}天 ${hours}小时`;
+        element.textContent = `赛季剩余: ${days}${hours}小时`;
       } else {
         element.textContent = `赛季剩余: ${hours}小时`;
       }
@@ -1653,7 +1611,7 @@
   </script>
   <script src="./js/page-tracker.js"></script>
 <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
-  <script src="./js/icons.js?v=2026103001"></script>
+  <script src="./js/icons.js?v=1"></script>
 </body>
 
 </html>

@@ -4,6 +4,8 @@
   const mode = window.LinglishCoachingMode;
   if (!mode) return;
 
+  // Product: 带教模式已下线。保留 dock 仅用于移动端倍数/字幕条挂载与桌面划线工具。
+  const COACHING_ENABLED = false;
   const ENABLED_KEY = 'linglish.coaching.enabled';
   // Keep a single short row on phones — prioritize 跟读 / 听自己 / 对比.
   const MOBILE_ACTION_IDS = new Set(['read', 'shadow', 'hear-me', 'compare']);
@@ -226,27 +228,34 @@
     render();
   }
 
+  function stripCoachEntry(root) {
+    if (!root || COACHING_ENABLED) return;
+    root.querySelectorAll('.coach-bar, .coach-toggle, .coach-status, .coach-panel, .coach-actions, .coach-rows')
+      .forEach((node) => node.remove());
+  }
+
   function ensureCoachChrome(root) {
     if (!root) return null;
     let chrome = root.querySelector('.coach-chrome');
-    if (chrome) return chrome;
-    const bar = root.querySelector('.coach-bar');
-    chrome = document.createElement('div');
-    chrome.className = 'coach-chrome';
-    if (bar) {
-      bar.replaceWith(chrome);
-      chrome.appendChild(bar);
-      if (isMobileHost()) {
-        bar.hidden = true;
-        bar.setAttribute('aria-hidden', 'true');
+    if (!chrome) {
+      const bar = root.querySelector('.coach-bar');
+      chrome = document.createElement('div');
+      chrome.className = 'coach-chrome';
+      if (bar) {
+        bar.replaceWith(chrome);
+        if (COACHING_ENABLED) chrome.appendChild(bar);
+        else bar.remove();
+      } else {
+        if (COACHING_ENABLED) {
+          chrome.innerHTML =
+            '<div class="coach-bar" hidden aria-hidden="true"><button type="button" class="coach-toggle">带教</button><p class="coach-status"></p></div>';
+          const toggleBtn = chrome.querySelector('.coach-toggle');
+          if (toggleBtn) toggleBtn.addEventListener('click', toggleOpen);
+        }
+        root.appendChild(chrome);
       }
-    } else {
-      chrome.innerHTML =
-        '<div class="coach-bar" hidden aria-hidden="true"><button type="button" class="coach-toggle">带教</button><p class="coach-status"></p></div>';
-      root.appendChild(chrome);
-      const toggleBtn = chrome.querySelector('.coach-toggle');
-      if (toggleBtn) toggleBtn.addEventListener('click', toggleOpen);
     }
+    stripCoachEntry(root);
     return chrome;
   }
 
@@ -256,7 +265,7 @@
     const toggle = document.getElementById('mobile-view-toggle');
     if (!toggle) return;
     if (toggle.parentElement !== chrome) chrome.appendChild(toggle);
-    // Keep 1x inside the same row as 英文/双语/上一句/下一句
+    // Keep 1x inside the same row as 英文/双语（上一句/下一句在 Hold 上方）
     adoptMobileSpeedTabs(root);
   }
 
@@ -267,19 +276,14 @@
     const speeds = document.getElementById('mobile-speed-controls')
       || document.querySelector('.mobile-speed-controls');
     if (!speeds) return;
-    const bar = chrome.querySelector('.coach-bar');
-    if (bar) {
-      bar.hidden = true;
-      bar.setAttribute('aria-hidden', 'true');
-    }
+    stripCoachEntry(chrome);
     speeds.classList.add('coach-speed-dropdown');
     speeds.classList.remove('coach-speed-tabs');
-    const host = toggle || chrome;
-    if (speeds.parentElement !== host) {
-      host.insertBefore(speeds, host.firstChild);
-    } else if (toggle && speeds !== toggle.firstElementChild) {
-      toggle.insertBefore(speeds, toggle.firstChild);
+    // 倍数固定在左侧；英文/双语仍在 toggle 右侧
+    if (speeds.parentElement !== chrome || speeds !== chrome.firstElementChild) {
+      chrome.insertBefore(speeds, chrome.firstChild);
     }
+    if (toggle && toggle.parentElement !== chrome) chrome.appendChild(toggle);
   }
 
   function ensureRoot() {
@@ -297,25 +301,32 @@
     root.className = 'coach-dock';
     root.id = 'coach-dock';
     root.dataset.host = isMobileHost() || state.host === 'mobile' ? 'mobile' : 'desktop';
-    root.setAttribute('aria-label', '视频带教');
-    root.innerHTML = [
-      '<div class="coach-panel" hidden></div>',
-      '<div class="coach-rows" hidden></div>',
-      '<div class="coach-actions" hidden></div>',
-      '<div class="coach-chrome">',
-      '<div class="coach-bar" hidden aria-hidden="true"><button type="button" class="coach-toggle">带教</button><p class="coach-status"></p></div>',
-      '</div>',
-    ].join('');
+    root.setAttribute('aria-label', COACHING_ENABLED ? '视频带教' : '字幕控制');
+    root.innerHTML = COACHING_ENABLED
+      ? [
+        '<div class="coach-panel" hidden></div>',
+        '<div class="coach-rows" hidden></div>',
+        '<div class="coach-actions" hidden></div>',
+        '<div class="coach-chrome">',
+        '<div class="coach-bar" hidden aria-hidden="true"><button type="button" class="coach-toggle">带教</button><p class="coach-status"></p></div>',
+        '</div>',
+      ].join('')
+      : '<div class="coach-chrome"></div>';
     if ((isMobileHost() || state.host === 'mobile') && wrapper && wrapper.parentElement === mount) {
       mount.insertBefore(root, wrapper.nextSibling);
     } else {
       mount.appendChild(root);
     }
-    const toggleBtn = root.querySelector('.coach-toggle');
-    if (toggleBtn) toggleBtn.addEventListener('click', toggleOpen);
-    root.querySelector('.coach-rows').addEventListener('click', onRowClick);
-    root.querySelector('.coach-actions').addEventListener('click', onActionClick);
+    if (COACHING_ENABLED) {
+      const toggleBtn = root.querySelector('.coach-toggle');
+      if (toggleBtn) toggleBtn.addEventListener('click', toggleOpen);
+      const rows = root.querySelector('.coach-rows');
+      const actions = root.querySelector('.coach-actions');
+      if (rows) rows.addEventListener('click', onRowClick);
+      if (actions) actions.addEventListener('click', onActionClick);
+    }
     state.root = root;
+    stripCoachEntry(root);
     adoptMobileViewToggle(root);
     adoptMobileSpeedTabs(root);
     bindTranscriptClicks();
@@ -340,6 +351,7 @@
   }
 
   function toggleOpen() {
+    if (!COACHING_ENABLED) return;
     state.user = resolveUser(state.user);
     state.allowed = mode.canUseCoaching(state.user);
     state.open = !state.open;
@@ -363,7 +375,9 @@
   }
 
   function showLocked() {
-    const panel = state.root.querySelector('.coach-panel');
+    if (!COACHING_ENABLED) return;
+    const panel = state.root && state.root.querySelector('.coach-panel');
+    if (!panel) return;
     panel.hidden = false;
     panel.replaceChildren();
     const text = document.createElement('p');
@@ -384,6 +398,7 @@
   }
 
   function canUseTools() {
+    if (!COACHING_ENABLED) return false;
     return state.allowed && (state.open || (inFocus() && state.allowed));
   }
 
@@ -391,6 +406,7 @@
     if (state.toolsIndex < 0) return false;
     // Desktop video learning: copy / highlight / note stay available without membership.
     if (!isMobileHost()) return true;
+    if (!COACHING_ENABLED) return false;
     return canUseTools();
   }
 
@@ -401,12 +417,13 @@
 
   function openToolsFor(index, options) {
     if (!Number.isInteger(index) || index < 0) return;
-    state.user = resolveUser(state.user);
-    state.allowed = mode.canUseCoaching(state.user);
-    const focusReady = inFocus() && state.allowed;
     const desktop = !isMobileHost();
-    // Mobile coaching stays membership-gated; desktop line tools do not.
-    if (!state.allowed && !desktop) {
+    // 带教下线：手机不再挂工具条；桌面仍保留复制 / 划线 / 笔记。
+    if (!COACHING_ENABLED && !desktop) return;
+    state.user = resolveUser(state.user);
+    state.allowed = COACHING_ENABLED ? mode.canUseCoaching(state.user) : false;
+    const focusReady = COACHING_ENABLED && inFocus() && state.allowed;
+    if (COACHING_ENABLED && !state.allowed && !desktop) {
       if (state.open || focusReady || (options && options.force)) {
         state.open = true;
         render();
@@ -414,8 +431,7 @@
       }
       return;
     }
-    // Members may keep coaching chrome; free desktop users only get line tools.
-    if (state.allowed && !state.open && !focusReady) {
+    if (COACHING_ENABLED && state.allowed && !state.open && !focusReady) {
       state.open = true;
       const store = storage();
       if (store) store.setItem(ENABLED_KEY, '1');
@@ -426,7 +442,6 @@
     if (closing) state.selectedWord = '';
     state.signature = '';
     render();
-    // Desktop keeps the caption area quiet — tools sit on the clicked line itself.
     if (isMobileHost()) setStatus(closing ? '' : '可用：复制 · 笔记 · 划线');
     else setStatus('');
   }
@@ -436,30 +451,37 @@
     if (!root) return;
     const mobile = isMobileHost();
     adoptMobileViewToggle(root);
-    const focusReady = inFocus() && state.allowed;
-    const dockOpen = state.open || focusReady || Boolean(state.segments.length);
-    // Subtitle rows stay visible; action chips only after the learner clicks a line.
-    const showRows = dockOpen && !mobile;
-    const showTools = toolsVisible();
+    if (!COACHING_ENABLED) {
+      state.open = false;
+      state.allowed = false;
+      if (mobile) state.toolsIndex = -1;
+    }
+    const focusReady = COACHING_ENABLED && inFocus() && state.allowed;
+    const dockOpen = COACHING_ENABLED && (state.open || focusReady || Boolean(state.segments.length));
+    // Desktop uses #lyric-stage under the player; do not paint a second coach lyric stack there.
+    const showRows = COACHING_ENABLED && dockOpen && mobile;
+    const showTools = COACHING_ENABLED ? toolsVisible() : (!mobile && state.toolsIndex >= 0);
     // Desktop: keep tools on the clicked transcript row only (no under-lyric action strip / 带教 bar).
-    const showDockActions = showTools && mobile;
+    const showDockActions = COACHING_ENABLED && showTools && mobile;
     root.dataset.allowed = state.allowed ? 'true' : 'false';
-    root.dataset.open = dockOpen ? 'true' : 'false';
+    // Keep desktop coach chrome closed so it does not reserve empty caption space.
+    root.dataset.open = (COACHING_ENABLED && mobile && dockOpen) ? 'true' : (showTools ? 'true' : 'false');
     root.dataset.tools = showTools ? 'true' : 'false';
     root.dataset.roll = state.roll || '';
     root.dataset.host = mobile ? 'mobile' : (state.host || 'desktop');
+    stripCoachEntry(root);
     const rows = root.querySelector('.coach-rows');
     const actions = root.querySelector('.coach-actions');
-    const bar = root.querySelector('.coach-bar');
     const chrome = root.querySelector('.coach-chrome');
-    if (bar) {
-      bar.hidden = !mobile;
-      bar.setAttribute('aria-hidden', mobile ? 'false' : 'true');
-    }
     if (chrome && !mobile) chrome.hidden = true;
+    if (!COACHING_ENABLED) {
+      if (!mobile) attachTranscriptTools();
+      return;
+    }
     // Mobile: never paint lyric rows over the player — transcript lives below.
-    rows.hidden = !showRows;
-    actions.hidden = !showDockActions;
+    if (rows) rows.hidden = !showRows;
+    if (actions) actions.hidden = !showDockActions;
+    if (rows && !showRows) rows.replaceChildren();
     if (!showRows && !showTools) {
       if (!mobile) attachTranscriptTools();
       return;
@@ -1588,6 +1610,7 @@
   }
 
   function ensureOpen() {
+    if (!COACHING_ENABLED) return false;
     ensureRoot();
     refreshFrame();
     state.user = resolveUser(state.user);
@@ -1615,7 +1638,7 @@
       setStatus('先播放到一句字幕');
       return false;
     }
-    if (state.allowed && !state.open) {
+    if (COACHING_ENABLED && state.allowed && !state.open) {
       state.open = true;
       const store = storage();
       if (store) store.setItem(ENABLED_KEY, '1');
@@ -1633,7 +1656,7 @@
       setStatus('先播放到一句字幕');
       return false;
     }
-    if (state.allowed && !state.open) {
+    if (COACHING_ENABLED && state.allowed && !state.open) {
       state.open = true;
       const store = storage();
       if (store) store.setItem(ENABLED_KEY, '1');
@@ -1644,6 +1667,7 @@
   }
 
   function setStudyHint(text) {
+    if (!COACHING_ENABLED) return;
     if (isMobileHost() && text) setStatus(text);
   }
 
@@ -1656,14 +1680,17 @@
     if (!state.host || document.getElementById('coach-dock')) return;
     const store = storage();
     state.user = resolveUser(null);
-    state.allowed = mode.canUseCoaching(state.user);
-    state.open = state.allowed && store && store.getItem(ENABLED_KEY) === '1';
+    state.allowed = COACHING_ENABLED ? mode.canUseCoaching(state.user) : false;
+    state.open = false;
+    if (store) {
+      try { store.removeItem(ENABLED_KEY); } catch (_) {}
+    }
     ensureRoot();
     render();
     if (state.host === 'desktop') {
       window.setInterval(() => applyFrame(desktopFrame()), 250);
     }
-    setStatus(state.allowed ? '' : '会员和高级会员可打开带教');
+    setStatus('');
     new MutationObserver(() => render()).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
 

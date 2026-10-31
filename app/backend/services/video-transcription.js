@@ -16,8 +16,8 @@ const { mergeIncompleteSegments, normalizeSegmentsTiming } = require('../utils/s
 let openaiClient = null;
 let openaiWhisperClient = null;
 let geminiApiKey = null;
-let localWhisperAvailability = null;
-let localWhisperActive = false;
+let localWhisperChecked = false;
+let localWhisperAvailable = false;
 
 function getOpenAIClient() {
   if (openaiClient) return openaiClient;
@@ -1187,115 +1187,82 @@ function localWhisperScriptPath() {
   return path.join(__dirname, '..', 'scripts', 'local-whisper-transcribe.py');
 }
 
-function localWhisperEnvironment() {
-  let ffmpegPath = process.env.FFMPEG_PATH || process.env.FFMPEG_BIN;
-  if (!ffmpegPath) {
-    try { ffmpegPath = require('@ffmpeg-installer/ffmpeg').path; } catch (_) {}
-  }
-  return {
-    ...process.env,
-    ...(ffmpegPath ? { FFMPEG_PATH: ffmpegPath } : {}),
-    PYTHONIOENCODING: 'utf-8',
-    PYTHONUTF8: '1',
-  };
-}
-
 async function hasLocalWhisper() {
-  if (process.env.LOCAL_WHISPER_ENABLED !== '1') return false;
+  if (localWhisperChecked) return localWhisperAvailable;
+  localWhisperChecked = true;
   const script = localWhisperScriptPath();
-  if (!fs.existsSync(script)) return false;
-  if (!localWhisperAvailability) {
-    localWhisperAvailability = new Promise((resolve) => {
-      const pythonBin = process.env.LOCAL_WHISPER_PYTHON || process.env.PYTHON || 'python3';
-      const child = spawn(pythonBin, [script, '--check'], {
-        windowsHide: true, stdio: 'ignore', env: localWhisperEnvironment(),
-      });
-      const timer = setTimeout(() => {
-        child.kill('SIGKILL');
-        resolve(false);
-      }, 10000);
-      child.on('error', () => { clearTimeout(timer); resolve(false); });
-      child.on('close', (code) => { clearTimeout(timer); resolve(code === 0); });
-    });
+  if (!fs.existsSync(script)) {
+    localWhisperAvailable = false;
+    return false;
   }
-  return localWhisperAvailability;
+  localWhisperAvailable = true;
+  return true;
 }
 
 async function transcribeWithLocalWhisper(filePath, options = {}) {
-  if (process.env.LOCAL_WHISPER_ENABLED !== '1') throw new Error('本地 Whisper 未启用');
-  if (localWhisperActive) {
-    const error = new Error('本地 Whisper 正忙，请稍后重试');
-    error.code = 'LOCAL_WHISPER_BUSY';
-    error.status = 503;
-    throw error;
+  const script = localWhisperScriptPath();
+  if (!fs.existsSync(script)) {
+    throw new Error('本地 Whisper 脚本不存在');
   }
-  localWhisperActive = true;
-  try {
-    if (!(await hasLocalWhisper())) throw new Error('本地 Whisper 运行环境不可用');
-    const script = localWhisperScriptPath();
-    const model = process.env.LOCAL_WHISPER_MODEL || options.localModel || 'tiny';
-    const language = options.language || 'en';
-    const pythonBin = process.env.LOCAL_WHISPER_PYTHON || process.env.PYTHON || 'python3';
-    const timeoutMs = Number(process.env.LOCAL_WHISPER_TIMEOUT_MS) || 900000;
+  const model = process.env.LOCAL_WHISPER_MODEL || options.localModel || 'tiny';
+  const language = options.language || 'en';
+  const pythonBin = process.env.LOCAL_WHISPER_PYTHON || process.env.PYTHON || 'python';
+  const timeoutMs = Number(process.env.LOCAL_WHISPER_TIMEOUT_MS) || 900000;
 
-    console.log(`[Local Whisper] Transcribing with model=${model} language=${language}`);
+  console.log(`[Local Whisper] Transcribing with model=${model} language=${language}`);
 
-    const result = await new Promise((resolve, reject) => {
-      const child = spawn(pythonBin, [
-        script,
-        '--file', filePath,
-        '--language', language,
-        '--model', model,
-      ], {
-        windowsHide: true,
-        env: localWhisperEnvironment(),
-      });
-      let stdout = '';
-      let stderr = '';
-      let timedOut = false;
-      const timer = setTimeout(() => {
-        timedOut = true;
-        child.kill('SIGKILL');
-      }, timeoutMs);
-      child.stdout.on('data', (chunk) => { stdout += String(chunk || ''); });
-      child.stderr.on('data', (chunk) => { stderr += String(chunk || ''); });
-      child.on('error', (err) => {
-        clearTimeout(timer);
-        reject(err);
-      });
-      child.on('close', (code) => {
-        clearTimeout(timer);
-        if (timedOut) {
-          reject(new Error('本地 Whisper 超时'));
-          return;
-        }
-        const lines = String(stdout || '').trim().split(/\r?\n/).filter(Boolean);
-        const last = lines[lines.length - 1] || '';
-        let payload = null;
-        try { payload = JSON.parse(last); } catch (_) {}
-        if (!payload || payload.ok !== true) {
-          const message = (payload && payload.error)
-            || stderr.trim()
-            || `本地 Whisper 失败 (code=${code})`;
-          reject(new Error(message));
-          return;
-        }
-        resolve(payload);
-      });
+  const result = await new Promise((resolve, reject) => {
+    const child = spawn(pythonBin, [
+      script,
+      '--file', filePath,
+      '--language', language,
+      '--model', model,
+    ], {
+      windowsHide: true,
+      env: {
+        ...process.env,
+        PYTHONIOENCODING: 'utf-8',
+        PYTHONUTF8: '1',
+      },
     });
+    let stdout = '';
+    let stderr = '';
+    const timer = setTimeout(() => {
+      try { child.kill(); } catch (_) {}
+      reject(new Error('本地 Whisper 超时'));
+    }, timeoutMs);
+    child.stdout.on('data', (chunk) => { stdout += String(chunk || ''); });
+    child.stderr.on('data', (chunk) => { stderr += String(chunk || ''); });
+    child.on('error', (err) => {
+      clearTimeout(timer);
+      reject(err);
+    });
+    child.on('close', (code) => {
+      clearTimeout(timer);
+      const lines = String(stdout || '').trim().split(/\r?\n/).filter(Boolean);
+      const last = lines[lines.length - 1] || '';
+      let payload = null;
+      try { payload = JSON.parse(last); } catch (_) {}
+      if (!payload || payload.ok !== true) {
+        const message = (payload && payload.error)
+          || stderr.trim()
+          || `本地 Whisper 失败 (code=${code})`;
+        reject(new Error(message));
+        return;
+      }
+      resolve(payload);
+    });
+  });
 
-    const segments = Array.isArray(result.segments) ? result.segments : [];
-    return {
-      text: String(result.text || ''),
-      segments,
-      duration: Number(result.duration) || null,
-      language: result.language || language,
-      model: result.model || model,
-      provider: 'local-whisper',
-    };
-  } finally {
-    localWhisperActive = false;
-  }
+  const segments = Array.isArray(result.segments) ? result.segments : [];
+  return {
+    text: String(result.text || ''),
+    segments,
+    duration: Number(result.duration) || null,
+    language: result.language || language,
+    model: result.model || model,
+    provider: 'local-whisper',
+  };
 }
 
 /**

@@ -12,7 +12,7 @@ test('default podcasts come from image 1 and 2 catalogs', () => {
 
 test('default channels come from image 3 onward', () => {
   assert.ok(defaults.CHANNELS.length >= 30);
-  assert.equal(defaults.CHANNELS[0].title, 'English Listening Time');
+  assert.equal(defaults.CHANNELS[0].title, 'Listening Time');
   assert.ok(defaults.CHANNELS.some((item) => item.title === 'Kurzgesagt – In a Nutshell'));
   assert.ok(defaults.CHANNELS.some((item) => item.title === 'Peter Rabbit' && item.handle === 'OfficialPeterRabbit'));
 });

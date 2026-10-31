@@ -104,7 +104,6 @@ test('one spoken sentence leaves a single line and two choices', () => {
     return {
       tag, hidden: false, className: '', textContent: '', children: [], attrs: {},
       setAttribute(name, value) { this.attrs[name] = value; },
-      removeAttribute(name) { delete this.attrs[name]; },
       append(...nodes) { this.children.push(...nodes); },
       replaceChildren(...nodes) { this.children = nodes; },
       addEventListener(type, fn) { this.listeners = { ...(this.listeners || {}), [type]: fn }; },
@@ -135,7 +134,7 @@ test('one spoken sentence leaves a single line and two choices', () => {
   const stop = flat.find(node => node.textContent === '今天到这');
   assert.equal(again.hidden, false);
   assert.equal(stop.hidden, false);
-  assert.equal(stop.href, './today.html#day-end');
+  assert.equal(stop.href, './today.html?from=first_lesson_complete&lines=1#day-end');
   assert.equal(flat.find(node => node.tag === 'progress').hidden, true);
   again.click();
   assert.deepEqual(calls, ['next']);

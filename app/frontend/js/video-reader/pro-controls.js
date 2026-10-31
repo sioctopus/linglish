@@ -1803,10 +1803,8 @@
   // ---------- 8. Keyboard shortcuts --------------------------------
   function isTypingTarget(el) {
     if (!el) return false;
-    if (el.closest?.('.topbar')) return true;
-    if (el.closest?.('.goal-studio')) return true;
     const tag = (el.tagName || '').toLowerCase();
-    if (tag === 'input' || tag === 'textarea' || tag === 'select' || tag === 'summary') return true;
+    if (tag === 'input' || tag === 'textarea' || tag === 'select') return true;
     if (el.getAttribute?.('role') === 'slider') return true;
     if (el.isContentEditable) return true;
     return false;

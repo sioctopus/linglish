@@ -420,6 +420,76 @@ body.video-reader-mobile-focus .voice-chat.is-xdm .voice-chat-score {
   display: none !important;
 }
 
+.voice-chat.is-xdm .voice-chat-word-card .assist-head,
+.voice-chat.is-xdm .voice-chat-word-card .assist-actions,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-head,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.voice-chat.is-xdm .voice-chat-word-card .assist-word,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-word {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.voice-chat.is-xdm .voice-chat-word-card .assist-phon,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-phon {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.voice-chat.is-xdm .voice-chat-word-card .assist-head button,
+.voice-chat.is-xdm .voice-chat-word-card .assist-actions button,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-head button,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-actions button {
+  flex: 0 0 auto;
+  margin-left: auto;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: #0f766e;
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.voice-chat.is-xdm .voice-chat-word-card .assist-head button,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-head button {
+  background: transparent;
+  color: #0f766e;
+}
+
+.voice-chat.is-xdm .voice-chat-word-card .assist-gloss,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-gloss {
+  margin: 0.35rem 0 0.6rem;
+  color: #334155;
+  line-height: 1.4;
+}
+
+.voice-chat.is-xdm .voice-chat-word-card .assist-chunks,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-chunks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin-bottom: 0.55rem;
+}
+
+.voice-chat.is-xdm .voice-chat-word-card .assist-chunk,
+#desktop-voice-session .voice-chat.is-xdm .voice-chat-word-card .assist-chunk {
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  background: #f4fbf8;
+  border-bottom: 2px solid #0f766e;
+  color: #0f172a;
+  font-size: 0.9rem;
+}
+
 /* Own voice — X DM bar: white play + waveform + duration (图一) */
 body.video-reader-mobile-focus .voice-chat.is-xdm .voice-chat-me-stack,
 #desktop-voice-session .voice-chat.is-xdm .voice-chat-me-stack,

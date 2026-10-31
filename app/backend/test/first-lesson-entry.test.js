@@ -124,7 +124,7 @@ test('first lesson destinations carry the sole focus flag while normal video lin
   assert.doesNotMatch(today.match(/function videoHref\(video\)[\s\S]*?\n    \}/)?.[0] || '', /focus=/);
 });
 
-test('anonymous entry opens the built-in starter without requiring an account', async () => {
+test('anonymous entry asks for an account instead of creating a guest', async () => {
   const entry = require(modulePath);
   const { environment, requests, destinations, localStorage } = createEnvironment();
   const controller = entry.createFirstLessonEntry(environment);
@@ -137,10 +137,10 @@ test('anonymous entry opens the built-in starter without requiring an account', 
   assert.equal(requests.filter((request) => request.url === '/auth/guest').length, 0);
   assert.equal(localStorage.getItem('linglish_visitor_id'), null, 'shared visitor identity must not be replaced');
   assert.equal(localStorage.getItem('linglish_token'), null);
-  assert.deepEqual(destinations, ['./today.html?from=landing_first_lesson&starter=1']);
+  assert.deepEqual(destinations, ['./index-desktop.html?auth=register']);
 });
 
-test('an expired stored account token opens the anonymous starter without a guest token', async () => {
+test('an expired stored account token asks for login instead of a guest token', async () => {
   const entry = require(modulePath);
   const { environment, requests, destinations, getToken } = createEnvironment({
     token: 'expired-token',
@@ -153,10 +153,10 @@ test('an expired stored account token opens the anonymous starter without a gues
   assert.equal(requests.filter((request) => request.url === '/auth/guest').length, 0);
   assert.equal(requests.filter((request) => request.url === '/video-resources?lite=1').length, 0);
   assert.equal(getToken(), null);
-  assert.deepEqual(destinations, ['./today.html?from=landing_first_lesson&starter=1']);
+  assert.deepEqual(destinations, ['./index-desktop.html?auth=register']);
 });
 
-test('a 401 during preselection opens the anonymous starter without creating a guest', async () => {
+test('a 401 during preselection asks for login instead of creating a guest', async () => {
   const entry = require(modulePath);
   const { environment, requests, destinations, getToken } = createEnvironment({
     token: 'apparently-valid-token',
@@ -169,7 +169,7 @@ test('a 401 during preselection opens the anonymous starter without creating a g
   assert.equal(requests.filter((request) => request.url === '/video-resources?lite=1').length, 1);
   assert.equal(requests.filter((request) => request.url === '/auth/guest').length, 0);
   assert.equal(getToken(), null);
-  assert.deepEqual(destinations, ['./today.html?from=landing_first_lesson&starter=1']);
+  assert.deepEqual(destinations, ['./index-desktop.html?auth=register']);
 });
 
 test('a preferred video still validates a locally valid token and server-side playability', async () => {
@@ -188,7 +188,7 @@ test('a preferred video still validates a locally valid token and server-side pl
   assert.equal(destinations[0].includes('videoId=374'), true);
 });
 
-test('a server-revoked preferred-video token is cleared once before opening the anonymous starter', async () => {
+test('a server-revoked preferred-video token is cleared once and retried with one visitor-linked guest', async () => {
   const entry = require(modulePath);
   const { environment, requests, destinations, getToken, getClearCount } = createEnvironment({
     token: 'locally-valid-but-revoked',
@@ -204,7 +204,7 @@ test('a server-revoked preferred-video token is cleared once before opening the 
   assert.equal(requests.filter((request) => request.url === '/auth/guest').length, 0);
   assert.equal(requests.filter((request) => request.url === '/auth/profile').length, 1);
   assert.equal(getToken(), null);
-  assert.deepEqual(destinations, ['./today.html?from=today_first_lesson&starter=1']);
+  assert.deepEqual(destinations, ['./index-desktop.html?auth=register']);
 });
 
 test('a missing preferred video falls back to a separately validated playable video', async () => {
@@ -313,16 +313,3 @@ test('Landing uses the shared first lesson entry for both product CTAs and prese
   assert.match(html, /退出登录/);
   assert.match(html, /account-badge[\s\S]*?href="\.\/membership\.html"/);
 });
-
-for (const mobile of [false, true]) {
-  test(`anonymous ${mobile ? 'mobile' : 'desktop'} first lesson opens a real starter without profile or guest requests`, async () => {
-    const entry = require(modulePath);
-    const { environment, requests, destinations } = createEnvironment({ mobile });
-    await entry.createFirstLessonEntry(environment).start({ source: 'public_trial' });
-    assert.deepEqual(destinations, ['./today.html?from=public_trial&starter=1']);
-    assert.equal(requests.some(r => r.url.startsWith('/auth/')), false);
-    const today = fs.readFileSync(todayPath, 'utf8');
-    assert.match(today, /get\('starter'\) === '1'/);
-    assert.match(today, /if \(requested.*openStarterSentence\(\)/);
-  });
-}

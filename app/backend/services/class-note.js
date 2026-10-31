@@ -1,5 +1,4 @@
 const fs = require('fs/promises');
-const { randomUUID } = require('crypto');
 const path = require('path');
 
 const NOTE_DIR = path.join(__dirname, '..', 'note-images');
@@ -53,19 +52,13 @@ async function defaultQuery(sql, params) {
 }
 
 async function createClassNote(input = {}, deps = {}) {
-  const ownerUserId = Number(input.ownerUserId);
-  if (!Number.isSafeInteger(ownerUserId) || ownerUserId <= 0) {
-    const err = reject('请先登录');
-    err.statusCode = 401;
-    throw err;
-  }
   const note = buildClassNote(input.word, input.lines);
   const image = input.image;
   if (!image?.path) throw reject('请拍下今天教的单词卡片');
   if (Number(image.size) > MAX_IMAGE_BYTES) throw reject('图片超过 8MB，请换一张小一点的');
   const ext = imageExtension(image.originalFilename);
   if (!ext) throw reject('单词卡片请用 jpg、png 或 webp');
-  const filename = `note-${randomUUID()}${ext}`;
+  const filename = `note-${Date.now()}-${Math.random().toString(36).slice(2, 8)}${ext}`;
   const savedPath = path.join(NOTE_DIR, filename);
   const query = deps.query || defaultQuery;
   const stat = deps.stat || fs.stat;
@@ -83,10 +76,10 @@ async function createClassNote(input = {}, deps = {}) {
   try {
     const { rows } = await query(
       `INSERT INTO articles
-       (title, content, level, tags, word_count, difficulty_score, status, source_type, pdf_path, created_at, updated_at, published_at, owner_user_id, note_image_path, visibility)
-       VALUES ($1, $2, 'A1', $3, $4, 0.1, 'published', 'class-note', NULL, NOW(), NOW(), NOW(), $5, $6, 'private')
+       (title, content, level, tags, word_count, difficulty_score, status, source_type, pdf_path, created_at, updated_at, published_at)
+       VALUES ($1, $2, 'A1', $3, $4, 0.1, 'published', 'class-note', NULL, NOW(), NOW(), NOW())
        RETURNING id, title`,
-      [note.title, JSON.stringify(note), ['class-note'], note.lines.join(' ').split(/\s+/).length, ownerUserId, note.image]
+      [note.title, JSON.stringify(note), ['class-note'], note.lines.join(' ').split(/\s+/).length]
     );
     const id = rows[0].id;
     return {

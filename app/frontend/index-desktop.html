@@ -19,10 +19,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Linglish">
   <link rel="stylesheet" href="/css/install-desktop.css?v=2">
-  <script src="/js/install-desktop.js?v=2026103001" defer></script>
+  <script src="/js/install-desktop.js?v=6" defer></script>
   <link rel="preload" href="/env.js?v=1" as="script">
-  <link rel="preload" href="./global-ui.js?v=2026103001" as="script">
-  <link rel="preload" href="./js/auth-manager.js?v=2026103001" as="script">
+  <link rel="preload" href="./global-ui.js?v=20250108" as="script">
+  <link rel="preload" href="./js/auth-manager.js?v=3" as="script">
   <link rel="preload" href="./js/storage-helper.js?v=1" as="script">
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <link rel="stylesheet" href="./css/quick-win.css?v=1">
@@ -297,7 +297,7 @@
     }
 
     /* ========== 加载性能优化 ========== */
-    /* 页面加载器已迁移到 global-ui.js?v=2026103001 统一管理 */
+    /* 页面加载器已迁移到 global-ui.js 统一管理 */
 
     /* GPU 加速优化 */
     .feature-card,
@@ -4951,16 +4951,20 @@
 
       .hero-actions {
         flex-wrap: nowrap;
-        gap: 0.4rem;
+        gap: 0.35rem;
         max-width: 100%;
       }
 
       .hero-actions .btn-hero {
         flex: 1 1 0;
         min-width: 0;
-        padding: 0 0.4rem;
-        font-size: 0.82rem;
-        min-height: 42px;
+        padding: 0 0.35rem;
+        font-size: 0.8rem;
+        min-height: 40px;
+      }
+
+      .hero-actions .btn-hero:last-child {
+        flex: 1 1 0;
       }
 
       .hero {
@@ -4975,7 +4979,8 @@
       }
 
       .hero-content h1 {
-        font-size: 2.5rem;
+        font-size: clamp(1.85rem, 5vw, 2.35rem);
+        overflow-wrap: anywhere;
       }
 
       .hero-subtitle {
@@ -4988,6 +4993,15 @@
 
       .hero-actions {
         justify-content: flex-start;
+        flex-wrap: wrap;
+        max-width: 100%;
+      }
+
+      .hero,
+      .hero-content,
+      .hero-visual {
+        min-width: 0;
+        max-width: 100%;
       }
 
       .hero-metrics {
@@ -5427,16 +5441,17 @@
     .announcement-bar {
       background: #071018;
       color: #ffffff;
-      padding: 10px 24px;
+      padding: 8px 20px;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 16px;
-      font-size: 0.92rem;
+      gap: 12px;
+      font-size: 0.88rem;
       font-weight: 700;
       letter-spacing: 0;
       position: relative;
       overflow: hidden;
+      line-height: 1.25;
     }
 
     .announcement-bar::after {
@@ -5494,7 +5509,7 @@
   </style>
   <script src="/env.js?v=1"></script>
   <!-- 统一加载和错误处理系统 -->
-  <script src="./global-ui.js?v=2026103001"></script>
+  <script src="./global-ui.js?v=20250108"></script>
 </head>
 
 <body>
@@ -5503,7 +5518,8 @@
   <!-- 顶部公告栏 -->
   <div class="announcement-bar" id="announcement-bar">
     <span class="announcement-text">
-      <span>今日训练建议：真实视频输入 + 逐句跟读反馈 + 词汇复习，15 分钟完成一轮。</span>
+      <span class="announcement-text-full">今日训练建议：真实视频输入 + 逐句跟读反馈 + 词汇复习，15 分钟完成一轮。</span>
+      <span class="announcement-text-short">今日建议：视频输入 + 跟读反馈，约 15 分钟。</span>
     </span>
     <a href="#" class="announcement-cta" onclick="startTodayLearning(event, 'announcement'); return false;">开始训练</a>
   </div>
@@ -5654,6 +5670,18 @@
         <a class="read-card" href="./game.html?deck=appliances" data-track="home_read_card">
           <span class="read-card-photo"><img src="./images/game/photos/television.jpg?v=5" alt="" width="640" height="640"></span>
           <span class="read-card-body"><strong>电器</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=home" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/sofa.jpg?v=3" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>家居</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=jobs" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/teacher.jpg?v=3" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>职业</strong><span>看图听读</span></span>
+        </a>
+        <a class="read-card" href="./game.html?deck=family" data-track="home_read_card">
+          <span class="read-card-photo"><img src="./images/game/photos/family.jpg?v=3" alt="" width="640" height="640"></span>
+          <span class="read-card-body"><strong>家庭</strong><span>看图听读</span></span>
         </a>
         <a class="read-card" href="./game.html?deck=nature" data-track="home_read_card">
           <span class="read-card-photo"><img src="./images/game/photos/forest.jpg?v=5" alt="" width="640" height="640"></span>
@@ -6898,8 +6926,8 @@
     </div>
   </div>
 
-  <script src="./js/auth-manager.js?v=2026103001"></script>
-  <script src="./js/oauth-bootstrap.js?v=2026103001"></script>
+  <script src="./js/auth-manager.js?v=3"></script>
+  <script src="./js/oauth-bootstrap.js?v=2"></script>
   <script>
     (function prefillSavedAccount() {
       const input = document.getElementById('email');
@@ -8354,6 +8382,7 @@
           localStorage.removeItem('guest_id');
           localStorage.removeItem('userEmail');
           localStorage.removeItem('membership_type');
+          localStorage.removeItem('linglish_stage_type_scale');
         } catch (e) {
           console.warn('[logout] localStorage clear failed:', e.message);
         }
@@ -8988,7 +9017,7 @@
 
   </script>
   <script type="module">
-    import { persistAuthSession } from './js/app/auth.js?v=2026103001';
+    import { persistAuthSession } from './js/app/auth.js';
 
     // 登录函数
     async function login(email, password) {
@@ -9214,7 +9243,11 @@
   body::before,
   body::after { display: none; }
 
-  body > .navbar { margin-top: 12px; }
+  body > .navbar { margin-top: 0; }
+
+  @media (min-width: 721px) {
+    body > .navbar { margin-top: 12px; }
+  }
 
   .hero,
   .read-cards,
@@ -9231,28 +9264,49 @@
     --home-sticky-clearance: 156px;
     scroll-margin-top: var(--home-sticky-clearance);
     width: min(1160px, calc(100% - 32px));
-    max-width: none;
+    max-width: 100%;
     margin: 0 auto;
     padding: 1.5rem 0 2rem;
     background: transparent;
     border: 0;
     border-radius: 0;
     box-shadow: none;
+    box-sizing: border-box;
+    min-width: 0;
   }
 
   .hero {
-    min-height: calc(100svh - 96px);
+    min-height: 0;
     align-items: center;
     padding: 1rem 0 1.5rem;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  }
+
+  @media (min-width: 981px) {
+    .hero {
+      min-height: calc(100svh - 120px);
+    }
+  }
+
+  .hero-content {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .hero-content h1 {
-    font-size: clamp(3.05rem, 5.5vw, 4.5rem);
+    font-size: clamp(2.2rem, 4.8vw, 4.5rem);
+    overflow-wrap: anywhere;
+  }
+
+  .hero-visual {
+    min-width: 0;
+    max-width: 100%;
   }
 
   .hero-visual .hero-lingbao-link,
   .hero-visual .lingbao-stage {
     width: min(440px, 100%);
+    max-width: 100%;
   }
 
   .read-cards { padding-top: 0.5rem; padding-bottom: 1.5rem; }
@@ -9458,8 +9512,9 @@
 
   .announcement-bar {
     width: 100%;
+    max-width: 100%;
     margin: 0;
-    padding: 10px 24px;
+    padding: 8px 20px;
     border: 0;
     border-radius: 0;
     background: #071018;
@@ -9467,26 +9522,304 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 16px;
-    font-size: 0.92rem;
+    gap: 12px;
+    font-size: 0.88rem;
     font-weight: 700;
     box-shadow: none;
+    box-sizing: border-box;
+    min-height: 0;
+    line-height: 1.25;
   }
 
+  .announcement-bar .announcement-text {
+    min-width: 0;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .announcement-text-short { display: none; }
+  .announcement-text-full { display: inline; }
+
   .announcement-bar .announcement-cta {
+    flex: 0 0 auto;
     background: rgba(255, 255, 255, 0.1);
     color: #ffffff;
-    padding: 7px 12px;
+    padding: 5px 10px;
     border-radius: 6px;
     border: 1px solid rgba(255, 255, 255, 0.25);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 800;
     box-shadow: none;
+    white-space: nowrap;
   }
 
   @media (max-width: 860px) {
-    .section-nav { top: 88px; border-radius: 22px; }
-    .hero { padding-top: 1.25rem; }
+    .section-nav { top: 72px; border-radius: 22px; }
+    .hero {
+      padding-top: 0.35rem;
+      min-height: 0 !important;
+    }
+  }
+
+  /* Phone / narrow DevTools: keep gutters, stop right-edge clipping */
+  @media (max-width: 720px) {
+    html,
+    body {
+      overflow-x: clip;
+      max-width: 100%;
+    }
+
+    /* 恢复顶部黑色公告（进入训练等），Linglish 仍在标题上一行 */
+    .announcement-bar {
+      display: flex !important;
+      flex-wrap: nowrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      font-size: 0.74rem;
+      line-height: 1.25;
+      min-height: 36px;
+    }
+
+    .announcement-bar .announcement-text {
+      flex: 1 1 auto;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .announcement-text-full { display: none; }
+    .announcement-text-short {
+      display: inline;
+      white-space: nowrap;
+    }
+
+    .announcement-bar .announcement-cta {
+      margin-left: 0;
+      padding: 4px 8px;
+      font-size: 0.72rem;
+    }
+
+    .hero,
+    .read-cards,
+    .core-entries-section,
+    .daily-task-spotlight,
+    .community-section,
+    .personalized-section,
+    .pathways,
+    .gamify,
+    .quick-start,
+    .social-proof,
+    .features,
+    .faq-section {
+      --home-sticky-clearance: 96px;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .hero {
+      min-height: 0 !important;
+      height: auto !important;
+    }
+
+    .navbar {
+      width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      padding: 0.4rem 12px !important;
+      gap: 0.35rem !important;
+      min-width: 0;
+    }
+
+    .logo {
+      font-size: 1.05rem !important;
+      gap: 0.35rem !important;
+    }
+
+    .user-info {
+      gap: 0.35rem !important;
+      max-width: 58%;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .user-display-name {
+      display: none !important;
+    }
+
+    .vip-badge {
+      padding: 0.3rem 0.55rem !important;
+      font-size: 0.72rem !important;
+      gap: 0.2rem !important;
+    }
+
+    .navbar .btn {
+      padding: 0.4rem 0.55rem !important;
+      font-size: 0.78rem !important;
+      min-height: 34px;
+    }
+
+    .hero,
+    .read-cards,
+    .core-entries-section,
+    .daily-task-spotlight,
+    .community-section,
+    .personalized-section,
+    .pathways,
+    .gamify,
+    .quick-start,
+    .social-proof,
+    .features,
+    .faq-section,
+    .cta,
+    .section-nav {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin-left: 0 !important;
+      margin-right: 0 !important;
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+      box-sizing: border-box;
+    }
+
+    .hero {
+      grid-template-columns: 1fr !important;
+      min-height: 0 !important;
+      height: auto !important;
+      padding-top: 0.45rem !important;
+      padding-bottom: 0.85rem !important;
+      padding-left: 14px !important;
+      padding-right: 14px !important;
+      gap: 0.55rem !important;
+      overflow: hidden;
+    }
+
+    .hero-content {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      gap: 0.45rem !important;
+    }
+
+    /* Ling宝在标题上方；略下移，避免贴顶裁切 */
+    .hero-visual {
+      order: -1;
+      margin-top: 0.85rem !important;
+      margin-bottom: 0.15rem !important;
+      padding-top: 0.35rem;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .hero-visual .lingbao-giggle {
+      top: 4px;
+    }
+
+    .hero-visual .mascot-card,
+    .hero-visual .hero-lingbao-link,
+    .hero-visual .lingbao-stage {
+      width: min(440px, 100%) !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+      margin-left: auto;
+      margin-right: auto;
+      box-sizing: border-box;
+    }
+
+    .hero-visual .hero-demo-video {
+      width: 100% !important;
+      height: auto !important;
+      max-height: none !important;
+      object-fit: contain !important;
+    }
+
+    .hero-kicker {
+      font-size: 0.78rem !important;
+    }
+
+    .hero-content h1 {
+      font-size: clamp(1.25rem, 5.2vw, 1.55rem) !important;
+      line-height: 1.22 !important;
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .hero-subtitle {
+      font-size: 0.84rem !important;
+      line-height: 1.45 !important;
+      max-width: 100% !important;
+    }
+
+    .hero-actions {
+      display: flex !important;
+      flex-wrap: nowrap !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      gap: 0.3rem !important;
+    }
+
+    .hero-actions .btn-hero {
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      max-width: none !important;
+      font-size: 0.72rem !important;
+      padding: 0 0.28rem !important;
+      min-height: 40px !important;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .hero-actions .btn-hero:last-child {
+      flex: 1 1 0 !important;
+    }
+
+    .hero-metrics {
+      grid-template-columns: 1fr !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      gap: 0.45rem !important;
+    }
+
+    .hero-metric {
+      padding: 0.65rem 0.75rem;
+      min-width: 0;
+      box-sizing: border-box;
+    }
+
+
+    .pathways .entry-grid,
+    .pathways .system-grid {
+      grid-template-columns: 1fr !important;
+    }
+
+    .section-nav {
+      top: 64px;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+      flex-wrap: nowrap;
+      justify-content: flex-start;
+      scrollbar-width: none;
+    }
+
+    .section-nav::-webkit-scrollbar {
+      display: none;
+    }
+
+    .section-nav a {
+      flex: 0 0 auto;
+      white-space: nowrap;
+    }
+
+    .quick-start,
+    .social-proof {
+      padding-left: 16px !important;
+      padding-right: 16px !important;
+    }
   }
 </style>
 </body>

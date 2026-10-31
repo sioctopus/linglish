@@ -19,7 +19,7 @@ test('a kindergarten word becomes a short note parents can hear', () => {
 
 test('saving a class note keeps the card image and a parent link', async () => {
   const copied = [];
-  const result = await createClassNote({ ownerUserId: 7,
+  const result = await createClassNote({
     word: 'milk',
     lines: ['Milk please', 'Thank you'],
     image: { path: '/tmp/card.jpg', originalFilename: 'card.jpg', size: 1200 },
@@ -49,7 +49,7 @@ test('saving a class note keeps the card image and a parent link', async () => {
 
 test('empty uploaded images are rejected before saving a note', async () => {
   await assert.rejects(
-    () => createClassNote({ ownerUserId: 7,
+    () => createClassNote({
       word: 'milk',
       image: { path: '/tmp/empty.jpg', originalFilename: 'empty.jpg', size: 0 },
     }, {
@@ -67,7 +67,7 @@ test('route save uses the database when no query dep is passed', async () => {
   assert.match(service, /dataStore\.pool\.query/);
 });
 
-test('the home page links the class note and the picture route is protected', () => {
+test('the home page links the class note and the picture route is public', () => {
   const root = path.resolve(__dirname, '../..');
   const home = fs.readFileSync(path.join(root, 'frontend/index-desktop.html'), 'utf8');
   const page = fs.readFileSync(path.join(root, 'frontend/class-note.html'), 'utf8');
@@ -79,9 +79,7 @@ test('the home page links the class note and the picture route is protected', ()
   assert.doesNotMatch(home, /hero-guest-workbench/);
   assert.doesNotMatch(home, /hero-user-workbench/);
   assert.match(home, /id="nav-workbench-link"[^>]*href="\.\/workbench\.html"|href="\.\/workbench\.html"[^>]*id="nav-workbench-link"/);
-  assert.match(page, /复制私有链接/);
-  assert.match(page, /仅本人或管理员.*可查看/);
-  assert.doesNotMatch(page, /家长点开|发到微信群|发给家长/);
+  assert.match(page, /复制链接，发到微信群/);
   assert.match(page, /返回修改/);
   assert.match(page, /showComposer/);
   assert.match(page, /max-height:\s*min\(42vh,\s*360px\)/);
@@ -99,9 +97,6 @@ test('the home page links the class note and the picture route is protected', ()
   assert.match(workbench, /wb-tool-class-note/);
   assert.match(workbenchNote, /\/class-notes/);
   assert.match(workbenchNote, /class-note\.html\?id=/);
-  assert.match(workbench, /复制私有链接/);
-  assert.match(workbenchNote, /仅本人或管理员.*可查看/);
-  assert.doesNotMatch(workbenchNote, /家长点开|发到微信群|发给家长/);
   assert.match(documents, /pathname === '\/class-notes'/);
   assert.match(server, /pathname === '\/class-notes'/);
   assert.match(staticRoutes, /\/note-images\//);

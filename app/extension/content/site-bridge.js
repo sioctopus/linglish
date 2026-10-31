@@ -27,16 +27,11 @@
   }
 
   function pushSession(session) {
+    if (!session.token) return;
     try {
       chrome.runtime.sendMessage(
-        session.token
-          ? { type: 'SET_SESSION', token: session.token, email: session.email || '' }
-          : { type: 'CLEAR_SESSION' },
-        (response) => {
-          if (!chrome.runtime.lastError && response && response.ok) {
-            document.documentElement.dataset.linglishExtensionBridge = session.token ? '1' : '0';
-          }
-        }
+        { type: 'SET_SESSION', token: session.token, email: session.email || '' },
+        () => void chrome.runtime.lastError
       );
     } catch (_) {
       /* extension context invalidated */
@@ -57,4 +52,5 @@
     }
   });
 
+  document.documentElement.dataset.linglishExtensionBridge = '1';
 })();

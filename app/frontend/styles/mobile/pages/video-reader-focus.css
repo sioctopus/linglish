@@ -237,6 +237,16 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     background: #e2e8f0;
   }
 
+  /* AI陪练 / 实战场：顶栏改为「换片」，回视频学习再选内容 */
+  body.video-reader-mobile-focus .toggle-sidebar-btn.is-change-media {
+    color: #9a3412;
+    background: rgba(234, 88, 12, 0.12);
+  }
+
+  body.video-reader-mobile-focus .toggle-sidebar-btn.is-change-media:active {
+    background: rgba(234, 88, 12, 0.2);
+  }
+
   body.video-reader-mobile-focus .mobile-reader-lib-label {
     display: inline;
     line-height: 1;
@@ -245,6 +255,56 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
 
   body.video-reader-mobile-focus .mobile-reader-lib-ico {
     display: none !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-shared-media-banner {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    min-height: 30px;
+    padding: 4px 12px 6px;
+    border-bottom: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #334155;
+    font-size: 12px;
+    line-height: 1.25;
+  }
+
+  body.video-reader-mobile-focus .mobile-shared-media-banner[hidden] {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-shared-media-lock {
+    flex: 0 0 auto;
+    color: #0f766e;
+    font-weight: 800;
+    white-space: nowrap;
+  }
+
+  body.video-reader-mobile-focus .mobile-shared-media-title {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    color: #0f172a;
+    font-size: 12px;
+    font-weight: 700;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  body.video-reader-mobile-focus .mobile-shared-media-pick {
+    flex: 0 0 auto;
+    margin: 0;
+    padding: 4px 10px;
+    border: 0;
+    border-radius: 999px;
+    background: #0f766e;
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+    font-weight: 800;
+    -webkit-tap-highlight-color: transparent;
   }
 
   /* Library quick entry removed — open via header「视频库」 */
@@ -673,7 +733,16 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     box-shadow: none;
   }
 
-  /* One row: 1x + 英文/双语/上一句/下一句 */
+  /* 顶栏：倍数靠左，英文/双语靠右 */
+  body.video-reader-mobile-focus .coach-dock .coach-chrome {
+    justify-content: space-between;
+  }
+
+  body.video-reader-mobile-focus .coach-dock .coach-chrome > .mobile-speed-controls {
+    flex: 0 0 auto;
+    margin-right: auto;
+  }
+
   body.video-reader-mobile-focus .mobile-transcript-view > .mobile-view-toggle,
   body.video-reader-mobile-focus .coach-dock > .mobile-view-toggle,
   body.video-reader-mobile-focus .coach-dock .coach-chrome .mobile-view-toggle {
@@ -681,31 +750,33 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
+    justify-content: flex-end;
     flex: 0 0 auto;
-    gap: 2px;
-    width: 100%;
+    gap: 6px;
+    width: auto;
+    max-width: 100%;
     min-width: 0;
+    margin-left: auto;
     padding: 0;
     border: 0;
     border-radius: 0;
     background: transparent;
+    box-sizing: border-box;
+    overflow: visible;
   }
 
   body.video-reader-mobile-focus .mobile-view-toggle > .mobile-speed-controls {
-    position: relative;
-    display: flex;
-    flex: 0 0 auto;
-    align-items: center;
+    display: none !important;
   }
 
   body.video-reader-mobile-focus .mobile-view-toggle > .mobile-view-btn {
-    flex: 1 1 0;
-    min-width: 0;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
   }
 
   body.video-reader-mobile-focus .mobile-view-toggle .mobile-speed-trigger {
-    min-width: 40px;
-    min-height: 34px;
+    min-width: 36px;
+    min-height: 36px;
     padding: 0 8px;
     border: 0;
     border-radius: 999px;
@@ -716,9 +787,9 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
   }
 
   body.video-reader-mobile-focus .mobile-view-btn {
-    min-width: 0;
-    min-height: 34px;
-    padding: 0 4px;
+    min-width: 0 !important;
+    min-height: 36px;
+    padding: 0 10px;
     border: 0;
     border-radius: 999px;
     color: #64748b;
@@ -726,6 +797,8 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     font-size: 13px;
     font-weight: 650;
     white-space: nowrap;
+    overflow: visible;
+    text-overflow: clip;
   }
 
   body.video-reader-mobile-focus .mobile-view-btn.active {
@@ -733,6 +806,47 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     background: rgba(15, 118, 110, 0.1);
     box-shadow: none;
     font-weight: 750;
+  }
+
+  /* 上一句 / 下一句：紧贴 Hold 上方 */
+  body.video-reader-mobile-focus .mobile-speak-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    width: 100%;
+  }
+
+  body.video-reader-mobile-focus .mobile-sentence-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    max-width: 100%;
+    padding: 0 2px;
+    box-sizing: border-box;
+  }
+
+  body.video-reader-mobile-focus .mobile-sentence-nav .mobile-sentence-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 40px;
+    padding: 0 14px;
+    border: 0;
+    border-radius: 999px;
+    color: #0f766e;
+    background: #f0fdfa;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  body.video-reader-mobile-focus .mobile-sentence-nav .mobile-sentence-btn:active {
+    background: rgba(15, 118, 110, 0.16);
   }
 
   body.video-reader-mobile-focus .mobile-transcript-list-wrapper {
@@ -1014,10 +1128,13 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     opacity: 1 !important;
   }
 
+  body.video-reader-mobile-focus .mobile-speak-stack {
+    order: 1;
+  }
+
   /* X DM compose strip: replay · play · Hold to record · more */
   body.video-reader-mobile-focus .mobile-speak-dock,
   body.video-reader-mobile-focus .mobile-speak-dock.is-x-compose {
-    order: 2;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1976,6 +2093,245 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
     gap: 4px;
     padding-top: 6px;
   }
+}
+
+/* —— 实战场 dock（竖屏主布局，不塞进横屏媒体查询） —— */
+body.video-reader-mobile-focus .arena-dock {
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-sizing: border-box;
+}
+
+body.video-reader-mobile-focus.arena-dialogue-on .arena-dock,
+body.video-reader-mobile-focus.study-mode-arena .arena-dock:not([hidden]) {
+  display: flex;
+}
+
+body.video-reader-mobile-focus .arena-dock[hidden] {
+  display: none !important;
+}
+
+body.video-reader-mobile-focus .arena-dock-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 28px;
+}
+
+body.video-reader-mobile-focus .arena-dock-status {
+  margin: 0;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  color: #0f172a;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.3;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+body.video-reader-mobile-focus .arena-dock-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 0 0 auto;
+}
+
+body.video-reader-mobile-focus .arena-dock-progress {
+  margin: 0;
+  color: #0f766e;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+body.video-reader-mobile-focus .arena-dock-setup {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: stretch;
+  gap: 8px;
+  width: 100%;
+}
+
+body.video-reader-mobile-focus.arena-running .arena-dock-setup {
+  display: none !important;
+}
+
+body.video-reader-mobile-focus .arena-roles {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 6px;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 1px 2px 2px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+body.video-reader-mobile-focus .arena-roles::-webkit-scrollbar {
+  display: none;
+}
+
+body.video-reader-mobile-focus .arena-roles-empty {
+  margin: 0;
+  padding: 6px 2px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+body.video-reader-mobile-focus .arena-role-chip {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 1px;
+  flex: 0 0 auto;
+  min-width: 72px;
+  max-width: 120px;
+  min-height: 44px;
+  padding: 6px 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+  color: #334155;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+body.video-reader-mobile-focus .arena-role-chip.is-on {
+  border-color: #0f766e;
+  background: #f0fdfa;
+  color: #115e59;
+  box-shadow: 0 0 0 1px rgba(15, 118, 110, 0.18);
+}
+
+body.video-reader-mobile-focus .arena-role-name {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.15;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+body.video-reader-mobile-focus .arena-role-meta {
+  font-size: 11px;
+  font-weight: 650;
+  color: #64748b;
+}
+
+body.video-reader-mobile-focus .arena-role-chip.is-on .arena-role-meta {
+  color: #0f766e;
+}
+
+body.video-reader-mobile-focus .arena-start-btn {
+  flex: 0 0 auto;
+  align-self: stretch;
+  min-width: 88px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 12px;
+  background: #0f766e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 800;
+  box-shadow: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+body.video-reader-mobile-focus .arena-start-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+body.video-reader-mobile-focus .arena-start-btn:not(:disabled):active {
+  transform: scale(0.98);
+  background: #0d9488;
+}
+
+body.video-reader-mobile-focus .arena-stop-btn {
+  min-height: 28px;
+  padding: 0 10px;
+  border: 1px solid #e2e8f0;
+  border-radius: 999px;
+  background: #fff;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 750;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+body.video-reader-mobile-focus .arena-stop-btn:active {
+  background: #f1f5f9;
+}
+
+/* 实战场：收紧底部控件，Hold 是主操作 */
+body.video-reader-mobile-focus.study-mode-arena .mobile-player-controls {
+  gap: 6px;
+  padding-top: 8px;
+}
+
+body.video-reader-mobile-focus.study-mode-arena .mobile-transcript-view {
+  --vrf-cue-rows: 2;
+}
+
+body.video-reader-mobile-focus.study-mode-arena .mobile-speak-tools,
+body.video-reader-mobile-focus.study-mode-arena .mobile-speak-hint {
+  display: none !important;
+}
+
+body.video-reader-mobile-focus.study-mode-arena:not(.arena-running) .mobile-sentence-nav {
+  display: none !important;
+}
+
+body.video-reader-mobile-focus.study-mode-arena:not(.arena-running) .mobile-speak-dock .mobile-replay-btn,
+body.video-reader-mobile-focus.study-mode-arena:not(.arena-running) .mobile-speak-dock .mobile-continue-btn {
+  opacity: 0.45;
+}
+
+body.video-reader-mobile-focus.arena-running .mobile-sentence-nav {
+  opacity: 0.55;
+}
+
+body.video-reader-mobile-focus.arena-awaiting-hold .mobile-hold-btn {
+  background: #0f766e;
+  color: #fff;
+  box-shadow: 0 8px 20px rgba(15, 118, 110, 0.28);
+}
+
+body.video-reader-mobile-focus.arena-awaiting-hold .mobile-hold-btn.is-holding,
+body.video-reader-mobile-focus.arena-awaiting-hold .mobile-hold-btn:active {
+  background: #0d9488;
+}
+
+body.video-reader-mobile-focus .mobile-hold-btn.is-arena-listen {
+  background: #e2e8f0;
+  color: #64748b;
+  box-shadow: none;
+}
+
+body.video-reader-mobile-focus.arena-awaiting-hold .mobile-hold-main {
+  font-size: 15px;
+  font-weight: 800;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 
 <head>
-  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <script src="./js/auth-manager.js?v=2"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <script>
@@ -105,15 +105,15 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
-  <title>linglish - 能量站/title>
-  <link rel="preload" href="./mobile-styles.css?v=2026103001" as="style">
+  <title>linglish - 能量站</title>
+  <link rel="preload" href="./mobile-styles.css?v=20261028-shell2" as="style">
   <link rel="preload" href="./shared/dictionary.css?v=20260224f" as="style">
-  <link rel="preload" href="./i18n.js?v=2026103001" as="script">
-  <link rel="preload" href="./global-ui.js?v=2026103001" as="script">
-  <link rel="preload" href="./js/mobile-power-app.js?v=2026103001" as="script">
-  <link rel="stylesheet" href="./mobile-styles.css?v=2026103001">
+  <link rel="preload" href="./i18n.js?v=20250114e" as="script">
+  <link rel="preload" href="./global-ui.js?v=20250108" as="script">
+  <link rel="preload" href="./js/mobile-power-app.js?v=20260802" as="script">
+  <link rel="stylesheet" href="./mobile-styles.css?v=20261028-shell2">
   <link rel="stylesheet" href="./shared/dictionary.css?v=20260224f">
-  <link rel="manifest" href="./manifest.json?v=2026103001">
+  <link rel="manifest" href="./manifest.json">
   <style>
     body {
       margin: 0;
@@ -130,18 +130,18 @@
     }
 
   </style>
-  <script src="./mobile-auth.js?v=2026103001"></script>
-  <script src="./auth-helpers.js?v=2026103001"></script>
+  <script src="./mobile-auth.js?v=3"></script>
+  <script src="./auth-helpers.js?v=2"></script>
   <script src="./guest-check.js?v=1"></script>
-  <script src="./i18n.js?v=2026103001"></script>
-  <script src="./global-ui.js?v=2026103001"></script>
+  <script src="./i18n.js?v=20250114e"></script>
+  <script src="./global-ui.js?v=20250108"></script>
   <script src="./feedback.js?v=1"></script>
   <script src="./shared/dictionary-render.js?v=1765726958"></script>
   <script src="./shared/dictionary-lookup.js?v=1734439600"></script>
   <script src="./shared/dictionary-util.js?v=1"></script>
   <script src="./shared/deep-analysis.js?v=20260224f"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
+  <link rel="stylesheet" href="./styles/icons.css?v=20261028-shell2">
 </head>
 
 <body>
@@ -221,7 +221,7 @@
         </svg>
         <input type="text" id="vocab-search-input" class="vocab-search-input" placeholder="搜索单词或翻?.."
           autocomplete="off" autocapitalize="off" spellcheck="false" />
-        <button class="search-clear-btn" id="search-clear-btn" style="display: none;">/button>
+        <button class="search-clear-btn" id="search-clear-btn" style="display: none;"></button>
       </div>
       <div class="search-results-info" id="search-results-info" style="display: none;">
         <span data-i18n="mobile.power.search.results">找到</span> <span id="search-results-count">0</span> <span
@@ -238,7 +238,7 @@
         </div>
         <button class="start-review-btn" id="start-review-btn">
           <span class="btn-icon">▶️</span>
-          <span data-i18n="mobile.power.start_review">开始复/span>
+          <span data-i18n="mobile.power.start_review">开始复习</span>
           <span class="badge-bubble" id="vocab-due-count">0</span>
         </button>
       </div>
@@ -251,12 +251,12 @@
         </div>
         <div class="stat-item">
           <span class="stat-val" id="vocab-reviewing-count">0</span>
-          <span class="stat-lbl" data-i18n="vocab.state.reviewing">复习/span>
+          <span class="stat-lbl" data-i18n="vocab.state.reviewing">复习</span>
           <div class="stat-bar" style="background: #f59e0b;"></div>
         </div>
         <div class="stat-item">
           <span class="stat-val" id="vocab-learning-count">0</span>
-          <span class="stat-lbl" data-i18n="vocab.state.learning">学习/span>
+          <span class="stat-lbl" data-i18n="vocab.state.learning">学习</span>
           <div class="stat-bar" style="background: #3b82f6;"></div>
         </div>
         <div class="stat-item">
@@ -271,8 +271,8 @@
     <section class="vocab-filters" id="vocab-filter-bar">
       <button class="filter-chip active" data-state="" data-i18n="mobile.power.filter.all">全部</button>
       <button class="filter-chip" data-state="encountered" data-i18n="mobile.power.filter.encountered">新遇</button>
-      <button class="filter-chip" data-state="learning" data-i18n="mobile.power.filter.learning">学习/button>
-      <button class="filter-chip" data-state="reviewing" data-i18n="mobile.power.filter.reviewing">复习/button>
+      <button class="filter-chip" data-state="learning" data-i18n="mobile.power.filter.learning">学习</button>
+      <button class="filter-chip" data-state="reviewing" data-i18n="mobile.power.filter.reviewing">复习</button>
       <button class="filter-chip" data-state="mastered" data-i18n="mobile.power.filter.mastered">已掌</button>
       <button class="filter-chip" id="hard-first-toggle" title="难词优先"
         data-i18n="mobile.power.filter.hard_first">难词优先</button>
@@ -346,11 +346,11 @@
       <!-- Tab bar -->
       <div class="vr-dict-tabs">
         <button class="vr-dict-tab active" id="mp-tab-dict">📖 词典</button>
-        <button class="vr-dict-tab" id="mp-tab-deep">✕深度解/button>
+        <button class="vr-dict-tab" id="mp-tab-deep">✦ 深度解析</button>
         <!-- Dictionary Language Toggle (unified with video-reader) -->
         <div class="dict-lang-toggle" id="mp-dict-lang-toggle" aria-label="切换翻译语言" style="margin-left:auto;">
           <button type="button" data-lang="en" id="dict-lang-en">EN</button>
-          <button type="button" data-lang="zh" id="dict-lang-zh">/button>
+          <button type="button" data-lang="zh" id="dict-lang-zh"></button>
         </div>
       </div>
       <div id="detail-dict-card"></div>
@@ -379,14 +379,14 @@
       </div>
 
       <!-- Close Button -->
-      <button type="button" class="review-close-btn" id="review-close" aria-label="关闭">/button>
+      <button type="button" class="review-close-btn" id="review-close" aria-label="关闭"></button>
 
       <!-- Flashcard Container with 3D Flip -->
       <div class="flashcard-wrapper" id="flashcard-wrapper">
         <div class="flashcard" id="flashcard">
           <!-- Front Side (Question) -->
           <div class="flashcard-front">
-            <div class="card-hint">🤔 请回忆这个单词的意/div>
+            <div class="card-hint">🤔 请回忆这个单词的意</div>
             <div class="card-word" id="review-word-front"></div>
             <div class="card-phonetic" id="review-phonetic"></div>
             <button class="card-speak-btn" id="review-speak-front" aria-label="播放发音">
@@ -431,23 +431,23 @@
 
       <!-- Review Quality Buttons (4-level system) -->
       <div class="review-quality-buttons" id="review-quality-buttons" style="display: none;">
-        <div class="quality-hint">你对这个单词的掌握程/div>
+        <div class="quality-hint">你对这个单词的掌握程度?</div>
         <div class="quality-buttons-grid">
           <button class="quality-btn quality-again" data-quality="again">
             <span class="quality-label">完全不会</span>
             <span class="quality-interval">&lt; 1分钟</span>
           </button>
           <button class="quality-btn quality-hard" data-quality="hard">
-            <span class="quality-label">有印/span>
+            <span class="quality-label">有印象</span>
             <span class="quality-interval" id="interval-hard">5分钟</span>
           </button>
           <button class="quality-btn quality-good" data-quality="good">
             <span class="quality-label">认识</span>
-            <span class="quality-interval" id="interval-good">1/span>
+            <span class="quality-interval" id="interval-good">1</span>
           </button>
           <button class="quality-btn quality-easy" data-quality="easy">
             <span class="quality-label">完全掌握</span>
-            <span class="quality-interval" id="interval-easy">4/span>
+            <span class="quality-interval" id="interval-easy">4</span>
           </button>
         </div>
       </div>
@@ -1333,8 +1333,8 @@
     }
   </style>
 
-  <script src="./js/tts-voice.js?v=2026103001"></script>
-  <script src="./js/mobile-power-app.js?v=2026103001"></script>
+  <script src="./js/tts-voice.js?v=3"></script>
+  <script src="./js/mobile-power-app.js?v=20260802"></script>
 
   <script>
     // Initialize i18n
@@ -1353,7 +1353,7 @@
   </script>
   <script src="./js/page-tracker.js?v=1"></script>
 <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
-  <script src="./js/icons.js?v=2026103001"></script>
+  <script src="./js/icons.js?v=1"></script>
 </body>
 
 </html>

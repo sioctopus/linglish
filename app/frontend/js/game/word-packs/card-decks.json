@@ -1321,21 +1321,21 @@
           "zh": "学校",
           "ipa": "/skuːl/",
           "emoji": "🏫",
-          "photo": "/images/game/photos/school.jpg?v=6"
+          "photo": "/images/game/photos/school.jpg?v=4"
         },
         {
           "lemma": "classroom",
           "zh": "教室",
           "ipa": "/ˈklɑːsruːm/",
           "emoji": "🧑‍🏫",
-          "photo": "/images/game/photos/classroom.jpg?v=6"
+          "photo": "/images/game/photos/classroom.jpg?v=4"
         },
         {
           "lemma": "playground",
           "zh": "操场",
           "ipa": "/ˈpleɪɡraʊnd/",
           "emoji": "🛝",
-          "photo": "/images/game/photos/playground.jpg?v=5"
+          "photo": "/images/game/photos/playground.jpg?v=4"
         },
         {
           "lemma": "museum",
@@ -1441,6 +1441,27 @@
           "ipa": "/ˈkæfeɪ/",
           "emoji": "☕",
           "photo": "/images/game/photos/cafe.jpg?v=4"
+        },
+        {
+          "lemma": "study",
+          "zh": "书房",
+          "ipa": "/ˈstʌdi/",
+          "emoji": "📚",
+          "photo": "/images/game/photos/study.jpg?v=4"
+        },
+        {
+          "lemma": "balcony",
+          "zh": "阳台",
+          "ipa": "/ˈbælkəni/",
+          "emoji": "🏢",
+          "photo": "/images/game/photos/balcony.jpg?v=4"
+        },
+        {
+          "lemma": "dining room",
+          "zh": "餐厅",
+          "ipa": "/ˈdaɪnɪŋ ruːm/",
+          "emoji": "🍽️",
+          "photo": "/images/game/photos/dining-room.jpg?v=4"
         }
       ]
     },
@@ -2665,42 +2686,42 @@
           "zh": "洗衣机",
           "ipa": "/ˈwɒʃɪŋ məˌʃiːn/",
           "emoji": "🧼",
-          "photo": "/images/game/photos/washing-machine.jpg?v=6"
+          "photo": "/images/game/photos/washing-machine.jpg?v=4"
         },
         {
           "lemma": "air conditioner",
           "zh": "空调",
           "ipa": "/eə kənˈdɪʃənə/",
           "emoji": "❄️",
-          "photo": "/images/game/photos/air-conditioner.jpg?v=6"
+          "photo": "/images/game/photos/air-conditioner.jpg?v=4"
         },
         {
           "lemma": "fan",
           "zh": "电风扇",
           "ipa": "/fæn/",
           "emoji": "🌀",
-          "photo": "/images/game/photos/fan.jpg?v=6"
+          "photo": "/images/game/photos/fan.jpg?v=4"
         },
         {
           "lemma": "microwave",
           "zh": "微波炉",
           "ipa": "/ˈmaɪkrəweɪv/",
           "emoji": "📦",
-          "photo": "/images/game/photos/microwave.jpg?v=6"
+          "photo": "/images/game/photos/microwave.jpg?v=4"
         },
         {
           "lemma": "rice cooker",
           "zh": "电饭煲",
           "ipa": "/raɪs ˈkʊkə/",
           "emoji": "🍚",
-          "photo": "/images/game/photos/rice-cooker.jpg?v=6"
+          "photo": "/images/game/photos/rice-cooker.jpg?v=4"
         },
         {
           "lemma": "kettle",
           "zh": "电热水壶",
           "ipa": "/ˈketl/",
           "emoji": "🫖",
-          "photo": "/images/game/photos/kettle.jpg?v=6"
+          "photo": "/images/game/photos/kettle.jpg?v=4"
         },
         {
           "lemma": "lamp",
@@ -2714,7 +2735,7 @@
           "zh": "电脑",
           "ipa": "/kəmˈpjuːtə/",
           "emoji": "💻",
-          "photo": "/images/game/photos/computer.jpg?v=6"
+          "photo": "/images/game/photos/computer.jpg?v=4"
         },
         {
           "lemma": "phone",
@@ -2728,63 +2749,1001 @@
           "zh": "吸尘器",
           "ipa": "/ˈvækjuːm/",
           "emoji": "🧹",
-          "photo": "/images/game/photos/vacuum.jpg?v=6"
+          "photo": "/images/game/photos/vacuum.jpg?v=4"
         },
         {
           "lemma": "oven",
           "zh": "烤箱",
           "ipa": "/ˈʌvn/",
           "emoji": "🔥",
-          "photo": "/images/game/photos/oven.jpg?v=6"
+          "photo": "/images/game/photos/oven.jpg?v=4"
         },
         {
           "lemma": "toaster",
           "zh": "烤面包机",
           "ipa": "/ˈtəʊstə/",
           "emoji": "🍞",
-          "photo": "/images/game/photos/toaster.jpg?v=6"
+          "photo": "/images/game/photos/toaster.jpg?v=4"
         },
         {
           "lemma": "hair dryer",
           "zh": "吹风机",
           "ipa": "/heə ˈdraɪə/",
           "emoji": "💇",
-          "photo": "/images/game/photos/hair-dryer.jpg?v=6"
+          "photo": "/images/game/photos/hair-dryer.jpg?v=4"
         },
         {
           "lemma": "iron",
           "zh": "熨斗",
           "ipa": "/ˈaɪən/",
           "emoji": "🧲",
-          "photo": "/images/game/photos/iron.jpg?v=6"
+          "photo": "/images/game/photos/iron.jpg?v=4"
         },
         {
           "lemma": "speaker",
           "zh": "音箱",
           "ipa": "/ˈspiːkə/",
           "emoji": "🔊",
-          "photo": "/images/game/photos/speaker.jpg?v=6"
+          "photo": "/images/game/photos/speaker.jpg?v=4"
         },
         {
           "lemma": "heater",
           "zh": "电暖器",
           "ipa": "/ˈhiːtə/",
           "emoji": "🔥",
-          "photo": "/images/game/photos/heater.jpg?v=6"
+          "photo": "/images/game/photos/heater.jpg?v=4"
         },
         {
           "lemma": "water heater",
           "zh": "热水器",
           "ipa": "/ˈwɔːtə ˈhiːtə/",
           "emoji": "🚿",
-          "photo": "/images/game/photos/water-heater.jpg?v=6"
+          "photo": "/images/game/photos/water-heater.jpg?v=4"
         },
         {
           "lemma": "dishwasher",
           "zh": "洗碗机",
           "ipa": "/ˈdɪʃwɒʃə/",
           "emoji": "🔤",
-          "photo": "/images/game/photos/dishwasher.jpg?v=6"
+          "photo": "/images/game/photos/dishwasher.jpg?v=4"
+        },
+        {
+          "lemma": "dryer",
+          "zh": "烘干机",
+          "ipa": "/ˈdraɪə/",
+          "emoji": "👕",
+          "photo": "/images/game/photos/dryer.jpg?v=4"
+        },
+        {
+          "lemma": "light",
+          "zh": "灯",
+          "ipa": "/laɪt/",
+          "emoji": "💡",
+          "photo": "/images/game/photos/light.jpg?v=4"
+        },
+        {
+          "lemma": "switch",
+          "zh": "开关",
+          "ipa": "/swɪtʃ/",
+          "emoji": "🔘",
+          "photo": "/images/game/photos/switch.jpg?v=4"
+        },
+        {
+          "lemma": "socket",
+          "zh": "插座",
+          "ipa": "/ˈsɒkɪt/",
+          "emoji": "🔌",
+          "photo": "/images/game/photos/socket.jpg?v=4"
+        },
+        {
+          "lemma": "blender",
+          "zh": "搅拌机",
+          "ipa": "/ˈblendə/",
+          "emoji": "🫙",
+          "photo": "/images/game/photos/blender.jpg?v=4"
+        },
+        {
+          "lemma": "coffee maker",
+          "zh": "咖啡机",
+          "ipa": "/ˈkɒfi ˌmeɪkə/",
+          "emoji": "☕",
+          "photo": "/images/game/photos/coffee-maker.jpg?v=4"
+        }
+      ]
+    },
+    {
+      "id": "home",
+      "label": "家居",
+      "emoji": "🏠",
+      "words": [
+        {
+          "lemma": "sofa",
+          "zh": "沙发",
+          "ipa": "/ˈsəʊfə/",
+          "emoji": "🛋️",
+          "photo": "/images/game/photos/sofa.jpg?v=3"
+        },
+        {
+          "lemma": "armchair",
+          "zh": "扶手椅",
+          "ipa": "/ˈɑːmtʃeə/",
+          "emoji": "🪑",
+          "photo": "/images/game/photos/armchair.jpg?v=3"
+        },
+        {
+          "lemma": "coffee table",
+          "zh": "茶几",
+          "ipa": "/ˈkɒfi ˌteɪbl/",
+          "emoji": "🪵",
+          "photo": "/images/game/photos/coffee-table.jpg?v=3"
+        },
+        {
+          "lemma": "bed",
+          "zh": "床",
+          "ipa": "/bed/",
+          "emoji": "🛏️",
+          "photo": "/images/game/photos/bed.jpg?v=3"
+        },
+        {
+          "lemma": "pillow",
+          "zh": "枕头",
+          "ipa": "/ˈpɪləʊ/",
+          "emoji": "🛌",
+          "photo": "/images/game/photos/pillow.jpg?v=3"
+        },
+        {
+          "lemma": "blanket",
+          "zh": "毯子",
+          "ipa": "/ˈblæŋkɪt/",
+          "emoji": "🛏️",
+          "photo": "/images/game/photos/blanket.jpg?v=3"
+        },
+        {
+          "lemma": "curtain",
+          "zh": "窗帘",
+          "ipa": "/ˈkɜːtn/",
+          "emoji": "🪟",
+          "photo": "/images/game/photos/curtain.jpg?v=3"
+        },
+        {
+          "lemma": "carpet",
+          "zh": "地毯",
+          "ipa": "/ˈkɑːpɪt/",
+          "emoji": "🧶",
+          "photo": "/images/game/photos/carpet.jpg?v=3"
+        },
+        {
+          "lemma": "tile",
+          "zh": "地砖",
+          "ipa": "/taɪl/",
+          "emoji": "🧱",
+          "photo": "/images/game/photos/tile.jpg?v=3"
+        },
+        {
+          "lemma": "sink",
+          "zh": "洗手台",
+          "ipa": "/sɪŋk/",
+          "emoji": "🚰",
+          "photo": "/images/game/photos/sink.jpg?v=3"
+        },
+        {
+          "lemma": "toilet",
+          "zh": "马桶",
+          "ipa": "/ˈtɔɪlət/",
+          "emoji": "🚽",
+          "photo": "/images/game/photos/toilet.jpg?v=3"
+        },
+        {
+          "lemma": "shower",
+          "zh": "淋浴",
+          "ipa": "/ˈʃaʊə/",
+          "emoji": "🚿",
+          "photo": "/images/game/photos/shower.jpg?v=3"
+        },
+        {
+          "lemma": "bathtub",
+          "zh": "浴缸",
+          "ipa": "/ˈbɑːθtʌb/",
+          "emoji": "🛁",
+          "photo": "/images/game/photos/bathtub.jpg?v=3"
+        },
+        {
+          "lemma": "mirror",
+          "zh": "镜子",
+          "ipa": "/ˈmɪrə/",
+          "emoji": "🪞",
+          "photo": "/images/game/photos/mirror.jpg?v=3"
+        },
+        {
+          "lemma": "razor",
+          "zh": "剃须刀",
+          "ipa": "/ˈreɪzə/",
+          "emoji": "🪒",
+          "photo": "/images/game/photos/razor.jpg?v=3"
+        },
+        {
+          "lemma": "toothpaste",
+          "zh": "牙膏",
+          "ipa": "/ˈtuːθpeɪst/",
+          "emoji": "🦷",
+          "photo": "/images/game/photos/toothpaste.jpg?v=3"
+        },
+        {
+          "lemma": "toothbrush",
+          "zh": "牙刷",
+          "ipa": "/ˈtuːθbrʌʃ/",
+          "emoji": "🪥",
+          "photo": "/images/game/photos/toothbrush.jpg?v=3"
+        },
+        {
+          "lemma": "cup",
+          "zh": "漱口杯",
+          "ipa": "/kʌp/",
+          "emoji": "🥛",
+          "photo": "/images/game/photos/cup.jpg?v=3"
+        },
+        {
+          "lemma": "towel",
+          "zh": "毛巾",
+          "ipa": "/ˈtaʊəl/",
+          "emoji": "🧺",
+          "photo": "/images/game/photos/towel.jpg?v=3"
+        },
+        {
+          "lemma": "soap",
+          "zh": "肥皂",
+          "ipa": "/səʊp/",
+          "emoji": "🧼",
+          "photo": "/images/game/photos/soap.jpg?v=3"
+        },
+        {
+          "lemma": "shampoo",
+          "zh": "洗发水",
+          "ipa": "/ʃæmˈpuː/",
+          "emoji": "🧴",
+          "photo": "/images/game/photos/shampoo.jpg?v=3"
+        },
+        {
+          "lemma": "broom",
+          "zh": "扫帚",
+          "ipa": "/bruːm/",
+          "emoji": "🧹",
+          "photo": "/images/game/photos/broom.jpg?v=3"
+        },
+        {
+          "lemma": "mop",
+          "zh": "拖把",
+          "ipa": "/mɒp/",
+          "emoji": "🧽",
+          "photo": "/images/game/photos/mop.jpg?v=3"
+        },
+        {
+          "lemma": "trash can",
+          "zh": "垃圾桶",
+          "ipa": "/træʃ kæn/",
+          "emoji": "🗑️",
+          "photo": "/images/game/photos/trash-can.jpg?v=3"
+        },
+        {
+          "lemma": "plant",
+          "zh": "盆栽",
+          "ipa": "/plɑːnt/",
+          "emoji": "🪴",
+          "photo": "/images/game/photos/plant.jpg?v=3"
+        },
+        {
+          "lemma": "hanger",
+          "zh": "衣架",
+          "ipa": "/ˈhæŋə/",
+          "emoji": "👔",
+          "photo": "/images/game/photos/hanger.jpg?v=3"
+        },
+        {
+          "lemma": "remote",
+          "zh": "遥控器",
+          "ipa": "/rɪˈməʊt/",
+          "emoji": "📺",
+          "photo": "/images/game/photos/remote.jpg?v=3"
+        },
+        {
+          "lemma": "faucet",
+          "zh": "水龙头",
+          "ipa": "/ˈfɔːsɪt/",
+          "emoji": "🚰",
+          "photo": "/images/game/photos/faucet.jpg?v=3"
+        },
+        {
+          "lemma": "table",
+          "zh": "桌子",
+          "ipa": "/ˈteɪbl/",
+          "emoji": "🪵",
+          "photo": "/images/game/photos/table.jpg?v=3"
+        },
+        {
+          "lemma": "wardrobe",
+          "zh": "衣柜",
+          "ipa": "/ˈwɔːdrəʊb/",
+          "emoji": "🚪",
+          "photo": "/images/game/photos/wardrobe.jpg?v=3"
+        },
+        {
+          "lemma": "bookshelf",
+          "zh": "书架",
+          "ipa": "/ˈbʊkʃelf/",
+          "emoji": "📚",
+          "photo": "/images/game/photos/bookshelf.jpg?v=3"
+        },
+        {
+          "lemma": "cushion",
+          "zh": "靠垫",
+          "ipa": "/ˈkʊʃn/",
+          "emoji": "🟧",
+          "photo": "/images/game/photos/cushion.jpg?v=3"
+        },
+        {
+          "lemma": "toilet paper",
+          "zh": "卫生纸",
+          "ipa": "/ˈtɔɪlət ˌpeɪpə/",
+          "emoji": "🧻",
+          "photo": "/images/game/photos/toilet-paper.jpg?v=3"
+        },
+        {
+          "lemma": "tissue",
+          "zh": "纸巾",
+          "ipa": "/ˈtɪʃuː/",
+          "emoji": "🤧",
+          "photo": "/images/game/photos/tissue.jpg?v=3"
+        },
+        {
+          "lemma": "drawer",
+          "zh": "抽屉",
+          "ipa": "/drɔː/",
+          "emoji": "🗄️",
+          "photo": "/images/game/photos/drawer.jpg?v=3"
+        },
+        {
+          "lemma": "laundry basket",
+          "zh": "脏衣篓",
+          "ipa": "/ˈlɔːndri ˌbɑːskɪt/",
+          "emoji": "🧺",
+          "photo": "/images/game/photos/laundry-basket.jpg?v=3"
+        },
+        {
+          "lemma": "cutting board",
+          "zh": "砧板",
+          "ipa": "/ˈkʌtɪŋ bɔːd/",
+          "emoji": "🪵",
+          "photo": "/images/game/photos/cutting-board.jpg?v=3"
+        },
+        {
+          "lemma": "pan",
+          "zh": "平底锅",
+          "ipa": "/pæn/",
+          "emoji": "🍳",
+          "photo": "/images/game/photos/pan.jpg?v=3"
+        },
+        {
+          "lemma": "pot",
+          "zh": "锅",
+          "ipa": "/pɒt/",
+          "emoji": "🍲",
+          "photo": "/images/game/photos/pot.jpg?v=3"
+        },
+        {
+          "lemma": "plate",
+          "zh": "盘子",
+          "ipa": "/pleɪt/",
+          "emoji": "🍽️",
+          "photo": "/images/game/photos/plate.jpg?v=3"
+        },
+        {
+          "lemma": "bowl",
+          "zh": "碗",
+          "ipa": "/bəʊl/",
+          "emoji": "🥣",
+          "photo": "/images/game/photos/bowl.jpg?v=3"
+        },
+        {
+          "lemma": "chopsticks",
+          "zh": "筷子",
+          "ipa": "/ˈtʃɒpstɪks/",
+          "emoji": "🥢",
+          "photo": "/images/game/photos/chopsticks.jpg?v=3"
+        },
+        {
+          "lemma": "spoon",
+          "zh": "勺子",
+          "ipa": "/spuːn/",
+          "emoji": "🥄",
+          "photo": "/images/game/photos/spoon.jpg?v=3"
+        },
+        {
+          "lemma": "fork",
+          "zh": "叉子",
+          "ipa": "/fɔːk/",
+          "emoji": "🍴",
+          "photo": "/images/game/photos/fork.jpg?v=3"
+        },
+        {
+          "lemma": "knife",
+          "zh": "刀子",
+          "ipa": "/naɪf/",
+          "emoji": "🔪",
+          "photo": "/images/game/photos/knife.jpg?v=3"
+        },
+        {
+          "lemma": "stove",
+          "zh": "炉灶",
+          "ipa": "/stəʊv/",
+          "emoji": "🔥",
+          "photo": "/images/game/photos/stove.jpg?v=3"
+        }
+      ]
+    },
+    {
+      "id": "jobs",
+      "label": "职业",
+      "emoji": "🧑‍💼",
+      "words": [
+        {
+          "lemma": "teacher",
+          "zh": "老师",
+          "ipa": "/ˈtiːtʃə/",
+          "emoji": "👩‍🏫",
+          "photo": "/images/game/photos/teacher.jpg?v=3"
+        },
+        {
+          "lemma": "professor",
+          "zh": "教授",
+          "ipa": "/prəˈfesə/",
+          "emoji": "👨‍🏫",
+          "photo": "/images/game/photos/professor.jpg?v=3"
+        },
+        {
+          "lemma": "student",
+          "zh": "学生",
+          "ipa": "/ˈstjuːdnt/",
+          "emoji": "🧑‍🎓",
+          "photo": "/images/game/photos/student.jpg?v=3"
+        },
+        {
+          "lemma": "doctor",
+          "zh": "医生",
+          "ipa": "/ˈdɒktə/",
+          "emoji": "🧑‍⚕️",
+          "photo": "/images/game/photos/doctor.jpg?v=3"
+        },
+        {
+          "lemma": "nurse",
+          "zh": "护士",
+          "ipa": "/nɜːs/",
+          "emoji": "👩‍⚕️",
+          "photo": "/images/game/photos/nurse.jpg?v=3"
+        },
+        {
+          "lemma": "dentist",
+          "zh": "牙医",
+          "ipa": "/ˈdentɪst/",
+          "emoji": "🦷",
+          "photo": "/images/game/photos/dentist.jpg?v=3"
+        },
+        {
+          "lemma": "pharmacist",
+          "zh": "药剂师",
+          "ipa": "/ˈfɑːməsɪst/",
+          "emoji": "💊",
+          "photo": "/images/game/photos/pharmacist.jpg?v=3"
+        },
+        {
+          "lemma": "chef",
+          "zh": "厨师",
+          "ipa": "/ʃef/",
+          "emoji": "👨‍🍳",
+          "photo": "/images/game/photos/chef.jpg?v=3"
+        },
+        {
+          "lemma": "waiter",
+          "zh": "服务员",
+          "ipa": "/ˈweɪtə/",
+          "emoji": "🧑‍🍳",
+          "photo": "/images/game/photos/waiter.jpg?v=3"
+        },
+        {
+          "lemma": "baker",
+          "zh": "面包师",
+          "ipa": "/ˈbeɪkə/",
+          "emoji": "🥖",
+          "photo": "/images/game/photos/baker.jpg?v=3"
+        },
+        {
+          "lemma": "barber",
+          "zh": "理发师",
+          "ipa": "/ˈbɑːbə/",
+          "emoji": "💇",
+          "photo": "/images/game/photos/barber.jpg?v=3"
+        },
+        {
+          "lemma": "hairdresser",
+          "zh": "美发师",
+          "ipa": "/ˈheədresə/",
+          "emoji": "💇‍♀️",
+          "photo": "/images/game/photos/hairdresser.jpg?v=3"
+        },
+        {
+          "lemma": "architect",
+          "zh": "建筑师",
+          "ipa": "/ˈɑːkɪtekt/",
+          "emoji": "🏗️",
+          "photo": "/images/game/photos/architect.jpg?v=3"
+        },
+        {
+          "lemma": "engineer",
+          "zh": "工程师",
+          "ipa": "/ˌendʒɪˈnɪə/",
+          "emoji": "👷",
+          "photo": "/images/game/photos/engineer.jpg?v=3"
+        },
+        {
+          "lemma": "civil engineer",
+          "zh": "建筑工程师",
+          "ipa": "/ˌsɪvl ˌendʒɪˈnɪə/",
+          "emoji": "🧱",
+          "photo": "/images/game/photos/civil-engineer.jpg?v=3"
+        },
+        {
+          "lemma": "software engineer",
+          "zh": "软件工程师",
+          "ipa": "/ˈsɒftweə ˌendʒɪˈnɪə/",
+          "emoji": "💻",
+          "photo": "/images/game/photos/software-engineer.jpg?v=3"
+        },
+        {
+          "lemma": "network engineer",
+          "zh": "网络工程师",
+          "ipa": "/ˈnetwɜːk ˌendʒɪˈnɪə/",
+          "emoji": "🛜",
+          "photo": "/images/game/photos/network-engineer.jpg?v=3"
+        },
+        {
+          "lemma": "pilot",
+          "zh": "飞行员",
+          "ipa": "/ˈpaɪlət/",
+          "emoji": "✈️",
+          "photo": "/images/game/photos/pilot.jpg?v=3"
+        },
+        {
+          "lemma": "driver",
+          "zh": "司机",
+          "ipa": "/ˈdraɪvə/",
+          "emoji": "🚌",
+          "photo": "/images/game/photos/driver.jpg?v=3"
+        },
+        {
+          "lemma": "police officer",
+          "zh": "警察",
+          "ipa": "/pəˈliːs ˌɒfɪsə/",
+          "emoji": "👮",
+          "photo": "/images/game/photos/police-officer.jpg?v=3"
+        },
+        {
+          "lemma": "firefighter",
+          "zh": "消防员",
+          "ipa": "/ˈfaɪəfaɪtə/",
+          "emoji": "🧑‍🚒",
+          "photo": "/images/game/photos/firefighter.jpg?v=3"
+        },
+        {
+          "lemma": "soldier",
+          "zh": "士兵",
+          "ipa": "/ˈsəʊldʒə/",
+          "emoji": "🪖",
+          "photo": "/images/game/photos/soldier.jpg?v=3"
+        },
+        {
+          "lemma": "farmer",
+          "zh": "农民",
+          "ipa": "/ˈfɑːmə/",
+          "emoji": "👨‍🌾",
+          "photo": "/images/game/photos/farmer.jpg?v=3"
+        },
+        {
+          "lemma": "fisherman",
+          "zh": "渔民",
+          "ipa": "/ˈfɪʃəmən/",
+          "emoji": "🎣",
+          "photo": "/images/game/photos/fisherman.jpg?v=3"
+        },
+        {
+          "lemma": "postman",
+          "zh": "邮递员",
+          "ipa": "/ˈpəʊstmən/",
+          "emoji": "✉️",
+          "photo": "/images/game/photos/postman.jpg?v=3"
+        },
+        {
+          "lemma": "journalist",
+          "zh": "记者",
+          "ipa": "/ˈdʒɜːnəlɪst/",
+          "emoji": "🎤",
+          "photo": "/images/game/photos/journalist.jpg?v=3"
+        },
+        {
+          "lemma": "lawyer",
+          "zh": "律师",
+          "ipa": "/ˈlɔːjə/",
+          "emoji": "⚖️",
+          "photo": "/images/game/photos/lawyer.jpg?v=3"
+        },
+        {
+          "lemma": "judge",
+          "zh": "法官",
+          "ipa": "/dʒʌdʒ/",
+          "emoji": "🧑‍⚖️",
+          "photo": "/images/game/photos/judge.jpg?v=3"
+        },
+        {
+          "lemma": "accountant",
+          "zh": "会计",
+          "ipa": "/əˈkaʊntənt/",
+          "emoji": "🧮",
+          "photo": "/images/game/photos/accountant.jpg?v=3"
+        },
+        {
+          "lemma": "cashier",
+          "zh": "收银员",
+          "ipa": "/kæˈʃɪə/",
+          "emoji": "🧾",
+          "photo": "/images/game/photos/cashier.jpg?v=3"
+        },
+        {
+          "lemma": "salesperson",
+          "zh": "销售员",
+          "ipa": "/ˈseɪlzpɜːsn/",
+          "emoji": "🛍️",
+          "photo": "/images/game/photos/salesperson.jpg?v=3"
+        },
+        {
+          "lemma": "cleaner",
+          "zh": "清洁工",
+          "ipa": "/ˈkliːnə/",
+          "emoji": "🧹",
+          "photo": "/images/game/photos/cleaner.jpg?v=3"
+        },
+        {
+          "lemma": "plumber",
+          "zh": "水管工",
+          "ipa": "/ˈplʌmə/",
+          "emoji": "🔧",
+          "photo": "/images/game/photos/plumber.jpg?v=3"
+        },
+        {
+          "lemma": "electrician",
+          "zh": "电工",
+          "ipa": "/ɪˌlekˈtrɪʃn/",
+          "emoji": "💡",
+          "photo": "/images/game/photos/electrician.jpg?v=3"
+        },
+        {
+          "lemma": "mechanic",
+          "zh": "修理工",
+          "ipa": "/məˈkænɪk/",
+          "emoji": "🔩",
+          "photo": "/images/game/photos/mechanic.jpg?v=3"
+        },
+        {
+          "lemma": "carpenter",
+          "zh": "木匠",
+          "ipa": "/ˈkɑːpəntə/",
+          "emoji": "🪚",
+          "photo": "/images/game/photos/carpenter.jpg?v=3"
+        },
+        {
+          "lemma": "painter",
+          "zh": "油漆工",
+          "ipa": "/ˈpeɪntə/",
+          "emoji": "🖌️",
+          "photo": "/images/game/photos/painter-job.jpg?v=3"
+        },
+        {
+          "lemma": "photographer",
+          "zh": "摄影师",
+          "ipa": "/fəˈtɒɡrəfə/",
+          "emoji": "📷",
+          "photo": "/images/game/photos/photographer.jpg?v=3"
+        },
+        {
+          "lemma": "musician",
+          "zh": "音乐家",
+          "ipa": "/mjuˈzɪʃn/",
+          "emoji": "🎵",
+          "photo": "/images/game/photos/musician.jpg?v=3"
+        },
+        {
+          "lemma": "singer",
+          "zh": "歌手",
+          "ipa": "/ˈsɪŋə/",
+          "emoji": "🎤",
+          "photo": "/images/game/photos/singer.jpg?v=3"
+        },
+        {
+          "lemma": "actor",
+          "zh": "演员",
+          "ipa": "/ˈæktə/",
+          "emoji": "🎭",
+          "photo": "/images/game/photos/actor.jpg?v=3"
+        },
+        {
+          "lemma": "dancer",
+          "zh": "舞蹈演员",
+          "ipa": "/ˈdɑːnsə/",
+          "emoji": "💃",
+          "photo": "/images/game/photos/dancer.jpg?v=3"
+        },
+        {
+          "lemma": "writer",
+          "zh": "作家",
+          "ipa": "/ˈraɪtə/",
+          "emoji": "✍️",
+          "photo": "/images/game/photos/writer.jpg?v=3"
+        },
+        {
+          "lemma": "scientist",
+          "zh": "科学家",
+          "ipa": "/ˈsaɪəntɪst/",
+          "emoji": "🔬",
+          "photo": "/images/game/photos/scientist.jpg?v=3"
+        },
+        {
+          "lemma": "astronaut",
+          "zh": "宇航员",
+          "ipa": "/ˈæstrənɔːt/",
+          "emoji": "👨‍🚀",
+          "photo": "/images/game/photos/astronaut.jpg?v=3"
+        },
+        {
+          "lemma": "vet",
+          "zh": "兽医",
+          "ipa": "/vet/",
+          "emoji": "🐾",
+          "photo": "/images/game/photos/vet.jpg?v=3"
+        },
+        {
+          "lemma": "librarian",
+          "zh": "图书管理员",
+          "ipa": "/laɪˈbreəriən/",
+          "emoji": "📚",
+          "photo": "/images/game/photos/librarian.jpg?v=3"
+        },
+        {
+          "lemma": "coach",
+          "zh": "教练",
+          "ipa": "/kəʊtʃ/",
+          "emoji": "🏋️",
+          "photo": "/images/game/photos/coach.jpg?v=3"
+        }
+      ]
+    },
+    {
+      "id": "family",
+      "label": "家庭",
+      "emoji": "👨‍👩‍👧‍👦",
+      "words": [
+        {
+          "lemma": "family",
+          "zh": "家庭",
+          "ipa": "/ˈfæməli/",
+          "emoji": "👨‍👩‍👧‍👦",
+          "photo": "/images/game/photos/family.jpg?v=3"
+        },
+        {
+          "lemma": "father",
+          "zh": "爸爸",
+          "ipa": "/ˈfɑːðə/",
+          "emoji": "👨",
+          "photo": "/images/game/photos/father.jpg?v=3"
+        },
+        {
+          "lemma": "mother",
+          "zh": "妈妈",
+          "ipa": "/ˈmʌðə/",
+          "emoji": "👩",
+          "photo": "/images/game/photos/mother.jpg?v=3"
+        },
+        {
+          "lemma": "dad",
+          "zh": "爹地",
+          "ipa": "/dæd/",
+          "emoji": "👨",
+          "photo": "/images/game/photos/dad.jpg?v=3"
+        },
+        {
+          "lemma": "mom",
+          "zh": "妈咪",
+          "ipa": "/mɒm/",
+          "emoji": "👩",
+          "photo": "/images/game/photos/mom.jpg?v=3"
+        },
+        {
+          "lemma": "grandfather",
+          "zh": "爷爷 / 外公",
+          "ipa": "/ˈɡrænfɑːðə/",
+          "emoji": "👴",
+          "photo": "/images/game/photos/grandfather.jpg?v=3"
+        },
+        {
+          "lemma": "grandmother",
+          "zh": "奶奶 / 外婆",
+          "ipa": "/ˈɡrænmʌðə/",
+          "emoji": "👵",
+          "photo": "/images/game/photos/grandmother.jpg?v=3"
+        },
+        {
+          "lemma": "grandpa",
+          "zh": "爷爷",
+          "ipa": "/ˈɡrænpɑː/",
+          "emoji": "👴",
+          "photo": "/images/game/photos/grandpa.jpg?v=3"
+        },
+        {
+          "lemma": "grandma",
+          "zh": "奶奶",
+          "ipa": "/ˈɡrænmɑː/",
+          "emoji": "👵",
+          "photo": "/images/game/photos/grandma.jpg?v=3"
+        },
+        {
+          "lemma": "parents",
+          "zh": "父母",
+          "ipa": "/ˈpeərənts/",
+          "emoji": "👨‍👩‍👧",
+          "photo": "/images/game/photos/parents.jpg?v=3"
+        },
+        {
+          "lemma": "grandparents",
+          "zh": "祖父母",
+          "ipa": "/ˈɡrænpeərənts/",
+          "emoji": "🧓",
+          "photo": "/images/game/photos/grandparents.jpg?v=3"
+        },
+        {
+          "lemma": "brother",
+          "zh": "兄弟",
+          "ipa": "/ˈbrʌðə/",
+          "emoji": "👦",
+          "photo": "/images/game/photos/brother.jpg?v=3"
+        },
+        {
+          "lemma": "sister",
+          "zh": "姐妹",
+          "ipa": "/ˈsɪstə/",
+          "emoji": "👧",
+          "photo": "/images/game/photos/sister.jpg?v=3"
+        },
+        {
+          "lemma": "older brother",
+          "zh": "哥哥",
+          "ipa": "/ˈəʊldə ˈbrʌðə/",
+          "emoji": "🧑",
+          "photo": "/images/game/photos/older-brother.jpg?v=3"
+        },
+        {
+          "lemma": "older sister",
+          "zh": "姐姐",
+          "ipa": "/ˈəʊldə ˈsɪstə/",
+          "emoji": "👩",
+          "photo": "/images/game/photos/older-sister.jpg?v=3"
+        },
+        {
+          "lemma": "younger brother",
+          "zh": "弟弟",
+          "ipa": "/ˈjʌŋɡə ˈbrʌðə/",
+          "emoji": "👦",
+          "photo": "/images/game/photos/younger-brother.jpg?v=3"
+        },
+        {
+          "lemma": "younger sister",
+          "zh": "妹妹",
+          "ipa": "/ˈjʌŋɡə ˈsɪstə/",
+          "emoji": "👧",
+          "photo": "/images/game/photos/younger-sister.jpg?v=3"
+        },
+        {
+          "lemma": "uncle",
+          "zh": "叔叔 / 舅舅",
+          "ipa": "/ˈʌŋkl/",
+          "emoji": "👨",
+          "photo": "/images/game/photos/uncle.jpg?v=3"
+        },
+        {
+          "lemma": "aunt",
+          "zh": "阿姨 / 姑姑",
+          "ipa": "/ɑːnt/",
+          "emoji": "👩",
+          "photo": "/images/game/photos/aunt.jpg?v=3"
+        },
+        {
+          "lemma": "cousin",
+          "zh": "表亲 / 堂亲",
+          "ipa": "/ˈkʌzn/",
+          "emoji": "🧒",
+          "photo": "/images/game/photos/cousin.jpg?v=3"
+        },
+        {
+          "lemma": "son",
+          "zh": "儿子",
+          "ipa": "/sʌn/",
+          "emoji": "👦",
+          "photo": "/images/game/photos/son.jpg?v=3"
+        },
+        {
+          "lemma": "daughter",
+          "zh": "女儿",
+          "ipa": "/ˈdɔːtə/",
+          "emoji": "👧",
+          "photo": "/images/game/photos/daughter.jpg?v=3"
+        },
+        {
+          "lemma": "baby",
+          "zh": "宝宝",
+          "ipa": "/ˈbeɪbi/",
+          "emoji": "👶",
+          "photo": "/images/game/photos/baby.jpg?v=3"
+        },
+        {
+          "lemma": "husband",
+          "zh": "丈夫",
+          "ipa": "/ˈhʌzbənd/",
+          "emoji": "👨",
+          "photo": "/images/game/photos/husband.jpg?v=3"
+        },
+        {
+          "lemma": "wife",
+          "zh": "妻子",
+          "ipa": "/waɪf/",
+          "emoji": "👩",
+          "photo": "/images/game/photos/wife.jpg?v=3"
+        },
+        {
+          "lemma": "nephew",
+          "zh": "侄子 / 外甥",
+          "ipa": "/ˈnefjuː/",
+          "emoji": "👦",
+          "photo": "/images/game/photos/nephew.jpg?v=3"
+        },
+        {
+          "lemma": "niece",
+          "zh": "侄女 / 外甥女",
+          "ipa": "/niːs/",
+          "emoji": "👧",
+          "photo": "/images/game/photos/niece.jpg?v=3"
+        },
+        {
+          "lemma": "relative",
+          "zh": "亲戚",
+          "ipa": "/ˈrelətɪv/",
+          "emoji": "🧑‍🤝‍🧑",
+          "photo": "/images/game/photos/relative.jpg?v=3"
+        },
+        {
+          "lemma": "twins",
+          "zh": "双胞胎",
+          "ipa": "/twɪnz/",
+          "emoji": "👯",
+          "photo": "/images/game/photos/twins.jpg?v=3"
+        },
+        {
+          "lemma": "stepfather",
+          "zh": "继父",
+          "ipa": "/ˈstepfɑːðə/",
+          "emoji": "👨",
+          "photo": "/images/game/photos/stepfather.jpg?v=3"
+        },
+        {
+          "lemma": "stepmother",
+          "zh": "继母",
+          "ipa": "/ˈstepmʌðə/",
+          "emoji": "👩",
+          "photo": "/images/game/photos/stepmother.jpg?v=3"
         }
       ]
     },

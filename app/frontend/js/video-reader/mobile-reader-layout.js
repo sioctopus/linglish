@@ -44,27 +44,11 @@
       .includes('video-reader-mobile-focus');
   }
 
-  function configureGuidedTools(tools, active) {
-    if (!tools) return null;
-    if (active) {
-      tools.open = false;
-      return tools;
-    }
-    if (tools.parentElement) {
-      // Native details has an internal content box; display:contents cannot
-      // make its children participate in the reader's flex ordering on phones.
-      const content = Array.from(tools.childNodes).filter(node => node.nodeName !== 'SUMMARY');
-      tools.replaceWith(...content);
-    }
-    return null;
-  }
-
   return {
     shouldStartSidebarHidden,
     nextSidebarState,
     closedSidebarState,
     openSidebarState,
-    usesFocusedTranscriptSizing,
-    configureGuidedTools
+    usesFocusedTranscriptSizing
   };
 });

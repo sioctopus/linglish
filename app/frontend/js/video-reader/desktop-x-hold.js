@@ -76,9 +76,7 @@
   function isTypingTarget(target) {
     if (!target || !target.tagName) return false;
     const tag = String(target.tagName).toUpperCase();
-    if (['INPUT', 'TEXTAREA', 'SELECT', 'AUDIO', 'VIDEO', 'SUMMARY', 'A'].includes(tag)) return true;
-    if (tag === 'BUTTON' && target !== holdBtn) return true;
-    if (typeof target.closest === 'function' && target.closest('.topbar, .goal-studio, summary, audio, video')) return true;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return true;
     if (target.isContentEditable) return true;
     return false;
   }
@@ -221,8 +219,7 @@
 
   function onSpaceDown(event) {
     if (event.code !== 'Space' && event.key !== ' ') return;
-    if (event.repeat || event.ctrlKey || event.metaKey || event.altKey || event.shiftKey) return;
-    if (document.documentElement?.dataset.learningFocus === 'first-lesson') return;
+    if (event.repeat) return;
     if (isTypingTarget(event.target)) return;
     if (pointerDown || spaceDown) return;
     event.preventDefault();

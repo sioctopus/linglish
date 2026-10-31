@@ -4,11 +4,12 @@ const path = require('path');
 const dataStore = require('../data-store');
 const dictionaryService = require('../services/dictionary');
 const videoTranscriptionService = require('../services/video-transcription');
+const cacheService = require('../services/cache');
 const { parseBody } = require('../utils/parsers');
 const { convertAudioToWav } = require('../utils/audio-utils');
 const { removeFileSafe } = require('../utils/file-utils');
 const { sendJson, sendError, mapErrorToStatus } = require('../middleware/error-handler');
-const { authenticate, optionalAuth } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
 const { handleFileUpload, cleanupFile } = require('../upload-handler');
 const sentenceSegments = require('../../frontend/js/video-reader/sentence-segments');
 const firstLessonProgress = require('../../frontend/js/video-reader/first-lesson-progress');
@@ -32,6 +33,10 @@ const CONTINUATION_PREFIXES = [
   'uh',
 ];
 const REPLY_LEXICON = /^(sure|okay|alright|of course|no problem|thanks|thank you|you're welcome|yes|no|absolutely|definitely|certainly|please)\b/i;
+
+function buildContentCacheKey(suffix) {
+  return `content:${suffix}`;
+}
 
 /**
  * Tokenize sentence into words
@@ -342,9 +347,7 @@ async function registerContentRoutes(pathname, req, res) {
   const articleMatch = pathname.match(/^\/articles\/(\d+)$/);
   if (articleMatch && req.method === 'GET') {
     try {
-      res.setHeader('Cache-Control', 'private, no-store');
-      const user = await optionalAuth(req);
-      const article = await dataStore.getArticleById(Number(articleMatch[1]), user);
+      const article = await dataStore.getArticleById(Number(articleMatch[1]));
       if (!article) return sendError(res, 404, '找不到这篇内容');
       return sendJson(res, 200, article);
     } catch (err) {
@@ -356,10 +359,14 @@ async function registerContentRoutes(pathname, req, res) {
   // GET /articles
   if (pathname === '/articles' && req.method === 'GET') {
     try {
-      res.setHeader('Cache-Control', 'private, no-store');
-      const user = await optionalAuth(req);
-      const articles = await dataStore.getArticles(user);
+      const cacheKey = buildContentCacheKey('articles');
+      const cached = await cacheService.get(cacheKey);
+      if (cached) {
+        return sendJson(res, 200, cached);
+      }
+      const articles = await dataStore.getArticles();
       const payload = { items: articles };
+      await cacheService.set(cacheKey, payload, 120);
       return sendJson(res, 200, payload);
     } catch (err) {
       const status = mapErrorToStatus(err);
@@ -373,10 +380,16 @@ async function registerContentRoutes(pathname, req, res) {
       const articleId = url.searchParams.get('article_id')
         ? Number(url.searchParams.get('article_id'))
         : null;
-      res.setHeader('Cache-Control', 'private, no-store');
-      const user = await optionalAuth(req);
-      const items = await dataStore.getMediaByArticle(articleId, user);
-      const payload = { items };
+      const cacheKey = buildContentCacheKey(`media:${Number.isFinite(articleId) ? articleId : 'all'}`);
+      const cached = await cacheService.get(cacheKey);
+      if (cached) {
+        return sendJson(res, 200, cached);
+      }
+      const media = await dataStore.getMediaByArticle(
+        articleId,
+      );
+      const payload = { items: media };
+      await cacheService.set(cacheKey, payload, 120);
       return sendJson(res, 200, payload);
     } catch (err) {
       const status = mapErrorToStatus(err);
@@ -390,10 +403,16 @@ async function registerContentRoutes(pathname, req, res) {
       const mediaId = url.searchParams.get('media_id')
         ? Number(url.searchParams.get('media_id'))
         : null;
-      res.setHeader('Cache-Control', 'private, no-store');
-      const user = await optionalAuth(req);
-      const items = await dataStore.getSegmentsByMedia(mediaId, user);
-      const payload = { items };
+      const cacheKey = buildContentCacheKey(`segments:${Number.isFinite(mediaId) ? mediaId : 'all'}`);
+      const cached = await cacheService.get(cacheKey);
+      if (cached) {
+        return sendJson(res, 200, cached);
+      }
+      const segments = await dataStore.getSegmentsByMedia(
+        mediaId,
+      );
+      const payload = { items: segments };
+      await cacheService.set(cacheKey, payload, 120);
       return sendJson(res, 200, payload);
     } catch (err) {
       const status = mapErrorToStatus(err);

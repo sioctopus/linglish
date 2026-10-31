@@ -5,8 +5,6 @@ const { sendJson, sendError, mapErrorToStatus } = require('../middleware/error-h
 const { authenticate } = require('../middleware/auth');
 const { serveStatic } = require('../middleware/file-server');
 
-const WORD_VOICE = 'en-US-AvaMultilingualNeural';
-
 const PRACTICE_VOICES = new Set([
   'en-US-AriaNeural',
   'en-US-GuyNeural',
@@ -23,22 +21,6 @@ const PRACTICE_VOICES = new Set([
   'en-GB-SoniaNeural',
 ]);
 
-// Unknown voices fall back to the default so an edge-tts run can never be
-// started with an arbitrary caller-supplied voice name.
-function allowedVoice(voice) {
-  return PRACTICE_VOICES.has(voice) ? voice : WORD_VOICE;
-}
-
-function wordRequest(url) {
-  const text = String(url.searchParams.get('text') || '').trim();
-  if (!text || text.length > 180 || !/^[a-zA-Z0-9 ,.'!?\-]+$/.test(text) || !/[a-zA-Z0-9]/.test(text)) {
-    const error = new Error('A short English word or phrase is required');
-    error.statusCode = 400;
-    throw error;
-  }
-  return { text, voice: allowedVoice(url.searchParams.get('voice')) };
-}
-
 function practiceRequest(body) {
   const text = String((body && body.text) || '').trim();
   if (!text) {
@@ -51,7 +33,8 @@ function practiceRequest(body) {
     error.statusCode = 400;
     throw error;
   }
-  return { text, voice: allowedVoice(body && body.voice) };
+  const voice = PRACTICE_VOICES.has(body && body.voice) ? body.voice : 'en-US-AvaMultilingualNeural';
+  return { text, voice };
 }
 
 /**
@@ -63,26 +46,6 @@ function practiceRequest(body) {
  * @returns {Promise<boolean>} True if route was handled, false otherwise
  */
 async function registerTtsRoutes(pathname, req, res, url) {
-  // Direct media URL: the Audio element can play synchronously from a mobile tap.
-  if (pathname === '/tts/word' && req.method === 'GET') {
-    try {
-      const word = wordRequest(url);
-      const audioFile = await ttsService.textToSpeech(word.text, {
-        lang: 'en', provider: 'edge', voice: word.voice, format: 'mp3', allowFallback: false,
-      });
-      res.setHeader('X-TTS-Voice', word.voice);
-      res.setHeader('Cache-Control', 'public, max-age=604800');
-      const served = await serveStatic(res, audioFile, req);
-      if (!served) {
-        res.setHeader('Cache-Control', 'no-store');
-        return sendError(res, 404, 'Audio file not found');
-      }
-      return true;
-    } catch (err) {
-      res.setHeader('Cache-Control', 'no-store');
-      return sendError(res, err.statusCode || 503, err.message);
-    }
-  }
   // POST /tts/practice — short English lines for the daily speaking page, no login
   if (pathname === '/tts/practice' && req.method === 'POST') {
     try {
@@ -115,7 +78,7 @@ async function registerTtsRoutes(pathname, req, res, url) {
         lang: body.lang || 'en',
         slow: body.slow || false,
         provider: body.provider || ttsService.TTS_CONFIG.provider,
-        voice: allowedVoice(body.voice),
+        voice: body.voice || ttsService.TTS_CONFIG.edgeVoice,
         format: body.format || 'mp3',
       });
 
@@ -158,4 +121,4 @@ async function registerTtsRoutes(pathname, req, res, url) {
   return false;
 }
 
-module.exports = { registerTtsRoutes, practiceRequest, wordRequest };
+module.exports = { registerTtsRoutes, practiceRequest };

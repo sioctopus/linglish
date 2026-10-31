@@ -3,7 +3,6 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { readPage } = require('./helpers/page-source');
 
 const APP_ROOT = path.resolve(__dirname, '../..');
 const FRONTEND_ROOT = path.join(APP_ROOT, 'frontend');
@@ -73,7 +72,7 @@ test('backend generic and admin authentication leave legacy query JWTs only to e
 
 test('purpose-scoped reset, verify, share, and group-chat ticket URL parameters remain explicit', () => {
   const auth = read('backend/services/auth.js');
-  const desktopPractice = readPage('practice-session-desktop.html');
+  const desktopPractice = read('frontend/practice-session-desktop.html');
   const groupDetail = read('frontend/group-detail.html');
 
   assert.match(auth, /reset-password\.html\?token=/);
