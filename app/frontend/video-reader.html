@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  <script src="./js/auth-manager.js?v=3"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/tts-voice.js?v=3"></script>
+  <script src="./js/tts-voice.js?v=2026103001"></script>
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
     // IMPORTANT: This must be the first script to catch extension errors
@@ -220,7 +220,7 @@
             /跨源请求.*cloudflare/i,
             /同源策略.*cloudflare/i,
             /integrity.*sha512/i,
-            /增强型跟踪保?i,
+            /增强型跟踪保护/i,
             /www-widgetapi\.js/i,
             /postMessage.*target origin/i,
             /postMessage.*DOMWindow/i,
@@ -322,9 +322,9 @@
     <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
 
     <!-- Preload critical resources for video playback -->
-    <link rel="preload" href="./js/video-reader/main.js?v=117-shortcue" as="script">
-    <link rel="preload" href="./js/app/youtube-player.js?v=20261029-hide-cc" as="script">
-    <link rel="preload" href="./css/video-reader/components.css?v=22" as="style">
+    <link rel="preload" href="./js/video-reader/main.js?v=2026103001" as="script">
+    <link rel="preload" href="./js/app/youtube-player.js?v=2026103001" as="script">
+    <link rel="preload" href="./css/video-reader/components.css?v=2026103001" as="style">
     <link rel="preconnect" href="https://www.youtube.com">
     <link rel="preconnect" href="https://i.ytimg.com">
 
@@ -341,18 +341,18 @@
     <!-- Video Reader CSS Modules -->
     <link rel="stylesheet" href="./css/video-reader/variables.css?v=1" />
     <link rel="stylesheet" href="./css/video-reader/animations.css?v=1" />
-    <link rel="stylesheet" href="./css/video-reader/components.css?v=22" />
-    <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=20261028-speedrow" />
-    <link rel="stylesheet" href="./styles/practice-voice-chat.css?v=20261030-arena-real" />
-    <link rel="stylesheet" href="./styles/practice-voice-chat-x.css?v=20261030-word-card" />
-    <link rel="stylesheet" href="./styles/mobile/pages/video-reader-focus.css?v=69-cue-xl" />
+    <link rel="stylesheet" href="./css/video-reader/components.css?v=2026103001" />
+    <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=2026103001" />
+    <link rel="stylesheet" href="./styles/practice-voice-chat.css?v=2026103001" />
+    <link rel="stylesheet" href="./styles/practice-voice-chat-x.css?v=2026103001" />
+    <link rel="stylesheet" href="./styles/mobile/pages/video-reader-focus.css?v=2026103001" />
     <link rel="stylesheet" href="./styles/mobile/components/modals.css?v=4" />
-    <link rel="stylesheet" href="./css/study-switch.css?v=20261027-mobile" />
+    <link rel="stylesheet" href="./css/study-switch.css?v=2026103001" />
 
     <script src="./guest-check.js?v=1"></script>
-    <script src="./auth-helpers.js?v=2"></script>
-    <script src="./i18n.js?v=1"></script>
-    <script src="./global-ui.js?v=20250108"></script>
+    <script src="./auth-helpers.js?v=2026103001"></script>
+    <script src="./i18n.js?v=2026103001"></script>
+    <script src="./global-ui.js?v=2026103001"></script>
     <script src="./feedback.js?v=1"></script>
     <script src="./js/app/lazy-loader.js?v=1"></script>
     <link rel="stylesheet" href="./shared/dictionary.css?v=20260224f" />
@@ -360,9 +360,9 @@
     <script src="./shared/dictionary-lookup.js?v=1734439600"></script>
     <script src="./shared/deep-analysis.js?v=20260224f"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-    <script src="./js/video-reader/device-router.js?v=1"></script>
+    <script src="./js/video-reader/device-router.js?v=2026103001"></script>
     <script>window.VideoReaderDeviceRouter && window.VideoReaderDeviceRouter.redirectIfNeeded(window);</script>
-    <link rel="stylesheet" href="./styles/icons.css?v=1">
+    <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
 </head>
   <body class="video-reader-mobile-focus">
     <header class="mobile-reader-header">
@@ -558,6 +558,12 @@
                 </div>
               </div>
             </div>
+            <a class="guided-lesson-entry" id="guided-lesson-entry" hidden>
+              <span>跟读小课堂</span><span>练 3 句英语</span>
+            </a>
+            <section id="first-lesson-goal" hidden aria-label="今日跟读小目标"></section>
+            <details class="guided-reader-tools" id="guided-reader-tools" open>
+              <summary>字幕、查词与播放设置</summary>
             <div class="mobile-transcript-view" id="mobile-transcript" aria-live="polite">
               <div class="mobile-view-toggle" id="mobile-view-toggle" role="group" aria-label="字幕控制">
                 <div class="mobile-speed-controls coach-speed-dropdown" id="mobile-speed-controls">
@@ -588,7 +594,6 @@
                 <button class="mobile-transcript-nav next" id="mobile-next-segment" aria-label="下一句">›</button>
               </div>
             </div>
-            <section id="first-lesson-goal" hidden aria-label="今日跟读小目标"></section>
             <div class="mobile-player-controls" id="mobile-player-controls">
               <div id="first-lesson-progress" role="status" aria-live="polite" hidden>已练 0/0 · 0%</div>
               <div class="mobile-progress-row" hidden aria-hidden="true">
@@ -667,6 +672,7 @@
                 <button type="button" class="mobile-feature-cancel" id="mobile-mic-cancel">取消</button>
               </div>
             </div>
+            </details>
             <div class="transcript-panel">
               <div class="transcript-header">
                 <h3 style="margin: 0; font-size: 0.9rem;">Transcript</h3>
@@ -716,7 +722,7 @@
                 <select id="practice-speaker-right" class="practice-speaker-select"></select>
               </div>
 
-              <!-- 当前行显示（独立->
+              <!-- 当前行显示（独立） -->
               <div class="practice-current-line-right" id="practice-current-line-right" hidden></div>
 
               <!-- 台词列表（独立） -->
@@ -885,18 +891,18 @@
 
     <!-- Video Reader JavaScript Module -->
     <script src="./membership.js"></script>
-    <script src="./js/app/youtube-player.js?v=20261029-hide-cc"></script>
+    <script src="./js/app/youtube-player.js?v=2026103001"></script>
     <script src="./js/visitor-context.js?v=1"></script>
     <script src="./js/video-reader/smart-import-api.js?v=1"></script>
-    <script src="./js/video-reader/mobile-reader-layout.js?v=4-library"></script>
+    <script src="./js/video-reader/mobile-reader-layout.js?v=2026103001"></script>
     <script src="./js/video-reader/first-lesson-focus.js?v=20260822"></script>
     <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-    <script src="./js/video-reader/first-lesson-goal.js?v=20261015"></script>
-    <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=20260922">
-    <script src="./js/video-reader/sentence-segments.js?v=20261030-source-sync"></script>
+    <script src="./js/video-reader/first-lesson-goal.js?v=2026103001"></script>
+    <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026103002">
+    <script src="./js/video-reader/sentence-segments.js?v=2026103001"></script>
     <script src="./js/video-reader/missed-words.js?v=20261015"></script>
     <script src="./js/video-reader/sentence-assist.js?v=20261015"></script>
-    <script src="./js/video-reader/first-lesson-practice.js?v=20261024-mic-ding"></script>
+    <script src="./js/video-reader/first-lesson-practice.js?v=2026103001"></script>
     <script src="./js/video-reader/first-lesson-readiness.js?v=20260808"></script>
     <script>
       window.LinglishFirstLessonFocus.applyDocumentState(document, window.location.search);
@@ -904,20 +910,20 @@
     <script src="./js/media-session.js"></script>
     <script src="./js/video-recommendation-client.js?v=20260925"></script>
     <script src="./js/video-reader/next-video-sheet.js?v=20260925"></script>
-    <script src="./js/video-reader/coaching-mode.js?v=20261028-mic"></script>
-    <script src="./js/audio-cues.js?v=1"></script>
-    <script src="./js/practice/shadow-mic.js?v=20261029-wx-60"></script>
-    <script src="./js/practice/shadow-recording-cache.js?v=20261030-ttl7"></script>
-    <script src="./js/practice/voice-chat-coach.js?v=20261030-word-card"></script>
-    <script src="./js/practice/voice-chat-bridge.js?v=20261030-ttl7"></script>
-    <script src="./js/video-reader/coaching-dock.js?v=20261030-word-card"></script>
+    <script src="./js/video-reader/coaching-mode.js?v=2026103001"></script>
+    <script src="./js/audio-cues.js?v=2026103001"></script>
+    <script src="./js/practice/shadow-mic.js?v=2026103001"></script>
+    <script src="./js/practice/shadow-recording-cache.js?v=2026103001"></script>
+    <script src="./js/practice/voice-chat-coach.js?v=2026103001"></script>
+    <script src="./js/practice/voice-chat-bridge.js?v=2026103001"></script>
+    <script src="./js/video-reader/coaching-dock.js?v=2026103001"></script>
     <script src="./js/video-reader/voice-slot.js?v=1"></script>
-    <script src="./js/video-reader/media-library-defaults.js?v=1"></script>
-    <script src="./js/video-reader/mobile-media-library.js?v=6-lib-tabs"></script>
-    <script src="./js/study-recent.js?v=20261029-pod-open"></script>
-    <script src="./js/video-reader/main.js?v=117-shortcue"></script>
-    <script src="./js/video-reader/sentence-path.js?v=20261028-repeat2"></script>
-    <script src="./js/study-switch.js?v=20261030-arena-real"></script>
+    <script src="./js/video-reader/media-library-defaults.js?v=2026103001"></script>
+    <script src="./js/video-reader/mobile-media-library.js?v=2026103001"></script>
+    <script src="./js/study-recent.js?v=2026103001"></script>
+    <script src="./js/video-reader/main.js?v=2026103001"></script>
+    <script src="./js/video-reader/sentence-path.js?v=2026103001"></script>
+    <script src="./js/study-switch.js?v=2026103001"></script>
     <script>
       try {
         if (window.LinglishMobileMediaLibrary) window.LinglishMobileMediaLibrary.init();
@@ -958,6 +964,6 @@
     </script>
     <script src="./js/page-tracker.js"></script>
   <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
-  <script src="./js/icons.js?v=1"></script>
+  <script src="./js/icons.js?v=2026103001"></script>
 </body>
 </html>

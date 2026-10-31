@@ -6,10 +6,14 @@ const vm = require('node:vm');
 const practice = require('../../frontend/js/video-reader/first-lesson-practice');
 const progress = require('../../frontend/js/video-reader/first-lesson-progress');
 const replay = require('../../frontend/js/practice/original-audio-replay');
+const { readPage } = require('./helpers/page-source');
 
 function sourceFunction(file, name, indent = '') {
-  const source = fs.readFileSync(path.resolve(__dirname, '../../frontend', file), 'utf8');
-  const start = source.indexOf(`function ${name}(`);
+  const source = file === 'js/pages/video-reader-desktop-app.js'
+    ? readPage('video-reader-desktop.html')
+    : fs.readFileSync(path.resolve(__dirname, '../../frontend', file), 'utf8');
+  const asyncStart = source.indexOf(`async function ${name}(`);
+  const start = asyncStart >= 0 ? asyncStart : source.indexOf(`function ${name}(`);
   assert.notEqual(start, -1, `${name} is available to verify its production behavior`);
   const end = source.indexOf(`\n${indent}}`, start);
   assert.notEqual(end, -1);
@@ -132,7 +136,9 @@ test('guided desktop subtitles load while the YouTube iframe is pending and are 
     window: {}, state: { currentVideo: null }, firstLessonGoal: null,
     firstLessonSession: { isActive: () => true },
     firstLessonGoalCard: { hide: noop },
-    leaveForCoach: () => false, teardownFirstLessonRecording: noop,
+    leaveForCoach: () => false, teardownFirstLessonRecording: noop, rememberStudyVideo: noop,
+    transcriptFetchKey: '', transcriptFetchPromise: null,
+    clearTranscriptCues: noop, renderTranscript: noop, renderActiveSubtitle: noop, syncActive: noop,
     videoSelectionGuard: { begin: () => ({ generation: 1 }), isCurrent: () => true },
     currentDesktopSelectionToken: null, pendingSeek: null,
     document: { querySelector: () => null, getElementById: () => null },
@@ -150,7 +156,8 @@ test('guided desktop subtitles load while the YouTube iframe is pending and are 
     autoImportVocabulary: async () => {},
     loadCurrentTranscript: async (video, token) => { loads.push([video.id, token.generation]); },
   };
-  const select = vm.runInNewContext(`(${sourceFunction('js/pages/video-reader-desktop-app.js', 'selectVideo', '    ').replace('function selectVideo', 'async function selectVideo')})`, context);
+  vm.runInNewContext(sourceFunction('js/pages/video-reader-desktop-app.js', 'beginTranscriptLoad', '    '), context);
+  const select = vm.runInNewContext(`(${sourceFunction('js/pages/video-reader-desktop-app.js', 'selectVideo', '    ')})`, context);
   const selection = select({ id: 10, title: 'English practice', youtube_video_id: 'example-id' });
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(loads.length, 1, 'available English text must not wait for a third-party iframe');
@@ -159,3 +166,83 @@ test('guided desktop subtitles load while the YouTube iframe is pending and are 
   assert.equal(loads.length, 1, 'player readiness must not reset the prepared lesson');
   assert.deepEqual(loads[0], [10, 1]);
 });
+
+
+test('desktop transcript requests share a promise per selection generation and keep newer loading state', async () => {
+  const pending = [];
+  let generation = 1;
+  const context = {
+    state: { currentVideo: { id: 10 }, isLoadingTranscript: false },
+    transcriptFetchKey: '', transcriptFetchPromise: null,
+    videoSelectionGuard: { isCurrent: token => token.generation === generation },
+    clearTranscriptCues() {}, renderTranscript() {}, renderActiveSubtitle() {}, syncActive() {},
+    loadCurrentTranscript: (_video, token) => new Promise(resolve => pending.push({ token, resolve })),
+  };
+  const begin = vm.runInNewContext(`(${sourceFunction('js/pages/video-reader-desktop-app.js', 'beginTranscriptLoad', '    ')})`, context);
+  const first = begin({ id: 10 }, { generation: 1 });
+  const shared = begin({ id: 10 }, { generation: 1 });
+  assert.equal(shared, first, 'callers must receive the actual shared in-flight load');
+  assert.equal(pending.length, 1);
+  generation = 2;
+  const next = begin({ id: 10 }, { generation: 2 });
+  assert.notEqual(next, first, 'reselecting the same video must start a fresh generation');
+  assert.equal(pending.length, 2);
+  pending[0].resolve();
+  await first;
+  assert.equal(context.state.isLoadingTranscript, true, 'an old selection cannot settle the new request');
+  pending[1].resolve();
+  await next;
+  assert.equal(context.state.isLoadingTranscript, false);
+});
+
+
+test('mobile guided recordings remain available in both the studio and shared recording cache', async () => {
+  const recording = { size: 42 };
+  const line = { index: 0, text: 'Could you slow down?' };
+  const captured = { displayIndex: 0 };
+  const cached = [];
+  const studio = [];
+  const context = {
+    token: 'session-token', state: { selectedVideoId: 10 }, mobileSegmentPosition: 1,
+    rememberLastRecording: (...args) => cached.push(args),
+    firstLessonGoalCard: { setRecording: blob => studio.push(blob) },
+    isMobileAssessmentContextCurrent: value => value === captured,
+    window: { LinglishFirstLessonPractice: { submitAssessment: async () => null } },
+    fetch() {}, API_BASE: '/api', console,
+  };
+  const submit = vm.runInNewContext(`(${sourceFunction('js/video-reader/main.js', 'submitPracticeRecording')})`, context);
+  await submit(recording, line, captured);
+  assert.deepEqual(cached, [[recording, 0]]);
+  assert.deepEqual(studio, [recording]);
+});
+
+test('mobile guided feedback supplies recognition and missed words for the assessed sentence', () => {
+  const settled = [];
+  const context = {
+    state: { practiceIndex: 0, practiceLineWordResults: {} },
+    firstLessonSession: { isActive: () => true },
+    firstLessonGoalCard: { settle: (...args) => settled.push(args) },
+    window: { LinglishFirstLessonGoal: require('../../frontend/js/video-reader/first-lesson-goal') },
+    computePracticeWordMatches: () => ({ missingWords: ['slow'] }),
+    renderPracticeCurrentLine() {}, updatePracticeButtons() {},
+  };
+  const handle = vm.runInNewContext(`(${sourceFunction('js/video-reader/main.js', 'handlePracticeResult')})`, context);
+  handle({ success: false, similarity: 0.5, recognizedText: 'Could you down?', targetText: 'Could you slow down?' }, { index: 0 });
+  assert.equal(settled.length, 1);
+  assert.equal(settled[0][1].success, false);
+  assert.equal(settled[0][1].recognizedText, 'Could you down?');
+  assert.deepEqual(Array.from(settled[0][1].missedWords), ['slow']);
+});
+
+for (const target of ['.goal-studio', '.topbar', 'summary']) {
+  test(`native playback shortcuts preserve ${target} keyboard actions`, () => {
+    const context = {};
+    const typing = vm.runInNewContext(`(${sourceFunction('js/video-reader/pro-controls.js', 'isTypingTarget', '  ')})`, context);
+    const element = {
+      tagName: target === 'summary' ? 'SUMMARY' : 'BUTTON',
+      closest: selector => selector === target ? {} : null,
+      getAttribute: () => null,
+    };
+    assert.equal(typing(element), true);
+  });
+}

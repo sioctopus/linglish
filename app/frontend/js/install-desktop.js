@@ -105,7 +105,7 @@
 
   function registerWorker() {
     if (!('serviceWorker' in navigator)) return;
-    navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function () {});
+    navigator.serviceWorker.register('/sw.js?v=2026103001', { scope: '/' }).catch(function () {});
   }
 
   function hideInstall() {

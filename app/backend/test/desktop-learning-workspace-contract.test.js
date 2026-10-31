@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
+const { readPage } = require('./helpers/page-source');
 
 const frontend = path.resolve(__dirname, '../../frontend');
 
@@ -21,7 +22,7 @@ function extractCssBlock(css, selector) {
 }
 
 test('desktop video reader keeps transcript and sticky core controls in focus mode', () => {
-  const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const html = readPage('video-reader-desktop.html');
   const css = fs.readFileSync(path.join(frontend, 'styles/video-reader-pro.css'), 'utf8');
   const controls = fs.readFileSync(path.join(frontend, 'js/video-reader/pro-controls.js'), 'utf8');
 
@@ -44,7 +45,7 @@ test('desktop video reader keeps transcript and sticky core controls in focus mo
 });
 
 test('desktop player preserves 16:9 when viewport height limits its size', () => {
-  const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const html = readPage('video-reader-desktop.html');
   const workspaceCss = html.match(
     /\/\* ={10,}\s*Desktop learning workspace[\s\S]*?<\/style>/
   );
@@ -62,7 +63,7 @@ test('desktop player preserves 16:9 when viewport height limits its size', () =>
   );
   assert.match(
     desktopMedia,
-    /\.player\s*\{[^}]*width:\s*min\(100%,\s*calc\(min\(60vh,\s*620px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*width:\s*min\(100%,\s*calc\(min\(60dvh,\s*620px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*aspect-ratio:\s*16\s*\/\s*9/s
+    /\.player\s*\{[^}]*width:\s*min\(100%,\s*calc\(min\(52vh,\s*560px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*width:\s*min\(100%,\s*calc\(min\(52dvh,\s*560px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*aspect-ratio:\s*16\s*\/\s*9/s
   );
   assert.doesNotMatch(
     html,
@@ -92,9 +93,9 @@ test('desktop player preserves 16:9 when viewport height limits its size', () =>
   };
 
   for (const scenario of [
-    { viewportHeight: 787, availableWidth: 1432, heightRatio: 0.60, heightCap: 620 },
-    { viewportHeight: 900, availableWidth: 680, heightRatio: 0.60, heightCap: 620 },
-    { viewportHeight: 1080, availableWidth: 1152, heightRatio: 0.60, heightCap: 620 },
+    { viewportHeight: 787, availableWidth: 1432, heightRatio: 0.52, heightCap: 560 },
+    { viewportHeight: 900, availableWidth: 680, heightRatio: 0.52, heightCap: 560 },
+    { viewportHeight: 1080, availableWidth: 1152, heightRatio: 0.52, heightCap: 560 },
     { viewportHeight: 900, availableWidth: 1000, heightRatio: 0.68, heightCap: 680 }
   ]) {
     const size = expectedPlayer(scenario);
@@ -104,7 +105,7 @@ test('desktop player preserves 16:9 when viewport height limits its size', () =>
 });
 
 test('desktop practice keeps a compact top mode bar and shared replay controller', () => {
-  const html = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
+  const html = readPage('practice-session-desktop.html');
   const css = fs.readFileSync(path.join(frontend, 'styles/practice-session-desktop.css'), 'utf8');
 
   assert.match(html, /js\/practice\/original-audio-replay\.js/);
@@ -130,7 +131,7 @@ test('desktop practice keeps a compact top mode bar and shared replay controller
   const tokens = fs.readFileSync(path.join(frontend, 'styles/tokens.css'), 'utf8');
   assert.match(tokens, /--lx-focus-inset:\s*24px/);
   assert.match(tokens, /--lx-focus-gap:\s*16px/);
-  const readerHtml = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const readerHtml = readPage('video-reader-desktop.html');
   assert.match(readerHtml, /body\.focus-mode \.layout\s*\{[^}]*padding:\s*var\(--lx-focus-inset,\s*24px\)/s);
   assert.match(css, /body\.practice-focus-active \.mode-top-bar/);
   assert.match(css, /\.practice-focus-badge\s*\{[^}]*#0f766e/s);
@@ -141,7 +142,7 @@ test('desktop practice keeps a compact top mode bar and shared replay controller
 });
 
 test('desktop video reader exposes one canonical playback progress rail', () => {
-  const html = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const html = readPage('video-reader-desktop.html');
   const controls = fs.readFileSync(path.join(frontend, 'js/video-reader/pro-controls.js'), 'utf8');
 
   assert.match(controls, /scrub\.className = 'vrp-scrub'/);
@@ -157,13 +158,13 @@ test('desktop video reader exposes one canonical playback progress rail', () => 
 });
 
 test('video learning and AI practice share one workspace switch', () => {
-  const reader = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
-  const practice = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
+  const reader = readPage('video-reader-desktop.html');
+  const practice = readPage('practice-session-desktop.html');
   const markup = /id="study-switch"[\s\S]*data-study="video"[\s\S]*data-study="coach"[\s\S]*data-study="arena"/;
 
   assert.match(reader, markup);
   assert.match(practice, markup);
-  assert.match(practice, /id="nav-library-switch"[\s\S]*data-library="videos"[\s\S]*选择视频库[\s\S]*data-library="channels"[\s\S]*选择频道库[\s\S]*data-library="podcasts"[\s\S]*选择播客/);
+  assert.match(practice, /data-library="videos"[\s\S]*视频库[\s\S]*data-library="channels"[\s\S]*频道库[\s\S]*data-library="podcasts"[\s\S]*播客/);
   assert.match(reader, /id="nav-library-switch"[\s\S]*选择视频库[\s\S]*选择频道库[\s\S]*选择播客/);
   assert.doesNotMatch(reader, /id="open-channel-browser"/);
   assert.doesNotMatch(reader, /id="open-podcast-browser"/);
@@ -172,8 +173,8 @@ test('video learning and AI practice share one workspace switch', () => {
 });
 
 test('study menu switches without a loader delay', () => {
-  const reader = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
-  const practice = fs.readFileSync(path.join(frontend, 'practice-session-desktop.html'), 'utf8');
+  const reader = readPage('video-reader-desktop.html');
+  const practice = readPage('practice-session-desktop.html');
   const study = fs.readFileSync(path.join(frontend, 'js/study-switch.js'), 'utf8');
 
   assert.match(reader, /getElementById\('pageLoader'\)\?\.remove\(\)/);
@@ -206,7 +207,15 @@ test('study menu switches without a loader delay', () => {
   assert.match(coachingDock, /LinglishShadowMic|recordShadow/);
   assert.match(coachingDock, /compareShadowWithOriginal|data-action="compare"|'compare'/);
   assert.match(reader, /js\/practice\/shadow-mic\.js/);
-  assert.match(practice, /js\/practice\/shadow-mic\.js/);
-  assert.match(practice, /id="sentence-hear-me"/);
-  assert.match(practice, /id="sentence-compare"/);
+  const mobileReader = readPage('video-reader.html');
+  assert.match(mobileReader, /js\/practice\/shadow-mic\.js/);
+  assert.match(mobileReader, /id="mobile-hear-me-btn"/);
+  assert.match(reader, /js\/video-reader\/desktop-x-hold\.js/);
+  const desktopHold = fs.readFileSync(path.join(frontend, 'js/video-reader/desktop-x-hold.js'), 'utf8');
+  assert.match(desktopHold, /hearBtn\.id = 'desk-hear-me'/);
+  const coachingMode = fs.readFileSync(path.join(frontend, 'js/video-reader/coaching-mode.js'), 'utf8');
+  assert.match(coachingMode, /id: 'hear-me'/);
+  assert.match(coachingMode, /id: 'compare'/);
+  assert.match(practice, /createOriginalAudioReplayController/);
+  assert.match(practice, /\/pronunciation\/assess/);
 });

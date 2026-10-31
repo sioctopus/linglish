@@ -81,14 +81,14 @@ function loadPage(search = '', options = {}) {
   };
 }
 
-test('trial waits for a click and asks for an account instead of creating a guest', async () => {
+test('trial waits for a click and opens the built-in anonymous lesson', async () => {
   const page = loadPage('?next=%2Fpricing.html%3Fintent%3Dplans%23plans');
   assert.equal(page.requests.some(r => r.url === '/auth/guest'), false);
   await Promise.all([page.trial().click(), page.trial().click()]);
   assert.equal(page.requests.filter(r => r.url === '/auth/guest').length, 0);
-  assert.deepEqual(page.destinations, ['./mobile-auth.html?mode=register']);
+  assert.deepEqual(page.destinations, ['./today.html?from=mobile_auth_first_lesson&starter=1']);
   const events = page.requests.filter(r => r.url === '/track/event').map(r => JSON.parse(r.init.body));
-  assert.ok(events.some(e => e.event_name === 'first_lesson_login_required' && e.properties.source === 'mobile_auth_first_lesson'));
+  assert.ok(events.some(e => e.event_name === 'first_lesson_starter_ready' && e.properties.source === 'mobile_auth_first_lesson'));
 });
 
 test('trial is available from the registration tab without submitting a registration', async () => {
@@ -99,11 +99,11 @@ test('trial is available from the registration tab without submitting a registra
   assert.equal(page.destinations.length, 1);
 });
 
-test('trial without an account stays on registration and does not create a guest', async () => {
+test('trial without an account opens the starter and does not create a guest', async () => {
   const page = loadPage('', { failFirstGuest: true });
   await page.trial().click();
   assert.equal(page.requests.filter(r => r.url === '/auth/guest').length, 0);
-  assert.deepEqual(page.destinations, ['./mobile-auth.html?mode=register']);
+  assert.deepEqual(page.destinations, ['./today.html?from=mobile_auth_first_lesson&starter=1']);
   assert.equal(page.trial().disabled, false);
 });
 
@@ -119,7 +119,7 @@ for (const action of ['login', 'register', 'guest']) {
   for (const [next, expected] of [
     ['/pricing.html?intent=plans#plans', '/pricing.html?intent=plans#plans'],
     ['/game.html?chapter=2', '/game.html?chapter=2'],
-    ['https://untrusted.example/', action === 'register' ? 'welcome.html?from=register' : `index-desktop.html?from=${action}`],
+    ['https://untrusted.example/', action === 'register' ? 'welcome.html?from=register' : `mobile-today.html?from=${action}`],
   ]) {
     test(`${action} preserves safe return paths and rejects external redirects: ${next}`, async () => {
       const page = loadPage(`?next=${encodeURIComponent(next)}`);

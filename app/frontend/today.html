@@ -13,21 +13,21 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Linglish">
   <link rel="stylesheet" href="/css/install-desktop.css?v=4">
-  <script src="/js/install-desktop.js?v=6" defer></script>
+  <script src="/js/install-desktop.js?v=2026103001" defer></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <script src="/env.js"></script>
-  <script src="./js/auth-manager.js?v=2"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <script src="./js/visitor-context.js?v=1"></script>
-  <script src="./js/first-lesson-entry.js?v=1"></script>
+  <script src="./js/first-lesson-entry.js?v=2026103001"></script>
   <script src="./js/video-reader/missed-words.js?v=20261015"></script>
   <script src="./js/starter-sentence.js?v=20261015"></script>
   <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-  <script src="./js/video-reader/first-lesson-goal.js?v=20261015"></script>
-  <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=20260922">
+  <script src="./js/video-reader/first-lesson-goal.js?v=2026103001"></script>
+  <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026103002">
   <script src="./js/page-tracker.js?v=1"></script>
   <script src="./js/video-recommendation-client.js?v=20260925"></script>
   <style>
@@ -3021,7 +3021,7 @@
         currentLevel: { level, name: meta.name, description: meta.desc },
         recommendation: interest
           ? `围绕「${interest}」先完成一个轻量训练闭环：看一段真实视频、跟读 5 句、复习 3 个表达。`
-          : '先完成一个轻量训练闭环：看一段真实视频、跟读 5 句、复习 3 个表达。`,
+          : '先完成一个轻量训练闭环：看一段真实视频、跟读 5 句、复习 3 个表达。',
         estimatedMinutes: Math.max(10, Math.min(dailyGoal, 30)),
         summary: '今日轻量计划：1 个视频 + 5 句跟读 + 3 个复习',
         profile: { dailyGoal, interests: interest ? [interest] : [] },

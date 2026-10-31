@@ -272,7 +272,7 @@ async function createDocument(input = {}, userId, deps = {}) {
   if (!sourceText) throw reject('缺少正文内容');
   const title = cleanTitle(input.title || annotated.title, sourceText.slice(0, 40));
   const styles = normalizeStyles(input.styles);
-  const shareToken = makeShareToken();
+  const shareToken = null;
   const query = deps.query || defaultQuery;
   const { rows } = await query(
     `INSERT INTO workbench_documents
@@ -413,19 +413,21 @@ async function createPracticeLink(id, userId, options = {}, deps = {}) {
   let articleId = row.practice_article_id ? Number(row.practice_article_id) : null;
 
   if (articleId) {
-    await query(
+    const updated = await query(
       `UPDATE articles
        SET title = $2, content = $3, level = $4, word_count = $5, tags = $6, updated_at = NOW()
-       WHERE id = $1`,
-      [articleId, title, content, level, content.split(/\s+/).length, ['workbench', 'subtitles', 'practice']]
+       WHERE id = $1 AND owner_user_id = $7 AND source_type = 'workbench-practice'
+       RETURNING id`,
+      [articleId, title, content, level, content.split(/\s+/).length, ['workbench', 'subtitles', 'practice'], userId]
     );
+    if (!updated.rows[0]) throw reject('找不到这份练习', 404);
   } else {
     const inserted = await query(
       `INSERT INTO articles
-       (title, content, level, tags, word_count, difficulty_score, status, source_type, pdf_path, created_at, updated_at, published_at)
-       VALUES ($1, $2, $3, $4, $5, 0.3, 'published', $6, NULL, NOW(), NOW(), NOW())
+       (title, content, level, tags, word_count, difficulty_score, status, source_type, pdf_path, created_at, updated_at, published_at, owner_user_id, visibility)
+       VALUES ($1, $2, $3, $4, $5, 0.3, 'published', $6, NULL, NOW(), NOW(), NOW(), $7, 'public')
        RETURNING id`,
-      [title, content, level, ['workbench', 'subtitles', 'practice'], content.split(/\s+/).length, PRACTICE_SOURCE]
+      [title, content, level, ['workbench', 'subtitles', 'practice'], content.split(/\s+/).length, PRACTICE_SOURCE, userId]
     );
     articleId = Number(inserted.rows[0].id);
   }

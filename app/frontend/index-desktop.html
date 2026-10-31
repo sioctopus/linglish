@@ -19,10 +19,10 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Linglish">
   <link rel="stylesheet" href="/css/install-desktop.css?v=2">
-  <script src="/js/install-desktop.js?v=6" defer></script>
+  <script src="/js/install-desktop.js?v=2026103001" defer></script>
   <link rel="preload" href="/env.js?v=1" as="script">
-  <link rel="preload" href="./global-ui.js?v=20250108" as="script">
-  <link rel="preload" href="./js/auth-manager.js?v=3" as="script">
+  <link rel="preload" href="./global-ui.js?v=2026103001" as="script">
+  <link rel="preload" href="./js/auth-manager.js?v=2026103001" as="script">
   <link rel="preload" href="./js/storage-helper.js?v=1" as="script">
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <link rel="stylesheet" href="./css/quick-win.css?v=1">
@@ -297,7 +297,7 @@
     }
 
     /* ========== 加载性能优化 ========== */
-    /* 页面加载器已迁移到 global-ui.js 统一管理 */
+    /* 页面加载器已迁移到 global-ui.js?v=2026103001 统一管理 */
 
     /* GPU 加速优化 */
     .feature-card,
@@ -5494,7 +5494,7 @@
   </style>
   <script src="/env.js?v=1"></script>
   <!-- 统一加载和错误处理系统 -->
-  <script src="./global-ui.js?v=20250108"></script>
+  <script src="./global-ui.js?v=2026103001"></script>
 </head>
 
 <body>
@@ -6898,8 +6898,8 @@
     </div>
   </div>
 
-  <script src="./js/auth-manager.js?v=3"></script>
-  <script src="./js/oauth-bootstrap.js?v=2"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <script src="./js/oauth-bootstrap.js?v=2026103001"></script>
   <script>
     (function prefillSavedAccount() {
       const input = document.getElementById('email');
@@ -8988,7 +8988,7 @@
 
   </script>
   <script type="module">
-    import { persistAuthSession } from './js/app/auth.js';
+    import { persistAuthSession } from './js/app/auth.js?v=2026103001';
 
     // 登录函数
     async function login(email, password) {

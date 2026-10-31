@@ -42,7 +42,7 @@ class Element {
 
 function deckFixture(t) {
   const previous = global.document;
-  global.document = { createElement: (tag) => new Element(tag), addEventListener() {}, removeEventListener() {} };
+  global.document = { createElement: (tag) => new Element(tag), createTextNode: (text) => { const node = new Element('span'); node.textContent = text; return node; }, addEventListener() {}, removeEventListener() {} };
   const container = new Element('main');
   const spoken = [];
   let leave;

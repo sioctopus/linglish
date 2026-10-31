@@ -10,12 +10,20 @@ async function safeAlter(sql, context = '') {
   }
 }
 
+// Privacy columns must exist before content routes can serve user documents.
+// Legacy articles retain public visibility; all new user imports set private explicitly.
+async function ensureDocumentPrivacySchema(query = pool.query.bind(pool)) {
+  await query(`ALTER TABLE articles
+    ADD COLUMN IF NOT EXISTS pdf_path TEXT,
+    ADD COLUMN IF NOT EXISTS owner_user_id BIGINT REFERENCES users(id) ON DELETE SET NULL,
+    ADD COLUMN IF NOT EXISTS visibility TEXT NOT NULL DEFAULT 'public',
+    ADD COLUMN IF NOT EXISTS note_image_path TEXT`);
+  await query(`CREATE INDEX IF NOT EXISTS idx_articles_owner_user ON articles(owner_user_id)`);
+}
+
 async function ensureAuxTables() {
   if (dbUnavailable()) return;
-  await safeAlter(`
-    ALTER TABLE articles
-    ADD COLUMN IF NOT EXISTS pdf_path TEXT
-  `, 'articles.pdf_path');
+  await ensureDocumentPrivacySchema();
   // Users: add admin flag and last login IP for auditability
   await safeAlter(`
     ALTER TABLE users
@@ -1349,4 +1357,5 @@ async function ensureAuxTables() {
 
 module.exports = {
   ensureAuxTables,
+  ensureDocumentPrivacySchema,
 };

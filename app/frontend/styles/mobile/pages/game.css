@@ -1929,3 +1929,43 @@ span.game-word-art {
 .game-number-card .game-word-lemma--coach {
   font-size: clamp(22px, 4vw, 36px);
 }
+
+/* Keep the caption switch usable with keyboard and touch. */
+.game-deck-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 10px;
+  flex: 1;
+  min-width: 0;
+}
+.game-deck-heading .game-view-title { flex: 0 1 auto; }
+.game-caption-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #475569;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.game-caption-toggle::after {
+  content: '';
+  width: 28px;
+  height: 18px;
+  border-radius: 999px;
+  background: radial-gradient(circle at 9px 9px, #fff 6px, transparent 7px), #94a3b8;
+}
+.game-caption-toggle[aria-checked='true'] { color: #0f766e; background: #ccfbf1; }
+.game-caption-toggle[aria-checked='true']::after {
+  background: radial-gradient(circle at 19px 9px, #fff 6px, transparent 7px), #0d9488;
+}
+.game-caption-toggle:focus-visible { outline: 3px solid var(--game-secondary); outline-offset: 2px; }
+.game-word-copy[hidden] { display: none !important; }

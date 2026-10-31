@@ -36,6 +36,7 @@ function loadHelper({ pathname, statusFor, authManager, fetchImpl }) {
     alert: window.alert,
     setTimeout: window.setTimeout,
     Headers: globalThis.Headers,
+    URL,
   });
   return { window, alerts, cleared, location };
 }
@@ -120,4 +121,18 @@ test('login pages remember the account and can stay signed in together', () => {
   assert.match(home, /session: result\.session/);
   assert.doesNotMatch(desktop, /localStorage\.setItem\(\s*['"]password['"]/);
   assert.doesNotMatch(mobile, /localStorage\.setItem\(\s*['"]password['"]/);
+});
+
+test('third-party unauthorized responses never receive a renewed Linglish credential', async () => {
+  let renewals = 0;
+  const calls = [];
+  const page = loadHelper({ pathname: '/today.html', authManager: {
+    clearToken() { throw new Error('must not clear local account'); },
+    async ensureSession() { renewals += 1; return 'private-account-token'; },
+    isTokenExpired() { return false; },
+  }, fetchImpl(url, init) { calls.push({ url, init }); return Promise.resolve({ status: 401 }); } });
+  assert.equal((await page.window.fetch('https://third-party.example/podcast')).status, 401);
+  assert.equal(renewals, 0);
+  assert.equal(calls.length, 1);
+  assert.deepEqual(page.alerts, []);
 });

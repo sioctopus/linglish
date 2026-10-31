@@ -321,13 +321,14 @@
   <link rel="alternate icon" href="/favicon.ico">
   <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="stylesheet" href="./mobile-styles.css">
-  <script src="./i18n.js"></script>
-  <script src="./js/auth-manager.js?v=3"></script>
+  <link rel="stylesheet" href="./mobile-styles.css?v=2026103001">
+  <script src="./i18n.js?v=2026103001"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/oauth-bootstrap.js"></script>
-  <script src="./auth-helpers.js"></script>
+  <script src="./js/oauth-bootstrap.js?v=2026103001"></script>
+  <script src="./auth-helpers.js?v=2026103001"></script>
   <script src="./guest-check.js"></script>
+  <script src="./js/first-lesson-entry.js?v=2026103001"></script>
   <style>
     /* Extension warning banner */
     .extension-warning-banner {
@@ -359,55 +360,78 @@
       cursor: pointer;
     }
 
-    /* 首屏优先露出登录框：压缩 Logo，去掉免注册入口 */
+    /* 优化移动端布局，减少间距让表单在一屏内完成 */
     .auth-hero {
-      padding: 10px 16px 8px !important;
-      margin-bottom: 0 !important;
+      padding: 20px 16px 16px !important;
+      margin-bottom: 12px !important;
     }
 
     .auth-hero .logo-circle {
-      width: 36px !important;
-      height: 36px !important;
-      border-radius: 10px !important;
-      font-size: 0 !important;
+      width: 50px !important;
+      height: 50px !important;
+      font-size: 24px !important;
+      margin-bottom: 8px !important;
+    }
+
+    .auth-hero h1 {
+      font-size: 28px !important;
       margin-bottom: 4px !important;
-      box-shadow: 0 4px 12px rgba(13, 148, 136, 0.22) !important;
-    }
-
-    .auth-hero .logo-circle::before {
-      top: 11px !important;
-      left: 9px !important;
-      width: 5px !important;
-      height: 5px !important;
-      box-shadow: 10px 0 0 #0f172a !important;
-    }
-
-    .auth-hero .logo-circle::after {
-      bottom: 7px !important;
-      left: 10px !important;
-      width: 14px !important;
-      height: 7px !important;
-      border-width: 2px !important;
-      border-radius: 0 0 10px 10px !important;
-    }
-
-    .auth-hero h1,
-    .auth-hero .app-name {
-      font-size: 20px !important;
-      margin-bottom: 2px !important;
     }
 
     .auth-hero .app-tagline {
-      font-size: 12px !important;
+      font-size: 13px !important;
       margin-bottom: 0 !important;
-      line-height: 1.3 !important;
+    }
+
+    .first-lesson-card {
+      margin: 0 16px 16px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+      color: #134e4a;
+    }
+
+    .first-lesson-card h2 {
+      margin: 0 0 6px;
+      font-size: 19px;
+      line-height: 1.4;
+    }
+
+    .first-lesson-card p {
+      margin: 0 0 12px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .first-lesson-btn {
+      width: 100%;
+      min-height: 48px;
+      padding: 12px;
+      border: 0;
+      border-radius: 12px;
+      background: #115e59;
+      color: white;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .first-lesson-btn:focus-visible {
+      outline: 3px solid #0f766e;
+      outline-offset: 3px;
+    }
+
+    .first-lesson-btn:disabled {
+      opacity: 0.7;
+      cursor: wait;
     }
 
     .quick-start {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      padding: 8px 16px 4px;
+      gap: 10px;
+      padding: 0 16px 12px;
       margin-top: 0;
     }
 
@@ -493,14 +517,12 @@
     }
 
     .auth-main {
-      padding: 12px 16px 20px !important;
-      min-height: auto !important;
-      border-radius: 18px 18px 0 0 !important;
+      padding: 16px !important;
     }
 
     .form-intent {
-      margin-bottom: 10px;
-      padding: 10px 12px;
+      margin-bottom: 14px;
+      padding: 12px;
       border: 1px solid rgba(15, 118, 110, 0.18);
       border-radius: 12px;
       background: rgba(240, 253, 250, 0.9);
@@ -509,15 +531,15 @@
     .form-intent strong {
       display: block;
       color: #0f766e;
-      font-size: 13px;
+      font-size: 14px;
     }
 
     .form-intent span {
       display: block;
-      margin-top: 4px;
+      margin-top: 5px;
       color: #475569;
-      font-size: 11px;
-      line-height: 1.4;
+      font-size: 12px;
+      line-height: 1.45;
     }
 
     .auth-tabs {
@@ -560,19 +582,6 @@
       color: #64748b;
       font-size: 12px;
       line-height: 1.5;
-    }
-
-    .form-error {
-      margin: 10px 0 0;
-      color: #b91c1c;
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.5;
-    }
-
-    .auth-btn:disabled {
-      cursor: wait;
-      opacity: 0.75;
     }
 
     /* Level Selector */
@@ -709,24 +718,45 @@
   <!-- Hero Section -->
   <div class="auth-hero">
     <div class="auth-logo">
-      <div class="logo-circle" aria-hidden="true"></div>
-      <h1 class="app-name">Linglish</h1>
-      <p class="app-tagline" data-i18n="welcome.tagline">像生活一样学英语</p>
+      <div class="logo-circle">🌍</div>
+      <h1 class="app-name">linglish</h1>
+      <p class="app-tagline" data-i18n="welcome.tagline">沉浸式语言学习，让进步看得见</p>
     </div>
   </div>
 
-  <!-- Quick Start CTA：引导到登录/注册，不提供免注册体验 -->
+  <section class="first-lesson-card" aria-labelledby="first-lesson-title">
+    <h2 id="first-lesson-title">从 3 句真实英语开始</h2>
+    <p id="first-lesson-copy">不用注册，听一句、跟读一句，查看 AI 反馈。</p>
+    <button type="button" id="auth-first-lesson" class="first-lesson-btn" aria-describedby="first-lesson-copy">免注册练 3 句</button>
+  </section>
+
+  <!-- Quick Start CTA -->
   <div class="quick-start">
     <a href="#login-form" class="quick-btn" data-action="goto-auth"><span>🎬</span><span data-i18n="auth.quick_video">视频</span></a>
     <a href="#login-form" class="quick-btn" data-action="goto-auth"><span>🎪</span><span data-i18n="auth.quick_practice">练习</span></a>
     <a href="#login-form" class="quick-btn" data-action="goto-auth"><span>📚</span><span data-i18n="auth.quick_vocab">词汇</span></a>
   </div>
 
+  <section class="auth-context-card" aria-label="登录后去向">
+    <div class="auth-context-top">
+      <div>
+        <strong id="auth-context-title">登录后回到今日训练</strong>
+        <span id="auth-context-copy">完成账号操作后直接进入移动端 Today，不再回到泛首页。</span>
+      </div>
+      <div class="auth-context-badge" id="auth-context-badge">Next: Today</div>
+    </div>
+    <div class="auth-context-steps">
+      <div class="auth-context-step"><b>输入</b>真实视频</div>
+      <div class="auth-context-step"><b>输出</b>跟读反馈</div>
+      <div class="auth-context-step"><b>复习</b>明天继续</div>
+    </div>
+  </section>
+
   <!-- Auth Forms -->
   <main class="auth-main">
     <div class="form-intent">
-      <strong id="form-intent-title">登录后开始训练</strong>
-      <span id="form-intent-copy">视频、练习、词汇均需注册登录后使用；登录后会保存等级、目标和训练记录。</span>
+      <strong id="form-intent-title">继续今日训练</strong>
+      <span id="form-intent-copy">登录后会保存等级、目标和训练记录，并回到刚才的页面。</span>
     </div>
 
     <!-- Tab Switcher -->
@@ -736,7 +766,7 @@
     </div>
 
     <!-- Login Form -->
-    <form id="login-form" class="auth-form active" autocomplete="on">
+    <form id="login-form" class="auth-form active">
       <!-- OAuth Error Banner -->
       <div class="oauth-error-banner" id="oauthErrorBanner"></div>
 
@@ -760,11 +790,11 @@
 
       <div class="form-group">
         <label class="form-label">邮箱或手机号</label>
-        <input type="text" class="form-input" id="login-account" name="username" autocomplete="username" placeholder="请输入邮箱或手机号" required>
+        <input type="text" class="form-input" id="login-account" autocomplete="username" placeholder="请输入邮箱或手机号" required>
       </div>
       <div class="form-group">
         <label class="form-label" data-i18n="auth.password">密码</label>
-        <input type="password" class="form-input" id="login-password" name="password" autocomplete="current-password" placeholder="请输入密码" data-i18n="auth.password_input_placeholder" required>
+        <input type="password" class="form-input" id="login-password" autocomplete="current-password" placeholder="请输入密码" data-i18n="auth.password_input_placeholder" required>
       </div>
       <div class="form-options">
         <label class="checkbox-label">
@@ -773,9 +803,8 @@
         </label>
         <a href="./reset-password.html?from=mobile_auth" class="forgot-link" data-i18n="auth.forgot_password">忘记密码？</a>
       </div>
-      <button type="submit" class="auth-btn" id="login-submit" data-i18n="auth.login_submit">立即登录</button>
-      <p class="form-error" id="login-error" hidden></p>
-      <div class="form-note" id="login-note">登录后回到今日页，并在这台设备保持登录。开口第一句只在第一次出现。</div>
+      <button type="submit" class="auth-btn" data-i18n="auth.login_submit">立即登录</button>
+      <div class="form-note" id="login-note">登录后自动回到移动端 Today。</div>
       <div class="auth-divider">
         <span data-i18n="auth.or">或者</span>
       </div>
@@ -1070,12 +1099,11 @@
     }
 
     function getDefaultAuthNext(source = 'auth') {
-      // Logged-in home is the main learning homepage, not the 「今日」tab.
       if (source === 'login' || source === 'guest' || source === 'auth_cached') {
-        return `index-desktop.html?from=${encodeURIComponent(source)}`;
+        return `mobile-today.html?from=${encodeURIComponent(source)}`;
       }
       return hasCompletedOnboarding()
-        ? `index-desktop.html?from=${encodeURIComponent(source)}`
+        ? `mobile-today.html?from=${encodeURIComponent(source)}`
         : `welcome.html?from=${encodeURIComponent(source)}`;
     }
 
@@ -1160,12 +1188,12 @@
       }
       return {
         target,
-        label: '今日',
+        label: '今日训练',
         badge: 'Next: Today',
-        title: '登录后回到今日',
-        copy: '登录后进入今日页，这台手机会保持登录。开口第一句只在第一次出现，可以关掉。',
-        intentTitle: '回到今日',
-        intentCopy: '登录后会保存等级和训练记录。开口第一句可以现在说，也可以先关掉。'
+        title: '登录后回到今日训练',
+        copy: '完成账号操作后直接进入移动端 Today，不再回到泛首页。',
+        intentTitle: '继续今日训练',
+        intentCopy: '登录后会保存等级、目标和训练记录，并回到今天的训练闭环。'
       };
     }
 
@@ -1174,38 +1202,25 @@
       const profile = getStoredOnboardingProfile();
       const savingPlan = profile.has_profile || destination.target.includes('save_plan');
       const isRegister = tab === 'register';
-      const contextTitle = document.getElementById('auth-context-title');
-      const contextCopy = document.getElementById('auth-context-copy');
-      const contextBadge = document.getElementById('auth-context-badge');
-      if (contextTitle) contextTitle.textContent = destination.title;
-      if (contextCopy) {
-        contextCopy.textContent = savingPlan
-          ? `将保存${profile.daily_goal || 15}分钟目标${profile.interests?.[0] ? `、${profile.interests[0]}` : ''}和词汇等级，完成后回到${destination.label}。`
-          : destination.copy;
-      }
-      if (contextBadge) contextBadge.textContent = destination.badge;
-      const intentTitle = document.getElementById('form-intent-title');
-      const intentCopy = document.getElementById('form-intent-copy');
-      if (intentTitle) {
-        intentTitle.textContent = isRegister && savingPlan
-          ? '注册并保存训练计划'
-          : (isRegister ? '注册后开始训练' : '登录后开始训练');
-      }
-      if (intentCopy) {
-        intentCopy.textContent = isRegister && savingPlan
-          ? '注册后会同步刚才的测评结果、每日目标和学习兴趣，明天回来可以直接继续。'
-          : '视频、练习、词汇均需登录后使用；登录后会保存等级、目标和训练记录。';
-      }
+      document.getElementById('auth-context-title').textContent = destination.title;
+      document.getElementById('auth-context-copy').textContent = savingPlan
+        ? `将保存${profile.daily_goal || 15}分钟目标${profile.interests?.[0] ? `、${profile.interests[0]}` : ''}和词汇等级，完成后回到${destination.label}。`
+        : destination.copy;
+      document.getElementById('auth-context-badge').textContent = destination.badge;
+      document.getElementById('form-intent-title').textContent = isRegister && savingPlan ? '注册并保存训练计划' : destination.intentTitle;
+      document.getElementById('form-intent-copy').textContent = isRegister && savingPlan
+        ? '注册后会同步刚才的测评结果、每日目标和学习兴趣，明天回来可以直接继续。'
+        : destination.intentCopy;
       const loginNote = document.getElementById('login-note');
-      if (loginNote) loginNote.textContent = `登录后自动回到${destination.label}。这台设备会保持登录，其他设备不会被挤下线。`;
+      if (loginNote) loginNote.textContent = `登录后自动回到${destination.label}。`;
       const registerNote = document.getElementById('register-note');
       if (registerNote) {
         registerNote.textContent = savingPlan
           ? '注册时会同步测评等级、每日目标和学习兴趣。'
-          : '注册登录后即可使用全部功能。';
+          : '注册后建议先完成测评，生成第一天训练处方。';
       }
       const registerSubmit = document.getElementById('register-submit');
-      if (registerSubmit) registerSubmit.textContent = savingPlan ? '注册并保存计划' : '立即注册';
+      if (registerSubmit) registerSubmit.textContent = savingPlan ? '注册并保存计划' : '注册并生成计划';
     }
 
     async function postPublicAuthEvent(eventName, extra = {}) {
@@ -1294,25 +1309,12 @@
     })();
 
     // Login Form Submit
-    function showLoginError(message) {
-      const error = document.getElementById('login-error');
-      if (!error) return;
-      error.hidden = !message;
-      error.textContent = message || '';
-    }
-
     loginForm.addEventListener('submit', async (e) => {
       e.preventDefault();
 
       const account = document.getElementById('login-account').value.trim();
       const password = document.getElementById('login-password').value;
       const rememberMe = document.getElementById('remember-me').checked;
-      const submitBtn = document.getElementById('login-submit');
-      showLoginError('');
-      if (submitBtn) {
-        submitBtn.disabled = true;
-        submitBtn.textContent = '正在登录…';
-      }
 
       // Auto-detect if input is email or phone
       const loginData = { password };
@@ -1323,7 +1325,6 @@
       }
       postPublicAuthEvent('auth_submit_attempt', { method: 'login', remember: rememberMe });
 
-      let signedIn = false;
       try {
         const response = await fetch('/auth/login', {
           method: 'POST',
@@ -1342,23 +1343,23 @@
           const token = data.access_token || data.token;
           if (!token || typeof token !== 'string') {
             console.error('[Login] Invalid credential payload:', { status: response.status });
-            showLoginError('登录失败：服务器返回无效的令牌');
             showToast('登录失败：服务器返回无效的令牌', 'error');
             return;
           }
 
           console.log('[Login] Credential received:', Boolean(token));
 
-          // Clear only this browser's old copy. skipRevoke keeps the phone,
-          // the installed client, and any other signed-in device online.
-          console.log('[Login] Clearing old auth data before saving the new login');
-          if (window.AuthManager && typeof window.AuthManager.clearToken === 'function') {
-            await window.AuthManager.clearToken({ skipRevoke: true, skipMediaSession: true });
-          }
+          // Clear all old authentication data first (including old tokens and guest flags)
+          console.log('[Login] Clearing old auth data...');
           if (window.LinglishMediaSession) {
             await window.LinglishMediaSession.clear();
           } else {
             await fetch('/auth/media-session', { method: 'DELETE', credentials: 'include' }).catch(() => {});
+          }
+          if (window.AuthManager) {
+            await window.AuthManager.clearToken({ skipMediaSession: true });
+          } else {
+            safeStorage.clearAuth({ skipMediaSession: true });
           }
 
           // Clear guest flags
@@ -1367,10 +1368,9 @@
           safeStorage.remove(sessionStorage, 'is_guest');
           safeStorage.remove(sessionStorage, 'isGuest');
 
-          console.log('[Login] Saving login session, remember=' + rememberMe);
-          if (window.AuthManager && typeof AuthManager.saveLogin === 'function') {
-            await AuthManager.saveLogin(data, rememberMe);
-          } else if (window.AuthManager) {
+          // Save new token using AuthManager (with robust fallback: localStorage → Cookies → Memory)
+          console.log('[Login] Saving token with AuthManager, remember=' + rememberMe);
+          if (window.AuthManager) {
             await window.AuthManager.setToken(token, rememberMe);
           } else {
             // Fallback if AuthManager not available
@@ -1394,7 +1394,6 @@
           }
 
           showToast(tt('auth.toast_login_success'), 'success');
-          signedIn = true;
           await postAuthSuccessEvent('login_success', { remember: rememberMe });
 
           // Redirect to explore page
@@ -1419,7 +1418,6 @@
             errorMsg = tt('auth.toast_login_failed');
           }
           postPublicAuthEvent('auth_submit_error', { method: 'login', status: response.status, message: data.message || 'LOGIN_FAILED' });
-          showLoginError(errorMsg);
           showToast(errorMsg, 'error');
         }
       } catch (error) {
@@ -1427,13 +1425,7 @@
         // On network error, run health check to ensure storage is working
         safeStorage.healthCheck();
         postPublicAuthEvent('auth_submit_error', { method: 'login', status: 'network', message: 'NETWORK_ERROR' });
-        showLoginError(tt('auth.toast_network_error'));
         showToast(tt('auth.toast_network_error'), 'error');
-      } finally {
-        if (!signedIn && submitBtn) {
-          submitBtn.disabled = false;
-          submitBtn.textContent = '立即登录';
-        }
       }
     });
 
@@ -1495,9 +1487,8 @@
         if (response.ok) {
           const token = data.access_token || data.token;
           if (token && typeof token === 'string') {
-            if (window.AuthManager && typeof AuthManager.saveLogin === 'function') {
-              await AuthManager.saveLogin(data, true);
-            } else if (window.AuthManager) {
+            if (window.AuthManager) {
+              await window.AuthManager.clearToken();
               await window.AuthManager.setToken(token, true);
             } else {
               safeStorage.clearAuth();
@@ -1546,19 +1537,35 @@
       }
     });
 
-    // 不再提供游客/免注册体验：底部按钮只引导注册
-    const guestBtn = document.querySelector('.guest-btn');
-    if (guestBtn) {
-      guestBtn.addEventListener('click', async () => {
-        postPublicAuthEvent('auth_register_prompt_click', { destination: getDestinationMeta().label });
-        showToast('请先注册账号，登录后使用全部功能。', 'info');
-        registerTab.click();
-        const registerAccount = document.getElementById('register-account');
-        if (registerAccount) registerAccount.focus();
-      });
-    }
+    // A separate trial action must not change ordinary auth/guest return paths.
+    document.getElementById('auth-first-lesson').addEventListener('click', async (event) => {
+      const entry = window.LinglishFirstLessonEntry;
+      if (!entry || typeof entry.start !== 'function') {
+        showToast('体验入口加载失败，请刷新重试，或继续登录。', 'error');
+        return;
+      }
+      try {
+        await entry.start({
+          trigger: event.currentTarget,
+          source: 'mobile_auth_first_lesson',
+          mobile: true,
+          level: 'A1',
+        });
+      } catch (error) {
+        showToast(error?.code === 'FIRST_LESSON_VIDEO_UNAVAILABLE'
+          ? '首课视频暂时不可用，请稍后重试，或继续登录。'
+          : '首课暂时没有准备好，请重试，或继续登录。', 'error');
+      }
+    });
 
-    // Quick Start taps -> 引导登录/注册（不进游客模式）
+    // Guest Mode
+    document.querySelector('.guest-btn').addEventListener('click', async () => {
+      postPublicAuthEvent('auth_guest_click', { destination: getDestinationMeta().label });
+      showToast('请先注册账号。学习记录会保存在你的账号里。', 'info');
+      registerTab.click();
+    });
+
+    // Quick Start taps -> 引导到登录/游客
     document.querySelectorAll('.quick-btn[data-action="goto-auth"]').forEach((btn) => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -1566,24 +1573,23 @@
         if (loginTab) loginTab.click();
         var loginEmail = document.getElementById('login-account');
         if (loginEmail) loginEmail.focus();
-        showToast('请先登录或注册后再使用。', 'info');
+        showToast(tt('auth.toast_quick_start'), 'info');
         var loginForm = document.getElementById('login-form');
         if (loginForm) loginForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
       });
     });
 
     function prefillSavedAccount() {
-      const input = document.getElementById('login-account');
-      if (!input || input.value) return;
       try {
-        const saved = safeStorage.get(localStorage, 'userEmail') || safeStorage.get(sessionStorage, 'userEmail') || '';
-        if (saved && !/@temp\.linglish\.local$/i.test(saved)) input.value = saved;
-      } catch (_) { }
+        const field = document.getElementById('login-account');
+        const account = safeStorage.get(localStorage, 'userEmail');
+        if (field && !field.value && account) field.value = account;
+      } catch (_) {}
     }
+    prefillSavedAccount();
 
     // Check if already logged in
     window.addEventListener('DOMContentLoaded', async () => {
-      prefillSavedAccount();
       // Run storage health check first
       const isHealthy = safeStorage.healthCheck();
       if (!isHealthy) {
@@ -1598,25 +1604,21 @@
         try { await AuthManager.ready; } catch (_) { }
       }
 
-      // Renew a saved login before deciding the form is needed. An expired
-      // access token must not dump the user onto an empty password form.
-      let token = null;
-      if (window.AuthManager && typeof AuthManager.isLoggedIn === 'function' && AuthManager.isLoggedIn()
-        && typeof AuthManager.ensureSession === 'function') {
-        try { token = await AuthManager.ensureSession(); } catch (_) { token = null; }
-      } else if (window.AuthManager && typeof AuthManager.getToken === 'function') {
-        token = AuthManager.getToken();
-      } else {
-        token = safeStorage.get(localStorage, 'authToken') || safeStorage.get(sessionStorage, 'authToken');
-      }
-      if (token && !(window.AuthManager && AuthManager.isTokenExpired && AuthManager.isTokenExpired(token))
-        && typeof token === 'string' && token !== 'undefined' && token !== 'null' && token.split('.').length === 3) {
+      // Check for valid authentication.
+      // 必须优先走 AuthManager.getToken():它校验 JWT exp 并自动清过期 token。
+      // 只查三段格式会把过期 token 当有效 → 弹回目标页 → 目标页 401 显示"登录"
+      // → 点登录又被弹回,死循环。
+      const token = (window.AuthManager && typeof AuthManager.getToken === 'function')
+        ? AuthManager.getToken()
+        : (safeStorage.get(localStorage, 'authToken') || safeStorage.get(sessionStorage, 'authToken'));
+      if (token && typeof token === 'string' && token !== 'undefined' && token !== 'null' && token.split('.').length === 3) {
+        // Token valid and unexpired, redirect to main app
         window.location.href = getSafeNext(getDefaultAuthNext('auth_cached'));
-      } else if (token && (!window.AuthManager || !AuthManager.isLoggedIn || !AuthManager.isLoggedIn())) {
+      } else if (token) {
+        // Token exists but is invalid, clear it
         console.warn('[Auth] Invalid token detected on page load, clearing...');
         safeStorage.clearAuth();
       }
-      prefillSavedAccount();
     });
 
     // Initialize i18n

@@ -21,19 +21,22 @@ function isLive(record, nowSec) {
   return true;
 }
 
-async function persist(record) {
+async function persist(record, { create = false } = {}) {
+  if (record.revoked || revoked.has(record.id)) return false;
   memory.set(record.id, record);
   try {
-    await dataStore.query(
-      `INSERT INTO auth_device_sessions
+    const sql = create
+      ? `INSERT INTO auth_device_sessions
         (id, user_id, device_id, provider, created_at, absolute_expires_at, sliding_expires_at, updated_at)
        VALUES ($1, $2, $3, $4, to_timestamp($5), to_timestamp($6), to_timestamp($7), NOW())
-       ON CONFLICT (id) DO UPDATE SET
-         device_id = EXCLUDED.device_id,
-         sliding_expires_at = EXCLUDED.sliding_expires_at,
-         revoked_at = CASE WHEN $8::boolean THEN auth_device_sessions.revoked_at ELSE NULL END,
-         updated_at = NOW()`,
-      [
+       ON CONFLICT (id) DO NOTHING
+       RETURNING id`
+      : `UPDATE auth_device_sessions
+         SET device_id = $2, sliding_expires_at = to_timestamp($3), updated_at = NOW()
+         WHERE id = $1 AND revoked_at IS NULL
+         RETURNING id`;
+    const params = create
+      ? [
         record.id,
         record.userId,
         record.deviceId,
@@ -41,11 +44,19 @@ async function persist(record) {
         record.createdAt,
         record.absoluteExp,
         record.slidingExp,
-        record.revoked === true,
       ]
-    );
+      : [record.id, record.deviceId, record.slidingExp];
+    const { rows } = await dataStore.query(sql, params);
+    if (!rows.length) {
+      record.revoked = true;
+      revoked.add(record.id);
+      memory.delete(record.id);
+      return false;
+    }
+    return !record.revoked && !revoked.has(record.id);
   } catch (err) {
     console.warn('[AuthSession] persist failed:', err?.message || err);
+    return memory.has(record.id) && isLive(record, Math.floor(Date.now() / 1000)) && !revoked.has(record.id);
   }
 }
 
@@ -78,26 +89,18 @@ async function load(id) {
        WHERE id = $1`,
       [id]
     );
-    if (!rows[0]) return cached;
+    if (!rows[0]) {
+      memory.delete(id);
+      return null;
+    }
     const record = recordFromRow(rows[0]);
     memory.set(id, record);
     if (record.revoked) revoked.add(id);
     return record;
   } catch (err) {
     if (cached) return cached;
-    console.warn('[AuthSession] lookup failed, keeping the signed session:', err?.message || err);
-    return {
-      id,
-      userId: null,
-      deviceId: null,
-      provider: 'unknown',
-      createdAt: 0,
-      absoluteExp: Number.POSITIVE_INFINITY,
-      slidingExp: Number.POSITIVE_INFINITY,
-      revoked: false,
-      lastGoogleCheckAt: Date.now() / 1000,
-      degraded: true,
-    };
+    console.warn('[AuthSession] lookup failed for an uncached session:', err?.message || err);
+    return null;
   }
 }
 
@@ -116,30 +119,40 @@ async function openSession({ userId, deviceId, provider } = {}) {
     lastGoogleCheckAt: null,
   };
   revoked.delete(record.id);
-  await persist(record);
+  await persist(record, { create: true });
+  // 多端共存:手机、电脑、微信内嵌浏览器各自持有 30 天会话,互不吊销。
+  // 旧版在这里吊销其他设备,造成"手机老是登录过期";revokeOtherDevices 保留给未来的"登出所有设备"。
   return record;
 }
 
-async function touch(id, deviceId, limits = {}) {
+async function revokeOtherDevices(userId, deviceId) {
+  for (const record of memory.values()) {
+    if (String(record.userId) === String(userId) && record.deviceId !== deviceId && !record.revoked) {
+      record.revoked = true;
+      revoked.add(record.id);
+    }
+  }
+  try {
+    await dataStore.query(
+      `UPDATE auth_device_sessions
+       SET revoked_at = NOW(), updated_at = NOW()
+       WHERE user_id = $1 AND device_id <> $2 AND revoked_at IS NULL`,
+      [userId, deviceId]
+    );
+  } catch (err) {
+    console.warn('[AuthSession] revoke other devices failed:', err?.message || err);
+  }
+}
+
+async function touch(id, deviceId) {
+  if (!id || revoked.has(id)) return null;
   const nowSec = Math.floor(Date.now() / 1000);
   const record = await load(id);
-  if (record && record.degraded) {
-    const absoluteExp = Number.isFinite(Number(limits.absoluteExp))
-      ? Number(limits.absoluteExp)
-      : record.absoluteExp;
-    if (!Number.isFinite(absoluteExp) || absoluteExp <= nowSec) return null;
-    record.absoluteExp = absoluteExp;
-    record.slidingExp = Math.min(nowSec + SLIDING_SECONDS, absoluteExp);
-    record.deviceId = deviceId || record.deviceId;
-    record.revoked = false;
-    memory.set(record.id, record);
-    return record;
-  }
-  if (!isLive(record, nowSec)) return null;
+  if (revoked.has(id) || !isLive(record, nowSec)) return null;
   if (deviceId && record.deviceId !== deviceId) return null;
   record.slidingExp = Math.min(nowSec + SLIDING_SECONDS, record.absoluteExp);
   record.revoked = false;
-  await persist(record);
+  if (!await persist(record)) return null;
   return record;
 }
 
@@ -184,7 +197,7 @@ async function assertActive(id) {
   if (revoked.has(id)) return false;
   const record = await load(id);
   if (!record) return false;
-  return isLive(record, Math.floor(Date.now() / 1000));
+  return !revoked.has(id) && isLive(record, Math.floor(Date.now() / 1000));
 }
 
 function shouldCheckGoogle(record) {

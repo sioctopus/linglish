@@ -98,49 +98,8 @@
           try { warmer.load(); } catch (_) {}
         },
         play: function (url) {
-          return new Promise(function (resolve) {
-            if (!url) {
-              resolve();
-              return;
-            }
-            let settled = false;
-            function finish() {
-              if (settled) return;
-              settled = true;
-              resolve();
-            }
-            function startPlayback() {
-              try { element.currentTime = 0; } catch (_) {}
-              const playing = element.play();
-              if (playing && typeof playing.then === 'function') {
-                playing.then(finish).catch(finish);
-              } else {
-                finish();
-              }
-            }
-            if (element.dataset.playUrl !== url) {
-              element.dataset.playUrl = url;
-              element.src = url;
-              try { element.load(); } catch (_) {}
-            }
-            // 等有可播数据再 play，避免「画面已出、静音空等」
-            if (element.readyState >= 3) {
-              startPlayback();
-              return;
-            }
-            const onReady = function () {
-              element.removeEventListener('canplay', onReady);
-              element.removeEventListener('error', onReady);
-              startPlayback();
-            };
-            element.addEventListener('canplay', onReady);
-            element.addEventListener('error', onReady);
-            setTimeout(function () {
-              element.removeEventListener('canplay', onReady);
-              element.removeEventListener('error', onReady);
-              startPlayback();
-            }, 1800);
-          });
+          element.src = url;
+          return element.play();
         },
         playing: function () {
           return Boolean(element.src) && !element.paused && !element.ended;
@@ -149,7 +108,7 @@
           return Boolean(element.src) && element.paused && element.currentTime > 0 && !element.ended;
         },
         pause: function () { element.pause(); },
-        resume: function () { return element.play().catch(function () {}); },
+        resume: function () { return element.play(); },
         setEnded: function (fn) { element.onended = fn; },
         setRate: function (rate) {
           const value = Number(rate);

@@ -21,7 +21,7 @@ import {
   handleRecordingPassed,
   handleRecordingFailed,
   playOriginalThenNext
-} from './controls.js';
+} from './controls.js?v=2026103001';
 import {
   updateAutoStatus,
   renderPracticeLines,
@@ -35,7 +35,7 @@ import {
   hideLoading,
   showError,
   showSuccess
-} from './ui-manager.js';
+} from './ui-manager.js?v=2026103001';
 import { evaluateRecording } from './evaluation.js';
 import {
   fetchVideoData,

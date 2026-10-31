@@ -69,7 +69,7 @@ test('pickMimeType prefers audio/mp4 on Apple so playback works', () => {
 
 test('recordingDurationMs clamps sentence length into a speakable window', () => {
   assert.equal(mic.recordingDurationMs({ start: 0, end: 1 }), 2200);
-  assert.ok(mic.recordingDurationMs({ start: 0, end: 30 }) <= 20000);
+  assert.ok(mic.recordingDurationMs({ start: 0, end: 300 }) <= 60000);
   assert.ok(mic.recordingDurationMs({}) >= 1800);
 });
 

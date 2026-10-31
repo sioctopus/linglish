@@ -22,10 +22,10 @@ async function registerDocumentRoutes(pathname, req, res) {
   const subtitleMatch = pathname.match(/^\/documents\/(\d+)\/subtitles$/);
   if (subtitleMatch && req.method === 'POST') {
     try {
-      await authenticate(req);
-      const article = await dataStore.getArticleById(Number(subtitleMatch[1]));
+      const user = await authenticate(req);
+      const article = await dataStore.getArticleById(Number(subtitleMatch[1]), user);
       if (!article) return sendError(res, 404, '找不到这份文档');
-      const result = await rebuildReadingSubtitles(article);
+      const result = await rebuildReadingSubtitles(article, { user });
       await cacheService.del('content:articles');
       return sendJson(res, 200, result);
     } catch (err) {
@@ -37,13 +37,13 @@ async function registerDocumentRoutes(pathname, req, res) {
   if (pathname === '/class-notes' && req.method === 'POST') {
     let tempPath = null;
     try {
-      await authenticate(req);
+      const user = await authenticate(req);
       const { files, fields } = await handleFileUpload(req, { maxTotalBytes: 12 * 1024 * 1024 });
       const file = uploadedFile(files);
       if (file) tempPath = file.path;
       let lines = [];
       try { lines = JSON.parse(fields.lines || '[]'); } catch (_) { lines = []; }
-      const result = await createClassNote({ word: fields.word, lines, image: file });
+      const result = await createClassNote({ ownerUserId: user.id, word: fields.word, lines, image: file });
       await cacheService.del('content:articles');
       return sendJson(res, 201, result);
     } catch (err) {
@@ -58,12 +58,13 @@ async function registerDocumentRoutes(pathname, req, res) {
 
   let tempPath = null;
   try {
-    await authenticate(req);
+    const user = await authenticate(req);
     const { files, fields } = await handleFileUpload(req, { maxTotalBytes: 32 * 1024 * 1024 });
     const file = uploadedFile(files);
     if (file) tempPath = file.path;
 
     const result = await importLearningDocument({
+      ownerUserId: user.id,
       title: fields.title,
       text: fields.text,
       file,

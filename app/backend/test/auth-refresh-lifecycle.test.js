@@ -20,7 +20,8 @@ function harness(options = {}) {
   const session = storage();
   const requests = [];
   const sandbox = {
-    Headers, Uint8Array, atob, Promise,
+    Headers, Uint8Array, atob, Promise, URL,
+    location: { href: 'https://linglish.example/today.html' },
     Date: class extends Date { static now() { return now; } },
     navigator: { cookieEnabled: false }, document: { cookie: '' },
     console: { log() {}, warn() {}, error() {} },
@@ -145,3 +146,19 @@ for (const page of ['document-import.html', 'daily-speaking.html', 'exam-paper.h
     }
   });
 }
+
+test('external API failures never refresh or receive account credentials', async () => {
+  const h = harness({ initial: { authToken: jwt(1_800_003_600), linglish_refresh_token: 'initial-refresh' }, fetch: async () => ({ ok: false, status: 401 }) });
+  await h.sandbox.fetch(new URL('https://outside.example/media'), { headers: { Authorization: 'Bearer unrelated-external-token' } });
+  assert.equal(h.requests.length, 1);
+  assert.equal(h.requests[0].init.headers.Authorization, 'Bearer unrelated-external-token');
+});
+
+test('an external login response cannot replace the Linglish refresh session', async () => {
+  const h = harness({ initial: { authToken: jwt(1_800_003_600), linglish_refresh_token: 'initial-refresh' }, fetch: async () => ({ ok: true, status: 200, clone() { return this; }, json: async () => ({ refresh_token: 'external-session', access_token: jwt(1_800_007_200) }) }) });
+  await h.sandbox.fetch('https://outside.example/auth/login');
+  await new Promise(setImmediate);
+  assert.equal(h.manager.getToken(), h.initialToken);
+  assert.equal(h.requests.length, 1);
+  assert.equal(h.requests[0].init, undefined);
+});

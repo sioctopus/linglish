@@ -257,6 +257,9 @@ test('truncated ZIP data is rejected instead of returning a partial lesson', () 
 function response() {
   return {
     headersSent: false, writableEnded: false,
+    headers: {},
+    setHeader(name, value) { this.headers[name.toLowerCase()] = value; },
+    getHeader(name) { return this.headers[name.toLowerCase()]; },
     writeHead(status) { this.statusCode = status; this.headersSent = true; },
     end(body) { this.body = body; this.writableEnded = true; },
   };

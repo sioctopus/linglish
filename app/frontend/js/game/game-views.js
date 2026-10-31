@@ -176,21 +176,17 @@
   }
 
   function captionToggle(onChange) {
-    const label = h('label', 'game-caption-toggle');
-    label.appendChild(h('span', 'game-caption-toggle__text', '字幕'));
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.checked = captionsEnabled();
-    input.setAttribute('aria-label', '显示字幕');
-    const switchEl = h('span', 'game-caption-switch');
-    switchEl.setAttribute('aria-hidden', 'true');
-    label.appendChild(input);
-    label.appendChild(switchEl);
-    input.addEventListener('change', function () {
-      setCaptionsEnabled(input.checked);
-      if (typeof onChange === 'function') onChange(input.checked);
+    let enabled = captionsEnabled();
+    const toggle = button('game-caption-toggle', '字幕', function () {
+      enabled = !enabled;
+      setCaptionsEnabled(enabled);
+      toggle.setAttribute('aria-checked', String(enabled));
+      if (typeof onChange === 'function') onChange(enabled);
     });
-    return label;
+    toggle.setAttribute('role', 'switch');
+    toggle.setAttribute('aria-checked', String(enabled));
+    toggle.setAttribute('aria-label', '显示词卡字幕');
+    return toggle;
   }
 
   function viewHead(ctx, title, index, total) {
@@ -224,7 +220,10 @@
     if (event.altKey || event.ctrlKey || event.metaKey) return null;
     if (event.key === 'ArrowUp') return 'prev';
     if (event.key === 'ArrowDown') return 'next';
-    if (event.key === ' ' || event.code === 'Space') return 'toggle';
+    if (event.key === ' ' || event.code === 'Space') {
+      if (tag === 'BUTTON' || tag === 'A' || tag === 'SUMMARY') return null;
+      return 'toggle';
+    }
     return null;
   }
 
@@ -1108,9 +1107,14 @@
       const captions = captionToggle(function (on) {
         showCaptions = on;
         const card = cardHost.querySelector('.game-theme-card');
-        if (card) card.classList.toggle('game-theme-card--captions-off', !on);
+        const copy = card && card.querySelector('.game-word-copy');
+        if (copy) copy.hidden = !on;
       });
-      head.insertBefore(captions, head.stepEl);
+      const title = head.querySelector('.game-view-title');
+      const heading = h('div', 'game-deck-heading');
+      head.insertBefore(heading, title);
+      heading.appendChild(title);
+      heading.appendChild(captions);
       const cardHost = h('div', 'game-card-host');
       const status = h(
         'p',
@@ -1270,7 +1274,7 @@
         event.preventDefault();
         if (action === 'prev') go(-1);
         else if (action === 'next') go(1);
-        else repeatIntro();
+        else if (ctx.api && typeof ctx.api.toggleSpeak === 'function') ctx.api.toggleSpeak(wordTextFor(custom || words[index]));
       }
 
       function paint() {
@@ -1291,7 +1295,8 @@
         const plan = introDeck ? teachPlan(deck.id, word) : null;
         const card = wordCard(word, { coach: true, teachPlan: plan });
         card.classList.add('game-theme-card');
-        if (!showCaptions) card.classList.add('game-theme-card--captions-off');
+        const copy = card.querySelector('.game-word-copy');
+        if (copy) copy.hidden = !showCaptions;
         if (numberDeck) card.classList.add('game-number-card');
         if (currencyDeck) card.classList.add('game-currency-card');
         card.tabIndex = 0;

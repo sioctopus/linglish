@@ -71,7 +71,7 @@
       border: 1px solid #99f6e4;
     }
   </style>
-  <script src="/js/auth-manager.js" defer></script>
+  <script src="/js/auth-manager.js?v=2026103001" defer></script>
 </head>
 <body>
   <main class="card">
@@ -134,20 +134,6 @@
         const bridged = document.documentElement.dataset.linglishExtensionBridge === '1';
         if (bridged) {
           setStatus(email ? `已同步到扩展 · ${email}` : '已同步到扩展', null);
-          return;
-        }
-
-        // Fallback: externally_connectable (needs extension id from query once published).
-        const extId = new URLSearchParams(location.search).get('ext');
-        const runtime = typeof chrome !== 'undefined' ? chrome.runtime : null;
-        if (extId && runtime && typeof runtime.sendMessage === 'function') {
-          runtime.sendMessage(extId, { type: 'AUTH_TOKEN', token, email }, (response) => {
-            if ((runtime.lastError) || !response || !response.ok) {
-              setStatus('扩展未响应。请确认已加载 Linglish 扩展。', 'is-error');
-              return;
-            }
-            setStatus(email ? `已同步到扩展 · ${email}` : '已同步到扩展', null);
-          });
           return;
         }
 

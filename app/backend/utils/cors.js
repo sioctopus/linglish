@@ -40,7 +40,10 @@ function getCorsHeaders(origin, options = {}) {
 
   if (
     origin &&
-    (ALLOWED_ORIGINS.includes(origin) || isDevTunnelOrigin(origin) || isChromeExtensionOrigin(origin))
+    (ALLOWED_ORIGINS.includes(origin) || (
+      ['development', 'dev'].includes(process.env.NODE_ENV)
+      && (isDevTunnelOrigin(origin) || isChromeExtensionOrigin(origin))
+    ))
   ) {
     headers['Access-Control-Allow-Origin'] = origin;
     headers['Access-Control-Allow-Credentials'] = 'true';

@@ -5,7 +5,8 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const frontend = path.resolve(__dirname, '../../frontend');
-function read(file) { return fs.readFileSync(path.join(frontend, file), 'utf8'); }
+const { readPage } = require('./helpers/page-source');
+function read(file) { return readPage(file); }
 function extractFunction(source, name) {
   const match = source.match(new RegExp(`(^[ \\t]*)function ${name}\\([^\\n]*\\) \\{[\\s\\S]*?^\\1\\}`, 'm'));
   assert.ok(match, `${name} exists`);

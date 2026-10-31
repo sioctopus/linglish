@@ -7,6 +7,9 @@ const STORAGE_KEYS = {
   email: 'userEmail',
 };
 
+// Content scripts only use messages; account credentials stay in trusted contexts.
+chrome.storage.local.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' });
+
 function origin() {
   return (globalThis.LINGLISH_CONFIG && globalThis.LINGLISH_CONFIG.ORIGIN) || 'http://localhost:4000';
 }
@@ -21,6 +24,38 @@ function siteUrl(pathnameAndQuery) {
     ? pathnameAndQuery
     : `/${pathnameAndQuery}`;
   return `${base}${path}`;
+}
+
+function isSiteSender(sender) {
+  try {
+    return new URL(sender.url || '').origin === new URL(origin()).origin;
+  } catch (_) {
+    return false;
+  }
+}
+
+function isExtensionPage(sender) {
+  return sender.id === chrome.runtime.id
+    && String(sender.url || '').startsWith(`chrome-extension://${chrome.runtime.id}/`)
+    && !sender.tab;
+}
+
+function isYouTubeSender(sender) {
+  try {
+    const url = new URL(sender.url || '');
+    return sender.id === chrome.runtime.id && url.protocol === 'https:'
+      && ['www.youtube.com', 'youtube.com', 'm.youtube.com'].includes(url.hostname);
+  } catch (_) {
+    return false;
+  }
+}
+
+function safeLearnUrl(raw) {
+  const url = new URL(String(raw || ''), origin());
+  if (url.origin !== new URL(origin()).origin || url.username || url.password) {
+    throw new Error('Invalid learning URL');
+  }
+  return url.toString();
 }
 
 function extractYouTubeId(url) {
@@ -78,7 +113,7 @@ async function openLogin() {
 
 async function importYouTube(url) {
   const videoId = extractYouTubeId(url);
-  if (!videoId) {
+  if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
     return { ok: false, status: 400, message: 'Not a YouTube watch URL' };
   }
 
@@ -108,6 +143,7 @@ async function importYouTube(url) {
 
   const body = await response.json().catch(() => ({}));
   if (response.status === 401) {
+    await clearSession();
     return { ok: false, status: 401, message: body.message || 'UNAUTHORIZED', needLogin: true };
   }
   if (!response.ok) {
@@ -166,11 +202,21 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   const type = message && message.type;
   (async () => {
+    const popup = isExtensionPage(sender);
+    const site = sender.id === chrome.runtime.id && isSiteSender(sender);
+    const youtube = isYouTubeSender(sender);
+    const allowed = popup || (site && ['SET_SESSION', 'CLEAR_SESSION'].includes(type))
+      || (youtube && ['IMPORT_YOUTUBE', 'OPEN_LEARN'].includes(type));
+    if (!allowed) {
+      sendResponse({ ok: false, message: 'Forbidden message' });
+      return;
+    }
     if (type === 'GET_SESSION') {
-      sendResponse({ ok: true, ...(await getSession()), origin: origin() });
+      const session = await getSession();
+      sendResponse({ ok: true, loggedIn: Boolean(session.token), email: session.email, origin: origin() });
       return;
     }
     if (type === 'SET_SESSION') {
@@ -194,7 +240,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
       return;
     }
     if (type === 'OPEN_LEARN') {
-      if (message.url) await chrome.tabs.create({ url: String(message.url) });
+      if (message.url) await chrome.tabs.create({ url: safeLearnUrl(message.url) });
       else if (message.videoId) {
         await openPath(
           `${paths().video || '/video-reader-desktop.html'}?videoId=${encodeURIComponent(message.videoId)}`
@@ -218,9 +264,13 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
   return true;
 });
 
-chrome.runtime.onMessageExternal.addListener((message, _sender, sendResponse) => {
+chrome.runtime.onMessageExternal.addListener((message, sender, sendResponse) => {
   const type = message && message.type;
   (async () => {
+    if (!isSiteSender(sender)) {
+      sendResponse({ ok: false, message: 'Forbidden origin' });
+      return;
+    }
     if (type === 'SET_SESSION' || type === 'AUTH_TOKEN') {
       await setSession({ token: message.token, email: message.email });
       sendResponse({ ok: true });

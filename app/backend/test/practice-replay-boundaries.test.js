@@ -5,7 +5,8 @@ const path = require('node:path');
 const vm = require('node:vm');
 const replayApi = require('../../frontend/js/practice/original-audio-replay');
 
-function read(page) { return fs.readFileSync(path.resolve(__dirname, '../../frontend', page), 'utf8'); }
+const { readPage } = require('./helpers/page-source');
+function read(page) { return readPage(page); }
 function extract(source, name) {
   const match = source.match(new RegExp(`(^[ \\t]*)(?:async )?function ${name}\\([^\\n]*\\) \\{[\\s\\S]*?^\\1\\}`, 'm'));
   assert.ok(match, name);

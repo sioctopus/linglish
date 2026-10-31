@@ -76,8 +76,11 @@ function subtitleContent(cues) {
   return cues.join('\n');
 }
 
-function readZipEntries(buffer) {
+function readZipEntries(buffer, { include = () => true } = {}) {
   const buf = Buffer.isBuffer(buffer) ? buffer : Buffer.from(buffer);
+  const maxEntryBytes = 8 * 1024 * 1024;
+  const maxExpandedBytes = 32 * 1024 * 1024;
+  if (buf.length > 20 * 1024 * 1024) throw new Error('压缩文档过大');
   let eocd = -1;
   const min = Math.max(0, buf.length - 22 - 65535);
   for (let i = buf.length - 22; i >= min; i -= 1) {
@@ -91,34 +94,79 @@ function readZipEntries(buffer) {
   }
 
   const count = buf.readUInt16LE(eocd + 10);
+  if (count > 2048) throw new Error('压缩文档条目数量过多');
   let offset = buf.readUInt32LE(eocd + 16);
+  const directoryStart = offset;
+  const directoryEnd = offset + buf.readUInt32LE(eocd + 12);
+  if (buf.readUInt16LE(eocd + 4) !== 0 || buf.readUInt16LE(eocd + 6) !== 0
+      || buf.readUInt16LE(eocd + 8) !== count || directoryEnd > eocd
+      || eocd + 22 + buf.readUInt16LE(eocd + 20) !== buf.length) {
+    throw new Error('不是有效的压缩文档');
+  }
   const files = new Map();
+  const names = new Set();
+  let expandedBytes = 0;
   for (let index = 0; index < count; index += 1) {
-    if (offset + 46 > buf.length || buf.readUInt32LE(offset) !== 0x02014b50) break;
+    if (offset + 46 > directoryEnd || buf.readUInt32LE(offset) !== 0x02014b50) {
+      throw new Error('不是有效的压缩文档');
+    }
+    const flags = buf.readUInt16LE(offset + 8);
     const method = buf.readUInt16LE(offset + 10);
     const compSize = buf.readUInt32LE(offset + 20);
+    const expandedSize = buf.readUInt32LE(offset + 24);
     const nameLen = buf.readUInt16LE(offset + 28);
     const extraLen = buf.readUInt16LE(offset + 30);
     const commentLen = buf.readUInt16LE(offset + 32);
     const localOffset = buf.readUInt32LE(offset + 42);
-    const name = buf.slice(offset + 46, offset + 46 + nameLen).toString('utf8');
+    if (offset + 46 + nameLen + extraLen + commentLen > directoryEnd) {
+      throw new Error('不是有效的压缩文档');
+    }
+    const name = buf.subarray(offset + 46, offset + 46 + nameLen).toString('utf8').replace(/\\/g, '/');
     offset += 46 + nameLen + extraLen + commentLen;
-
-    if (localOffset + 30 > buf.length) continue;
+    if (names.has(name) || (flags & 1) || localOffset + 30 > directoryStart
+        || buf.readUInt32LE(localOffset) !== 0x04034b50) {
+      throw new Error('不是有效的压缩文档');
+    }
+    names.add(name);
     const localNameLen = buf.readUInt16LE(localOffset + 26);
     const localExtraLen = buf.readUInt16LE(localOffset + 28);
     const dataStart = localOffset + 30 + localNameLen + localExtraLen;
-    const compressed = buf.slice(dataStart, dataStart + compSize);
-    let data = null;
-    if (method === 0) data = compressed;
-    else if (method === 8) data = zlib.inflateRawSync(compressed);
-    if (data) files.set(name.replace(/\\/g, '/'), data);
+    const localName = buf.subarray(localOffset + 30, localOffset + 30 + localNameLen).toString('utf8').replace(/\\/g, '/');
+    if (dataStart + compSize > directoryStart || localName !== name
+        || buf.readUInt16LE(localOffset + 8) !== method || (buf.readUInt16LE(localOffset + 6) & 1)) {
+      throw new Error('不是有效的压缩文档');
+    }
+    // Skip embedded images and other binary assets without decompressing them.
+    if (!include(name)) continue;
+    if (expandedSize > maxEntryBytes || expandedBytes + expandedSize > maxExpandedBytes) {
+      throw new Error('文档展开内容过大');
+    }
+    const compressed = buf.subarray(dataStart, dataStart + compSize);
+    const remaining = Math.min(maxEntryBytes, maxExpandedBytes - expandedBytes);
+    let data;
+    if (method === 0) {
+      if (compressed.length > remaining) throw new Error('文档展开内容过大');
+      data = compressed;
+    } else if (method === 8) {
+      try {
+        data = zlib.inflateRawSync(compressed, { maxOutputLength: remaining });
+      } catch (error) {
+        if (error.code === 'ERR_BUFFER_TOO_LARGE' || remaining === 0) throw new Error('文档展开内容过大');
+        throw new Error('不是有效的压缩文档');
+      }
+    } else {
+      throw new Error('不支持这份压缩文档的格式');
+    }
+    if (data.length !== expandedSize) throw new Error('不是有效的压缩文档');
+    expandedBytes += data.length;
+    files.set(name, data);
   }
+  if (offset !== directoryEnd) throw new Error('不是有效的压缩文档');
   return files;
 }
 
 function extractDocxText(buffer) {
-  const files = readZipEntries(buffer);
+  const files = readZipEntries(buffer, { include: name => name === 'word/document.xml' });
   const xml = files.get('word/document.xml');
   if (!xml) throw new Error('这份 Word 里没有可读取的正文');
   return decodeHtmlEntities(xml.toString('utf8'))
@@ -133,11 +181,13 @@ function extractDocxText(buffer) {
 }
 
 function extractEpubText(buffer) {
-  const files = readZipEntries(buffer);
+  const files = readZipEntries(buffer, { include: name => /\.(xhtml|html|htm)$/i.test(name) });
   const parts = [];
   for (const [name, data] of files) {
     if (!/\.(xhtml|html|htm)$/i.test(name)) continue;
-    const text = decodeHtmlEntities(data.toString('utf8'))
+    const html = data.toString('utf8');
+    const body = html.match(/<body\b[^>]*>([\s\S]*?)<\/body\s*>/i);
+    const text = decodeHtmlEntities(body ? body[1] : html)
       .replace(/<script[\s\S]*?<\/script>/gi, ' ')
       .replace(/<style[\s\S]*?<\/style>/gi, ' ')
       .replace(/<\/(p|div|h[1-6]|li|tr|blockquote|section|article)>/gi, '\n\n')

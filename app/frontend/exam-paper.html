@@ -345,6 +345,7 @@
       body.focusing .nav { display: flex; }
     }
   </style>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
   <script src="./js/nav-back.js?v=1"></script>
 </head>
 <body>
@@ -818,14 +819,7 @@
     }
 
     function readToken() {
-      const keys = ['linglish_token', 'authToken'];
-      for (const key of keys) {
-        try {
-          const value = localStorage.getItem(key) || sessionStorage.getItem(key);
-          if (value && value !== 'null' && value !== 'undefined') return value;
-        } catch (_) {}
-      }
-      return '';
+      return window.AuthManager ? window.AuthManager.getToken() || '' : '';
     }
 
     function setStatus(text) {
@@ -925,10 +919,15 @@
         return;
       }
       try {
-        const response = await fetch('/articles');
-        const data = await response.json();
-        const article = (data.items || []).find((item) => String(item.id) === String(id));
-        if (!article) throw new Error('找不到这份试卷');
+        if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') await window.AuthManager.ensureSession();
+        const token = readToken();
+        if (!token) throw new Error('请先登录后再查看试卷。');
+        const response = await fetch('/articles/' + encodeURIComponent(id), {
+          headers: { Authorization: 'Bearer ' + token },
+          cache: 'no-store',
+        });
+        if (!response.ok) throw new Error('找不到这份试卷');
+        const article = await response.json();
         let paper = null;
         try { paper = JSON.parse(article.content || ''); } catch (_) { paper = null; }
         if (!paper || paper.kind !== 'exam-paper') {
