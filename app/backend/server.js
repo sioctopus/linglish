@@ -96,7 +96,7 @@ const SECURITY_HEADERS = {
     "img-src 'self' data: https: blob:",
     "font-src 'self' data: https://fonts.gstatic.com",
     "connect-src 'self' data: blob: ws: wss: https://api.openai.com https://api.openai.com http://ip-api.com",
-    "media-src 'self' blob: data: https://www.youtube.com https://i.ytimg.com https://*.googlevideo.com https://*.invidious.io https://invidious.jing.rocks https://invidious.private.coffee https://inv.nadeko.net https://invidious.io.lol https://yt.artemislena.eu https://invidious.nerdvpn.de https://inv.perditum.com https://invidious.f5.si https://yewtu.be",
+    "media-src 'self' blob: data: https: http: https://www.youtube.com https://i.ytimg.com https://*.googlevideo.com https://*.invidious.io https://invidious.jing.rocks https://invidious.private.coffee https://inv.nadeko.net https://invidious.io.lol https://yt.artemislena.eu https://invidious.nerdvpn.de https://inv.perditum.com https://invidious.f5.si https://yewtu.be",
     "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://*.invidious.io https://invidious.jing.rocks https://invidious.private.coffee https://inv.nadeko.net https://invidious.io.lol https://yt.artemislena.eu https://invidious.nerdvpn.de https://inv.perditum.com https://invidious.f5.si https://yewtu.be",
     "object-src 'none'",
     "base-uri 'self'",
@@ -255,6 +255,9 @@ async function handleRequest(req, res) {
   } else if (pathname.startsWith('/tts/')) {
     rateLimitPassed = ttsRateLimiter(req, res);
   } else if (
+    pathname === '/media/transcribe' ||
+    pathname === '/media/resolve-cues' ||
+    pathname === '/youtube/transcript' ||
     pathname.startsWith('/ai/') ||
     pathname.startsWith('/ai-roleplay/') ||
     pathname.match(/^\/video-resources\/\d+\/(retranscribe|reprocess-segments|import-transcript)$/)

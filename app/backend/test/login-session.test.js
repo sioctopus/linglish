@@ -95,7 +95,6 @@ test('login session renews quietly for 30 days, stops at 90, and keeps data cred
       (err) => err.message === 'TOKEN_EXPIRED',
     );
 
-    // 多端共存:手机登录后电脑再登录,两边会话都保持有效,不再互踢。
     const phone = await authService.issueLoginCredentials(user, {
       deviceId: 'phone-device-000001',
       provider: 'password',
@@ -106,6 +105,8 @@ test('login session renews quietly for 30 days, stops at 90, and keeps data cred
     });
     assert.equal((await authService.requireUser(phone.access_token)).id, 42);
     assert.equal((await authService.requireUser(laptop.access_token)).id, 42);
+    assert.equal((await authService.refreshLogin(phone.refresh_token, 'phone-device-000001')).user_id, 42);
+    assert.equal((await authService.refreshLogin(laptop.refresh_token, 'laptop-device-00002')).user_id, 42);
 
     const logout = await authService.issueLoginCredentials(user, { deviceId, provider: 'guest' });
     await authService.revokeSessionToken(logout.access_token);

@@ -111,3 +111,6 @@ html[data-learning-focus="first-lesson"] .panel.transcript > #first-lesson-goal 
 html[data-learning-focus="first-lesson"] .panel.transcript > :is(.header, .transcript-hint),
 html[data-learning-focus="first-lesson"] #caption-bar .sentence-path { display: none !important; }
 html[data-learning-focus="first-lesson"] .panel.transcript > #transcript-list { flex: 0 0 auto; overflow: visible; }
+
+/* A guided lesson owns its microphone controls. */
+html[data-learning-focus="first-lesson"] #desk-speak-dock { display: none !important; }

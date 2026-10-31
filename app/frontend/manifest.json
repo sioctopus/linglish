@@ -4,7 +4,7 @@
   "description": "通过真实场景原声视频学习地道英语，AI智能分析，个性化推荐，实战场景练习",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0e1a",
+  "background_color": "#f8fafc",
   "theme_color": "#0f766e",
   "orientation": "any",
   "scope": "/",

@@ -7,7 +7,7 @@
 console.log('[Main.js] Loading version 20251126010 - API_BASE detection fixed');
 
 import { state, debugLog, API_BASE } from './state.js';
-import { readStoredToken, readStoredEmail, clearAuthSession, persistAuthSession } from './auth.js';
+import { readStoredToken, readStoredEmail, clearAuthSession, persistAuthSession } from './auth.js?v=2026103001';
 import { apiFetch, recordEvent } from './api.js';
 import { wireShadowing } from './shadow-practice.js';
 import { wireDictogloss } from './dictogloss.js';
@@ -100,7 +100,7 @@ function wireAuthForms() {
         if (state.token && state.token !== registration.access_token) await clearMediaSession();
         state.token = registration.access_token;
         state.userEmail = accountTrimmed;
-        persistAuthSession(state.token, accountTrimmed, { remember: true });
+        persistAuthSession(state.token, accountTrimmed, { remember: true, session: registration });
         await bootstrapApp();
         showToast('注册成功！今日训练已开启');
         return;
@@ -207,7 +207,7 @@ function wireAuthForms() {
       console.log('[Login] Authentication established:', Boolean(state.token));
       console.log('[Login] API_BASE:', API_BASE);
 
-      persistAuthSession(state.token, account, { remember: rememberPreference });
+      persistAuthSession(state.token, account, { remember: rememberPreference, session: tokens });
       const savedToken = readStoredToken();
       if (!savedToken) {
         console.error('[Login] CRITICAL: Token was not saved to storage layers!');

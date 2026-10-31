@@ -20,14 +20,21 @@
 
 /* Primary Button */
 .btn-primary {
-  background: #1a1a3a;
-  color: white;
+  background: linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%);
+  color: #ffffff;
   border: none;
-  padding: 12px 24px;
-  border-radius: 8px;
+  min-height: 48px;
+  padding: 12px 20px;
+  border-radius: 999px;
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
+  box-shadow: 0 8px 20px rgba(15, 118, 110, 0.22);
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+  box-shadow: 0 4px 12px rgba(15, 118, 110, 0.18);
 }
 
 /* Text Button */

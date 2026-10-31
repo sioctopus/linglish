@@ -11414,7 +11414,7 @@
                 fabBtn.classList.remove('recording');
               }
             } else {
-              // Show FAB if "Enable Practice" is available? 
+              // Show FAB if "Enable Practice" is available?
               // Or hide it until practice starts?
               // Let's show it if practice arm button is visible
               const armBtn = document.getElementById('practice-arm-btn');
@@ -14585,5 +14585,3 @@
         showKeyboardShortcutsHint();
       }, 1000);
     });
-
-  

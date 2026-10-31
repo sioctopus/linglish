@@ -1,11 +1,7 @@
+const { decodeHtmlEntities } = require('./reading-subtitles');
+
 function decodeEntities(value) {
-  return String(value || '')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/&lt;/gi, '<')
-    .replace(/&gt;/gi, '>')
-    .replace(/&quot;/gi, '"')
-    .replace(/&#39;|&apos;/gi, "'");
+  return decodeHtmlEntities(value);
 }
 
 function looksLikeExam(text) {

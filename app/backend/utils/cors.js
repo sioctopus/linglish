@@ -17,6 +17,17 @@ if (process.env.CORS_ALLOWED_ORIGINS) {
     .forEach(origin => ALLOWED_ORIGINS.push(origin));
 }
 
+function isDevTunnelOrigin(origin) {
+  // Quick tunnels for phone testing without same-LAN Wi‑Fi (Chrome often fails CF challenges).
+  return /^https:\/\/[a-z0-9-]+\.(trycloudflare\.com|loca\.lt|lhr\.life|pinggy\.io)$/i.test(String(origin || ''));
+}
+
+function isChromeExtensionOrigin(origin) {
+  // Unpacked / store extension origins for Linglish Chrome helper (popup fetch / bridge).
+  // Prefer listing exact chrome-extension://<id> via CORS_ALLOWED_ORIGINS in production.
+  return /^chrome-extension:\/\/[a-z]{32}$/i.test(String(origin || ''));
+}
+
 function getCorsHeaders(origin, options = {}) {
   const { logUnknown = true } = options;
   const headers = {
@@ -27,7 +38,13 @@ function getCorsHeaders(origin, options = {}) {
     Vary: 'Origin',
   };
 
-  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+  if (
+    origin &&
+    (ALLOWED_ORIGINS.includes(origin) || (
+      ['development', 'dev'].includes(process.env.NODE_ENV)
+      && (isDevTunnelOrigin(origin) || isChromeExtensionOrigin(origin))
+    ))
+  ) {
     headers['Access-Control-Allow-Origin'] = origin;
     headers['Access-Control-Allow-Credentials'] = 'true';
   } else if (!origin || origin === 'null') {
@@ -54,4 +71,5 @@ module.exports = {
   ALLOWED_ORIGINS,
   getCorsHeaders,
   appendVary,
+  isChromeExtensionOrigin,
 };

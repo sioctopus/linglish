@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <style>
     :root {
@@ -55,27 +55,39 @@
       top: 0;
       z-index: 20;
       display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
-      padding: 0 clamp(18px, 5vw, 64px);
-      background: rgba(255, 255, 255, 0.9);
+      gap: 8px;
+      height: 56px;
+      min-height: 56px;
+      padding: 0 clamp(12px, 4vw, 48px);
+      background: rgba(255, 255, 255, 0.94);
       border-bottom: 1px solid var(--line);
       backdrop-filter: blur(16px);
+      isolation: isolate;
+    }
+
+    .topbar.is-menu-open {
+      z-index: 40;
     }
 
     .brand {
       display: inline-flex;
+      flex: 0 0 auto;
       align-items: center;
-      gap: 10px;
-      font-size: 18px;
+      gap: 8px;
+      min-width: 0;
+      font-size: 17px;
       font-weight: 800;
+      white-space: nowrap;
     }
 
     .brand-mark {
       display: grid;
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       place-items: center;
       border-radius: var(--radius);
       color: #ffffff;
@@ -85,39 +97,173 @@
 
     .nav-actions {
       display: flex;
+      flex: 1 1 auto;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      gap: 6px;
+      min-width: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-actions::-webkit-scrollbar {
+      display: none;
     }
 
     .nav-link {
-      padding: 8px 10px;
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      writing-mode: horizontal-tb;
+      text-orientation: mixed;
     }
 
     .nav-link:hover {
       color: var(--teal-strong);
+      background: #f0fdfa;
     }
 
-    .nav-link.nav-home {
-      display: inline-flex;
-      align-items: center;
-      min-height: 36px;
-      padding: 0 14px;
+    .nav-link.nav-home,
+    .nav-link.is-active {
       border: 1px solid rgba(15, 118, 110, 0.35);
-      border-radius: 999px;
       background: #f0fdfa;
       color: var(--teal-strong);
-      font-size: 14px;
       font-weight: 800;
       box-shadow: 0 1px 0 rgba(15, 118, 110, 0.08);
     }
 
-    .nav-link.nav-home:hover {
+    .nav-link.nav-home:hover,
+    .nav-link.is-active:hover {
       background: #ccfbf1;
       border-color: var(--teal);
       color: var(--teal-strong);
+    }
+
+    .nav-end {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .member-tier-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 0;
+      background: var(--teal);
+      color: #ffffff;
+      font-size: 12px;
+      font-weight: 800;
+      line-height: 1;
+      white-space: nowrap;
+      writing-mode: horizontal-tb;
+      text-decoration: none;
+    }
+
+    .member-tier-badge.is-guest {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      color: var(--ink);
+    }
+
+    .nav-menu-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      min-width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #ffffff;
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: none;
+    }
+
+    .nav-menu-btn:hover,
+    .nav-menu-btn[aria-expanded="true"] {
+      border-color: rgba(15, 118, 110, 0.35);
+      background: #f0fdfa;
+      color: var(--teal-strong);
+    }
+
+    .nav-menu-btn-bars {
+      display: block;
+      width: 16px;
+      height: 2px;
+      border-radius: 2px;
+      background: currentColor;
+      box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor;
+    }
+
+    .nav-menu-sheet {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: clamp(12px, 4vw, 48px);
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 168px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+    }
+
+    .nav-menu-sheet[hidden] {
+      display: none !important;
+    }
+
+    .nav-menu-sheet a {
+      display: flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 10px;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .nav-menu-sheet a:hover,
+    .nav-menu-sheet a.is-active {
+      background: #f0fdfa;
+      color: var(--teal-strong);
+    }
+
+    .nav-menu-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      cursor: default;
+    }
+
+    .nav-menu-backdrop[hidden] {
+      display: none !important;
     }
 
     .btn {
@@ -513,6 +659,7 @@
     }
 
     .voice-choice {
+      position: relative;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
@@ -525,6 +672,13 @@
       color: var(--ink);
       text-align: left;
       cursor: pointer;
+      font: inherit;
+      transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+    }
+
+    .voice-choice:hover {
+      border-color: rgba(15, 118, 110, 0.45);
+      background: #f8fffd;
     }
 
     .voice-choice strong { font-size: 16px; }
@@ -535,8 +689,43 @@
       box-shadow: inset 0 0 0 1px var(--teal);
     }
     .voice-choice.active strong { color: var(--teal-strong); }
+    .voice-choice.playing {
+      border-color: var(--teal);
+      background: #ecfdf5;
+    }
+    .voice-choice .voice-live {
+      display: none;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      color: var(--teal-strong);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .voice-choice.playing .voice-live { display: inline-flex; }
+    .voice-bars {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 12px;
+    }
+    .voice-bars i {
+      display: block;
+      width: 3px;
+      border-radius: 99px;
+      background: var(--teal);
+      animation: voiceBar 0.9s ease-in-out infinite;
+    }
+    .voice-bars i:nth-child(1) { height: 4px; animation-delay: 0s; }
+    .voice-bars i:nth-child(2) { height: 10px; animation-delay: 0.15s; }
+    .voice-bars i:nth-child(3) { height: 6px; animation-delay: 0.3s; }
+    .voice-bars i:nth-child(4) { height: 12px; animation-delay: 0.08s; }
+    @keyframes voiceBar {
+      0%, 100% { transform: scaleY(0.45); opacity: 0.55; }
+      50% { transform: scaleY(1); opacity: 1; }
+    }
     #voice-status { margin: 14px 0 0; color: var(--teal-strong); font-weight: 700; min-height: 22px; }
-    #voice-sample { width: 100%; margin-top: 10px; }
+    #voice-sample { display: none; }
 
     .card h2 {
       margin-bottom: 10px;
@@ -720,19 +909,38 @@
 
     @media (max-width: 860px) {
       .topbar {
-        height: auto;
-        min-height: 64px;
-        align-items: flex-start;
-        flex-direction: column;
-        gap: 10px;
-        padding-top: 12px;
-        padding-bottom: 12px;
+        height: 56px;
+        min-height: 56px;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+
+      .brand span:last-child {
+        display: none;
       }
 
       .nav-actions {
-        width: 100%;
+        display: flex;
+        flex: 1 1 auto;
+        justify-content: flex-start;
+        gap: 2px;
+        min-width: 0;
         overflow-x: auto;
-        padding-bottom: 2px;
+      }
+
+      .nav-link {
+        min-height: 32px;
+        padding: 0 8px;
+        font-size: 12px;
+      }
+
+      .member-tier-badge {
+        min-height: 32px;
+        padding: 0 10px;
+        font-size: 11px;
       }
 
       .hero,
@@ -784,13 +992,32 @@
       <span class="brand-mark">L</span>
       <span>Linglish</span>
     </a>
-    <nav class="nav-actions" aria-label="主要导航">
-      <a class="nav-link" data-nav="back" href="./index-desktop.html">返回</a>
-      <a class="nav-link nav-home" data-nav="home" href="./index-desktop.html">学习首页</a>
-      <a class="nav-link" href="./pricing.html">价格方案</a>
-      <a class="nav-link" href="./landing.html">产品介绍</a>
-      <a class="btn btn-secondary" id="login-link" href="./desktop-auth.html?next=membership.html">登录</a>
+    <nav class="nav-actions" id="member-nav-tabs" aria-label="主要导航">
+      <a class="nav-link nav-home is-active" data-nav-tab="home" href="./index-desktop.html" title="学习首页">学习首页</a>
+      <a class="nav-link" data-nav-tab="plans" href="./pricing.html">方案</a>
+      <a class="nav-link" data-nav-tab="product" href="./landing.html">产品介绍</a>
     </nav>
+    <div class="nav-end">
+      <a class="member-tier-badge is-guest" id="login-link" href="./desktop-auth.html?next=membership.html">登录</a>
+      <button
+        class="nav-menu-btn"
+        id="member-nav-menu"
+        type="button"
+        aria-label="打开导航菜单"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-controls="member-nav-sheet"
+      >
+        <span class="nav-menu-btn-bars" aria-hidden="true"></span>
+      </button>
+    </div>
+    <button class="nav-menu-backdrop" id="member-nav-backdrop" type="button" aria-label="关闭菜单" hidden></button>
+    <div class="nav-menu-sheet" id="member-nav-sheet" role="menu" aria-label="Tab 选择" hidden>
+      <a role="menuitem" data-nav-tab="home" href="./index-desktop.html">学习首页</a>
+      <a role="menuitem" data-nav-tab="plans" href="./pricing.html">方案</a>
+      <a role="menuitem" data-nav-tab="product" href="./landing.html">产品介绍</a>
+      <a role="menuitem" href="./membership.html">会员中心</a>
+    </div>
   </header>
 
   <main class="page">
@@ -865,7 +1092,7 @@
       <div class="card-body">
         <p class="eyebrow">Reading voice</p>
         <h2 id="voice-title">朗读音色</h2>
-        <p class="section-lead">全站文本朗读用这一个声音。美式和英式都是接近说话的音色，点一下就能试听。</p>
+        <p class="section-lead">全站文本朗读只用这里选的音色。优先用接近播客、说话有情绪的声音；点一下就能试听，练习页会自动跟随。</p>
         <div class="voice-groups">
           <div>
             <h3>美式英语</h3>
@@ -877,7 +1104,7 @@
           </div>
         </div>
         <p id="voice-status"></p>
-        <audio id="voice-sample" controls hidden></audio>
+        <audio id="voice-sample" preload="none"></audio>
       </div>
     </section>
 
@@ -970,7 +1197,7 @@
 
   <div id="toast" role="status" aria-live="polite"></div>
 
-  <script src="./js/tts-voice.js?v=2"></script>
+  <script src="./js/tts-voice.js?v=2026103001"></script>
   <script>
     const PLAN_NAMES = {
       free: '免费体验',
@@ -1146,6 +1373,16 @@
       }
     }
 
+    function setTierBadge(label, options) {
+      const loginLink = document.getElementById('login-link');
+      if (!loginLink) return;
+      const opts = options || {};
+      loginLink.textContent = label;
+      loginLink.href = opts.href || './membership.html';
+      loginLink.title = opts.title || label;
+      loginLink.classList.toggle('is-guest', Boolean(opts.guest));
+    }
+
     function renderSignedOut() {
       setText('status-summary', '登录后可以查看订阅状态和管理会员权益。');
       setText('account-state', '未登录');
@@ -1157,7 +1394,7 @@
       const primary = document.getElementById('primary-action');
       primary.textContent = '登录查看订阅';
       primary.href = authUrl();
-      document.getElementById('login-link').href = authUrl();
+      setTierBadge('登录', { href: authUrl(), title: '登录', guest: true });
       document.getElementById('billing-button').hidden = true;
       document.getElementById('cancel-button').hidden = true;
       fillTrainingEntry(null, null);
@@ -1206,10 +1443,11 @@
 
       const cancelButton = document.getElementById('cancel-button');
       cancelButton.hidden = !active;
-      const loginLink = document.getElementById('login-link');
-      loginLink.textContent = PLAN_NAMES[membershipType] || '会员中心';
-      loginLink.href = './membership.html';
-      loginLink.title = '当前会员等级';
+      setTierBadge(PLAN_NAMES[membershipType] || '会员中心', {
+        href: './membership.html',
+        title: '当前会员等级',
+        guest: false,
+      });
       fillTrainingEntry(readToken(), data);
       refreshWechatBind();
     }
@@ -1236,7 +1474,7 @@
         return;
       }
 
-      document.getElementById('login-link').textContent = '会员中心';
+      setTierBadge('会员中心', { href: './membership.html', title: '会员中心', guest: false });
 
       try {
         const response = await fetch('/api/subscription/status', {
@@ -1412,64 +1650,135 @@
     document.getElementById('wechat-bind').addEventListener('click', bindWechat);
     document.getElementById('cancel-button').addEventListener('click', cancelSubscription);
     document.getElementById('billing-button').addEventListener('click', openBillingPortal);
-    document.getElementById('login-link').href = authUrl();
+    setTierBadge('登录', { href: authUrl(), title: '登录', guest: true });
+
+    (function setupMemberNavMenu() {
+      const topbar = document.querySelector('.topbar');
+      const menuBtn = document.getElementById('member-nav-menu');
+      const sheet = document.getElementById('member-nav-sheet');
+      const backdrop = document.getElementById('member-nav-backdrop');
+      if (!topbar || !menuBtn || !sheet || !backdrop) return;
+
+      function setMenuOpen(open) {
+        sheet.hidden = !open;
+        backdrop.hidden = !open;
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        topbar.classList.toggle('is-menu-open', open);
+      }
+
+      menuBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        setMenuOpen(sheet.hidden);
+      });
+      backdrop.addEventListener('click', function () { setMenuOpen(false); });
+      sheet.addEventListener('click', function (event) {
+        if (event.target.closest('a')) setMenuOpen(false);
+      });
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') setMenuOpen(false);
+      });
+    })();
+
     loadStatus();
 
     const voiceStatus = document.getElementById('voice-status');
     const voiceSample = document.getElementById('voice-sample');
+    let voiceBusy = '';
+    let playingVoiceId = '';
 
     function paintVoices() {
+      if (!window.LinglishTtsVoice) return;
       const selected = LinglishTtsVoice.current();
       document.querySelectorAll('#voice [data-voice]').forEach((button) => {
-        button.classList.toggle('active', button.dataset.voice === selected);
+        const on = button.dataset.voice === selected;
+        const speaking = button.dataset.voice === playingVoiceId;
+        button.classList.toggle('active', on);
+        button.classList.toggle('playing', speaking);
+        button.setAttribute('aria-pressed', on ? 'true' : 'false');
       });
     }
 
+    function setPlayingVoice(voiceId) {
+      playingVoiceId = voiceId || '';
+      paintVoices();
+    }
+
     function addVoiceChoices(accent, hostId) {
+      if (!window.LinglishTtsVoice) return;
       LinglishTtsVoice.VOICES.filter((voice) => voice.accent === accent).forEach((voice) => {
         const button = document.createElement('button');
         button.type = 'button';
         button.className = 'voice-choice';
         button.dataset.voice = voice.voice;
-        button.innerHTML = '<strong>' + voice.name + '</strong><span>' + voice.gender + ' · ' + voice.tone + '</span>';
+        button.setAttribute('aria-pressed', 'false');
+        button.innerHTML =
+          '<strong>' + voice.name + '</strong>' +
+          '<span>' + voice.gender + ' · ' + voice.tone + '</span>' +
+          '<em class="voice-live" aria-live="polite">' +
+            '<span class="voice-bars" aria-hidden="true"><i></i><i></i><i></i><i></i></span>' +
+            '正在播放' +
+          '</em>';
         button.addEventListener('click', () => chooseVoice(voice));
         document.getElementById(hostId).appendChild(button);
       });
     }
 
-    let voiceSampleLoading = false;
+    voiceSample.addEventListener('ended', () => {
+      setPlayingVoice('');
+      voiceBusy = '';
+    });
+    voiceSample.addEventListener('pause', () => {
+      if (!voiceSample.ended && voiceSample.currentTime > 0 && !voiceBusy) {
+        setPlayingVoice('');
+      }
+    });
 
     async function chooseVoice(voice) {
-      LinglishTtsVoice.set(voice.voice);
-      paintVoices();
-      if (voiceSampleLoading) {
-        try { voiceSample.pause(); } catch (_) { }
+      if (!window.LinglishTtsVoice) return;
+      const requestId = String(Date.now()) + ':' + voice.voice;
+      voiceBusy = requestId;
+      voiceSample.pause();
+      const saved = LinglishTtsVoice.set(voice.voice);
+      setPlayingVoice(voice.voice);
+      if (!saved) {
+        setPlayingVoice('');
+        voiceBusy = '';
+        voiceStatus.textContent = '这一次没记住音色。请关掉无痕模式后再试一次。';
+        return;
       }
-      voiceSampleLoading = true;
-      voiceStatus.textContent = '正在准备 ' + voice.name + ' 的试听…';
+      voiceStatus.textContent = '已换成 ' + voice.name + '。全站朗读都会用这个声音。';
       try {
         const response = await fetch('/tts/practice', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ text: "Hi. It's really good to see you.", voice: voice.voice }),
         });
+        if (voiceBusy !== requestId) return;
         const data = await response.json();
         if (!response.ok || !data.audioUrl) throw new Error('no audio');
-        voiceStatus.textContent = '已换成 ' + voice.name + '。全站朗读都会用这个声音。';
         voiceSample.src = data.audioUrl;
-        voiceSample.hidden = false;
         await voiceSample.play();
+        if (voiceBusy !== requestId) {
+          voiceSample.pause();
+          return;
+        }
       } catch (_) {
+        if (voiceBusy !== requestId) return;
+        setPlayingVoice('');
+        voiceBusy = '';
         voiceStatus.textContent = '已换成 ' + voice.name + '。这一句暂时没播出来，到学习页再听一次。';
-      } finally {
-        voiceSampleLoading = false;
       }
     }
 
-    addVoiceChoices('美式', 'voice-us');
-    addVoiceChoices('英式', 'voice-uk');
-    paintVoices();
-    voiceStatus.textContent = '当前是 ' + LinglishTtsVoice.meta().name + '。点一个音色可以试听。';
+    if (window.LinglishTtsVoice) {
+      addVoiceChoices('美式', 'voice-us');
+      addVoiceChoices('英式', 'voice-uk');
+      paintVoices();
+      voiceStatus.textContent = '当前是 ' + LinglishTtsVoice.meta().name + '。点一个音色就选定并试听。';
+    } else {
+      voiceStatus.textContent = '音色组件暂时没加载出来，请刷新页面后再试。';
+    }
   </script>
 <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
 </body>

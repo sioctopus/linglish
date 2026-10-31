@@ -1,4 +1,4 @@
-const VERSION = 'v1.0.8-20261019001';
+const VERSION = 'v1.0.9-20261030001';
 const CORE_CACHE = `core-${VERSION}`;
 const RUNTIME_CACHE = `rt-${VERSION}`;
 const LEGACY_PROTECTED_MEDIA_CACHES = [
@@ -19,7 +19,7 @@ const NETWORK_ONLY_PREFIXES = [
 
 const CORE_ASSETS = [
   './mobile-power.html',
-  './mobile-styles.css',
+  './mobile-styles.css?v=2026103001',
   './shared/dictionary-util.js',
   './manifest.json'
 ];
@@ -83,22 +83,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache API: TTS JSON responses only
-  if (url.pathname.startsWith('/tts/generate')) {
-    event.respondWith(
-      caches.open(RUNTIME_CACHE).then(async (cache) => {
-        try {
-          const fresh = await fetch(req);
-          if (canCacheResponse(fresh)) {
-            cache.put(req, fresh.clone());
-          }
-          return fresh;
-        } catch (_) {
-          const cached = await cache.match(req);
-          if (cached) return cached; throw _;
-        }
-      })
-    );
+  // Cache only public application files, never cookie-authenticated API JSON.
+  const staticFile = /\.(?:html|css|js|png|jpe?g|webp|gif|svg|ico|woff2?|ttf)$/i.test(url.pathname)
+    || url.pathname === '/manifest.json'
+    || /^\/js\/game\/word-packs\/[^/]+\.json$/.test(url.pathname);
+  if (url.pathname !== '/' && !staticFile) {
+    event.respondWith(fetch(req));
     return;
   }
 

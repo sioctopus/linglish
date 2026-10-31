@@ -75,6 +75,8 @@ function loadVideoDetailsContract() {
   const source = extractNamedFunction(readerHtml, 'loadVideoDetails');
   const rememberSource = readerHtml.match(/    function rememberVideoWords\(videoId, segments\) \{[\s\S]*?\n    \}/)?.[0];
   assert.ok(rememberSource, 'the reader vocabulary helper must remain available');
+  const cueHelpers = ['coerceSegmentList', 'normalizeDisplayedSegments', 'applyTranscriptCues', 'clearTranscriptCues']
+    .map((name) => extractNamedFunction(readerHtml, name)).join('\n');
   return new Function(
     'state',
     'fetch',
@@ -93,7 +95,11 @@ function loadVideoDetailsContract() {
     'postEvent',
     'startFirstLessonProgress',
     'firstLessonLifecycle',
-    `const rememberVideoWords = (${rememberSource}); return (${source});`,
+    `const rememberVideoWords = (${rememberSource});
+     const youtubePlayer = null;
+     const ensureDesktopBilingualTranslations = async () => {};
+     ${cueHelpers}
+     return (${source});`,
   );
 }
 
@@ -126,6 +132,8 @@ function mobileCommittedReadinessContract() {
 
 function mobileRenderTranscriptContract() {
   const source = extractNamedFunction(mobileReaderMain, 'renderTranscript');
+  const cueHelpers = ['coerceSegmentList', 'normalizeCaptionSegments', 'applyTranscriptCues', 'clearTranscriptCues']
+    .map((name) => extractNamedFunction(mobileReaderMain, name)).join('\n');
   return new Function(
     'state',
     'transcriptContent',
@@ -145,7 +153,7 @@ function mobileRenderTranscriptContract() {
     'window',
     'firstLessonSession',
     'startMobileFirstLessonProgress',
-    `return (${source});`,
+    `${cueHelpers}\nreturn (${source});`,
   );
 }
 
@@ -236,27 +244,29 @@ test('mobile reader emits readiness once only for committed subtitles of the cur
   }]);
 });
 
-test('ordinary mobile reader exposes the guided lesson only for the committed selected video', () => {
-  const segments = [{ text: 'Could you slow down?' }];
-  const state = { selectedVideoId: 42, currentSegments: segments };
-  const entry = { hidden: true, href: '' };
-  const mark = mobileCommittedReadinessContract()(
-    state,
-    { markReady() { assert.fail('Ordinary reading is not a first-lesson readiness event'); } },
-    () => assert.fail('No first-lesson event expected'),
-    {},
-    { isActive: () => false },
-    entry,
-    { LinglishFirstLessonGoal: require('../../frontend/js/video-reader/first-lesson-goal') },
-  );
-  mark({ id: 41 }, segments);
-  assert.equal(entry.hidden, true);
-  mark({ id: 42 }, segments);
-  assert.equal(entry.hidden, false);
-  const url = new URL(entry.href, 'https://example.com/');
-  assert.equal(url.searchParams.get('videoId'), '42');
-  assert.equal(url.searchParams.get('from'), 'reader_guided_practice');
-});
+for (const selectedVideoId of [42, '42']) {
+  test(`ordinary mobile reader exposes the committed guided lesson for ${typeof selectedVideoId} video IDs`, () => {
+    const segments = [{ text: 'Could you slow down?' }];
+    const state = { selectedVideoId, currentSegments: segments };
+    const entry = { hidden: true, href: '' };
+    const mark = mobileCommittedReadinessContract()(
+      state,
+      { markReady() { assert.fail('Ordinary reading is not a first-lesson readiness event'); } },
+      () => assert.fail('No first-lesson event expected'),
+      {},
+      { isActive: () => false },
+      entry,
+      { LinglishFirstLessonGoal: require('../../frontend/js/video-reader/first-lesson-goal') },
+    );
+    mark({ id: 41 }, segments);
+    assert.equal(entry.hidden, true);
+    mark({ id: 42 }, segments);
+    assert.equal(entry.hidden, false);
+    const url = new URL(entry.href, 'https://example.com/');
+    assert.equal(url.searchParams.get('videoId'), '42');
+    assert.equal(url.searchParams.get('from'), 'reader_guided_practice');
+  });
+}
 
 test('mobile first lesson commits and renders subtitles without starting waveform refinement', () => {
   const rawSegments = [{ text: 'Raw line.' }];
@@ -330,7 +340,7 @@ test('normal mobile entry keeps asynchronous waveform refinement behavior', asyn
   const finalSegments = [{ text: 'Final one.' }, { text: 'Final two.' }];
   const video = { id: 113, status: 'ready', transcript_segments: rawSegments };
   const state = {
-    selectedVideoId: 113,
+    selectedVideoId: '113',
     currentSegments: [],
     segmentHtmlCache: new Map(),
     transcriptFetchRequested: new Set(),
@@ -376,8 +386,13 @@ test('normal mobile entry keeps asynchronous waveform refinement behavior', asyn
 
   assert.equal(committed.length, 1);
   assert.equal(committed[0].currentVideo, video);
-  assert.equal(committed[0].segments, finalSegments);
-  assert.equal(state.currentSegments, finalSegments);
+  assert.equal(committed[0].segments, state.currentSegments);
+  assert.deepEqual(state.currentSegments.map(({ text, source_indices }) => ({ text, source_indices })), [
+    { text: 'Final one.', source_indices: [0] },
+    { text: 'Final two.', source_indices: [1] },
+  ]);
+  assert.deepEqual(state.rawSegments.map(({ text }) => ({ text })), finalSegments);
+  assert.equal(video.transcript_segments, state.rawSegments, 'persist original cues rather than derived display cards');
 });
 
 test('desktop first lesson commits and renders subtitles without starting waveform refinement', async () => {
@@ -452,7 +467,7 @@ test('normal desktop entry still waits for waveform refinement before committing
       return waveformSegments;
     },
     { LinglishSentenceSegments: { toCompleteSentences: (segments) => {
-      assert.equal(segments, waveformSegments);
+      assert.deepEqual(segments, [{ text: 'Waveform result.', index: 0, source_indices: [0] }]);
       return finalSegments;
     } } },
     (segments) => segments,
@@ -570,5 +585,9 @@ test('deactivated mobile session cannot emit readiness and resumes ordinary wave
   assert.equal(refinementCalls, 1);
   assert.equal(progressStarts, 0);
   assert.deepEqual(events, []);
-  assert.equal(state.currentSegments, finalSegments);
+  assert.deepEqual(state.currentSegments.map(({ text, source_indices }) => ({ text, source_indices })), [
+    { text: 'Ordinary refined line.', source_indices: [0] },
+  ]);
+  assert.deepEqual(state.rawSegments.map(({ text }) => ({ text })), finalSegments);
+  assert.equal(video.transcript_segments, state.rawSegments);
 });

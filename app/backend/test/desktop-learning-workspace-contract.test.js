@@ -63,7 +63,7 @@ test('desktop player preserves 16:9 when viewport height limits its size', () =>
   );
   assert.match(
     desktopMedia,
-    /\.player\s*\{[^}]*width:\s*min\(100%,\s*calc\(min\(60vh,\s*620px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*width:\s*min\(100%,\s*calc\(min\(60dvh,\s*620px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*aspect-ratio:\s*16\s*\/\s*9/s
+    /\.player\s*\{[^}]*width:\s*min\(100%,\s*calc\(min\(52vh,\s*560px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*width:\s*min\(100%,\s*calc\(min\(52dvh,\s*560px\)\s*\*\s*16\s*\/\s*9\)\)[^}]*aspect-ratio:\s*16\s*\/\s*9/s
   );
   assert.doesNotMatch(
     html,
@@ -93,9 +93,9 @@ test('desktop player preserves 16:9 when viewport height limits its size', () =>
   };
 
   for (const scenario of [
-    { viewportHeight: 787, availableWidth: 1432, heightRatio: 0.60, heightCap: 620 },
-    { viewportHeight: 900, availableWidth: 680, heightRatio: 0.60, heightCap: 620 },
-    { viewportHeight: 1080, availableWidth: 1152, heightRatio: 0.60, heightCap: 620 },
+    { viewportHeight: 787, availableWidth: 1432, heightRatio: 0.52, heightCap: 560 },
+    { viewportHeight: 900, availableWidth: 680, heightRatio: 0.52, heightCap: 560 },
+    { viewportHeight: 1080, availableWidth: 1152, heightRatio: 0.52, heightCap: 560 },
     { viewportHeight: 900, availableWidth: 1000, heightRatio: 0.68, heightCap: 680 }
   ]) {
     const size = expectedPlayer(scenario);
@@ -164,7 +164,10 @@ test('video learning and AI practice share one workspace switch', () => {
 
   assert.match(reader, markup);
   assert.match(practice, markup);
-  assert.match(practice, /data-library="videos"[\s\S]*data-library="channels"[\s\S]*data-library="podcasts"/);
+  assert.match(practice, /data-library="videos"[\s\S]*视频库[\s\S]*data-library="channels"[\s\S]*频道库[\s\S]*data-library="podcasts"[\s\S]*播客/);
+  assert.match(reader, /id="nav-library-switch"[\s\S]*选择视频库[\s\S]*选择频道库[\s\S]*选择播客/);
+  assert.doesNotMatch(reader, /id="open-channel-browser"/);
+  assert.doesNotMatch(reader, /id="open-podcast-browser"/);
   assert.match(reader, /returnTo'\) === 'coach'/);
   assert.match(practice, /source'\) === 'external'/);
 });
@@ -180,5 +183,39 @@ test('study menu switches without a loader delay', () => {
   assert.doesNotMatch(practice, /setTimeout\(hidePageLoader/);
   assert.match(study, /switchPracticeMode/);
   assert.match(study, /prefetchDocument/);
+  assert.match(study, /switchVideoStudyMode/);
+  assert.match(study, /onVideoReader/);
   assert.match(reader, /openCoachLibraryIfRequested\(\)/);
+  assert.match(reader, /js\/video-reader\/sentence-path\.js/);
+  const sentencePath = fs.readFileSync(path.join(frontend, 'js/video-reader/sentence-path.js'), 'utf8');
+  assert.match(sentencePath, /id="sentence-listen"/);
+  assert.match(sentencePath, /id="sentence-shadow"/);
+  assert.match(sentencePath, /id="sentence-review"/);
+  assert.match(sentencePath, /重复播放/);
+  assert.match(sentencePath, /toggleRepeatPractice|startRepeatPractice/);
+  assert.match(sentencePath, /existing\.remove\(\)|sentence-path[\s\S]*remove/);
+  assert.doesNotMatch(sentencePath, /复习这句的词/);
+  assert.doesNotMatch(sentencePath, /#vocabulary/);
+  assert.match(sentencePath, /switchVideoStudyMode/);
+  assert.match(sentencePath, /shadowCurrent/);
+  assert.doesNotMatch(sentencePath, /practice-session-desktop\.html/);
+  const coachingDock = fs.readFileSync(path.join(frontend, 'js/video-reader/coaching-dock.js'), 'utf8');
+  assert.match(coachingDock, /function shadowCurrent/);
+  assert.match(coachingDock, /function listenCurrent/);
+  assert.match(coachingDock, /openToolsFor\(index,\s*\{\s*force:\s*true\s*\}\)/);
+  assert.match(coachingDock, /practiceSegment/);
+  assert.match(coachingDock, /LinglishShadowMic|recordShadow/);
+  assert.match(coachingDock, /compareShadowWithOriginal|data-action="compare"|'compare'/);
+  assert.match(reader, /js\/practice\/shadow-mic\.js/);
+  const mobileReader = readPage('video-reader.html');
+  assert.match(mobileReader, /js\/practice\/shadow-mic\.js/);
+  assert.match(mobileReader, /id="mobile-hear-me-btn"/);
+  assert.match(reader, /js\/video-reader\/desktop-x-hold\.js/);
+  const desktopHold = fs.readFileSync(path.join(frontend, 'js/video-reader/desktop-x-hold.js'), 'utf8');
+  assert.match(desktopHold, /hearBtn\.id = 'desk-hear-me'/);
+  const coachingMode = fs.readFileSync(path.join(frontend, 'js/video-reader/coaching-mode.js'), 'utf8');
+  assert.match(coachingMode, /id: 'hear-me'/);
+  assert.match(coachingMode, /id: 'compare'/);
+  assert.match(practice, /createOriginalAudioReplayController/);
+  assert.match(practice, /\/pronunciation\/assess/);
 });

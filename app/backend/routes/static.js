@@ -49,6 +49,51 @@ function safePdfFilename(pathname) {
  * @param {string} filePath - File path
  * @returns {string} MIME type
  */
+function isFrontendHtml(filePath) {
+  const resolved = path.resolve(filePath);
+  const root = path.resolve(FRONTEND_DIR);
+  const rel = path.relative(root, resolved);
+  return Boolean(rel)
+    && !rel.startsWith('..')
+    && !path.isAbsolute(rel)
+    && resolved.toLowerCase().endsWith('.html');
+}
+
+function injectDeviceAdapt(html, filePath) {
+  const source = String(html || '');
+  if (source.includes('data-lx-device-adapt')) return source;
+  const script = '<script src="/js/device-adapt.js?v=2026103001" data-lx-device-adapt></script>';
+  const style = '<link rel="stylesheet" href="/styles/device-adapt.css?v=2026103001" data-lx-device-adapt>';
+  let out = source;
+  if (/<head[^>]*>/i.test(out)) out = out.replace(/<head[^>]*>/i, (match) => `${match}\n${script}`);
+  else out = `${script}\n${out}`;
+  if (/<\/body>/i.test(out)) out = out.replace(/<\/body>/i, `${style}\n</body>`);
+  else if (/<\/head>/i.test(out)) out = out.replace(/<\/head>/i, `${style}\n</head>`);
+  else out += `\n${style}`;
+
+  const base = filePath ? path.basename(filePath).toLowerCase() : '';
+  if (!base || base === 'router.html') return out;
+  if (!/<link\b[^>]*\brel=["']canonical["']/i.test(out)) {
+    const relativePath = path.relative(FRONTEND_DIR, filePath).split(path.sep).map(encodeURIComponent).join('/');
+    out = out.replace(/<head[^>]*>/i, (match) => `${match}\n<link rel="canonical" href="${PUBLIC_SITE_URL}/${relativePath}">`);
+  }
+  if (!/apple-touch-icon/i.test(out) && /<head[^>]*>/i.test(out)) {
+    out = out.replace(/<head[^>]*>/i, (match) => `${match}\n<link rel="apple-touch-icon" href="/apple-touch-icon.png" data-lx-device-adapt>`);
+  }
+  if (!/apple-mobile-web-app-capable/i.test(out) && /<head[^>]*>/i.test(out)) {
+    const meta = [
+      '<meta name="mobile-web-app-capable" content="yes" data-lx-device-adapt>',
+      '<meta name="apple-mobile-web-app-capable" content="yes" data-lx-device-adapt>',
+      '<meta name="apple-mobile-web-app-title" content="Linglish" data-lx-device-adapt>'
+    ].join('\n');
+    out = out.replace(/<head[^>]*>/i, (match) => `${match}\n${meta}`);
+  }
+  if (!/install-desktop\.js/i.test(out) && /<\/body>/i.test(out)) {
+    out = out.replace(/<\/body>/i, '<script src="/js/install-desktop.js?v=2026103001" defer data-lx-device-adapt></script>\n</body>');
+  }
+  return out;
+}
+
 function getContentType(filePath) {
   if (filePath.endsWith('.html')) return 'text/html; charset=utf-8';
   if (filePath.endsWith('.css')) return 'text/css';
@@ -198,11 +243,14 @@ async function serveStatic(res, filePath, req, options = {}) {
     }
 
     const contentType = getContentType(filePath);
-    const htmlBody = contentType.startsWith('text/html')
-      ? Buffer.from((await fsp.readFile(filePath, 'utf8'))
+    const htmlSource = contentType.startsWith('text/html')
+      ? (await fsp.readFile(filePath, 'utf8'))
         .replace(/https:\/\/(?:www\.)?example\.com/g, () => PUBLIC_SITE_URL)
-        .replace(/(?:hello|support)@example\.com/g, () => SUPPORT_EMAIL))
+        .replace(/(?:hello|support)@example\.com/g, () => SUPPORT_EMAIL)
       : null;
+    const htmlBody = htmlSource == null
+      ? null
+      : Buffer.from(isFrontendHtml(filePath) ? injectDeviceAdapt(htmlSource, filePath) : htmlSource);
     const fileSize = htmlBody ? htmlBody.length : stat.size;
 
     const isVideo = contentType.startsWith('video/');
@@ -714,4 +762,4 @@ async function registerStaticRoutes(pathname, req, res, url) {
   return false;
 }
 
-module.exports = { registerStaticRoutes, serveStatic };
+module.exports = { registerStaticRoutes, serveStatic, injectDeviceAdapt };

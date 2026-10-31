@@ -182,9 +182,12 @@
       current.shouldAssess = reason === 'manual' || reason === 'timeout';
       clearCycleTimer(current);
       if (current.recorder && current.recorder.state !== 'inactive') {
+        // Do not stop tracks here — wait for the MediaRecorder "stop" event so
+        // the final dataavailable chunk is not dropped on some browsers.
         current.recorder.stop();
+      } else {
+        stopTracks(current.stream);
       }
-      stopTracks(current.stream);
       return true;
     }
 
@@ -271,6 +274,13 @@
           stopTracks(stream);
           return false;
         }
+        try {
+          if (typeof window !== 'undefined'
+            && window.LinglishAudioCues
+            && typeof window.LinglishAudioCues.playMicReadyCue === 'function') {
+            window.LinglishAudioCues.playMicReadyCue();
+          }
+        } catch (_) {}
         current.timerId = setTimer(function () {
           if (owns(current)) stop('timeout');
         }, maxDurationMs);

@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linglish</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="header">
+    <img class="logo" src="icons/icon-32.png" width="28" height="28" alt="">
+    <div>
+      <div class="brand">Linglish</div>
+      <div class="status" id="status">检查登录状态…</div>
+    </div>
+  </header>
+
+  <nav class="links" aria-label="快捷入口">
+    <button type="button" data-path="home">首页</button>
+    <button type="button" data-path="today">今日训练</button>
+    <button type="button" data-path="video">视频学习</button>
+    <button type="button" data-path="practice">AI 陪练</button>
+  </nav>
+
+  <div class="actions">
+    <button type="button" class="primary" id="auth-btn">登录</button>
+    <button type="button" class="ghost" id="save-btn" hidden>保存当前 YouTube</button>
+  </div>
+
+  <p class="hint" id="hint">在 YouTube 视频页也可点页面上的「存到 Linglish」。</p>
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

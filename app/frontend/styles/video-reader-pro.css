@@ -145,21 +145,18 @@ body.focus-mode .vrp-speed {
 }
 
 body.focus-mode .vrp-btn,
-body.focus-mode .vrp-speed__btn,
 body.focus-mode #vrp-loop {
   padding: 0.16rem 0.34rem;
   gap: 0.15rem;
 }
 
 .vrp-bar__label,
-.vrp-speed__full,
 #vrp-loop .vrp-toggle__dot,
 #vrp-loop .vrp-toggle__label,
 .vrp-segpos__track {
   display: none !important;
 }
 
-.vrp-speed__short,
 #vrp-loop .vrp-toggle__short {
   display: inline;
 }
@@ -192,47 +189,106 @@ body.focus-mode #vrp-loop {
   margin: 0 0.1rem 0 0.25rem;
 }
 
-/* Segmented speed control ------------------------------------------- */
+/* Capsule speed dropdown (same interaction as mobile) --------------- */
+.vrp-control-dock.vrp-speed-open,
+.vrp-control-dock.vrp-speed-open .vrp-bar,
+.vrp-bar:has(.vrp-speed.is-open) {
+  overflow: visible;
+  z-index: 40;
+}
+
 .vrp-speed {
+  position: relative;
   display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
+  align-items: stretch;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
   background: transparent;
   border: 0;
-  border-radius: 0;
-  padding: 0;
 }
-.vrp-speed__btn {
+
+.vrp-speed__trigger {
   appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  min-width: 44px;
   height: 30px;
+  padding: 0 0.72rem;
   border: 1px solid #e2e8f0;
+  border-radius: 999px;
   background: #fff;
-  color: #0f172a;
+  color: #0f766e;
   font: inherit;
   font-variant-numeric: tabular-nums;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.78rem;
-  padding: 0 0.62rem;
-  border-radius: 999px;
-  cursor: pointer;
   line-height: 1;
   white-space: nowrap;
+  cursor: pointer;
   box-shadow: none;
   transition: background 0.18s var(--vrp-ease), color 0.18s var(--vrp-ease), border-color 0.18s var(--vrp-ease);
 }
-.vrp-speed__btn:hover {
+
+.vrp-speed__trigger:hover,
+.vrp-speed.is-open .vrp-speed__trigger,
+.vrp-speed__trigger[aria-expanded="true"] {
   color: #0f766e;
   background: #f0fdfa;
   border-color: #5eead4;
 }
-.vrp-speed__btn[aria-pressed="true"] {
-  background: linear-gradient(135deg, #0d9488, #2dd4bf);
-  color: #fff;
-  border-color: transparent;
+
+.vrp-speed__menu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 50;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  min-width: 112px;
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+}
+
+.vrp-speed__menu[hidden] {
+  display: none !important;
+}
+
+.vrp-speed__btn {
+  appearance: none;
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  color: #0f172a;
+  background: #f8fafc;
+  font: inherit;
+  font-variant-numeric: tabular-nums;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
   box-shadow: none;
+}
+
+.vrp-speed__btn:hover {
+  color: #0f766e;
+  background: #f0fdfa;
+}
+
+.vrp-speed__btn.active,
+.vrp-speed__btn[aria-selected="true"] {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
 }
 
 /* Sentence navigation buttons --------------------------------------- */
@@ -614,7 +670,7 @@ body.focus-mode #vrp-loop {
 @media (max-width: 900px) {
   .vrp-bar { gap: 0.4rem; padding: 0.45rem 0.55rem; }
   .vrp-bar__label { display: none; }
-  .vrp-speed__btn { padding: 0.22rem 0.42rem; font-size: 0.72rem; }
+  .vrp-speed__trigger { min-width: 40px; padding: 0 0.58rem; font-size: 0.72rem; }
   .vrp-segpos__num { display: none; }
   .vrp-segpos__track { width: 80px; }
   .vrp-studied { padding: 0.18rem 0.4rem; font-size: 0.68rem; }

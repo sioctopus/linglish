@@ -5,12 +5,21 @@
   if (!mode) return;
 
   const ENABLED_KEY = 'linglish.coaching.enabled';
+  // Keep a single short row on phones — prioritize 跟读 / 听自己 / 对比.
+  const MOBILE_ACTION_IDS = new Set(['read', 'shadow', 'hear-me', 'compare']);
+  // Desktop 视频学习：点右侧字幕只挂这三项（播放由页面 seek 负责）。
+  const DESKTOP_LINE_TOOLS = Object.freeze([
+    ['copy', '复制'],
+    ['highlight', '划线'],
+    ['note', '写笔记'],
+  ]);
   const state = {
     host: '',
     open: false,
     allowed: false,
     segments: [],
     index: -1,
+    toolsIndex: -1,
     videoId: null,
     user: null,
     transport: null,
@@ -24,6 +33,11 @@
     rollTimer: 0,
     root: null,
     noteSession: null,
+    lastShadowUrl: '',
+    lastShadowIndex: -1,
+    lastShadowRow: null,
+    activeShadowStop: null,
+    previewAudio: null,
   };
 
   function storage() {
@@ -72,6 +86,12 @@
   }
 
   function setStatus(text) {
+    // Desktop: caption area stays quiet — no tip bar under the lyrics.
+    if (!isMobileHost()) {
+      const node = state.root && state.root.querySelector('.coach-status');
+      if (node) node.textContent = '';
+      return;
+    }
     const node = state.root && state.root.querySelector('.coach-status');
     if (node) node.textContent = text || '';
   }
@@ -90,6 +110,11 @@
   }
 
   function beginJob() {
+    if (typeof state.activeShadowStop === 'function') {
+      try { state.activeShadowStop(); } catch (_) {}
+      state.activeShadowStop = null;
+    }
+    stopPreviewAudio();
     state.job += 1;
     state.phase = 'idle';
     return state.job;
@@ -144,7 +169,12 @@
     if (typeof bridge.currentSegmentIndexByTime === 'function') {
       try { index = bridge.currentSegmentIndexByTime(time); } catch (_) { index = -1; }
     }
-    if (!Number.isInteger(index) || index < 0) index = mode.indexAtTime(segments, time);
+    if (!Number.isInteger(index) || index < 0) {
+      index = typeof mode.resolveIndex === 'function'
+        ? mode.resolveIndex(segments, time)
+        : mode.indexAtTime(segments, time);
+    }
+    if ((!Number.isInteger(index) || index < 0) && segments.length) index = 0;
     const video = bridge.state && bridge.state.currentVideo;
     return {
       segments,
@@ -164,6 +194,7 @@
     if (frame.transport) state.transport = frame.transport;
     if (videoChanged) {
       state.noteSession = null;
+      state.toolsIndex = -1;
       const layer = document.getElementById('coach-study');
       if (layer) layer.replaceChildren();
       state.videoId = nextVideo;
@@ -171,7 +202,13 @@
       loadRecord();
     }
     let index = Number.isInteger(frame.index) ? frame.index : -1;
-    if (index < 0 && state.transport) index = mode.indexAtTime(state.segments, state.transport.getCurrentTime());
+    if (index < 0 && state.transport) {
+      const t = state.transport.getCurrentTime();
+      index = typeof mode.resolveIndex === 'function'
+        ? mode.resolveIndex(state.segments, t)
+        : mode.indexAtTime(state.segments, t);
+    }
+    if ((!Number.isInteger(index) || index < 0) && state.segments.length) index = 0;
     if (state.noteSession && state.noteSession.index >= 0 && state.noteSession.index < state.segments.length) {
       index = state.noteSession.index;
     }
@@ -179,33 +216,127 @@
       state.roll = index > state.index ? 'forward' : 'back';
       state.selectedWord = '';
       state.index = index;
+      // Keep the three-line view clean while the video advances on its own.
+      if (state.toolsIndex >= 0 && state.toolsIndex !== index && !state.noteSession) {
+        state.toolsIndex = -1;
+      }
     }
     if (state.noteSession) holdSentence();
+    bindTranscriptClicks();
     render();
   }
 
+  function ensureCoachChrome(root) {
+    if (!root) return null;
+    let chrome = root.querySelector('.coach-chrome');
+    if (chrome) return chrome;
+    const bar = root.querySelector('.coach-bar');
+    chrome = document.createElement('div');
+    chrome.className = 'coach-chrome';
+    if (bar) {
+      bar.replaceWith(chrome);
+      chrome.appendChild(bar);
+      if (isMobileHost()) {
+        bar.hidden = true;
+        bar.setAttribute('aria-hidden', 'true');
+      }
+    } else {
+      chrome.innerHTML =
+        '<div class="coach-bar" hidden aria-hidden="true"><button type="button" class="coach-toggle">带教</button><p class="coach-status"></p></div>';
+      root.appendChild(chrome);
+      const toggleBtn = chrome.querySelector('.coach-toggle');
+      if (toggleBtn) toggleBtn.addEventListener('click', toggleOpen);
+    }
+    return chrome;
+  }
+
+  function adoptMobileViewToggle(root) {
+    if (!root || !isMobileHost()) return;
+    const chrome = ensureCoachChrome(root) || root;
+    const toggle = document.getElementById('mobile-view-toggle');
+    if (!toggle) return;
+    if (toggle.parentElement !== chrome) chrome.appendChild(toggle);
+    // Keep 1x inside the same row as 英文/双语/上一句/下一句
+    adoptMobileSpeedTabs(root);
+  }
+
+  function adoptMobileSpeedTabs(root) {
+    if (!root || !isMobileHost()) return;
+    const chrome = ensureCoachChrome(root) || root;
+    const toggle = document.getElementById('mobile-view-toggle');
+    const speeds = document.getElementById('mobile-speed-controls')
+      || document.querySelector('.mobile-speed-controls');
+    if (!speeds) return;
+    const bar = chrome.querySelector('.coach-bar');
+    if (bar) {
+      bar.hidden = true;
+      bar.setAttribute('aria-hidden', 'true');
+    }
+    speeds.classList.add('coach-speed-dropdown');
+    speeds.classList.remove('coach-speed-tabs');
+    const host = toggle || chrome;
+    if (speeds.parentElement !== host) {
+      host.insertBefore(speeds, host.firstChild);
+    } else if (toggle && speeds !== toggle.firstElementChild) {
+      toggle.insertBefore(speeds, toggle.firstChild);
+    }
+  }
+
   function ensureRoot() {
-    if (state.root && state.root.isConnected) return state.root;
+    if (state.root && state.root.isConnected) {
+      adoptMobileViewToggle(state.root);
+      adoptMobileSpeedTabs(state.root);
+      return state.root;
+    }
+    const wrapper = document.getElementById('video-wrapper');
     const mount = state.host === 'mobile'
-      ? document.getElementById('video-wrapper')
+      ? (wrapper && wrapper.parentElement)
       : (document.getElementById('coach-slot') || document.querySelector('.player'));
     if (!mount) return null;
     const root = document.createElement('section');
     root.className = 'coach-dock';
     root.id = 'coach-dock';
+    root.dataset.host = isMobileHost() || state.host === 'mobile' ? 'mobile' : 'desktop';
     root.setAttribute('aria-label', '视频带教');
     root.innerHTML = [
       '<div class="coach-panel" hidden></div>',
       '<div class="coach-rows" hidden></div>',
       '<div class="coach-actions" hidden></div>',
-      '<div class="coach-bar"><button type="button" class="coach-toggle">带教</button><p class="coach-status"></p></div>',
+      '<div class="coach-chrome">',
+      '<div class="coach-bar" hidden aria-hidden="true"><button type="button" class="coach-toggle">带教</button><p class="coach-status"></p></div>',
+      '</div>',
     ].join('');
-    mount.appendChild(root);
-    root.querySelector('.coach-toggle').addEventListener('click', toggleOpen);
+    if ((isMobileHost() || state.host === 'mobile') && wrapper && wrapper.parentElement === mount) {
+      mount.insertBefore(root, wrapper.nextSibling);
+    } else {
+      mount.appendChild(root);
+    }
+    const toggleBtn = root.querySelector('.coach-toggle');
+    if (toggleBtn) toggleBtn.addEventListener('click', toggleOpen);
     root.querySelector('.coach-rows').addEventListener('click', onRowClick);
     root.querySelector('.coach-actions').addEventListener('click', onActionClick);
     state.root = root;
+    adoptMobileViewToggle(root);
+    adoptMobileSpeedTabs(root);
+    bindTranscriptClicks();
     return root;
+  }
+
+  function bindTranscriptClicks() {
+    const list = document.getElementById('transcript-list');
+    if (!list || list.dataset.coachToolsBound === '1') return;
+    list.dataset.coachToolsBound = '1';
+    list.addEventListener('click', onTranscriptClick, true);
+  }
+
+  function onTranscriptClick(event) {
+    if (event.target.closest('.seg-tools, .seg-tool, .seg-note, .seg-note-slot')) return;
+    const seg = event.target.closest('#transcript-list .seg');
+    if (!seg) return;
+    const index = Number(seg.dataset.index);
+    if (!Number.isInteger(index) || index < 0) return;
+    // Click a caption → keep this line + open 带教 tools (play/stop handled by page seek).
+    openToolsFor(index, { force: true });
   }
 
   function toggleOpen() {
@@ -227,7 +358,8 @@
     }
     const box = state.root && state.root.querySelector('.coach-panel');
     if (!state.open && box) box.hidden = true;
-    setStatus(state.open ? '点当前句里的单词，再选择下方动作' : (state.allowed ? '带教已收起' : '会员和高级会员可打开带教'));
+    if (!state.open) state.toolsIndex = -1;
+    setStatus(state.open ? '' : (state.allowed ? '' : '会员和高级会员可打开带教'));
   }
 
   function showLocked() {
@@ -235,7 +367,7 @@
     panel.hidden = false;
     panel.replaceChildren();
     const text = document.createElement('p');
-    text.textContent = '带教模式对会员和高级会员开放。打开后，视频底部会滚动上一句、当前句和下一句，可以复制、做笔记、划线、AI查词、讲解、翻译、逐句朗读和跟读。';
+    text.textContent = '带教模式对会员和高级会员开放。视频学习里点右侧某一句，可播放该句并使用复制、划线、写笔记；查词、讲解、翻译、朗读和跟读需要会员。';
     const link = document.createElement('a');
     link.href = './pricing.html?from=coaching#plans';
     link.textContent = '查看会员方案';
@@ -247,19 +379,91 @@
     return document.body.classList.contains('focus-mode');
   }
 
+  function isMobileHost() {
+    return state.host === 'mobile' || document.body.classList.contains('video-reader-mobile-focus');
+  }
+
+  function canUseTools() {
+    return state.allowed && (state.open || (inFocus() && state.allowed));
+  }
+
+  function toolsVisible() {
+    if (state.toolsIndex < 0) return false;
+    // Desktop video learning: copy / highlight / note stay available without membership.
+    if (!isMobileHost()) return true;
+    return canUseTools();
+  }
+
+  function toolsRow() {
+    if (state.toolsIndex >= 0) return rowAt(state.toolsIndex) || currentRow();
+    return currentRow();
+  }
+
+  function openToolsFor(index, options) {
+    if (!Number.isInteger(index) || index < 0) return;
+    state.user = resolveUser(state.user);
+    state.allowed = mode.canUseCoaching(state.user);
+    const focusReady = inFocus() && state.allowed;
+    const desktop = !isMobileHost();
+    // Mobile coaching stays membership-gated; desktop line tools do not.
+    if (!state.allowed && !desktop) {
+      if (state.open || focusReady || (options && options.force)) {
+        state.open = true;
+        render();
+        showLocked();
+      }
+      return;
+    }
+    // Members may keep coaching chrome; free desktop users only get line tools.
+    if (state.allowed && !state.open && !focusReady) {
+      state.open = true;
+      const store = storage();
+      if (store) store.setItem(ENABLED_KEY, '1');
+    }
+    const force = Boolean(options && options.force);
+    const closing = !force && state.toolsIndex === index;
+    state.toolsIndex = closing ? -1 : index;
+    if (closing) state.selectedWord = '';
+    state.signature = '';
+    render();
+    // Desktop keeps the caption area quiet — tools sit on the clicked line itself.
+    if (isMobileHost()) setStatus(closing ? '' : '可用：复制 · 笔记 · 划线');
+    else setStatus('');
+  }
+
   function render() {
     const root = ensureRoot();
     if (!root) return;
+    const mobile = isMobileHost();
+    adoptMobileViewToggle(root);
     const focusReady = inFocus() && state.allowed;
-    const showTools = state.allowed && (state.open || focusReady);
+    const dockOpen = state.open || focusReady || Boolean(state.segments.length);
+    // Subtitle rows stay visible; action chips only after the learner clicks a line.
+    const showRows = dockOpen && !mobile;
+    const showTools = toolsVisible();
+    // Desktop: keep tools on the clicked transcript row only (no under-lyric action strip / 带教 bar).
+    const showDockActions = showTools && mobile;
     root.dataset.allowed = state.allowed ? 'true' : 'false';
-    root.dataset.open = state.open ? 'true' : 'false';
+    root.dataset.open = dockOpen ? 'true' : 'false';
+    root.dataset.tools = showTools ? 'true' : 'false';
     root.dataset.roll = state.roll || '';
+    root.dataset.host = mobile ? 'mobile' : (state.host || 'desktop');
     const rows = root.querySelector('.coach-rows');
     const actions = root.querySelector('.coach-actions');
-    rows.hidden = !showTools;
-    actions.hidden = !showTools;
-    if (!showTools) return;
+    const bar = root.querySelector('.coach-bar');
+    const chrome = root.querySelector('.coach-chrome');
+    if (bar) {
+      bar.hidden = !mobile;
+      bar.setAttribute('aria-hidden', mobile ? 'false' : 'true');
+    }
+    if (chrome && !mobile) chrome.hidden = true;
+    // Mobile: never paint lyric rows over the player — transcript lives below.
+    rows.hidden = !showRows;
+    actions.hidden = !showDockActions;
+    if (!showRows && !showTools) {
+      if (!mobile) attachTranscriptTools();
+      return;
+    }
     if (state.roll && !state.rollTimer) {
       const roll = state.roll;
       state.rollTimer = window.setTimeout(() => {
@@ -272,17 +476,28 @@
     const signature = [
       state.videoId,
       state.index,
+      state.toolsIndex,
       modelRows.map((row) => row.text).join('\n'),
       JSON.stringify(state.record.notes || {}),
       JSON.stringify(state.record.marks || {}),
       state.selectedWord,
+      showTools ? 'tools' : 'rows',
+      mobile ? 'm' : 'd',
     ].join('::');
+    // Hold / KTV karaoke owns the current caption row — don't wipe vc-kword fills.
+    const holding = document.body.classList.contains('voice-chat-holding');
     if (signature !== state.signature) {
       state.signature = signature;
+      if (showRows && !holding) paintRows(rows, modelRows);
+      else if (!showRows) rows.replaceChildren();
+      if (showDockActions && !holding) paintActions(actions);
+      else if (!showDockActions) actions.replaceChildren();
+    } else if (!holding && showRows && rows.querySelector('.coach-row.is-karaoke')) {
+      // Hold just ended with plain text left in the row — restore word buttons.
+      state.signature = '';
       paintRows(rows, modelRows);
-      paintActions(actions);
     }
-    attachTranscriptTools();
+    if (!mobile) attachTranscriptTools();
   }
 
   function lineMarked(row) {
@@ -293,6 +508,7 @@
   function actionLabel(action, row) {
     if (action.id === 'note') return mode.noteFor(state.record, row && row.index).trim() ? '查看笔记' : '写笔记';
     if (action.id === 'highlight') return lineMarked(row) ? '移除划线' : '划线';
+    if (action.id === 'shadow' && state.phase === 'recording') return '完成录音';
     return action.label;
   }
 
@@ -312,15 +528,22 @@
   function paintRows(container, rows) {
     container.replaceChildren();
     rows.forEach((row) => {
+      const depth = Number.isFinite(Number(row.depth)) ? Number(row.depth) : (row.role === 'current' ? 0 : 1);
       const line = document.createElement('p');
-      line.className = `coach-row is-${row.role}`;
+      line.className = `coach-row is-${row.role} is-depth-${depth}`;
       line.dataset.index = String(row.index);
+      line.dataset.depth = String(depth);
+      if (state.toolsIndex >= 0 && state.toolsIndex === row.index) line.classList.add('is-tools-open');
       if (!row.text) {
-        line.textContent = row.role === 'current' ? '选择视频后，这里滚动三句字幕' : '';
+        // Only show the empty hint when there is truly no transcript loaded.
+        line.textContent = (row.role === 'current' && !state.segments.length)
+          ? '选择视频后，这里滚动字幕焦点'
+          : '';
         container.appendChild(line);
         return;
       }
-      if (row.role === 'current' && mode.isMarked(state.record, row.index, mode.LINE_MARK)) {
+      if ((row.role === 'current' || state.toolsIndex === row.index)
+        && mode.isMarked(state.record, row.index, mode.LINE_MARK)) {
         line.classList.add('is-marked');
       }
       if (row.role !== 'current') {
@@ -348,29 +571,91 @@
 
   function paintActions(container) {
     container.replaceChildren();
-    const row = currentRow();
-    mode.ACTIONS.forEach((action) => {
+    const row = toolsRow();
+    const actions = isMobileHost()
+      ? mode.ACTIONS.filter((action) => MOBILE_ACTION_IDS.has(action.id))
+      : mode.ACTIONS;
+    actions.forEach((action) => {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'coach-action';
       button.dataset.action = action.id;
       button.textContent = actionLabel(action, row);
-      button.disabled = !row || row.index < 0;
+      if (action.id === 'hear-me' || action.id === 'compare') {
+        button.disabled = !state.lastShadowUrl;
+      } else if (action.id === 'shadow' && state.phase === 'recording') {
+        button.disabled = false;
+      } else {
+        button.disabled = !row || row.index < 0;
+      }
       if (row && action.id === 'note' && mode.noteFor(state.record, row.index)) button.classList.add('is-on');
       if (row && action.id === 'highlight' && lineMarked(row)) {
         button.classList.add('is-on');
       }
+      if (action.id === 'hear-me' && state.lastShadowUrl) button.classList.add('is-on');
+      if (action.id === 'compare' && state.lastShadowUrl) button.classList.add('is-on');
+      if (action.id === 'shadow' && state.phase === 'recording') button.classList.add('is-on');
       container.appendChild(button);
     });
+  }
+
+  function showWordCardFor(word, row) {
+    const value = String(word || '').trim();
+    if (!value || !row) return;
+    // Prefer the shared subtitle word card when available (desktop caption).
+    if (typeof window.linglishShowSubtitleWordCard === 'function') {
+      try {
+        window.linglishShowSubtitleWordCard(value, {
+          index: row.index,
+          sentence: row.text || '',
+          startSec: row.start,
+          endSec: row.end,
+        });
+        return;
+      } catch (_) {}
+    }
+    lookup(row);
   }
 
   function onRowClick(event) {
     const word = event.target.closest('.coach-word');
     if (word) {
+      event.preventDefault();
+      event.stopPropagation();
+      const line = word.closest('.coach-row');
+      const lineIndex = Number(line && line.dataset.index);
+      if (Number.isInteger(lineIndex) && lineIndex >= 0 && state.toolsIndex !== lineIndex) {
+        openToolsFor(lineIndex);
+      }
       const value = word.dataset.word || '';
-      state.selectedWord = state.selectedWord.toLowerCase() === value.toLowerCase() ? '' : value;
+      const same = state.selectedWord.toLowerCase() === value.toLowerCase();
+      state.selectedWord = same ? '' : value;
       state.signature = '';
       render();
+      if (!state.selectedWord) {
+        const box = panel();
+        if (box) box.hidden = true;
+        const assist = document.getElementById('subtitle-assist');
+        if (assist) assist.hidden = true;
+        const drawer = document.getElementById('dict-drawer');
+        if (drawer && drawer.classList.contains('show')) {
+          drawer.classList.remove('show');
+          drawer.setAttribute('aria-hidden', 'true');
+        }
+        return;
+      }
+      let row = toolsRow();
+      if (Number.isInteger(lineIndex) && lineIndex >= 0 && state.segments[lineIndex]) {
+        const segment = state.segments[lineIndex];
+        const bounds = mode.boundsOf(segment);
+        row = {
+          index: lineIndex,
+          text: mode.textOf(segment) || '',
+          start: bounds.start,
+          end: bounds.end,
+        };
+      }
+      showWordCardFor(state.selectedWord, row);
       return;
     }
     const row = event.target.closest('.coach-row');
@@ -380,6 +665,12 @@
       return;
     }
     const index = Number(row.dataset.index);
+    if (!Number.isInteger(index) || index < 0) return;
+    openToolsFor(index, { force: true });
+    // Click / tap a coaching line → replay only this sentence, then stop.
+    if (window.VRP && typeof window.VRP.practiceSegment === 'function' && window.VRP.practiceSegment(index)) {
+      return;
+    }
     const segment = state.segments[index];
     if (!segment || !state.transport) return;
     const bounds = mode.boundsOf(segment);
@@ -391,9 +682,22 @@
     const button = event.target.closest('[data-action]');
     if (!button || button.disabled) return;
     const action = button.dataset.action;
-    const row = currentRow();
+    if (action === 'hear-me') {
+      hearMyShadow();
+      return;
+    }
+    if (action === 'compare') {
+      compareShadowWithOriginal();
+      return;
+    }
+    if (action === 'shadow' && state.phase === 'recording' && typeof state.activeShadowStop === 'function') {
+      setStatus('正在结束录音…');
+      state.activeShadowStop();
+      return;
+    }
+    const row = toolsRow();
     if (!row || row.index < 0) {
-      setStatus('先播放到一句字幕');
+      setStatus('先点一句字幕');
       return;
     }
     if (action === 'copy') copySentence(row);
@@ -404,6 +708,64 @@
     else if (action === 'translate') translate(row);
     else if (action === 'read') readSentence(row);
     else if (action === 'shadow') shadowSentence(row);
+  }
+
+  function stopPreviewAudio() {
+    if (!state.previewAudio) return;
+    try { state.previewAudio.pause(); } catch (_) {}
+    state.previewAudio = null;
+  }
+
+  function playUrl(url) {
+    stopPreviewAudio();
+    const audio = new Audio(url);
+    state.previewAudio = audio;
+    return audio.play().then(() => new Promise((resolve) => {
+      audio.onended = () => {
+        if (state.previewAudio === audio) state.previewAudio = null;
+        resolve(true);
+      };
+      audio.onerror = () => {
+        if (state.previewAudio === audio) state.previewAudio = null;
+        resolve(false);
+      };
+    })).catch(() => false);
+  }
+
+  function hearMyShadow() {
+    if (!state.lastShadowUrl) {
+      setStatus('先跟读一句，再听自己的声音');
+      return;
+    }
+    setStatus('正在播放你的跟读');
+    playUrl(state.lastShadowUrl).then((ok) => {
+      setStatus(ok
+        ? '可再点「听自己」，或点「对比」听原声→自己'
+        : '预听失败，请再点「听自己」');
+    });
+  }
+
+  async function compareShadowWithOriginal() {
+    if (!state.lastShadowUrl) {
+      setStatus('先跟读一句，再对比原声');
+      return;
+    }
+    const row = state.lastShadowRow || toolsRow() || currentRow();
+    beginJob();
+    stopPreviewAudio();
+    if (row && Number.isFinite(row.start) && Number.isFinite(row.end)) {
+      setStatus('对比：先听原声');
+      const job = state.job;
+      await playBounds({ start: row.start, end: row.end }, job);
+      if (!alive(job)) return;
+    } else {
+      setStatus('对比：原声不可用，直接听你的跟读');
+    }
+    setStatus('对比：再听你的跟读');
+    const ok = await playUrl(state.lastShadowUrl);
+    setStatus(ok
+      ? '对比结束 · 可再点「对比」，或继续跟读下一句'
+      : '你的录音播不了，请再跟读一次');
   }
 
   async function copySentence(row) {
@@ -582,8 +944,9 @@
   function attachTranscriptTools() {
     document.querySelectorAll('.seg-tools').forEach((node) => node.remove());
     document.querySelectorAll('.seg.is-lined').forEach((node) => node.classList.remove('is-lined'));
-    const row = currentRow();
-    if (!state.open || !state.allowed || !row || row.index < 0) {
+    document.querySelectorAll('.seg.is-tools-open').forEach((node) => node.classList.remove('is-tools-open'));
+    const row = toolsRow();
+    if (!toolsVisible() || !row || row.index < 0) {
       showSavedNotes();
       return;
     }
@@ -592,16 +955,14 @@
       showSavedNotes();
       return;
     }
+    seg.classList.add('is-tools-open');
     if (mode.isMarked(state.record, row.index, mode.LINE_MARK)) seg.classList.add('is-lined');
     const bar = document.createElement('div');
     bar.className = 'seg-tools';
-    [
-      ['copy', '复制'],
-      ['highlight', mode.isMarked(state.record, row.index, mode.LINE_MARK) ? '移除划线' : '划线'],
-      ['note', savedNoteText(row.index) ? '查看笔记' : '写笔记'],
-      ['translate', '翻译'],
-      ['explain', '讲解'],
-    ].forEach(([id, label]) => {
+    DESKTOP_LINE_TOOLS.forEach(([id, baseLabel]) => {
+      let label = baseLabel;
+      if (id === 'highlight' && mode.isMarked(state.record, row.index, mode.LINE_MARK)) label = '移除划线';
+      if (id === 'note' && savedNoteText(row.index)) label = '查看笔记';
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'seg-tool';
@@ -655,7 +1016,8 @@
     if (layer) layer.replaceChildren();
     if (!noting) return;
     const resume = endNote(true);
-    if (!saved) setStatus(resume ? '继续播放' : '已留在这一句');
+    if (!saved && isMobileHost()) setStatus(resume ? '继续播放' : '');
+    else if (!saved) setStatus('');
   }
 
   function anchorCard(card, prefer) {
@@ -1057,50 +1419,106 @@
   }
 
   async function shadowSentence(row) {
+    const mic = window.LinglishShadowMic;
+    if (!mic || typeof mic.recordShadow !== 'function' || typeof mic.acquireMic !== 'function') {
+      state.phase = 'idle';
+      setStatus('跟读录音组件还没加载，请强制刷新后再试');
+      return;
+    }
+
+    // Open mic inside the tap turn first — required on iOS/WeChat.
+    setStatus('正在打开麦克风…');
+    let stream = null;
+    try {
+      stream = await mic.acquireMic();
+    } catch (error) {
+      state.phase = 'idle';
+      const code = error && error.code;
+      if (code === 'MICROPHONE_DENIED') setStatus('没有麦克风权限，请在系统设置里允许后再跟读');
+      else if (code === 'MICROPHONE_INSECURE') setStatus('当前页面不是安全连接，无法开麦');
+      else setStatus('打不开麦克风，请换 Safari / Chrome 再试');
+      render();
+      return;
+    }
+
     const job = beginJob();
+    state.activeShadowStop = null;
     state.phase = 'reading';
     setStatus('先听原句，接着跟读');
     const played = await playBounds({ start: row.start, end: row.end }, job);
-    if (!alive(job)) return;
+    if (!alive(job)) {
+      try { mic.stopTracks(stream); } catch (_) {}
+      return;
+    }
     if (played === 'missing') {
       speakFallback(row.text);
     }
-    if (!navigator.mediaDevices || !window.MediaRecorder) {
-      state.phase = 'idle';
-      setStatus('这个浏览器不能录音，请换一个再跟读');
-      return;
-    }
-    let stream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (_) {
-      state.phase = 'idle';
-      setStatus('没有麦克风权限，无法跟读');
-      return;
-    }
-    if (!alive(job)) {
-      stream.getTracks().forEach((track) => track.stop());
-      return;
-    }
-    const recorder = new MediaRecorder(stream);
-    const chunks = [];
-    recorder.addEventListener('dataavailable', (event) => { if (event.data && event.data.size) chunks.push(event.data); });
-    const duration = Math.min(12000, Math.max(2000, (row.end - row.start) * 1000 + 700));
     state.phase = 'recording';
-    setStatus('请跟读');
-    const blob = await new Promise((resolve) => {
-      recorder.addEventListener('stop', () => resolve(new Blob(chunks, { type: recorder.mimeType || 'audio/webm' })));
-      recorder.start();
-      window.setTimeout(() => { if (recorder.state !== 'inactive') recorder.stop(); }, duration);
-    });
-    stream.getTracks().forEach((track) => track.stop());
-    if (!alive(job)) return;
-    const url = URL.createObjectURL(blob);
-    const audio = new Audio(url);
-    audio.play().catch(() => {});
-    setStatus('正在对比你的跟读');
+    setStatus('请跟读 · 说完可再点「完成录音」');
+    state.signature = '';
+    render();
+    let captured = null;
     try {
-      const dataUrl = await blobToDataUrl(blob);
+      captured = await mic.recordShadow({
+        stream,
+        releaseStream: true,
+        maxDurationMs: mic.recordingDurationMs(row),
+        onReady(handle) {
+          if (!alive(job)) {
+            if (handle && typeof handle.cancel === 'function') handle.cancel();
+            return;
+          }
+          state.activeShadowStop = handle && handle.stop;
+          try {
+            if (window.LinglishAudioCues && typeof window.LinglishAudioCues.playMicReadyCue === 'function') {
+              window.LinglishAudioCues.playMicReadyCue();
+            }
+          } catch (_) {}
+        },
+      });
+    } catch (error) {
+      try { mic.stopTracks(stream); } catch (_) {}
+      if (!alive(job)) return;
+      state.phase = 'idle';
+      state.activeShadowStop = null;
+      const code = error && error.code;
+      if (code === 'MICROPHONE_DENIED') setStatus('没有麦克风权限，无法跟读');
+      else if (code === 'EMPTY_RECORDING') setStatus('没录到有效声音，请靠近麦克风再跟读一次');
+      else if (code === 'RECORDING_UNAVAILABLE') setStatus('这个浏览器不能录音，请换一个再跟读');
+      else setStatus((error && error.message) || '录音失败，请再试一次');
+      render();
+      return;
+    } finally {
+      state.activeShadowStop = null;
+    }
+    if (!alive(job)) return;
+    if (!captured || !captured.blob) {
+      state.phase = 'idle';
+      setStatus('录音已取消');
+      render();
+      return;
+    }
+    if (state.lastShadowUrl) {
+      try { URL.revokeObjectURL(state.lastShadowUrl); } catch (_) {}
+    }
+    const url = URL.createObjectURL(captured.blob);
+    state.lastShadowUrl = url;
+    state.lastShadowIndex = row.index;
+    state.lastShadowRow = {
+      index: row.index,
+      text: row.text,
+      start: row.start,
+      end: row.end,
+    };
+    setStatus('正在预听你的跟读');
+    state.signature = '';
+    render();
+    const previewOk = await playUrl(url);
+    if (!alive(job)) return;
+    if (!previewOk) setStatus('录音已保存 · 点「听自己」或「对比」');
+    try {
+      const dataUrl = await blobToDataUrl(captured.blob);
+      if (!alive(job)) return;
       const response = await fetch('/pronunciation/assess', {
         method: 'POST',
         headers: authHeaders(),
@@ -1113,19 +1531,42 @@
       });
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.message || '跟读评分失败');
-      const score = payload.overall != null ? `跟读评分 ${payload.overall}` : '跟读已记录';
-      const headline = payload.coaching && payload.coaching.headline ? ` · ${payload.coaching.headline}` : '';
-      setStatus(score + headline);
+      const assessment = payload.assessment || payload;
+      const coaching = assessment.coaching || payload.coaching || null;
+      const overall = assessment.overall != null ? assessment.overall : payload.overall;
+      const score = overall != null ? `跟读评分 ${overall}` : '跟读已记录';
+      const headline = coaching && coaching.headline ? ` · ${coaching.headline}` : '';
+      setStatus(`${score}${headline} · 「听自己」/「对比」/「听原声」`);
       const box = panel();
       box.hidden = false;
       box.replaceChildren();
       const summary = document.createElement('p');
+      summary.className = 'coach-score-summary';
       summary.textContent = score + headline;
       box.appendChild(summary);
+      try {
+        const coachUi = window.LinglishPronunciationCoachUI;
+        if (coachUi && typeof coachUi.mount === 'function' && coaching) {
+          coachUi.mount(box, coaching, { impressionId: String(assessment.id || row.index || '') });
+        }
+        const profileUi = window.LinglishPronunciationProfileUI;
+        if (profileUi && typeof profileUi.consumeSkillUpdate === 'function' && payload.skill_update) {
+          profileUi.consumeSkillUpdate(box, payload.skill_update, {
+            eventKey: String(assessment.id || row.index || Date.now()),
+          });
+        }
+      } catch (_) {}
+      state.signature = '';
+      render();
     } catch (error) {
-      setStatus(error.message || '录音已保存，这次没能评分');
+      setStatus((error && error.message)
+        ? `${error.message} · 仍可点「听自己」或「对比」`
+        : '录音已保存 · 点「听自己」或「对比」');
+      state.signature = '';
+      render();
     } finally {
       if (alive(job)) state.phase = 'idle';
+      render();
     }
   }
 
@@ -1142,8 +1583,74 @@
     applyFrame(frame || {});
   }
 
+  function refreshFrame() {
+    if (state.host === 'desktop') applyFrame(desktopFrame());
+  }
+
+  function ensureOpen() {
+    ensureRoot();
+    refreshFrame();
+    state.user = resolveUser(state.user);
+    state.allowed = mode.canUseCoaching(state.user);
+    if (!state.allowed) {
+      state.open = true;
+      render();
+      showLocked();
+      return false;
+    }
+    if (!state.open) {
+      state.open = true;
+      const store = storage();
+      if (store) store.setItem(ENABLED_KEY, '1');
+      render();
+    }
+    return true;
+  }
+
+  function listenCurrent() {
+    ensureRoot();
+    refreshFrame();
+    const row = currentRow();
+    if (!row || row.index < 0) {
+      setStatus('先播放到一句字幕');
+      return false;
+    }
+    if (state.allowed && !state.open) {
+      state.open = true;
+      const store = storage();
+      if (store) store.setItem(ENABLED_KEY, '1');
+      render();
+    }
+    readSentence(row);
+    return true;
+  }
+
+  function shadowCurrent() {
+    ensureRoot();
+    refreshFrame();
+    const row = currentRow();
+    if (!row || row.index < 0) {
+      setStatus('先播放到一句字幕');
+      return false;
+    }
+    if (state.allowed && !state.open) {
+      state.open = true;
+      const store = storage();
+      if (store) store.setItem(ENABLED_KEY, '1');
+      render();
+    }
+    shadowSentence(row);
+    return true;
+  }
+
+  function setStudyHint(text) {
+    if (isMobileHost() && text) setStatus(text);
+  }
+
   function mount() {
-    state.host = document.getElementById('video-wrapper') && document.getElementById('video-player')
+    const mobilePage = document.body.classList.contains('video-reader-mobile-focus')
+      || (document.getElementById('video-wrapper') && document.getElementById('video-player'));
+    state.host = mobilePage
       ? 'mobile'
       : (document.querySelector('.player') && document.getElementById('player') ? 'desktop' : '');
     if (!state.host || document.getElementById('coach-dock')) return;
@@ -1156,11 +1663,18 @@
     if (state.host === 'desktop') {
       window.setInterval(() => applyFrame(desktopFrame()), 250);
     }
-    setStatus(state.allowed ? '带教模式已就绪' : '会员和高级会员可打开带教');
+    setStatus(state.allowed ? '' : '会员和高级会员可打开带教');
     new MutationObserver(() => render()).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   }
 
-  window.LinglishCoachingDock = { sync, mount };
+  window.LinglishCoachingDock = {
+    sync,
+    mount,
+    ensureOpen,
+    listenCurrent,
+    shadowCurrent,
+    setStudyHint,
+  };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount);
   else mount();

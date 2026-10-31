@@ -5,9 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>今日学习 - Linglish</title>
-  <meta name="description" content="每天10分钟，像生活一样学英语：看懂一句→会说一句→记住3个词。">
+  <meta name="description" content="每天10分钟，像生活一样学英语：看懂一句→会说一句→记住3个词>
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml" sizes="any">
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="./manifest.json?v=2026103001">
   <meta name="theme-color" content="#0f766e">
 
   <!-- Preconnect to external domains for faster resource loading -->
@@ -15,8 +15,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 
   <!-- Preload critical resources -->
-  <link rel="preload" href="./mobile-styles.css?v=2" as="style">
-  <link rel="preload" href="./js/auth-manager.js?v=20261019" as="script">
+  <link rel="preload" href="./mobile-styles.css?v=2026103001" as="style">
+  <link rel="preload" href="./js/auth-manager.js?v=2026103001" as="script">
   <link rel="preload" href="./js/mobile-today.js?v=20261016b" as="script">
   <link rel="preload" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap"
     as="style" onload="this.onload=null;this.rel='stylesheet'">
@@ -26,15 +26,15 @@
 
   <!-- Non-critical CSS with cache busting -->
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
-  <link rel="stylesheet" href="./styles/icons.css?v=1">
-  <link rel="stylesheet" href="./mobile-styles.css?v=2">
+  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
+  <link rel="stylesheet" href="./mobile-styles.css?v=2026103001">
   <link rel="stylesheet" href="./styles/pronunciation-profile.css?v=20260821">
   <style>
     /* ==================== 2025 Premium Mobile Theme ==================== */
     /* Google Fonts loaded via preload above */
 
     :root {
-      /* Brand Colors — unified Linglish teal/sky/gold (was Duolingo green) */
+      /* Brand Colors unified Linglish teal/sky/gold (was Duolingo green) */
       --primary: var(--lx-teal-600, #0d9488);
       --primary-shine: var(--lx-mint, #2dd4bf);
       --primary-shadow: var(--lx-primary, #0f766e);
@@ -148,9 +148,81 @@
       font-family: inherit;
     }
 
-    /* Learning intent stays visible before progress and recommendations. */
-    .learning-entry {
-      padding: 24px 20px 6px;
+    .learning-entry[hidden] {
+      display: none;
+    }
+
+    .first-sentence-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 80;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      padding: 16px 16px calc(88px + env(safe-area-inset-bottom));
+      background: rgba(15, 23, 42, 0.55);
+    }
+
+    .first-sentence-modal[hidden] {
+      display: none;
+    }
+
+    .first-sentence-panel {
+      width: min(420px, 100%);
+      padding: 22px 20px 18px;
+      border-radius: 24px;
+      background: #fff;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.28);
+      text-align: center;
+    }
+
+    .first-sentence-kicker {
+      margin: 0 0 8px;
+      color: #0f766e;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+    }
+
+    .first-sentence-panel h2 {
+      margin: 0 0 8px;
+      font-size: 22px;
+    }
+
+    .first-sentence-panel p {
+      margin: 0 0 16px;
+      color: #64748b;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .first-sentence-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .first-sentence-actions button,
+    .first-sentence-actions a {
+      flex: 1;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border-radius: 999px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .first-sentence-actions .primary {
+      border: none;
+      color: #fff;
+      background: linear-gradient(135deg, #0d9488, #2dd4bf);
+    }
+
+    .first-sentence-actions .secondary {
+      border: 1px solid #e2e8f0;
+      color: #0f172a;
+      background: #fff;
     }
 
     .learning-entry h1 {
@@ -406,20 +478,21 @@
     .progress-ring-mascot {
       width: 160px;
       height: 160px;
-      border-radius: 50%;
-      background: #f5f8fa;
+      border-radius: 0;
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      overflow: visible;
+      box-shadow: none;
     }
 
     .progress-ring-mascot .mascot-img {
-      width: 115%;
-      height: 115%;
-      object-fit: cover;
-      object-position: center 40%;
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      background: transparent;
     }
 
 
@@ -1080,63 +1153,6 @@
       box-shadow: none;
     }
 
-    /* ==================== Bottom Nav (Glass) ==================== */
-    .bottom-nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      height: 80px;
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border-top: 1px solid rgba(0, 0, 0, 0.05);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding-bottom: 16px;
-      /* Save area for iPhone home bar */
-      z-index: 100;
-      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.02);
-    }
-
-    .nav-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      color: #afafaf;
-      padding: 8px;
-      width: 64px;
-      transition: transform 0.1s;
-    }
-
-    .nav-icon {
-      font-size: 24px;
-      margin-bottom: 4px;
-      transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
-    }
-
-    .nav-label {
-      font-size: 10px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .nav-item.active {
-      color: var(--primary);
-    }
-
-    .nav-item.active .nav-icon {
-      transform: translateY(-4px) scale(1.1);
-      filter: drop-shadow(0 4px 8px rgba(13, 148, 136,0.3));
-    }
-
-    .nav-item:active {
-      transform: scale(0.9);
-    }
-
     /* ==================== Celebration Overlay ==================== */
     .celebration-overlay {
       position: fixed;
@@ -1442,7 +1458,7 @@
 
     /* ==================== V2 视觉升级:Duolingo 触感 + AI 显性化 ==================== */
 
-    /* 入场动画改弹性缓动 */
+    /* 入场动画改弹性缓*/
     .animate-entry {
       animation-timing-function: var(--lx-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1));
     }
@@ -1454,7 +1470,7 @@
       animation: lx-pop 0.5s var(--lx-ease-spring, cubic-bezier(0.34, 1.56, 0.64, 1)) 0.4s backwards;
     }
 
-    /* 进度环:渐变描边(引用内联 SVG defs) */
+    /* 进度渐变描边(引用内联 SVG defs) */
     .progress-ring-fill {
       stroke: url(#lx-ring-grad);
     }
@@ -1490,7 +1506,7 @@
       box-shadow: none;
     }
 
-    /* 今日处方:粗边+底厚边,三格彩色软背景 */
+    /* 今日处方:粗边+底厚三格彩色软背*/
     .prescription-card {
       border: var(--lx-border-bold, 2px solid #e2e8f0);
       border-bottom-width: 4px;
@@ -1518,12 +1534,12 @@
       border-color: #fde68a;
     }
 
-    /* 主任务卡:底厚边强化 */
+    /* 主任务卡:底厚边强*/
     .mission-card {
       border-bottom-width: 4px;
     }
 
-    /* 游戏化中心:粗边卡 + 任务图标着色 */
+    /* 游戏化中粗边+ 任务图标着*/
     .gamify-card {
       border: var(--lx-border-bold, 2px solid #e2e8f0);
       border-bottom-width: 4px;
@@ -1557,19 +1573,26 @@
 </head>
 
 <body>
-  <section class="learning-entry" aria-labelledby="learning-entry-title">
-    <h1 id="learning-entry-title">先听，再开口说这一句。</h1>
-    <p class="learning-entry-intro">听原声，跟着说出来。说完这一句，再决定要不要下一句。</p>
+  <header class="mobile-header today-header">
+    <h1 class="page-title">今日</h1>
+    <div class="header-actions">
+      <a class="header-link" href="./index-desktop.html?from=mobile_today" data-nav="home">首页</a>
+    </div>
+  </header>
+
+  <section class="learning-entry" hidden aria-labelledby="learning-entry-title">
+    <h1 id="learning-entry-title">先听，再开口说这一句。/h1>
+    <p class="learning-entry-intro">听原声，跟着说出来。说完这一句，再决定要不要下一句。/p>
     <a id="learning-entry-shadowing" class="learning-entry-link" href="./video-reader.html?mode=shadowing&from=today_first_lesson&focus=first_lesson">
       <span class="learning-entry-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2M12 19v3M8 22h8"/></svg></span>
-      <span class="learning-entry-text"><strong>开始说这一句</strong><small>听一句，跟着开口说一句</small></span>
-      <span class="learning-entry-arrow" aria-hidden="true">›</span>
+      <span class="learning-entry-text"><strong>开始说这一句/strong><small>听一句，跟着开口说一句/small></span>
+      <span class="learning-entry-arrow" aria-hidden="true">/span>
     </a>
   </section>
 
   <section class="read-cards" id="game-read-cards" aria-labelledby="game-read-cards-title">
     <h2 id="game-read-cards-title">游戏阅读卡片</h2>
-    <p>看图听发音。点一张，直接读这一组单词。</p>
+    <p>看图听发音。点一张，直接读这一组单词。/p>
     <div class="read-cards-grid">
       <a class="read-card" href="./game.html?deck=fruits"><span class="read-card-photo"><img src="./images/game/photos/apple.jpg?v=4" alt="" width="640" height="640"></span><span class="read-card-body"><strong>水果</strong><span>看图听读</span></span></a>
       <a class="read-card" href="./game.html?deck=animals"><span class="read-card-photo"><img src="./images/game/photos/dog.jpg?v=4" alt="" width="640" height="640"></span><span class="read-card-body"><strong>动物</strong><span>看图听读</span></span></a>
@@ -1582,14 +1605,14 @@
       <a class="read-card" href="./game.html?deck=shapes"><span class="read-card-photo"><img src="./images/game/shapes/circle.svg?v=2" alt="" width="640" height="640"></span><span class="read-card-body"><strong>形状</strong><span>看图听读</span></span></a>
       <a class="read-card" href="./game.html?deck=body"><span class="read-card-photo"><img src="./images/game/body/body.svg?v=2" alt="" width="640" height="640"></span><span class="read-card-body"><strong>人体</strong><span>看图听读</span></span></a>
       <a class="read-card" href="./game.html?deck=appliances"><span class="read-card-photo"><img src="./images/game/photos/television.jpg?v=5" alt="" width="640" height="640"></span><span class="read-card-body"><strong>电器</strong><span>看图听读</span></span></a>
-      <a class="read-card" href="./game.html?deck=nature"><span class="read-card-photo"><img src="./images/game/photos/forest.jpg?v=5" alt="" width="640" height="640"></span><span class="read-card-body"><strong>大自然</strong><span>看图听读</span></span></a>
+      <a class="read-card" href="./game.html?deck=nature"><span class="read-card-photo"><img src="./images/game/photos/forest.jpg?v=5" alt="" width="640" height="640"></span><span class="read-card-body"><strong>大自然</strong>g><span>看图听读</span></span></a>
       <a class="read-card" href="./game.html?deck=currencies"><span class="read-card-photo"><img src="./images/game/photos/currency-yuan-1.jpg?v=2" alt="" width="640" height="640"></span><span class="read-card-body"><strong>货币</strong><span>看图听读</span></span></a>
     </div>
   </section>
 
   <section id="first-lesson-resume" hidden aria-label="继续上次跟读"></section>
 
-  <!-- 主任务卡片 -->
+  <!-- 主任务卡片-->
   <section class="today-mission animate-entry delay-2">
     <div class="mission-card">
       <a href="#" class="mission-thumbnail-link" id="mission-thumbnail-link">
@@ -1597,7 +1620,7 @@
           <img id="mission-thumbnail" style="display:none;" alt="视频封面" loading="lazy" decoding="async">
           <span>🎬</span>
           <div class="play-overlay">
-            <div class="play-btn">▶</div>
+            <div class="play-btn">/div>
           </div>
         </div>
       </a>
@@ -1611,7 +1634,7 @@
             <span id="meta-duration">1:30</span>
           </span>
           <span class="meta-badge">
-            <span class="meta-badge-icon">🏷️</span>
+            <span class="meta-badge-icon">🏷/span>
             <span id="meta-theme">日常</span>
           </span>
         </div>
@@ -1620,13 +1643,13 @@
           <div class="progress-bar-bg">
             <div class="progress-bar-fill" id="progress-bar-fill" style="width: 0%"></div>
           </div>
-          <div class="progress-text" id="progress-text">先说这一句</div>
+          <div class="progress-text" id="progress-text">先说这一/div>
         </div>
 
         <div class="mission-cta">
           <a href="#" class="cta-btn cta-primary scale-click" id="btn-primary">
             <span class="cta-icon">▶️</span>
-            <span class="cta-text">开始说这一句</span>
+            <span class="cta-text">开始说这一句/span>
           </a>
           <a href="#" class="cta-btn cta-secondary scale-click" id="btn-secondary">
             <span class="cta-icon">📝</span>
@@ -1639,7 +1662,7 @@
 
   <details class="learning-details" id="learning-details">
     <summary>练完以后</summary>
-    <p class="learning-library-links"><a href="./game.html">闯关复习</a><a href="./video-upload.html">导入自己的内容</a><a href="./mobile-explore.html">换一段视频</a></p>
+    <p class="learning-library-links"><a href="./game.html">闯关复习</a><a href="./video-upload.html">导入自己的内/a><a href="./mobile-explore.html">换一段视/a></p>
     <div class="learning-details-content">
   <!-- Hero Section -->
   <section class="today-hero animate-entry">
@@ -1647,12 +1670,12 @@
       <div class="hero-top">
         <div class="hero-top-row">
           <div>
-            <div class="hero-greeting" id="hero-greeting">早上好</div>
-            <div class="hero-date" id="hero-date">12月16日</div>
+            <div class="hero-greeting" id="hero-greeting">早上/div>
+            <div class="hero-date" id="hero-date">126/div>
           </div>
           <div class="header-stats">
             <div class="xp-badge scale-click">
-              <span class="xp-icon">⚡</span>
+              <span class="xp-icon">/span>
               <span id="xp-value">0</span>
             </div>
             <div class="streak-badge scale-click">
@@ -1663,7 +1686,7 @@
         </div>
       </div>
 
-      <!-- 超大圆形进度环 -->
+      <!-- 超大圆形进度-->
       <div class="progress-ring-container scale-click">
         <div class="progress-ring">
           <svg width="180" height="180">
@@ -1679,13 +1702,13 @@
           </svg>
           <div class="progress-ring-center">
             <div class="progress-ring-mascot" aria-hidden="true">
-              <img src="./assets/lingbao_3d.jpg" alt="Ling宝" class="mascot-img">
+              <img src="./assets/lingbao_nobg.png" alt="Ling class="mascot-img">
             </div>
           </div>
         </div>
         <div class="progress-info">
           <span class="progress-percent" id="progress-percent">0%</span>
-          <span class="progress-label" id="progress-label">开始学习</span>
+          <span class="progress-label" id="progress-label">开始学/span>
         </div>
       </div>
 
@@ -1699,8 +1722,8 @@
       <div class="prescription-top">
         <div>
           <div class="prescription-kicker">今日处方</div>
-          <div class="prescription-title" id="prescription-title">今天的句子</div>
-          <div class="prescription-copy" id="prescription-copy">说完这一句，今天就算开始。说到 5 句可以停。</div>
+          <div class="prescription-title" id="prescription-title">今天的句/div>
+          <div class="prescription-copy" id="prescription-copy">说完这一句，今天就算开始。说5 句可以停/div>
         </div>
         <div class="prescription-badge" id="prescription-badge">Today</div>
       </div>
@@ -1720,7 +1743,7 @@
       </div>
       <div class="prescription-actions">
         <a class="prescription-link primary" id="rx-upgrade" href="./pricing.html?from=mobile_today_rx#plans">升级 AI 反馈</a>
-        <a class="prescription-link secondary" id="rx-report" href="./learning-reports.html?from=mobile_today_rx">看周报</a>
+        <a class="prescription-link secondary" id="rx-report" href="./learning-reports.html?from=mobile_today_rx">看周/a>
       </div>
     </div>
   </section>
@@ -1730,16 +1753,16 @@
       <div class="coach-brief-top">
         <div>
           <span class="lx-badge-ai">🤖 AI 教练</span>
-          <div class="coach-eyebrow">AI 教练简报</div>
-          <div class="coach-title" id="coach-next-action">今天先完成一次开口输出</div>
-          <div class="coach-summary" id="coach-summary">系统会根据今日视频、等级和进度安排下一步练习。</div>
+          <div class="coach-eyebrow">AI 教练简/div>
+          <div class="coach-title" id="coach-next-action">今天先完成一次开口输/div>
+          <div class="coach-summary" id="coach-summary">系统会根据今日视频、等级和进度安排下一步练习/div>
         </div>
         <div class="coach-chip" id="coach-plan-chip">Plan</div>
       </div>
       <div class="coach-focus-grid" aria-label="今日训练重点">
         <div class="coach-focus">
           <span>场景应答</span>
-          <strong id="coach-roleplay">说完再决定要不要再练一轮</strong>
+          <strong id="coach-roleplay">说完再决定要不要再练一/strong>
         </div>
         <div class="coach-focus">
           <span>发音焦点</span>
@@ -1747,12 +1770,12 @@
         </div>
         <div class="coach-focus">
           <span>词句复习</span>
-          <strong id="coach-vocab-focus">说完再决定要不要看词句</strong>
+          <strong id="coach-vocab-focus">说完再决定要不要看词/strong>
         </div>
       </div>
       <div class="coach-actions">
-        <a class="coach-action primary scale-click" id="coach-shadow-link" href="./mobile-explore.html">按简报开始</a>
-        <a class="coach-action secondary scale-click" id="coach-roleplay-link" href="./ai-roleplay.html?scenario=colleague-smalltalk-a1&amp;from=mobile_today_coach">开始 AI 场景对话</a>
+        <a class="coach-action primary scale-click" id="coach-shadow-link" href="./mobile-explore.html">按简报开/a>
+        <a class="coach-action secondary scale-click" id="coach-roleplay-link" href="./ai-roleplay.html?scenario=colleague-smalltalk-a1&amp;from=mobile_today_coach">开AI 场景对话</a>
       </div>
     </div>
   </section>
@@ -1767,7 +1790,7 @@
   <section class="quick-actions animate-entry delay-3">
     <button class="quick-actions-toggle scale-click" id="quick-actions-toggle">
       <span>学习设置</span>
-      <span class="toggle-icon" id="toggle-icon">▼</span>
+      <span class="toggle-icon" id="toggle-icon">/span>
     </button>
     <div class="quick-actions-content" id="quick-actions-content">
       <div class="mode-selector">
@@ -1779,11 +1802,11 @@
       </div>
 
       <div class="settings-card">
-        <div class="settings-label">完成后跳转</div>
+        <div class="settings-label">完成后跳/div>
         <div class="settings-options">
-          <button class="setting-option" id="setting-prompt">提示我</button>
-          <button class="setting-option active" id="setting-review">去复习</button>
-          <button class="setting-option" id="setting-today">回今日</button>
+          <button class="setting-option" id="setting-prompt">提示/button>
+          <button class="setting-option active" id="setting-review">去复/button>
+          <button class="setting-option" id="setting-today">回今/button>
         </div>
       </div>
     </div>
@@ -1792,15 +1815,15 @@
   <section class="gamify-hub animate-entry delay-3">
     <div class="gamify-card" id="daily-quests-card">
       <div class="gamify-title">
-        <span>今天的句子</span>
+        <span>今天的句/span>
         <span id="daily-quest-summary">0/5</span>
       </div>
       <div class="quest-list">
         <div class="quest-row" id="quest-sentences">
-          <div class="quest-icon">🎙️</div>
+          <div class="quest-icon">🎙/div>
           <div class="quest-main">
             <h4>说到 5 句可以停</h4>
-            <p id="daily-sentence-note">说完这一句，今天就算开始。说到 5 句可以停。</p>
+            <p id="daily-sentence-note">说完这一句，今天就算开始。说5 句可以停/p>
             <div class="quest-bar"><span id="quest-sentence-bar"></span></div>
           </div>
           <div class="quest-progress" id="quest-sentence-text">0/5</div>
@@ -1817,21 +1840,21 @@
         <div class="badge-item" id="badge-first-video">
           <div>🎬</div>
           <div class="badge-name">首个视频</div>
-          <div class="badge-desc">完成第一次视频学习</div>
+          <div class="badge-desc">完成第一次视频学/div>
         </div>
         <div class="badge-item" id="badge-first-voice">
           <div>🎧</div>
-          <div class="badge-name">第一次录音</div>
-          <div class="badge-desc">完成 1 次跟读录音</div>
+          <div class="badge-name">第一次录/div>
+          <div class="badge-desc">完成 1 次跟读录/div>
         </div>
         <div class="badge-item locked" id="badge-streak-7">
           <div>🔥</div>
-          <div class="badge-name">连续 7 天</div>
-          <div class="badge-desc">保持 7 天游学</div>
+          <div class="badge-name">连续 7 /div>
+          <div class="badge-desc">保持 7 天游/div>
         </div>
         <div class="badge-item locked" id="badge-words-100">
           <div>🧠</div>
-          <div class="badge-name">掌握 100 词</div>
+          <div class="badge-name">掌握 100 /div>
           <div class="badge-desc">词汇突破</div>
         </div>
       </div>
@@ -1839,34 +1862,34 @@
 
     <div class="gamify-card">
       <div class="gamify-title">
-        <span>🏆 本周排行榜</span>
+        <span>🏆 本周排行/span>
         <span id="leaderboard-rank">#--</span>
       </div>
       <div class="leaderboard-list" id="leaderboard-list">
         <div class="leaderboard-row"><span>🥇 Mia · 460 XP</span><span>4h26m</span></div>
         <div class="leaderboard-row"><span>🥈 Leo · 412 XP</span><span>3h58m</span></div>
         <div class="leaderboard-row"><span>🥉 Lian · 355 XP</span><span>3h12m</span></div>
-        <div class="leaderboard-row you" id="leaderboard-you"><span>你 · 0 XP</span><span>0m</span></div>
+        <div class="leaderboard-row you" id="leaderboard-you"><span>· 0 XP</span><span>0m</span></div>
       </div>
-      <div class="leaderboard-meta">每周一重置，学习时长 + 准确度加权。</div>
+      <div class="leaderboard-meta">每周一重置，学习时+ 准确度加权/div>
     </div>
 
     <div class="gamify-card">
       <div class="gamify-title">
-        <span>🚀 进度里程碑</span>
+        <span>🚀 进度里程/span>
         <span id="milestone-summary">0/3 达成</span>
       </div>
       <div class="milestone-list">
         <div class="milestone-item">
-          <div class="milestone-header"><span>累计看完 10 个视频</span><span id="milestone-video-text">0/10</span></div>
+          <div class="milestone-header"><span>累计看完 10 个视/span><span id="milestone-video-text">0/10</span></div>
           <div class="milestone-bar"><span id="milestone-video-bar"></span></div>
         </div>
         <div class="milestone-item">
-          <div class="milestone-header"><span>累计掌握 100 词</span><span id="milestone-vocab-text">0/100</span></div>
+          <div class="milestone-header"><span>累计掌握 100 /span><span id="milestone-vocab-text">0/100</span></div>
           <div class="milestone-bar"><span id="milestone-vocab-bar"></span></div>
         </div>
         <div class="milestone-item">
-          <div class="milestone-header"><span>累计跟读 50 句</span><span id="milestone-voice-text">0/50</span></div>
+          <div class="milestone-header"><span>累计跟读 50 /span><span id="milestone-voice-text">0/50</span></div>
           <div class="milestone-bar"><span id="milestone-voice-bar"></span></div>
         </div>
       </div>
@@ -1881,8 +1904,20 @@
     <div class="celebration-content">
       <div class="celebration-emoji">🎉</div>
       <div class="celebration-text">今日计划完成!</div>
-      <div class="celebration-subtext">去成长中心领取奖励</div>
-      <a class="celebration-btn" href="./mobile-treasure.html?action=claim_daily">去领奖</a>
+      <div class="celebration-subtext">去成长中心领取奖/div>
+      <a class="celebration-btn" href="./mobile-treasure.html?action=claim_daily">去领/a>
+    </div>
+  </div>
+
+  <div class="first-sentence-modal" id="first-sentence-modal" hidden>
+    <div class="first-sentence-panel" role="dialog" aria-labelledby="first-sentence-title">
+      <p class="first-sentence-kicker">第一/p>
+      <h2 id="first-sentence-title">开口说这一/h2>
+      <p>先听原声，再跟着说出来。说完这一句就可以停，也可以现在关掉/p>
+      <div class="first-sentence-actions">
+        <a class="primary" id="first-sentence-start" href="./video-reader.html?mode=shadowing&from=home_first_lesson&focus=first_lesson">开始说这一句/a>
+        <button class="secondary" type="button" id="first-sentence-dismiss">先不/button>
+      </div>
     </div>
   </div>
 
@@ -1913,17 +1948,17 @@
   <!-- Lazy loader for images -->
   <script src="./js/app/lazy-loader.js?v=1"></script>
   <!-- Core scripts with cache busting -->
-  <script src="./i18n.js?v=20261019"></script>
-  <script src="./global-ui.js?v=20250108"></script>
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./i18n.js?v=2026103001"></script>
+  <script src="./global-ui.js?v=2026103001"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
-  <script src="./auth-helpers.js?v=1"></script>
+  <script src="./auth-helpers.js?v=2026103001"></script>
   <script src="./guest-check.js?v=1"></script>
   <script src="./gamification.js?v=1"></script>
-  <script src="./js/practice/pronunciation-profile-ui.js?v=20260821-6"></script>
+  <script src="./js/practice/pronunciation-profile-ui.js?v=2026103001"></script>
   <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-  <script src="./js/video-reader/first-lesson-goal.js?v=2026102804"></script>
-  <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026102803">
+  <script src="./js/video-reader/first-lesson-goal.js?v=2026103001"></script>
+  <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026103002">
   <script src="./js/video-recommendation-client.js?v=20260925"></script>
   <script src="./js/mobile-today.js?v=20261016b"></script>
 
@@ -1942,9 +1977,29 @@
       }
     });
   </script>
+  <script>
+    (function () {
+      const params = new URLSearchParams(window.location.search || '');
+      const from = params.get('from') || '';
+      const asked = params.get('first') === '1' || ['login', 'register', 'auth', 'auth_cached', 'google', 'wechat', 'onboarding', 'onboarding_skip', 'guest'].includes(from);
+      if (!asked) return;
+      try {
+        if (localStorage.getItem('linglish_first_sentence_prompt') === 'dismissed') return;
+        const saved = JSON.parse(localStorage.getItem('linglish_first_lesson_completion') || 'null');
+        if (saved && (saved.completed_at || saved.lines)) return;
+      } catch (_) { return; }
+      const modal = document.getElementById('first-sentence-modal');
+      if (!modal) return;
+      modal.hidden = false;
+      document.getElementById('first-sentence-dismiss')?.addEventListener('click', () => {
+        try { localStorage.setItem('linglish_first_sentence_prompt', 'dismissed'); } catch (_) {}
+        modal.hidden = true;
+      });
+    })();
+  </script>
   <script src="./js/page-tracker.js?v=1"></script>
 <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
-  <script src="./js/icons.js?v=1"></script>
+  <script src="./js/icons.js?v=2026103001"></script>
 </body>
 
 </html>

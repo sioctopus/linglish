@@ -26,6 +26,8 @@ function keyboardHarness(type = 'local') {
   };
   const context = {
     document: {
+      body: { classList: { contains: () => false } },
+      getElementById() { return null; },
       addEventListener(event, handler, capture) {
         if (event === 'keydown') listeners.push({ handler, capture: capture === true });
       },

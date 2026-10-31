@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1945,7 +1945,7 @@
 
     async function refreshLowQualityCandidates() {
       const tbody = document.getElementById('lowq-tbody');
-      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#6c757d;">加载中...</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:2rem; color:#6c757d;">加载中....</td></tr>';
       lowQualitySelected = new Set();
       const onlyUnused = document.getElementById('lowq-only-unused')?.checked !== false;
       try {
@@ -2014,7 +2014,7 @@
       if (!tbody) return;
 
       try {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color:#6c757d;">加载中...</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:2rem; color:#6c757d;">加载中....</td></tr>';
 
         const offset = (blacklistPage - 1) * blacklistPageSize;
         const params = new URLSearchParams({

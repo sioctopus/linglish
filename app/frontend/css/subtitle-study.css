@@ -1,15 +1,17 @@
 .subtitle-study {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
   margin: 8px 0 0;
-  padding: 12px 14px 14px;
+  padding: 10px 12px 12px;
   box-sizing: border-box;
   border: 1px solid #e2e8f0;
   border-radius: 18px;
   background: #f8fafc;
   color: #0f172a;
+  /* Keep Hold above from jumping when method body height changes. */
+  flex: 0 0 auto;
 }
 
 .subtitle-study[hidden] {
@@ -19,7 +21,10 @@
 .subtitle-study-methods {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 8px;
+  gap: 6px;
+  flex: 0 0 auto;
+  width: 100%;
+  min-width: 0;
 }
 
 .subtitle-study-methods button,
@@ -38,8 +43,13 @@
 }
 
 .subtitle-study-methods button {
-  min-height: 36px;
-  padding: 0 10px;
+  height: 34px;
+  min-height: 34px;
+  max-height: 34px;
+  padding: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .subtitle-study-methods button.is-on,
@@ -54,6 +64,18 @@
 #practice-study-toggle {
   height: 32px;
   padding: 0 12px;
+}
+
+.subtitle-study-body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 0 0 auto;
+  width: 100%;
+  min-height: 96px;
+  max-height: 160px;
+  overflow: auto;
+  align-items: stretch;
 }
 
 .subtitle-study-hint,
@@ -170,14 +192,22 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 52px;
-  height: 52px;
+  width: 40px;
+  height: 40px;
   border: 0;
   border-radius: 50%;
   background: #0f766e;
   color: #fff;
-  font-size: 22px;
+  font-size: 18px;
   cursor: pointer;
+  flex: 0 0 auto;
+}
+
+/* AI陪练：只用 Hold 开麦，不显示字幕区 🎤 */
+body.mode-shadowing .subtitle-study-mic,
+body.study-mode-coach .subtitle-study-mic,
+body[data-study-mode="coach"] .subtitle-study-mic {
+  display: none !important;
 }
 
 body.subtitle-study-live #lyric-stage {

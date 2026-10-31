@@ -369,7 +369,7 @@ export function populateSpeakerSelect(state, speakerSelect) {
  * @param {HTMLElement} overlay - Overlay element
  * @param {string} message - Loading message
  */
-export function showLoading(overlay, message = '加载中...') {
+export function showLoading(overlay, message = '加载中....') {
   if (!overlay) return;
   overlay.textContent = message;
   overlay.style.display = 'flex';

@@ -314,7 +314,6 @@ async function setProtectedMediaSource(element, rawPath, isCurrent) {
 if (window.LinglishMediaSession) {
   window.LinglishMediaSession.bindLifecycle({
     getToken: resolveAuthToken,
-    onError: () => showToast('媒体授权已失效，请重试', 'warn'),
   });
 }
 
@@ -734,7 +733,7 @@ function markPracticedMobileFirstLesson(context, result, assessmentId, evidenceK
 
 function markFirstLessonReadyForCommittedTranscript(video, segments) {
   if (!video || !Array.isArray(segments) || segments.length === 0) return;
-  if (state.selectedVideoId !== video.id || state.currentSegments !== segments) return;
+  if (String(state.selectedVideoId) !== String(video.id) || state.currentSegments !== segments) return;
   if (guidedLessonEntry) {
     const href = window.LinglishFirstLessonGoal.resumeHref({ videoId: String(video.id) }, true, 'reader_guided_practice');
     guidedLessonEntry.hidden = firstLessonSession.isActive() || !href;
@@ -788,17 +787,247 @@ function vocabStudyStop() {
   if (secs > 0) postEvent('vocab_study', { seconds: secs });
 }
 
-// 解析 URL 参数中的 videoId（若存在则用于初始选中）
+const LAST_STUDY_MEDIA_KEY = 'linglish.last_study_media.v1';
+let pendingResumeSeek = null; // { videoId, startSec }
+
+// 解析 URL 参数中的 videoId（数字库内视频 / yt:… / yt=…）
 const initialVideoIdFromURL = (function () {
   try {
     const params = new URLSearchParams(window.location.search || '');
-    const raw = params.get('videoId');
-    const id = Number(raw);
-    return Number.isFinite(id) && id > 0 ? id : null;
+    const raw = String(params.get('videoId') || '').trim();
+    if (raw) return raw;
+    const yt = String(params.get('yt') || '').trim();
+    if (/^[\w-]{6,}$/.test(yt)) return `yt:${yt}`;
+    return null;
   } catch (_) {
     return null;
   }
 })();
+
+function readLastStudyMedia() {
+  try {
+    const raw = localStorage.getItem(LAST_STUDY_MEDIA_KEY);
+    const data = raw ? JSON.parse(raw) : null;
+    return data && data.id != null ? data : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function writeLastStudyMedia(snapshot) {
+  if (!snapshot || snapshot.id == null || snapshot.id === '') return;
+  try {
+    localStorage.setItem(LAST_STUDY_MEDIA_KEY, JSON.stringify(snapshot));
+  } catch (_) {}
+  if (/^\d+$/.test(String(snapshot.id))) {
+    try { localStorage.setItem('last_video_id', String(snapshot.id)); } catch (_) {}
+  }
+}
+
+function mediaSnapshotFromVideo(video, extras) {
+  if (!video || video.id == null) return null;
+  const extra = extras && typeof extras === 'object' ? extras : {};
+  return {
+    id: String(video.id),
+    title: video.title || video.original_filename || '',
+    youtube_video_id: video.youtube_video_id || '',
+    audioUrl: video.audioUrl || '',
+    transcriptUrl: video.transcriptUrl || '',
+    external_podcast: Boolean(video.external_podcast),
+    external_youtube: Boolean(video.external_youtube || video.youtube_video_id),
+    thumbnail_path: video.thumbnail_path || '',
+    collection_name: video.collection_name || '',
+    seconds: Number.isFinite(Number(extra.seconds)) ? Math.max(0, Math.round(Number(extra.seconds))) : 0,
+    percent: Number.isFinite(Number(extra.percent)) ? Math.max(0, Math.min(100, Math.round(Number(extra.percent)))) : 0,
+    updatedAt: Date.now(),
+  };
+}
+
+function videoFromMediaSnapshot(snap) {
+  if (!snap || snap.id == null) return null;
+  const id = String(snap.id);
+  const ytFromId = (id.match(/^yt:([\w-]{6,})$/) || [])[1] || '';
+  const youtubeId = snap.youtube_video_id || ytFromId;
+  if (snap.external_podcast || snap.audioUrl) {
+    return {
+      id,
+      title: snap.title || '播客',
+      audioUrl: snap.audioUrl || '',
+      transcriptUrl: snap.transcriptUrl || '',
+      external_podcast: true,
+      thumbnail_path: snap.thumbnail_path || '',
+      collection_name: snap.collection_name || '',
+      status: 'ready',
+      duration_sec: 0,
+    };
+  }
+  if (youtubeId) {
+    return {
+      id: id.startsWith('yt:') ? id : `yt:${youtubeId}`,
+      title: snap.title || `YouTube ${youtubeId}`,
+      youtube_video_id: youtubeId,
+      external_youtube: true,
+      thumbnail_path: snap.thumbnail_path || `https://i.ytimg.com/vi/${youtubeId}/hqdefault.jpg`,
+      collection_name: snap.collection_name || '',
+      status: 'ready',
+      duration_sec: 0,
+    };
+  }
+  if (/^\d+$/.test(id)) {
+    return {
+      id: Number(id) || id,
+      title: snap.title || '',
+      thumbnail_path: snap.thumbnail_path || '',
+      status: 'ready',
+    };
+  }
+  return null;
+}
+
+function syncStudyVideoUrl(video) {
+  if (!video || video.id == null) return;
+  try {
+    const url = new URL(window.location.href);
+    const id = String(video.id);
+    url.searchParams.set('videoId', id);
+    if (video.youtube_video_id) url.searchParams.set('yt', String(video.youtube_video_id));
+    else url.searchParams.delete('yt');
+    window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+  } catch (_) {}
+}
+
+function rememberStudySelection(video) {
+  const snap = mediaSnapshotFromVideo(video);
+  if (!snap) return;
+  const prev = readLastStudyMedia();
+  if (prev && String(prev.id) === String(snap.id)) {
+    snap.seconds = Number(prev.seconds) || 0;
+    snap.percent = Number(prev.percent) || 0;
+  }
+  writeLastStudyMedia(snap);
+  if (window.LinglishStudyRecent) {
+    window.LinglishStudyRecent.record({
+      id: snap.id,
+      title: snap.title,
+      thumb: snap.thumbnail_path,
+      seconds: snap.seconds,
+      percent: snap.percent,
+    });
+  }
+  syncStudyVideoUrl(video);
+}
+
+function rememberPlaybackProgress(seconds, duration) {
+  if (!state.selectedVideoId) return;
+  const sec = Math.max(0, Math.round(Number(seconds) || 0));
+  if (sec < 1) return;
+  const dur = Number(duration) || 0;
+  const percent = dur > 0 ? Math.min(100, Math.max(0, Math.round((sec / dur) * 100))) : 0;
+  try {
+    const snap = readLastStudyMedia() || { id: String(state.selectedVideoId) };
+    if (String(snap.id) !== String(state.selectedVideoId)) return;
+    snap.seconds = sec;
+    if (percent) snap.percent = percent;
+    snap.updatedAt = Date.now();
+    writeLastStudyMedia(snap);
+  } catch (_) {}
+  if (window.LinglishStudyRecent) {
+    window.LinglishStudyRecent.touch(state.selectedVideoId, { seconds: sec, percent: percent || undefined });
+  }
+}
+
+function applyPendingResumeSeek() {
+  if (!pendingResumeSeek) return false;
+  if (String(pendingResumeSeek.videoId) !== String(state.selectedVideoId)) return false;
+  const startSec = Number(pendingResumeSeek.startSec);
+  if (!Number.isFinite(startSec) || startSec < 1) {
+    pendingResumeSeek = null;
+    return false;
+  }
+  pendingResumeSeek = null;
+  try {
+    if (youtubePlayer && typeof youtubePlayer.seekTo === 'function') {
+      youtubePlayer.seekTo(startSec, true);
+      return true;
+    }
+  } catch (_) {}
+  try {
+    if (videoPlayer) {
+      videoPlayer.currentTime = startSec;
+      return true;
+    }
+  } catch (_) {}
+  return false;
+}
+
+async function fetchLibraryVideoById(id) {
+  if (!/^\d+$/.test(String(id))) return null;
+  try {
+    const res = await fetch(`${API_BASE}/video-resources/${id}`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) return null;
+    const data = await res.json().catch(() => ({}));
+    return (data && data.video) || data || null;
+  } catch (_) {
+    return null;
+  }
+}
+
+async function resolveResumeTarget() {
+  const candidates = [];
+  if (initialVideoIdFromURL) candidates.push({ id: initialVideoIdFromURL, seconds: 0, source: 'url' });
+  const lastMedia = readLastStudyMedia();
+  if (lastMedia) candidates.push({ ...lastMedia, source: 'media' });
+  try {
+    const recent = window.LinglishStudyRecent && window.LinglishStudyRecent.latest();
+    if (recent) candidates.push({ ...recent, source: 'recent' });
+  } catch (_) {}
+  try {
+    const lastId = localStorage.getItem('last_video_id');
+    if (lastId) candidates.push({ id: lastId, seconds: 0, source: 'legacy' });
+  } catch (_) {}
+
+  for (const entry of candidates) {
+    if (!entry || entry.id == null || entry.id === '') continue;
+    const id = String(entry.id);
+    let video = state.videos.find((item) => String(item.id) === id);
+    if (!video && /^\d+$/.test(id)) {
+      const full = await fetchLibraryVideoById(id);
+      if (full && full.id != null) {
+        if (!state.videos.some((item) => String(item.id) === String(full.id))) {
+          state.videos = [full, ...state.videos];
+        }
+        video = full;
+      }
+    }
+    if (!video) {
+      video = videoFromMediaSnapshot(entry);
+      if (video && !state.videos.some((item) => String(item.id) === String(video.id))) {
+        state.videos = [video, ...state.videos];
+      }
+    }
+    if (!video) continue;
+    const seconds = Number(entry.seconds) > 1 ? Number(entry.seconds) : 0;
+    return { video, seconds, source: entry.source || 'unknown' };
+  }
+  return null;
+}
+
+async function restoreStudyVideoOnBoot() {
+  if (state.selectedVideoId) return false;
+  const target = await resolveResumeTarget();
+  if (!target || !target.video) return false;
+  if (target.seconds > 1) {
+    pendingResumeSeek = { videoId: target.video.id, startSec: target.seconds };
+  }
+  await selectVideo(target.video);
+  return true;
+}
+
+window.resumeLastStudyVideo = function resumeLastStudyVideo() {
+  return restoreStudyVideoOnBoot();
+};
 
 // Debug: Check token status
 console.log('[Auth] Token resolved:', Boolean(token));
@@ -822,6 +1051,7 @@ try {
 const state = {
   videos: [],
   selectedVideoId: null,
+  rawSegments: [],
   currentSegments: [],
   lastLookupContext: null,
   lookupUiMode: null, // 'overlay' | 'sidebar' | null
@@ -845,6 +1075,8 @@ const state = {
   recorder: null,
   recordingChunks: [],
   lastRecordingBlob: null,
+  lastRecordingUrl: null,
+  lastRecordingSegmentIndex: null,
   mediaStream: null,
   recordingMonitor: null,
   practiceAssessmentContext: null,
@@ -1524,11 +1756,78 @@ const uploadStatus = document.getElementById('upload-status');
 const videoListEl = document.getElementById('video-list');
 const videoPlayer = document.getElementById('video-player');
 
+function isMobileReaderFocus() {
+  return document.body.classList.contains('video-reader-mobile-focus');
+}
+
+function hidePlayOverlay() {
+  const overlay = document.getElementById('play-overlay');
+  if (!overlay) return;
+  overlay.hidden = true;
+  overlay.style.display = 'none';
+}
+
+function hideYtEmbedFallback() {
+  const box = document.getElementById('yt-embed-fallback');
+  if (box) box.hidden = true;
+}
+
+function showYtEmbedFallback(youtubeVideoId) {
+  const box = document.getElementById('yt-embed-fallback');
+  if (!box) return;
+  const id = String(youtubeVideoId || '').trim();
+  if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) {
+    hideYtEmbedFallback();
+    return;
+  }
+  const watchUrl = `https://www.youtube.com/watch?v=${encodeURIComponent(id)}`;
+  const appUrl = `vnd.youtube://${id}`;
+  box.innerHTML = [
+    '<p class="yt-embed-fallback__text">当前环境播不了 YouTube 内嵌。<strong>可改用 App 打开</strong>，字幕仍可在本页看。</p>',
+    '<div class="yt-embed-fallback__actions">',
+    `<a class="yt-embed-fallback__btn" href="${appUrl}" rel="noopener">打开 YouTube</a>`,
+    `<a class="yt-embed-fallback__btn yt-embed-fallback__btn--ghost" href="${watchUrl}" target="_blank" rel="noopener">网页打开</a>`,
+    '<button type="button" class="yt-embed-fallback__btn yt-embed-fallback__btn--ghost" id="yt-fallback-dismiss">关闭</button>',
+    '</div>',
+  ].join('');
+  box.hidden = false;
+  const dismiss = box.querySelector('#yt-fallback-dismiss');
+  if (dismiss) dismiss.addEventListener('click', hideYtEmbedFallback, { once: true });
+}
+
+(function wireYtEmbedFallback() {
+  hideYtEmbedFallback();
+})();
+
+function configureMobileFocusVideoChrome() {
+  if (!isMobileReaderFocus()) return;
+  hidePlayOverlay();
+  if (videoPlayer) {
+    // Timeline stays on the video; bottom dock keeps play / pause / next.
+    videoPlayer.setAttribute('controls', '');
+    videoPlayer.setAttribute('controlslist', 'nodownload noremoteplayback noplaybackrate');
+    videoPlayer.setAttribute('playsinline', '');
+    videoPlayer.setAttribute('webkit-playsinline', '');
+  }
+}
+
+function playMicReadyCue() {
+  try {
+    if (window.LinglishAudioCues && typeof window.LinglishAudioCues.playMicReadyCue === 'function') {
+      window.LinglishAudioCues.playMicReadyCue();
+    }
+  } catch (_) {}
+}
+
+configureMobileFocusVideoChrome();
+
 // 添加视频错误处理
 if (videoPlayer) {
   videoPlayer.addEventListener('error', function (e) {
     console.error('Video error:', e);
     const error = videoPlayer.error;
+    const isPod = document.getElementById('video-wrapper')
+      && document.getElementById('video-wrapper').classList.contains('is-podcast');
     if (error) {
       let errorMsg = 'Video playback error. ';
       switch (error.code) {
@@ -1548,6 +1847,13 @@ if (videoPlayer) {
           errorMsg += 'Unknown error.';
       }
       console.error(errorMsg, error);
+      if (isPod) {
+        showPodcastPlaybackError(
+          error.code === error.MEDIA_ERR_NETWORK
+            ? '网络读不到这集音频，换一集或稍后再试'
+            : '这集音频格式暂时不支持，换一集试试'
+        );
+      }
     }
   });
 
@@ -1563,16 +1869,14 @@ if (videoPlayer) {
 
   // 监听播放状态
   videoPlayer.addEventListener('play', function () {
-    const playOverlay = document.getElementById('play-overlay');
-    if (playOverlay) {
-      playOverlay.style.display = 'none';
-    }
+    hidePlayOverlay();
     startWatchTimer();
     firstLessonLifecycle.playback({ video_resource_id: state.selectedVideoId });
   });
 
   videoPlayer.addEventListener('pause', function () {
-    // 不自动显示overlay，只在视频加载时显示
+    // Never flash a play/pause icon over the video surface.
+    hidePlayOverlay();
     stopWatchTimer(true);
   });
 
@@ -1598,12 +1902,47 @@ if (videoPlayer) {
   });
 }
 
-// 播放overlay点击事件
+// 播放overlay点击事件（桌面/旧版移动端；聚焦阅读模式不使用该层）
 const playOverlay = document.getElementById('play-overlay');
 if (playOverlay) {
   playOverlay.addEventListener('click', async function () {
-    playOverlay.style.display = 'none';
+    hidePlayOverlay();
     await safePlayVideo();
+  });
+}
+
+// Tap the video surface to toggle play/pause without any overlay icon.
+const videoSurface = document.getElementById('video-wrapper');
+if (videoSurface && videoPlayer) {
+  videoSurface.addEventListener('click', function (event) {
+    if (!isMobileReaderFocus()) return;
+    if (event.target.closest('#podcast-faceplate')) {
+      event.preventDefault();
+      togglePodcastPlaybackFromFaceplate();
+      return;
+    }
+    if (event.target.closest('button, a, input, select, textarea, .speed-control-overlay')) return;
+    if (videoPlayer.style.display === 'none') return;
+    event.preventDefault();
+    if (videoPlayer.paused || videoPlayer.ended) {
+      safePlayVideo().finally(() => {
+        syncMobilePlayButton();
+        syncPodcastFaceplatePlayState();
+      });
+    } else {
+      try { videoPlayer.pause(); } catch (_) {}
+      syncMobilePlayButton();
+      syncPodcastFaceplatePlayState();
+    }
+  });
+}
+
+const podcastFaceplateEl = document.getElementById('podcast-faceplate');
+if (podcastFaceplateEl) {
+  podcastFaceplateEl.addEventListener('click', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    togglePodcastPlaybackFromFaceplate();
   });
 }
 
@@ -1975,11 +2314,629 @@ const mobileCurrentTime = document.getElementById('mobile-current-time');
 const mobileDuration = document.getElementById('mobile-duration');
 const mobileSpeedBtns = document.querySelectorAll('.mobile-speed-btn');
 const mobileReplayBtn = document.getElementById('mobile-replay');
+const mobilePlayBtn = document.getElementById('mobile-play');
+const mobileHoldBtn = document.getElementById('mobile-hold');
+const mobileContinueBtn = document.getElementById('mobile-continue');
+const mobileSpeakHint = document.getElementById('mobile-speak-hint');
+const mobileShadowBtn = document.getElementById('mobile-shadow-btn');
+const mobileHearMeBtn = document.getElementById('mobile-hear-me-btn');
 const mobileBackBtn = document.getElementById('mobile-back-btn');
 const mobileViewBtns = document.querySelectorAll('.mobile-view-btn');
 const mobilePlayerControls = document.getElementById('mobile-player-controls');
 let mobileSegmentPosition = null;
 let isMobileProgressDragging = false;
+let mobileShadowBusy = false;
+let mobilePreviewAudio = null;
+
+function setMobileSpeakHint(text, options) {
+  // X-DM voice UX: no coaching toasts / captions under the play dock.
+  try {
+    if (typeof canUseMobileVoiceChatHold === 'function' && canUseMobileVoiceChatHold()) {
+      if (mobileSpeakHint) {
+        mobileSpeakHint.textContent = '';
+        mobileSpeakHint.hidden = true;
+      }
+      return;
+    }
+  } catch (_) {}
+  const msg = String(text || '').trim();
+  if (mobileSpeakHint) mobileSpeakHint.textContent = msg;
+  const forceToast = options && options.toast === true;
+  const hidden = Boolean(
+    mobileSpeakHint
+    && typeof window.getComputedStyle === 'function'
+    && window.getComputedStyle(mobileSpeakHint).display === 'none'
+  );
+  if (msg && (forceToast || hidden) && typeof showToast === 'function') {
+    try { showToast(msg, (options && options.kind) || 'info'); } catch (_) {}
+  }
+}
+
+function rememberLastRecording(blob, segmentIndex) {
+  if (!blob) return;
+  if (state.lastRecordingUrl) {
+    try { URL.revokeObjectURL(state.lastRecordingUrl); } catch (_) {}
+  }
+  state.lastRecordingBlob = blob;
+  state.lastRecordingUrl = URL.createObjectURL(blob);
+  state.lastRecordingSegmentIndex = Number.isFinite(segmentIndex) ? segmentIndex : mobileSegmentPosition;
+  if (mobileHearMeBtn) mobileHearMeBtn.disabled = false;
+  try { syncMobileReviewSheet(); } catch (_) {}
+  try {
+    const bridge = window.LinglishVoiceChatBridge;
+    if (bridge && typeof bridge.persistShadowRecording === 'function') {
+      bridge.persistShadowRecording(blob, state.lastRecordingSegmentIndex);
+    } else if (window.LinglishShadowRecordingCache && typeof window.LinglishShadowRecordingCache.save === 'function') {
+      const videoId = state.currentVideo?.id || state.selectedVideoId || window.LinglishStudyVideoId;
+      if (videoId != null) {
+        window.LinglishShadowRecordingCache.save({
+          videoId,
+          segmentIndex: state.lastRecordingSegmentIndex,
+          blob,
+          mimeType: blob.type || 'audio/webm',
+        });
+      }
+    }
+  } catch (_) {}
+}
+try { window.rememberLastRecording = rememberLastRecording; } catch (_) {}
+
+async function playLastRecordingPreview() {
+  if (!state.lastRecordingUrl && !state.lastRecordingBlob) {
+    try {
+      if (typeof window.resolvePlayableShadowUrl === 'function') {
+        const restored = await window.resolvePlayableShadowUrl(state.lastRecordingSegmentIndex);
+        if (restored) state.lastRecordingUrl = restored;
+      } else if (typeof window.hydrateShadowRecording === 'function') {
+        await window.hydrateShadowRecording(state.currentVideo?.id || state.selectedVideoId);
+      }
+    } catch (_) {}
+  }
+  if (!state.lastRecordingUrl && !state.lastRecordingBlob) {
+    setMobileSpeakHint('先跟读一句，再听自己的声音');
+    return false;
+  }
+  try {
+    if (mobilePreviewAudio) {
+      mobilePreviewAudio.pause();
+      mobilePreviewAudio = null;
+    }
+  } catch (_) {}
+  const url = state.lastRecordingUrl || URL.createObjectURL(state.lastRecordingBlob);
+  if (!state.lastRecordingUrl) state.lastRecordingUrl = url;
+  const audio = new Audio(url);
+  mobilePreviewAudio = audio;
+  setMobileSpeakHint('');
+  try {
+    await audio.play();
+    audio.onended = () => {
+      if (mobilePreviewAudio === audio) mobilePreviewAudio = null;
+    };
+    return true;
+  } catch (_) {
+    setMobileSpeakHint('预听失败，请再试一次');
+    return false;
+  }
+}
+
+function resolveMobileSegmentIndexAtTime(t) {
+  const segments = Array.isArray(state.currentSegments) ? state.currentSegments : [];
+  if (!segments.length) return -1;
+  const time = Number(t) || 0;
+  let containing = -1;
+  let containingStart = -Infinity;
+  let past = -1;
+  let pastStart = -Infinity;
+  for (let i = 0; i < segments.length; i++) {
+    const start = Number(segments[i].start ?? segments[i].start_sec) || 0;
+    const endRaw = Number(segments[i].end ?? segments[i].end_sec);
+    const end = Number.isFinite(endRaw) && endRaw > start ? endRaw : start + 3;
+    if (time >= start - 0.05 && time < end + 0.15 && start >= containingStart) {
+      containing = i;
+      containingStart = start;
+    }
+    if (start <= time + 0.1 && start >= pastStart) {
+      past = i;
+      pastStart = start;
+    }
+  }
+  return containing >= 0 ? containing : past;
+}
+
+function getMobileShadowSegment() {
+  const segments = Array.isArray(state.currentSegments) ? state.currentSegments : [];
+  if (!segments.length) return null;
+  let now = 0;
+  try {
+    const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
+    now = transport && typeof transport.getCurrentTime === 'function'
+      ? Number(transport.getCurrentTime()) || 0
+      : (videoPlayer ? Number(videoPlayer.currentTime) || 0 : 0);
+  } catch (_) {
+    now = videoPlayer ? Number(videoPlayer.currentTime) || 0 : 0;
+  }
+  // 重放 / 跟读：优先播放头所在句（正在讲的这一句），再回退到字幕窗口位置
+  let index = resolveMobileSegmentIndexAtTime(now);
+  if (index < 0 && Number.isFinite(mobileSegmentPosition)) index = mobileSegmentPosition;
+  if (index < 0 && Number.isFinite(lastSegmentIndex) && lastSegmentIndex >= 0) index = lastSegmentIndex;
+  if (index < 0) index = 0;
+  index = Math.max(0, Math.min(segments.length - 1, index));
+  const segment = segments[index];
+  if (!segment) return null;
+  const start = Number(segment.start ?? segment.start_sec) || 0;
+  const endRaw = Number(segment.end ?? segment.end_sec);
+  const end = Number.isFinite(endRaw) && endRaw > start ? endRaw : start + 3;
+  return {
+    index,
+    text: String(segment.text || segment.en || '').trim(),
+    start,
+    end,
+  };
+}
+
+async function playSegmentBoundsForShadow(segment) {
+  if (!segment) return 'missing';
+  const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
+  if (!transport && !videoPlayer) return 'missing';
+
+  // Lock the mobile transcript on THIS sentence for the whole shadow take.
+  if (Number.isInteger(segment.index)) {
+    mobileSegmentPosition = segment.index;
+    try { renderMobileTranscriptWindow(segment.index); } catch (_) {}
+  }
+
+  return new Promise((resolve) => {
+    let settled = false;
+    let pollTimer = 0;
+    const finish = (result) => {
+      if (settled) return;
+      settled = true;
+      if (pollTimer) {
+        try { window.clearInterval(pollTimer); } catch (_) {}
+        pollTimer = 0;
+      }
+      state.segmentPlaybackCallback = null;
+      state.segmentPlaybackEnd = null;
+      try { pauseLearningVideoNow(); } catch (_) {}
+      try { syncMobilePlayButton(); } catch (_) {}
+      if (Number.isInteger(segment.index)) {
+        mobileSegmentPosition = segment.index;
+        try { renderMobileTranscriptWindow(segment.index); } catch (_) {}
+      }
+      resolve(result);
+    };
+
+    try { pauseLearningVideoNow(); } catch (_) {}
+
+    state.segmentPlaybackEnd = segment.end;
+    state.segmentPlaybackCallback = () => finish('ok');
+
+    try {
+      if (transport && typeof transport.seek === 'function') {
+        transport.seek(Math.max(0, segment.start + 0.01));
+        if (typeof transport.play === 'function') transport.play();
+        else safePlayVideo();
+      } else if (videoPlayer) {
+        videoPlayer.currentTime = Math.max(0, segment.start + 0.01);
+        safePlayVideo();
+      } else {
+        finish('missing');
+        return;
+      }
+    } catch (_) {
+      finish('missing');
+      return;
+    }
+
+    const started = Date.now();
+    const limit = Math.min(15000, Math.max(2500, (segment.end - segment.start) * 1000 + 1200));
+    pollTimer = window.setInterval(() => {
+      let now = 0;
+      try {
+        now = transport && typeof transport.getCurrentTime === 'function'
+          ? Number(transport.getCurrentTime()) || 0
+          : (videoPlayer ? Number(videoPlayer.currentTime) || 0 : 0);
+      } catch (_) {
+        now = videoPlayer ? Number(videoPlayer.currentTime) || 0 : 0;
+      }
+      if (now >= segment.end - 0.05) {
+        finish('ok');
+        return;
+      }
+      if (Date.now() - started > limit) finish('timeout');
+    }, 80);
+  });
+}
+
+let mobileShadowStop = null;
+let mobileShadowCancel = null;
+let mobileShadowAwaitHold = false;
+let mobileShadowHoldSegment = null;
+let mobileShadowHolding = false;
+let mobileShadowHoldWanted = false;
+let mobileShadowMicReady = false;
+let mobileShadowPressStartedAt = 0;
+let mobileShadowRecordStartedAt = 0;
+let mobileShadowIgnoreClickUntil = 0;
+let mobileShadowDocListenBound = false;
+let mobileShadowEndingHold = false;
+const MOBILE_SHADOW_MIN_RECORD_MS = 500;
+const MOBILE_PLAY_LONGPRESS_MS = 420;
+let mobilePlayLongPressTimer = 0;
+let mobilePlayLongPressArmed = false;
+let mobilePlaySuppressClick = false;
+let mobilePlayPointerDown = false;
+
+function syncMobilePlayHoldLabel(text) {
+  const label = document.getElementById('mobile-play-hold-label');
+  if (!label) return;
+  if (text) {
+    label.hidden = false;
+    label.setAttribute('aria-hidden', 'false');
+    label.textContent = text;
+  } else {
+    label.hidden = true;
+    label.setAttribute('aria-hidden', 'true');
+    label.textContent = '';
+  }
+}
+
+function syncMobileHoldButton(active, warming) {
+  if (!mobileHoldBtn) return;
+  mobileHoldBtn.classList.toggle('is-holding', !!active && !warming);
+  mobileHoldBtn.classList.toggle('is-mic-warming', !!warming);
+  let label = mobileHoldBtn.querySelector('[data-hold-label]') || mobileHoldBtn.querySelector('.mobile-hold-main');
+  if (!label) {
+    mobileHoldBtn.textContent = '';
+    label = document.createElement('span');
+    label.className = 'mobile-hold-main';
+    label.setAttribute('data-hold-label', '');
+    mobileHoldBtn.appendChild(label);
+  }
+  let text = 'Hold to record';
+  let aria = '按住跟读';
+  if (warming) {
+    text = 'Opening mic…';
+    aria = '开麦中';
+  } else if (active) {
+    text = 'Release to send';
+    aria = '松开结束跟读';
+  }
+  label.textContent = text;
+  mobileHoldBtn.setAttribute('aria-label', aria);
+}
+
+function syncMobileShadowButton() {
+  // Mic UI is the X-style Hold pill — keep legacy shadow btn inert.
+  if (mobileShadowBtn) {
+    mobileShadowBtn.classList.remove('is-holding', 'is-await-hold', 'is-mic-warming', 'is-busy');
+    mobileShadowBtn.setAttribute('aria-hidden', 'true');
+    mobileShadowBtn.tabIndex = -1;
+    mobileShadowBtn.disabled = true;
+  }
+  const micActive = mobileShadowHolding || mobileShadowAwaitHold || mobilePlayLongPressArmed;
+  if (mobileShadowHolding) {
+    syncMobileHoldButton(true, !mobileShadowMicReady);
+    syncMobilePlayHoldLabel(mobileShadowMicReady ? '松开结束' : '开麦中…');
+  } else if (mobileShadowAwaitHold || micActive) {
+    syncMobileHoldButton(true, true);
+    syncMobilePlayHoldLabel('按住说话');
+  } else {
+    syncMobileHoldButton(false, false);
+    syncMobilePlayHoldLabel('');
+  }
+  if (mobilePlayBtn) {
+    mobilePlayBtn.classList.remove('is-holding', 'is-mic-warming', 'is-await-hold');
+    try { syncMobilePlayButton(); } catch (_) {}
+  }
+}
+
+function unbindMobileShadowDocListen() {
+  if (!mobileShadowDocListenBound) return;
+  mobileShadowDocListenBound = false;
+  try {
+    document.removeEventListener('touchend', onMobileShadowDocRelease, true);
+    document.removeEventListener('touchcancel', onMobileShadowDocRelease, true);
+    document.removeEventListener('mouseup', onMobileShadowDocRelease, true);
+  } catch (_) {}
+}
+
+function bindMobileShadowDocListen() {
+  if (mobileShadowDocListenBound) return;
+  mobileShadowDocListenBound = true;
+  // WeChat-style: release anywhere finishes; don't end just because finger slid off the button.
+  document.addEventListener('touchend', onMobileShadowDocRelease, true);
+  document.addEventListener('touchcancel', onMobileShadowDocRelease, true);
+  document.addEventListener('mouseup', onMobileShadowDocRelease, true);
+}
+
+function onMobileShadowDocRelease(event) {
+  if (!mobileShadowHolding && !mobileShadowHoldWanted) return;
+  if (event && event.type === 'mouseup' && event.button != null && event.button !== 0) return;
+  endMobileShadowHoldRecord();
+}
+
+function resetMobileShadowUi() {
+  unbindMobileShadowDocListen();
+  mobileShadowBusy = false;
+  mobileShadowStop = null;
+  mobileShadowCancel = null;
+  mobileShadowAwaitHold = false;
+  mobileShadowHoldSegment = null;
+  mobileShadowHolding = false;
+  mobileShadowHoldWanted = false;
+  mobileShadowMicReady = false;
+  mobileShadowEndingHold = false;
+  mobileShadowPressStartedAt = 0;
+  mobileShadowRecordStartedAt = 0;
+  mobilePlayLongPressArmed = false;
+  clearMobilePlayLongPressTimer();
+  syncMobileShadowButton();
+}
+
+function clearMobilePlayLongPressTimer() {
+  if (mobilePlayLongPressTimer) {
+    clearTimeout(mobilePlayLongPressTimer);
+    mobilePlayLongPressTimer = 0;
+  }
+}
+
+function keepAwaitingHold(segment, hint) {
+  unbindMobileShadowDocListen();
+  mobileShadowBusy = true;
+  mobileShadowHolding = false;
+  mobileShadowHoldWanted = false;
+  mobileShadowMicReady = false;
+  mobileShadowEndingHold = false;
+  mobileShadowStop = null;
+  mobileShadowCancel = null;
+  mobileShadowRecordStartedAt = 0;
+  mobileShadowAwaitHold = true;
+  mobileShadowHoldSegment = segment || mobileShadowHoldSegment;
+  syncMobileShadowButton();
+  if (hint) setMobileSpeakHint(hint, { toast: true, kind: 'warn' });
+}
+
+async function finishMobileShadowCapture(captured) {
+  unbindMobileShadowDocListen();
+  mobileShadowHolding = false;
+  mobileShadowHoldWanted = false;
+  mobileShadowMicReady = false;
+  mobileShadowEndingHold = false;
+  mobileShadowStop = null;
+  mobileShadowCancel = null;
+  mobileShadowAwaitHold = false;
+  mobileShadowHoldSegment = null;
+  mobileShadowBusy = false;
+  mobileShadowRecordStartedAt = 0;
+  syncMobileShadowButton();
+  if (!captured || !captured.blob) {
+    setMobileSpeakHint('没录上，请再按住说一次', { toast: true, kind: 'warn' });
+    return;
+  }
+  const segmentIndex = Number.isFinite(state.lastRecordingSegmentIndex)
+    ? state.lastRecordingSegmentIndex
+    : mobileSegmentPosition;
+  rememberLastRecording(captured.blob, segmentIndex);
+  const previewOk = await playLastRecordingPreview();
+  const mic = window.LinglishShadowMic;
+  const wechat = mic && typeof mic.isWeChatBrowser === 'function' && mic.isWeChatBrowser();
+  setMobileSpeakHint(previewOk
+    ? '已预听你的跟读，可再点「听自己」'
+    : (wechat
+      ? '录音已保存。点「听自己」；仍无声就用 Safari 打开。'
+      : '录音已保存，点「听自己」听回放'), { toast: true, kind: previewOk ? 'success' : 'info' });
+}
+
+async function beginMobileShadowHoldRecord() {
+  if (mobileShadowHolding || !mobileShadowAwaitHold || !mobileShadowHoldSegment) return;
+  const mic = window.LinglishShadowMic;
+  const segment = mobileShadowHoldSegment;
+  if (!mic || typeof mic.recordShadow !== 'function' || typeof mic.acquireMic !== 'function') {
+    setMobileSpeakHint('跟读录音组件还没加载', { toast: true, kind: 'warn' });
+    return;
+  }
+
+  mobileShadowHolding = true;
+  mobileShadowHoldWanted = true;
+  mobileShadowMicReady = false;
+  mobileShadowEndingHold = false;
+  mobileShadowPressStartedAt = Date.now();
+  mobileShadowRecordStartedAt = 0;
+  bindMobileShadowDocListen();
+  syncMobileShadowButton();
+  setMobileSpeakHint('开麦中，请按住别松…', { toast: true });
+
+  try { pauseLearningVideoNow(); } catch (_) {}
+  mobileSegmentPosition = segment.index;
+  try { renderMobileTranscriptWindow(segment.index); } catch (_) {}
+
+  // High-sensitivity open: no noise gate, AGC on, Web Audio boost for quiet speech.
+  const holdConstraints = typeof mic.sensitiveConstraints === 'function'
+    ? mic.sensitiveConstraints()
+    : { audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: true }, video: false };
+  const holdGain = typeof mic.defaultBoostGain === 'function' ? mic.defaultBoostGain() : 4;
+
+  let stream = null;
+  try {
+    stream = await mic.acquireMic({ constraints: holdConstraints });
+    if (!mobileShadowHoldWanted) {
+      try { mic.stopTracks(stream); } catch (_) {}
+      keepAwaitingHold(segment, '开麦时松手了，请再按住说完再松');
+      return;
+    }
+    const captured = await mic.recordShadow({
+      stream,
+      releaseStream: true,
+      boost: true,
+      gain: holdGain,
+      maxGain: 9,
+      maxDurationMs: Math.max(8000, mic.recordingDurationMs(segment)),
+      minBytes: 8,
+      timeslice: 0,
+      onReady(handle) {
+        mobileShadowStop = handle && handle.stop;
+        mobileShadowCancel = handle && handle.cancel;
+        mobileShadowMicReady = true;
+        mobileShadowRecordStartedAt = Date.now();
+        syncMobileShadowButton();
+        if (!mobileShadowHoldWanted) {
+          // Finger already up — still keep a brief take if they held through warm-up.
+          const pressedMs = Date.now() - (mobileShadowPressStartedAt || 0);
+          try {
+            if (pressedMs >= MOBILE_SHADOW_MIN_RECORD_MS && typeof handle.stop === 'function') {
+              handle.stop();
+            } else if (typeof handle.cancel === 'function') {
+              handle.cancel();
+            } else if (typeof handle.stop === 'function') {
+              handle.stop();
+            }
+          } catch (_) {}
+          return;
+        }
+        setMobileSpeakHint('正在录音…说完再松开', { toast: true });
+        try {
+          if (window.LinglishAudioCues && typeof window.LinglishAudioCues.playMicReadyCue === 'function') {
+            window.LinglishAudioCues.playMicReadyCue();
+          }
+        } catch (_) {}
+      },
+    });
+    if (!captured || !captured.blob) {
+      keepAwaitingHold(segment, '没录上，请按住说完再松开');
+      return;
+    }
+    state.lastRecordingSegmentIndex = segment.index;
+    await finishMobileShadowCapture(captured);
+  } catch (error) {
+    try { if (stream) mic.stopTracks(stream); } catch (_) {}
+    if (!mobileShadowHoldWanted) {
+      keepAwaitingHold(segment, '没录上，请按住说完再松开');
+      return;
+    }
+    if (error && error.code === 'EMPTY_RECORDING') {
+      keepAwaitingHold(segment, '没录到声音，请靠近嘴再按住说一次');
+      return;
+    }
+    resetMobileShadowUi();
+    setMobileSpeakHint(typeof mic.errorHint === 'function'
+      ? mic.errorHint(error)
+      : '录音失败，请再按住试一次', { toast: true, kind: 'warn' });
+  }
+}
+
+function endMobileShadowHoldRecord() {
+  if (mobileShadowEndingHold) return;
+  if (!mobileShadowHolding && !mobileShadowHoldWanted) return;
+  mobileShadowEndingHold = true;
+  mobileShadowIgnoreClickUntil = Date.now() + 450;
+  const pressMs = Date.now() - (mobileShadowPressStartedAt || 0);
+  const recordMs = mobileShadowMicReady && mobileShadowRecordStartedAt
+    ? (Date.now() - mobileShadowRecordStartedAt)
+    : 0;
+
+  // Accidental flick before mic is ready.
+  if (!mobileShadowMicReady) {
+    mobileShadowHoldWanted = false;
+    if (typeof mobileShadowCancel === 'function') {
+      try { mobileShadowCancel(); } catch (_) {}
+    } else if (typeof mobileShadowStop === 'function') {
+      try { mobileShadowStop(); } catch (_) {}
+    }
+    keepAwaitingHold(
+      mobileShadowHoldSegment,
+      pressMs < 280 ? '请按住不放，说完再松手' : '开麦中请别松手，再按住试一次',
+    );
+    return;
+  }
+
+  // Mic is live — only reject very short actual recordings.
+  if (recordMs < MOBILE_SHADOW_MIN_RECORD_MS) {
+    mobileShadowHoldWanted = false;
+    if (typeof mobileShadowCancel === 'function') {
+      try { mobileShadowCancel(); } catch (_) {}
+    } else if (typeof mobileShadowStop === 'function') {
+      try { mobileShadowStop(); } catch (_) {}
+    }
+    keepAwaitingHold(mobileShadowHoldSegment, '说太短了，请按住把整句说完再松');
+    return;
+  }
+
+  mobileShadowHoldWanted = false;
+  setMobileSpeakHint('正在结束录音…', { toast: true });
+  if (typeof mobileShadowStop === 'function') {
+    try { mobileShadowStop(); } catch (_) {}
+  }
+}
+
+async function startMobileSentenceShadow() {
+  if (Date.now() < mobileShadowIgnoreClickUntil) return;
+  // Already waiting for WeChat-style hold — don't restart the whole flow.
+  if (mobileShadowAwaitHold || mobileShadowHolding) {
+    setMobileSpeakHint('请长按中间播放键说话，说完再松手', { toast: true });
+    return;
+  }
+  if (typeof mobileShadowStop === 'function') {
+    setMobileSpeakHint('正在结束录音…', { toast: true });
+    try { mobileShadowStop(); } catch (_) {}
+    return;
+  }
+  if (mobileShadowBusy) return;
+  const segment = getMobileShadowSegment();
+  if (!segment) {
+    setMobileSpeakHint(state.isLoadingTranscript ? '字幕加载中…' : '暂无字幕，无法跟读', { toast: true, kind: 'warn' });
+    return;
+  }
+  const mic = window.LinglishShadowMic;
+  if (!mic || typeof mic.recordShadow !== 'function' || typeof mic.acquireMic !== 'function') {
+    setMobileSpeakHint('跟读录音组件还没加载，请强制刷新后再试', { toast: true, kind: 'warn' });
+    return;
+  }
+
+  const support = typeof mic.recordingSupport === 'function' ? mic.recordingSupport() : { ok: true };
+  if (support && support.ok === false) {
+    setMobileSpeakHint(support.hint || '当前浏览器不能录音', { toast: true, kind: 'warn' });
+    return;
+  }
+
+  mobileShadowBusy = true;
+  mobileShadowAwaitHold = false;
+  mobileShadowHoldSegment = null;
+  syncMobilePlayHoldLabel('开麦中…');
+  if (mobilePlayBtn) {
+    mobilePlayBtn.classList.add('is-mic-warming');
+    mobilePlayBtn.textContent = '…';
+  }
+
+  // Warm mic permission on the first tap, then release before model audio.
+  try {
+    setMobileSpeakHint('请允许麦克风', { toast: true });
+    const warm = await mic.acquireMic();
+    try { mic.stopTracks(warm); } catch (_) {}
+  } catch (error) {
+    resetMobileShadowUi();
+    setMobileSpeakHint(typeof mic.errorHint === 'function'
+      ? mic.errorHint(error)
+      : '打不开麦克风，请换 Safari / Chrome 再试', { toast: true, kind: 'warn' });
+    return;
+  }
+
+  syncMobilePlayHoldLabel('听原句…');
+  setMobileSpeakHint('先听这一句…', { toast: true });
+  try {
+    await playSegmentBoundsForShadow(segment);
+  } catch (_) { /* still offer hold-to-talk */ }
+
+  try { pauseLearningVideoNow(); } catch (_) {}
+  mobileSegmentPosition = segment.index;
+  try { renderMobileTranscriptWindow(segment.index); } catch (_) {}
+
+  // WeChat voice-note style: long-press the play button to speak this sentence.
+  mobileShadowAwaitHold = true;
+  mobileShadowHoldSegment = segment;
+  syncMobileShadowButton();
+  setMobileSpeakHint('长按中间播放键说话，松手完成', { toast: true });
+}
 
 // 左侧边栏练习面板元素
 
@@ -2205,30 +3162,38 @@ let _mobileStylesInitialized = false;
 function renderMobileTranscriptWindow(position) {
   if (!mobileTranscriptList) return;
 
+  const focusedSizing = Boolean(
+    window.MobileReaderLayout &&
+    window.MobileReaderLayout.usesFocusedTranscriptSizing(document.body.className)
+  );
+
   // 首先确保移动端视图容器可见（必须在任何提前返回之前执行）
   if (!_mobileStylesInitialized) {
     const wrapper = mobileTranscriptList.parentElement;
     if (wrapper) {
       const transcriptView = wrapper.parentElement;
       if (transcriptView && transcriptView.classList.contains('mobile-transcript-view')) {
-        const focusedSizing =
-          window.MobileReaderLayout &&
-          window.MobileReaderLayout.usesFocusedTranscriptSizing(document.body.className);
         transcriptView.style.setProperty('display', 'flex', 'important');
         transcriptView.style.setProperty('flex-direction', 'column', 'important');
-        if (!focusedSizing) {
+        if (focusedSizing) {
+          // Let CSS size the cue box from sentence count; clear legacy forced heights.
+          transcriptView.style.removeProperty('min-height');
+          transcriptView.style.removeProperty('height');
+        } else {
           transcriptView.style.setProperty('height', 'calc((100vh - 70px) * 0.55)', 'important');
         }
         transcriptView.style.setProperty('overflow', 'hidden', 'important');
       }
       wrapper.style.display = 'flex';
       wrapper.style.flexDirection = 'row';
-      wrapper.style.flex = '1 1 0px';
+      wrapper.style.flex = focusedSizing ? '0 1 auto' : '1 1 0px';
       wrapper.style.minHeight = '0';
+      wrapper.style.height = focusedSizing ? 'auto' : '';
       wrapper.style.overflow = 'hidden';
     }
-    mobileTranscriptList.style.flex = '1 1 0px';
+    mobileTranscriptList.style.flex = focusedSizing ? '0 1 auto' : '1 1 0px';
     mobileTranscriptList.style.minHeight = '0';
+    mobileTranscriptList.style.height = focusedSizing ? 'auto' : '';
     mobileTranscriptList.style.overflowY = 'auto';
     _mobileStylesInitialized = true;
   }
@@ -2236,8 +3201,119 @@ function renderMobileTranscriptWindow(position) {
   const segments = Array.isArray(state.currentSegments) ? state.currentSegments : [];
   if (!segments.length) {
     // 检查是否正在加载字幕
-    const loadingText = state.isLoadingTranscript ? '字幕加载中...' : '暂无字幕';
-    mobileTranscriptList.innerHTML = `<li class="mobile-transcript-item empty">${loadingText}</li>`;
+    let loadingText = '暂无字幕';
+    let showRetry = false;
+    let showGenerate = false;
+    let showUpgrade = false;
+    const current = state.videos.find((item) => String(item.id) === String(state.selectedVideoId))
+      || (window.LinglishStudyMedia && String(window.LinglishStudyMedia.id) === String(state.selectedVideoId)
+        ? videoFromMediaSnapshot(window.LinglishStudyMedia)
+        : null);
+    if (state._podcastGenerating) {
+      loadingText = '正在生成字幕…通常需要几十秒';
+    } else if (state.isLoadingTranscript) {
+      loadingText = '字幕加载中…';
+    } else if (current && current.external_podcast) {
+      if (current._podcastSubtitleError) {
+        loadingText = String(current._podcastSubtitleError);
+        showGenerate = isPremiumMember();
+      } else if (isPremiumMember()) {
+        showGenerate = true;
+        loadingText = current.transcriptUrl
+          ? '这一集文稿还没拉下来，可重试或生成字幕'
+          : '这一集没有自带文稿。可生成字幕，或先听 Spotlight English（自带文稿）';
+      } else {
+        showUpgrade = true;
+        loadingText = current.transcriptUrl
+          ? '这一集有文稿但没拉下来，可重试'
+          : '这一集没有自带文稿；会员可生成字幕，也可先听 Spotlight English'
+        ;
+        if (current.transcriptUrl) showRetry = true;
+      }
+    } else if (current && current.external_youtube) {
+      showRetry = true;
+      loadingText = current._captionFetchFailed
+        ? '点读字幕拉取失败（视频里可能已开内置字幕）。网络需能访问 YouTube，或点下方重试。'
+        : '还没有点读字幕，可点重试拉取';
+    } else if (current && (current.status === 'processing')) {
+      loadingText = '字幕生成中，请稍后再打开';
+    }
+    const actions = [];
+    if (showGenerate) {
+      actions.push('<button type="button" class="mobile-caption-generate" style="font:inherit;padding:0.35rem 0.8rem;border-radius:999px;border:0;background:#0f766e;color:#fff;cursor:pointer;font-weight:700;">生成字幕</button>');
+      if (current && current.transcriptUrl) {
+        actions.push('<button type="button" class="mobile-caption-retry" style="font:inherit;padding:0.35rem 0.8rem;border-radius:999px;border:1px solid #cbd5e1;background:#fff;cursor:pointer;margin-left:0.4rem;">重试拉取</button>');
+      }
+      if (current && !current.transcriptUrl) {
+        actions.push('<button type="button" class="mobile-caption-spotlight" style="font:inherit;padding:0.35rem 0.8rem;border-radius:999px;border:1px solid #cbd5e1;background:#fff;cursor:pointer;margin-left:0.4rem;">去听有字幕播客</button>');
+      }
+    } else if (showUpgrade) {
+      actions.push('<button type="button" class="mobile-caption-upgrade" style="font:inherit;padding:0.35rem 0.8rem;border-radius:999px;border:0;background:#0f766e;color:#fff;cursor:pointer;font-weight:700;">了解会员字幕</button>');
+      if (showRetry) {
+        actions.push('<button type="button" class="mobile-caption-retry" style="font:inherit;padding:0.35rem 0.8rem;border-radius:999px;border:1px solid #cbd5e1;background:#fff;cursor:pointer;margin-left:0.4rem;">重试拉取字幕</button>');
+      }
+    } else if (showRetry) {
+      actions.push('<button type="button" class="mobile-caption-retry" style="font:inherit;padding:0.35rem 0.8rem;border-radius:999px;border:1px solid #cbd5e1;background:#fff;cursor:pointer;">重试拉取字幕</button>');
+    }
+    mobileTranscriptList.innerHTML = `<li class="mobile-transcript-item empty">${loadingText}${
+      actions.length ? `<div style="margin-top:0.6rem;">${actions.join('')}</div>` : ''
+    }</li>`;
+    const retryBtn = mobileTranscriptList.querySelector('.mobile-caption-retry');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const target = state.videos.find((item) => String(item.id) === String(state.selectedVideoId));
+        if (target && target.external_podcast) {
+          ensurePodcastSubtitles(target, { auto: true, force: true });
+        } else if (target) {
+          selectVideo(target);
+        }
+      });
+    }
+    const generateBtn = mobileTranscriptList.querySelector('.mobile-caption-generate');
+    if (generateBtn) {
+      generateBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const target = state.videos.find((item) => String(item.id) === String(state.selectedVideoId));
+        if (!target) return;
+        const ok = await ensurePodcastSubtitles(target, { auto: true, force: true });
+        if (ok) showToast('字幕已就绪，可以跟读了', 'info');
+      });
+    }
+    const spotlightBtn = mobileTranscriptList.querySelector('.mobile-caption-spotlight');
+    if (spotlightBtn) {
+      spotlightBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        try {
+          if (window.LinglishMobileMediaLibrary && typeof window.LinglishMobileMediaLibrary.setView === 'function') {
+            window.LinglishMobileMediaLibrary.setView('podcasts');
+          }
+          const openBtn = document.getElementById('open-video-library')
+            || document.querySelector('[data-action="open-library"]')
+            || Array.from(document.querySelectorAll('button')).find((b) => /视频库/.test(b.textContent || ''));
+          if (openBtn) openBtn.click();
+          setTimeout(() => {
+            const card = Array.from(document.querySelectorAll('button, .vb-card, [role="button"]'))
+              .find((el) => /Spotlight English/i.test(el.getAttribute('aria-label') || el.textContent || ''));
+            if (card) card.click();
+            else showToast('请打开视频库 → 播客 → Spotlight English', 'info');
+          }, 400);
+        } catch (_) {
+          showToast('请打开视频库 → 播客 → Spotlight English（有文稿字幕）', 'info');
+        }
+      });
+    }
+    const upgradeBtn = mobileTranscriptList.querySelector('.mobile-caption-upgrade');
+    if (upgradeBtn) {
+      upgradeBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        window.location.href = './pricing.html';
+      });
+    }
     updateMobileNavButtons(null);
     lastMobileRenderPosition = -1;
     return;
@@ -2256,12 +3332,23 @@ function renderMobileTranscriptWindow(position) {
   }
   lastMobileRenderPosition = activeIndex;
 
-  // 窗口大小7，减少频繁重新渲染
-  const windowSize = 7;
-  let start = Math.max(0, activeIndex - Math.floor(windowSize / 2));
-  let end = Math.min(segments.length, start + windowSize);
-  if (end - start < windowSize) {
-    start = Math.max(0, end - windowSize);
+  // Focused mobile: keep exactly two cue rows (current + next).
+  // Legacy mobile keeps a wider window for list browsing.
+  const windowSize = focusedSizing ? 2 : 7;
+  let start;
+  let end;
+  if (focusedSizing) {
+    start = activeIndex;
+    end = Math.min(segments.length, start + windowSize);
+    if (end - start < windowSize) {
+      start = Math.max(0, end - windowSize);
+    }
+  } else {
+    start = Math.max(0, activeIndex - Math.floor(windowSize / 2));
+    end = Math.min(segments.length, start + windowSize);
+    if (end - start < windowSize) {
+      start = Math.max(0, end - windowSize);
+    }
   }
 
   const items = [];
@@ -2282,11 +3369,22 @@ function renderMobileTranscriptWindow(position) {
       content = escapeHtml((seg && seg.text) || '');
     }
 
-    // 获取中文翻译
-    const translation = (seg && (seg.translation || seg.cn || seg.zh || seg.text_cn || '')).trim();
-    const translationHtml = state.showBilingual && translation
-      ? `<span class="mobile-segment-translation">${escapeHtml(translation)}</span>`
-      : '';
+    // 双语 = 英文字幕 + 中文翻译（同屏中英）
+    const translation = mobileCueTranslationOf(seg);
+    let translationHtml = '';
+    if (state.showBilingual) {
+      const enKey = bilingualCacheKey((seg && seg.text) || '');
+      const failed = bilingualLoginBlocked || bilingualTranslateFailed.has(enKey);
+      const waiting = !translation && !failed && (i === activeIndex || i === activeIndex + 1);
+      const label = translation
+        || (waiting ? '翻译中…' : '')
+        || (failed && (i === activeIndex || i === activeIndex + 1)
+          ? (bilingualLoginBlocked ? '登录后可看中文翻译' : '暂无翻译')
+          : '');
+      if (label) {
+        translationHtml = `<span class="mobile-segment-translation${waiting && !translation ? ' is-pending' : ''}${failed && !translation ? ' is-failed' : ''}">${escapeHtml(label)}</span>`;
+      }
+    }
 
     items.push(`<li class="mobile-transcript-item${i === activeIndex ? ' active' : ''}" data-index="${i}" ${i !== activeIndex ? `data-text="${escapeHtml((seg && seg.text) || '')}"` : ''}>
               <span class="mobile-segment-time">${timeLabel}</span>
@@ -2303,12 +3401,146 @@ function renderMobileTranscriptWindow(position) {
   if (activeItem) {
     requestAnimationFrame(() => ensureVisibleIn(mobileTranscriptList, activeItem));
   }
+
+  if (state.showBilingual) {
+    ensureMobileBilingualTranslations([activeIndex, activeIndex + 1]);
+  }
+}
+
+const bilingualTranslateCache = new Map(); // key -> zh
+const bilingualTranslateInflight = new Map();
+const bilingualTranslateFailed = new Set();
+let bilingualLoginBlocked = false;
+
+function syncMobileBilingualClass() {
+  try {
+    document.body.classList.toggle('vrf-bilingual', Boolean(state.showBilingual));
+  } catch (_) { }
+}
+
+function translationLooksStaleForEnglish(english, chinese) {
+  const en = String(english || '').trim();
+  const zh = String(chinese || '').trim();
+  if (!zh) return true;
+  const enWords = (en.match(/\b[\w’'-]+\b/g) || []).length;
+  const zhChars = (zh.match(/[\u4e00-\u9fa5]/g) || []).join('').length;
+  if (enWords >= 5 && zhChars <= 4) return true;
+  if (enWords >= 8 && zhChars <= 6) return true;
+  return false;
+}
+
+function mobileCueTranslationOf(seg) {
+  const zh = String(seg && (seg.translation || seg.cn || seg.zh || seg.text_cn) || '').trim();
+  if (!zh) return '';
+  if (translationLooksStaleForEnglish(seg && seg.text, zh)) return '';
+  return zh;
+}
+
+function bilingualCacheKey(text) {
+  return String(state.selectedVideoId || '') + '::' + String(text || '').trim().toLowerCase();
+}
+
+function applyCueTranslation(index, zh) {
+  const text = String(zh || '').trim();
+  if (!text || !Array.isArray(state.currentSegments) || !state.currentSegments[index]) return;
+  state.currentSegments[index].translation = text;
+  state.currentSegments[index].cn = text;
+  // Do not write display-index translations back into raw transcript_segments —
+  // those indices diverge after sentence split/merge and poison later renders.
+}
+
+async function fetchSentenceChinese(text) {
+  const source = String(text || '').trim();
+  if (!source) return '';
+  const key = bilingualCacheKey(source);
+  if (bilingualTranslateCache.has(key)) return bilingualTranslateCache.get(key) || '';
+  if (bilingualTranslateInflight.has(key)) return bilingualTranslateInflight.get(key);
+
+  const job = (async () => {
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const res = await fetch(`${API_BASE}/dictionary/translate-text`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ text: source }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.status === 401 || res.status === 403) {
+      throw new Error('login-required');
+    }
+    const zh = data && data.success && data.translation ? String(data.translation).trim() : '';
+    if (zh && /[\u4e00-\u9fa5]/.test(zh)) {
+      bilingualTranslateCache.set(key, zh);
+      bilingualTranslateFailed.delete(key);
+      return zh;
+    }
+    bilingualTranslateFailed.add(key);
+    return '';
+  })();
+
+  bilingualTranslateInflight.set(key, job);
+  try {
+    return await job;
+  } finally {
+    bilingualTranslateInflight.delete(key);
+  }
+}
+
+let bilingualEnsureToken = 0;
+async function ensureMobileBilingualTranslations(indices) {
+  if (!state.showBilingual || !isMobileLayout()) return;
+  const segments = Array.isArray(state.currentSegments) ? state.currentSegments : [];
+  if (!segments.length) return;
+  const tokenAtStart = ++bilingualEnsureToken;
+  const targets = (Array.isArray(indices) ? indices : [])
+    .map((n) => Number(n))
+    .filter((n) => Number.isFinite(n) && n >= 0 && n < segments.length);
+
+  let updated = false;
+  let loginRequired = false;
+  await Promise.all(targets.map(async (index) => {
+    const seg = segments[index];
+    if (!seg || mobileCueTranslationOf(seg)) return;
+    const en = String(seg.text || '').trim();
+    if (!en) return;
+    const key = bilingualCacheKey(en);
+    if (bilingualTranslateFailed.has(key) && !bilingualTranslateCache.has(key)) return;
+    try {
+      const zh = await fetchSentenceChinese(en);
+      if (tokenAtStart !== bilingualEnsureToken) return;
+      if (!zh) {
+        updated = true; // clear 翻译中…
+        return;
+      }
+      applyCueTranslation(index, zh);
+      updated = true;
+    } catch (err) {
+      if (err && err.message === 'login-required') loginRequired = true;
+      else bilingualTranslateFailed.add(key);
+      updated = true;
+    }
+  }));
+
+  if (tokenAtStart !== bilingualEnsureToken) return;
+  if (loginRequired) {
+    bilingualLoginBlocked = true;
+    if (typeof setMobileSpeakHint === 'function') {
+      setMobileSpeakHint('登录后可显示中英双语字幕');
+    }
+  }
+  if (updated) {
+    lastMobileRenderPosition = -1; // force redraw with Chinese lines
+    renderMobileTranscriptWindow(mobileSegmentPosition);
+  }
 }
 
 function navigateMobileSegment(direction) {
   if (!isMobileLayout()) return;
   const segments = state.currentSegments || [];
-  if (!Array.isArray(segments) || !segments.length) return;
+  if (!Array.isArray(segments) || !segments.length) {
+    setMobileSpeakHint('暂无字幕，无法切句');
+    return;
+  }
   let targetPos;
   if (Number.isFinite(mobileSegmentPosition)) {
     targetPos = mobileSegmentPosition + direction;
@@ -2318,21 +3550,35 @@ function navigateMobileSegment(direction) {
   targetPos = Math.max(0, Math.min(segments.length - 1, targetPos));
   const segment = segments[targetPos];
   if (!segment) return;
-  const startTime = Number(segment.start);
+  const startTime = Number(segment.start ?? segment.start_sec);
   if (Number.isFinite(startTime)) {
-    // 支持YouTube播放器和HTML5播放器
-    if (youtubePlayer && youtubePlayer.player) {
-      youtubePlayer.seekTo(Math.max(0, startTime));
-      youtubePlayer.play();
-    } else if (videoPlayer) {
-      videoPlayer.currentTime = Math.max(0, startTime);
-      safePlayVideo();
+    const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
+    try {
+      if (transport && typeof transport.seek === 'function') {
+        transport.seek(Math.max(0, startTime + 0.01));
+        if (typeof transport.play === 'function') transport.play();
+        else safePlayVideo();
+      } else if (youtubePlayer && typeof youtubePlayer.seekTo === 'function') {
+        youtubePlayer.seekTo(Math.max(0, startTime), true);
+        try {
+          if (typeof youtubePlayer.playVideo === 'function') youtubePlayer.playVideo();
+          else if (typeof youtubePlayer.play === 'function') youtubePlayer.play();
+        } catch (_) {}
+      } else if (videoPlayer) {
+        videoPlayer.currentTime = Math.max(0, startTime);
+        safePlayVideo();
+      }
+    } catch (_) {
+      if (videoPlayer) {
+        try { videoPlayer.currentTime = Math.max(0, startTime); } catch (__) {}
+        safePlayVideo();
+      }
     }
   }
   mobileSegmentPosition = targetPos;
   updateMobileNavButtons(mobileSegmentPosition);
-  // 更新字幕显示
   renderMobileTranscriptWindow(mobileSegmentPosition);
+  syncMobilePlayButton();
 }
 
 // 返回视频按钮 - 隐藏右侧边栏
@@ -2707,7 +3953,7 @@ function renderVideoList() {
 
   videoListEl.innerHTML = filteredVideos
     .map(video => {
-      const isActive = video.id === state.selectedVideoId;
+      const isActive = String(video.id) === String(state.selectedVideoId);
       const statusValue = video.status || 'processing';
       const statusAttr = video.failure_reason
         ? ` title="${escapeHtml(video.failure_reason)}"`
@@ -2837,6 +4083,106 @@ function renderVideoList() {
   });
 }
 
+function coerceSegmentList(raw) {
+  let segs = raw;
+  if (typeof segs === 'string') {
+    const trimmed = segs.trim();
+    if (!trimmed || trimmed === 'null' || trimmed === 'undefined') return [];
+    try { segs = JSON.parse(trimmed); } catch (_) { return []; }
+  }
+  if (Array.isArray(segs)) return segs.filter(Boolean);
+  if (segs && Array.isArray(segs.segments)) return segs.segments.filter(Boolean);
+  if (segs && typeof segs === 'object') {
+    const vals = Object.keys(segs)
+      .filter((k) => /^\d+$/.test(k))
+      .sort((a, b) => Number(a) - Number(b))
+      .map((k) => segs[k])
+      .filter((v) => v && typeof v === 'object');
+    if (vals.length) return vals;
+  }
+  return [];
+}
+
+function normalizeCaptionSegments(raw) {
+  const list = coerceSegmentList(raw);
+  if (!list.length) return [];
+  try {
+    if (window.LinglishSentenceSegments && typeof window.LinglishSentenceSegments.toDisplayedSentences === 'function') {
+      // Always re-run: older cached cues can carry source_indices yet still be
+      // paragraph-long under the player. The splitter is idempotent on short lines.
+      const next = window.LinglishSentenceSegments.toDisplayedSentences(list);
+      if (Array.isArray(next) && next.length) return next;
+    }
+  } catch (err) {
+    console.warn('[Transcript] sentence normalize failed, using raw segments:', err);
+  }
+  return list.map((seg, index) => ({
+    ...(seg || {}),
+    index,
+    source_indices: Array.isArray(seg && seg.source_indices) ? seg.source_indices : [index],
+  }));
+}
+
+function clearTranscriptCues() {
+  state.rawSegments = [];
+  state.currentSegments = [];
+}
+
+// Raw timed cues stay immutable for the sync clock; display cards are derived.
+function applyTranscriptCues(rawCues, video) {
+  const raw = coerceSegmentList(rawCues).map((seg, index) => ({
+    ...(seg || {}),
+    index,
+    source_indices: [index],
+  }));
+  const display = normalizeCaptionSegments(raw);
+  state.rawSegments = raw;
+  state.currentSegments = Array.isArray(display) && display.length ? display : raw;
+  if (video) {
+    // Persist RAW cues only — never overwrite with display rewrite.
+    video.transcript_segments = raw;
+  }
+  return state.currentSegments;
+}
+
+function currentSegmentIndexByTime(t) {
+  const display = state.currentSegments || [];
+  if (!display.length) return -1;
+  const raw = state.rawSegments || [];
+  const api = window.LinglishSentenceSegments;
+  if (api && typeof api.displayIndexForTime === 'function' && raw.length) {
+    try { return api.displayIndexForTime(display, raw, t, 0.1); } catch (_) {}
+  }
+  if (api && typeof api.findIndexByTime === 'function') {
+    try { return api.findIndexByTime(display, t, 0.1); } catch (_) {}
+  }
+  const tolerance = 0.1;
+  let best = -1;
+  let bestDist = Infinity;
+  for (let i = 0; i < display.length; i += 1) {
+    const start = Number(display[i].start ?? display[i].start_sec ?? 0) || 0;
+    const endRaw = Number(display[i].end ?? display[i].end_sec);
+    const end = Number.isFinite(endRaw) ? endRaw : start + 5;
+    if (t >= start - tolerance && t < end + tolerance) {
+      const dist = Math.abs(t - start);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
+    }
+  }
+  if (best >= 0) return best;
+  for (let i = 0; i < display.length; i += 1) {
+    const start = Number(display[i].start ?? display[i].start_sec ?? 0) || 0;
+    const diff = t - start;
+    if (diff >= -tolerance && diff < bestDist && diff < 3) {
+      bestDist = diff;
+      best = i;
+    }
+  }
+  return best;
+}
+
 function renderTranscript(video) {
   // 清除字幕HTML缓存，准备渲染新视频或重新渲染
   state.segmentHtmlCache.clear();
@@ -2844,28 +4190,28 @@ function renderTranscript(video) {
   if (!video) {
     transcriptContent.innerHTML = '<div class="empty-state">Select a video to view its transcript.</div>';
     transcriptLanguage.textContent = '';
-    state.currentSegments = [];
+    clearTranscriptCues();
     return;
   }
 
   if (video.status === 'processing') {
     transcriptContent.innerHTML = '<div class="empty-state">Transcription in progress. Please refresh in a moment.</div>';
     transcriptLanguage.textContent = '';
-    state.currentSegments = [];
+    clearTranscriptCues();
     return;
   }
 
   if (video.status === 'failed') {
     transcriptContent.innerHTML = `<div class="empty-state" style="color:#d32f2f;">${escapeHtml(video.failure_reason || 'Transcription failed. Please re-upload the video later.')}</div>`;
     transcriptLanguage.textContent = '';
-    state.currentSegments = [];
+    clearTranscriptCues();
     return;
   }
 
   if (video.status === 'skipped') {
     transcriptContent.innerHTML = `<div class="empty-state">${escapeHtml(video.failure_reason || 'Transcription skipped.')}</div>`;
     transcriptLanguage.textContent = '';
-    state.currentSegments = [];
+    clearTranscriptCues();
     return;
   }
 
@@ -2882,23 +4228,20 @@ function renderTranscript(video) {
       () => {
         if (video._waveformSegmentationPromise !== refinementPromise) return;
         delete video._waveformSegmentationPromise;
-        if (state.selectedVideoId === video.id) renderTranscript(video);
+        if (String(state.selectedVideoId) === String(video.id)) renderTranscript(video);
       },
       (error) => {
         if (video._waveformSegmentationPromise !== refinementPromise) return;
         delete video._waveformSegmentationPromise;
         console.warn('Unable to refine transcript segments:', error);
-        if (state.selectedVideoId === video.id) renderTranscript(video);
+        if (String(state.selectedVideoId) === String(video.id)) renderTranscript(video);
       },
     );
   }
   const transcriptRefinementPending = Boolean(video._waveformSegmentationPromise);
 
-  const rawSegments = Array.isArray(video.transcript_segments) ? video.transcript_segments : [];
-  const segments = firstLessonSession.isActive() && window.LinglishSentenceSegments?.toDisplayedSentences
-    ? window.LinglishSentenceSegments.toDisplayedSentences(rawSegments)
-    : rawSegments;
-  state.currentSegments = segments;
+  const rawSegments = coerceSegmentList(video.transcript_segments);
+  const segments = applyTranscriptCues(rawSegments, video);
   if (window && window.LinglishCoachingDock && typeof window.LinglishCoachingDock.sync === 'function') {
     window.LinglishCoachingDock.sync({
       segments: state.currentSegments,
@@ -2908,25 +4251,40 @@ function renderTranscript(video) {
     });
   }
 
-  if (segments.length === 0) {
+  if (!segments.length) {
     // 如果正在加载，显示加载状态
     const loadingMsg = state.isLoadingTranscript ? 'Loading transcript...' : 'Transcript unavailable.';
     transcriptContent.innerHTML = `<div class="empty-state">${loadingMsg}</div>`;
-    if (video.id && video.status === 'ready' && !state.transcriptFetchRequested.has(video.id)) {
+    if (isMobileLayout()) {
+      renderMobileTranscriptWindow(null);
+    }
+    const canFetchTranscript = video.id && /^\d+$/.test(String(video.id))
+      && (video.status === 'ready' || video.status === 'processing' || video.status === 'completed' || !video.status);
+    if (canFetchTranscript && !state.transcriptFetchRequested.has(video.id)) {
       state.transcriptFetchRequested.add(video.id);
       state.isLoadingTranscript = true;
+      if (isMobileLayout()) renderMobileTranscriptWindow(null);
       fetch(`${API_BASE}/video-resources/${video.id}/transcript`)
         .then(res => res.ok ? res.json() : null)
         .then(data => {
           state.isLoadingTranscript = false;
+          if (String(state.selectedVideoId) !== String(video.id)) return;
           const fetched = data && Array.isArray(data.segments) ? data.segments : [];
-          if (fetched.length) {
-            video.transcript_segments = fetched;
+          // Don't wipe a usable in-memory transcript with an empty/failed fetch.
+          if (!fetched.length && Array.isArray(video.transcript_segments) && video.transcript_segments.length) {
             renderTranscript(video);
+            return;
           }
+          video.transcript_segments = fetched;
+          const idx = state.videos.findIndex((item) => String(item.id) === String(video.id));
+          if (idx >= 0) state.videos[idx] = Object.assign({}, state.videos[idx], { transcript_segments: fetched });
+          renderTranscript(video);
         })
         .catch(() => {
           state.isLoadingTranscript = false;
+          if (String(state.selectedVideoId) === String(video.id)) {
+            renderTranscript(video);
+          }
         });
     }
   } else if (isMobileLayout()) {
@@ -2985,10 +4343,20 @@ function renderTranscript(video) {
   }
 }
 
-// 安全播放视频的辅助函数（处理移动端播放限制）
+// 安全播放视频的辅助函数（处理移动端播放限制；含 YouTube iframe）
 async function safePlayVideo() {
   try {
+    const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
+    const wrapper = document.getElementById('youtube-player-wrapper');
+    const usingYouTube = wrapper && wrapper.style.display !== 'none' && youtubePlayer;
+    if (usingYouTube && transport && typeof transport.play === 'function') {
+      transport.play();
+      syncMobilePlayButton();
+      return true;
+    }
+    if (!videoPlayer) return false;
     await videoPlayer.play();
+    syncMobilePlayButton();
     return true;
   } catch (err) {
     console.warn('Video play failed:', err);
@@ -2996,6 +4364,7 @@ async function safePlayVideo() {
     if (err.name !== 'NotAllowedError') {
       console.error('Video playback error:', err);
     }
+    syncMobilePlayButton();
     return false;
   }
 }
@@ -3184,22 +4553,425 @@ async function saveWordsInBackground(words, videoId, segments) {
 
 let videoSelectionGeneration = 0;
 
-async function selectVideo(id) {
+const POD_CUES_STORE_KEY = 'linglish_pod_cues_v1';
+
+function isPremiumMember() {
+  const user = state.user;
+  if (!user) {
+    try {
+      const type = String(localStorage.getItem('membership_type') || 'free').toLowerCase();
+      return type === 'vip' || type === 'svip' || type === 'family' || type === 'admin' || type === 'pro' || type === 'premium';
+    } catch (_) {
+      return false;
+    }
+  }
+  if (user.is_admin || user.role === 'admin') return true;
+  const type = String(user.membership_type || 'free').toLowerCase();
+  if (type === 'vip' || type === 'svip' || type === 'family' || type === 'admin' || type === 'pro' || type === 'premium') {
+    return true;
+  }
+  try {
+    if (window.LinglishEntitlements && typeof window.LinglishEntitlements.hasActivePaidEntitlement === 'function') {
+      return window.LinglishEntitlements.hasActivePaidEntitlement(user);
+    }
+  } catch (_) {}
+  return false;
+}
+
+function readPodCueCache(id) {
+  try {
+    const all = JSON.parse(localStorage.getItem(POD_CUES_STORE_KEY) || '{}');
+    const row = all && all[String(id || '')];
+    return row && Array.isArray(row.cues) ? row.cues : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function writePodCueCache(id, cues) {
+  if (!id || !Array.isArray(cues) || !cues.length) return;
+  try {
+    const all = JSON.parse(localStorage.getItem(POD_CUES_STORE_KEY) || '{}');
+    all[String(id)] = { cues, savedAt: Date.now() };
+    const keys = Object.keys(all);
+    if (keys.length > 40) {
+      keys.sort((a, b) => (all[a].savedAt || 0) - (all[b].savedAt || 0))
+        .slice(0, keys.length - 40)
+        .forEach((key) => { delete all[key]; });
+    }
+    localStorage.setItem(POD_CUES_STORE_KEY, JSON.stringify(all));
+  } catch (_) {}
+}
+
+function normalizePodcastCues(raw) {
+  let cues = (Array.isArray(raw) ? raw : []).map((cue, index) => ({
+    index,
+    text: cue.text,
+    start: cue.start,
+    end: cue.end,
+  })).filter((cue) => String(cue.text || '').trim());
+  if (window.LinglishSentenceSegments && typeof window.LinglishSentenceSegments.toDisplayedSentences === 'function') {
+    cues = window.LinglishSentenceSegments.toDisplayedSentences(cues);
+  } else if (window.LinglishSentenceSegments && typeof window.LinglishSentenceSegments.toCompleteSentences === 'function') {
+    cues = window.LinglishSentenceSegments.toCompleteSentences(cues);
+  }
+  return cues;
+}
+
+function mediaAuthToken() {
+  try {
+    if (window.AuthManager && typeof window.AuthManager.getToken === 'function') {
+      const t = window.AuthManager.getToken();
+      if (t) return t;
+    }
+  } catch (_) {}
+  return token
+    || localStorage.getItem('linglish_token')
+    || sessionStorage.getItem('linglish_token')
+    || localStorage.getItem('authToken')
+    || '';
+}
+
+async function postMediaJson(path, body) {
+  const auth = mediaAuthToken();
+  const res = await fetch(`${API_BASE}/media/${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(auth ? { Authorization: 'Bearer ' + auth } : {}),
+    },
+    body: JSON.stringify(body || {}),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.success === false) throw new Error(data.error || '请求失败');
+  return data;
+}
+
+function fetchYouTubeCaptionsForVideo(target) {
+  if (!target || !target.youtube_video_id) return Promise.resolve([]);
+  const controller = typeof AbortController === 'function' ? new AbortController() : null;
+  const timer = controller
+    ? setTimeout(() => {
+      try { controller.abort(); } catch (_) {}
+    }, 35000)
+    : null;
+  return fetch(`${API_BASE}/youtube/transcript`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(mediaAuthToken() ? { Authorization: 'Bearer ' + mediaAuthToken() } : {}),
+    },
+    body: JSON.stringify({
+      url: `https://www.youtube.com/watch?v=${target.youtube_video_id}`,
+      language: 'en',
+    }),
+    ...(controller ? { signal: controller.signal } : {}),
+  })
+    .then((res) => res.json().then((data) => ({ ok: res.ok, data })).catch(() => ({ ok: false, data: {} })))
+    .then(({ ok, data }) => {
+      if (!ok || data.success === false) return [];
+      if (Array.isArray(data.segments) && data.segments.length) return data.segments;
+      return [];
+    })
+    .catch((err) => {
+      if (err && (err.name === 'AbortError' || /aborted/i.test(String(err.message || '')))) {
+        console.warn('[YouTube] Caption fetch timed out');
+      }
+      return [];
+    })
+    .finally(() => {
+      if (timer) clearTimeout(timer);
+    });
+}
+
+async function uploadPodcastAudioForTranscript(video) {
+  const audioUrl = video && video.audioUrl;
+  if (!audioUrl) throw new Error('这一集没有可识别的音频');
+  const audioRes = await fetch(audioUrl);
+  if (!audioRes.ok) throw new Error('音频下载失败，请稍后重试');
+  const buf = await audioRes.arrayBuffer();
+  if (!buf || !buf.byteLength) throw new Error('音频文件是空的');
+  if (buf.byteLength > 40 * 1024 * 1024) throw new Error('这一集音频太大，暂时无法生成字幕');
+  const extMatch = String(audioUrl).match(/\.(mp3|m4a|wav|ogg)(?:$|\?)/i);
+  const ext = extMatch ? `.${extMatch[1].toLowerCase()}` : '.mp3';
+  const auth = mediaAuthToken();
+  const headers = {
+    'Content-Type': 'application/octet-stream',
+    'X-Audio-Ext': ext,
+    'X-Audio-Language': video.language || 'en',
+  };
+  if (auth) headers.Authorization = `Bearer ${auth}`;
+  const res = await fetch(`${API_BASE}/media/transcribe`, {
+    method: 'POST',
+    headers,
+    body: buf,
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok || data.success === false) throw new Error(data.error || '生成字幕失败');
+  return data;
+}
+
+async function generatePodcastSubtitles(video) {
+  if (!video || !video.external_podcast) {
+    throw new Error('这一集没有可识别的音频');
+  }
+  const cached = readPodCueCache(video.id);
+  if (cached && cached.length) return normalizePodcastCues(cached);
+  let data;
+  let lastErr;
+  try {
+    data = await postMediaJson('resolve-cues', {
+      transcriptUrl: video.transcriptUrl || '',
+      audioUrl: video.audioUrl || '',
+      title: video.title || video.original_filename || '',
+      youtubeVideoId: video.youtube_video_id || '',
+      language: video.language || 'en',
+    });
+  } catch (resolveErr) {
+    lastErr = resolveErr;
+    if (video.audioUrl) {
+      try {
+        data = await postMediaJson('transcribe', {
+          audioUrl: video.audioUrl,
+          title: video.title || '',
+          language: video.language || 'en',
+        });
+      } catch (urlErr) {
+        lastErr = urlErr;
+        try {
+          data = await uploadPodcastAudioForTranscript(video);
+        } catch (uploadErr) {
+          throw lastErr || uploadErr;
+        }
+      }
+    } else {
+      throw lastErr;
+    }
+  }
+  const cues = normalizePodcastCues(data.cues || []);
+  if (!cues.length) throw new Error('生成字幕失败，没有识别到内容');
+  writePodCueCache(video.id, cues);
+  return cues;
+}
+
+async function ensureAnyMediaSubtitles(video, options = {}) {
+  if (!video) return false;
+  if (Array.isArray(video.transcript_segments) && video.transcript_segments.length) return true;
+  if (video.external_podcast) {
+    return ensurePodcastSubtitles(video, options);
+  }
+  if (video.youtube_video_id || video.external_youtube) {
+    state.isLoadingTranscript = true;
+    state._podcastGenerating = true;
+    renderTranscript(video);
+    try {
+      let segments = [];
+      try {
+        segments = await fetchYouTubeCaptionsForVideo(video);
+      } catch (_) {}
+      if (!segments.length) {
+        const data = await postMediaJson('resolve-cues', {
+          youtubeVideoId: video.youtube_video_id,
+          title: video.title || video.original_filename || '',
+          language: video.language || 'en',
+          allowAudioStt: true,
+        });
+        segments = normalizePodcastCues(data.cues || []);
+      }
+      if (String(state.selectedVideoId) !== String(video.id)) return false;
+      // Store RAW cues; display cards are derived in renderTranscript/applyTranscriptCues.
+      video.transcript_segments = coerceSegmentList(segments);
+      video._captionFetchFailed = !video.transcript_segments.length;
+      video._podcastSubtitleError = segments.length ? '' : '暂时拿不到字幕';
+      const idx = state.videos.findIndex((item) => String(item.id) === String(video.id));
+      if (idx >= 0) state.videos[idx] = video;
+      return segments.length > 0;
+    } catch (err) {
+      video._captionFetchFailed = true;
+      video._podcastSubtitleError = (err && err.message) || '字幕加载失败';
+      return false;
+    } finally {
+      state.isLoadingTranscript = false;
+      state._podcastGenerating = false;
+      if (String(state.selectedVideoId) === String(video.id)) {
+        renderTranscript(video);
+        if (Array.isArray(video.transcript_segments) && video.transcript_segments.length && isMobileLayout()) {
+          mobileSegmentPosition = 0;
+          renderMobileTranscriptWindow(0);
+        }
+      }
+    }
+  }
+  return false;
+}
+
+function applyPodcastCuesToVideo(video, cues) {
+  if (!video) return;
+  const next = normalizePodcastCues(cues);
+  video.transcript_segments = next;
+  if (window.LinglishStudyMedia && String(window.LinglishStudyMedia.id) === String(video.id)) {
+    window.LinglishStudyMedia.cues = next;
+  }
+}
+
+async function ensurePodcastSubtitles(video, options = {}) {
+  if (!video || !video.external_podcast) return false;
+  if (Array.isArray(video.transcript_segments) && video.transcript_segments.length) {
+    applyPodcastCuesToVideo(video, video.transcript_segments);
+    return true;
+  }
+  const cached = readPodCueCache(video.id);
+  if (cached && cached.length) {
+    applyPodcastCuesToVideo(video, cached);
+    return true;
+  }
+
+  const auto = options.auto === true;
+  const premium = isPremiumMember();
+
+  if (video.transcriptUrl) {
+    state.isLoadingTranscript = true;
+    state._podcastGenerating = false;
+    renderTranscript(video);
+    try {
+      const data = await postMediaJson('cues', { url: video.transcriptUrl });
+      if (String(state.selectedVideoId) !== String(video.id)) return false;
+      let cues = normalizePodcastCues(data.cues || []);
+      if (!cues.length && premium) {
+        state._podcastGenerating = true;
+        renderTranscript(video);
+        cues = await generatePodcastSubtitles(video);
+      } else if (!cues.length) {
+        showToast('这一集的文稿是空的', 'warn');
+      }
+      if (String(state.selectedVideoId) !== String(video.id)) return false;
+      applyPodcastCuesToVideo(video, cues);
+      return cues.length > 0;
+    } catch (err) {
+      if (premium) {
+        try {
+          state._podcastGenerating = true;
+          renderTranscript(video);
+          const cues = await generatePodcastSubtitles(video);
+          if (String(state.selectedVideoId) !== String(video.id)) return false;
+          applyPodcastCuesToVideo(video, cues);
+          return cues.length > 0;
+        } catch (genErr) {
+          showToast((genErr && genErr.message) || (err && err.message) || '字幕加载失败', 'warn');
+          return false;
+        }
+      }
+      showToast((err && err.message) || '字幕文稿加载失败', 'warn');
+      return false;
+    } finally {
+      state.isLoadingTranscript = false;
+      state._podcastGenerating = false;
+      if (String(state.selectedVideoId) === String(video.id)) {
+        renderTranscript(video);
+        if (Array.isArray(video.transcript_segments) && video.transcript_segments.length) {
+          mobileSegmentPosition = 0;
+          renderMobileTranscriptWindow(0);
+        }
+      }
+    }
+  }
+
+  // Local Whisper makes generation free; still try for every playable podcast episode.
+  if (!auto && !options.force && !premium) return false;
+
+  state.isLoadingTranscript = true;
+  state._podcastGenerating = true;
+  renderTranscript(video);
+  try {
+    const cues = await generatePodcastSubtitles(video);
+    if (String(state.selectedVideoId) !== String(video.id)) return false;
+    applyPodcastCuesToVideo(video, cues);
+    video._podcastSubtitleError = '';
+    return cues.length > 0;
+  } catch (err) {
+    const message = (err && err.message) || '字幕生成失败';
+    video._podcastSubtitleError = message;
+    if (String(state.selectedVideoId) === String(video.id)) {
+      showToast(message, 'warn');
+    }
+    return false;
+  } finally {
+    state.isLoadingTranscript = false;
+    state._podcastGenerating = false;
+    if (String(state.selectedVideoId) === String(video.id)) {
+      renderTranscript(video);
+      if (Array.isArray(video.transcript_segments) && video.transcript_segments.length) {
+        mobileSegmentPosition = 0;
+        renderMobileTranscriptWindow(0);
+      }
+    }
+  }
+}
+
+async function selectVideo(idOrVideo) {
   teardownMobileFirstLessonRecording('video-selection');
   firstLessonGoal = null;
   firstLessonGoalCard.hide();
-  const video = state.videos.find(v => v.id === id);
+  const entry = idOrVideo && typeof idOrVideo === 'object' ? idOrVideo : null;
+  const id = entry ? entry.id : idOrVideo;
+  let video = state.videos.find((item) => String(item.id) === String(id));
+  if (!video && entry) {
+    state.videos = [entry, ...state.videos.filter((item) => String(item.id) !== String(id))];
+    video = entry;
+  }
   const selectionGeneration = ++videoSelectionGeneration;
   const isCurrentSelection = () => (
-    selectionGeneration === videoSelectionGeneration && state.selectedVideoId === id
+    selectionGeneration === videoSelectionGeneration && String(state.selectedVideoId) === String(id)
   );
-  closeMobileVideoLibrary();
+
+  const playable = Boolean(
+    video && (
+      video.external_youtube ||
+      video.external_podcast ||
+      video.status === 'ready' ||
+      video.youtube_video_id
+    )
+  );
+  if (playable) {
+    closeMobileVideoLibrary();
+  } else if (video && (video.status === 'failed' || video.status === 'processing' || video.status === 'skipped')) {
+    const tip = video.status === 'processing'
+      ? '这支视频还在转录，稍后再点。'
+      : (video.failure_reason || '这支视频无法播放。请换一支，或从频道 / 播客选取。');
+    try { window.alert(tip); } catch (_) {}
+    return;
+  } else {
+    closeMobileVideoLibrary();
+  }
   nextVideoSheet.hide();
 
   // 防止重复选择同一视频导致字幕重置
-  const isNewVideo = state.selectedVideoId !== id;
+  const isNewVideo = String(state.selectedVideoId) !== String(id);
 
   state.selectedVideoId = id;
+  try {
+    if (/^\d+$/.test(String(id))) {
+      window.LinglishStudyVideoId = String(id);
+      window.LinglishStudyMedia = null;
+    } else if (video) {
+      window.LinglishStudyVideoId = '';
+      window.LinglishStudyMedia = mediaSnapshotFromVideo(video);
+    }
+    if (video) rememberStudySelection(video);
+  } catch (_) {}
+  try {
+    if (isNewVideo) {
+      state.lastRecordingBlob = null;
+      if (state.lastRecordingUrl) {
+        try { URL.revokeObjectURL(state.lastRecordingUrl); } catch (_) {}
+      }
+      state.lastRecordingUrl = null;
+      state.lastRecordingSegmentIndex = null;
+      if (typeof window.hydrateShadowRecording === 'function') {
+        window.hydrateShadowRecording(id).catch(() => {});
+      }
+    }
+  } catch (_) {}
   state.segmentSpeakerMap = {};
   state.waitingForPractice = false;
   state.practicePlaybackLock = false;
@@ -3209,8 +4981,8 @@ async function selectVideo(id) {
   updatePracticeArmUI();
   renderVideoList();
 
-  // 增加视频浏览量（仅在选择新视频时）
-  if (isNewVideo && id) {
+  // 增加视频浏览量（仅在选择新视频时；外部频道/播客无数字 ID）
+  if (isNewVideo && id && /^\d+$/.test(String(id))) {
     fetch(`${API_BASE}/video-resources/${id}/increment-view`, {
       method: 'POST',
       headers: {
@@ -3269,18 +5041,90 @@ async function selectVideo(id) {
     }
   }
 
-  // If transcript data is missing from lite list, fetch full details.
-  if (video && (!video.transcript_segments || video.transcript_segments.length === 0)) {
+  function enableYouTubeNativeCaptionsFallback() {
+    try {
+      if (youtubePlayer && typeof youtubePlayer.enableNativeCaptions === 'function') {
+        youtubePlayer.enableNativeCaptions('en');
+      }
+    } catch (_) {}
+  }
+
+  // 外部 YouTube / 频道视频：字幕轨道 → 不行再本地/云端识别
+  if (video && video.external_youtube && video.youtube_video_id) {
+    ensureAnyMediaSubtitles(video, { auto: true }).then((ok) => {
+      if (!isCurrentSelection()) return;
+      if (!ok) enableYouTubeNativeCaptionsFallback();
+      else if (youtubePlayer && typeof youtubePlayer.disableNativeCaptions === 'function') {
+        // Our sentence dock owns the text — hide YouTube CC so mid-line wraps
+        // like "…here" + next sentence do not fight the on-screen dialogue.
+        youtubePlayer.disableNativeCaptions();
+      }
+      if (ok && isMobileLayout()) {
+        mobileSegmentPosition = 0;
+        renderMobileTranscriptWindow(0);
+      }
+    }).catch(() => {
+      if (!isCurrentSelection()) return;
+      enableYouTubeNativeCaptionsFallback();
+      renderTranscript(video);
+    });
+  } else if (video && video.external_podcast) {
+    // 有文稿就拉 VTT/SRT；没有则会员走 Whisper 生成（与桌面播客一致）
+    ensurePodcastSubtitles(video, { auto: true }).then((ok) => {
+      if (!isCurrentSelection()) return;
+      if (ok && Array.isArray(video.transcript_segments) && video.transcript_segments.length) {
+        mobileSegmentPosition = 0;
+        renderMobileTranscriptWindow(0);
+      } else {
+        renderTranscript(video);
+        renderMobileTranscriptWindow(null);
+      }
+    }).catch(() => {
+      if (isCurrentSelection()) {
+        state.isLoadingTranscript = false;
+        state._podcastGenerating = false;
+        renderTranscript(video);
+        renderMobileTranscriptWindow(null);
+      }
+    });
+  } else if (video && /^\d+$/.test(String(id)) && (!video.transcript_segments || video.transcript_segments.length === 0)) {
     state.isLoadingTranscript = true;
+    if (isMobileLayout()) renderMobileTranscriptWindow(null);
     fetch(`${API_BASE}/video-resources/${id}`)
       .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        state.isLoadingTranscript = false;
+      .then(async (data) => {
         const full = data && data.video ? data.video : null;
-        if (!full) return;
-        const idx = state.videos.findIndex(v => v.id === id);
+        if (!full) {
+          state.isLoadingTranscript = false;
+          if (String(state.selectedVideoId) === String(id)) renderTranscript(video);
+          return;
+        }
+        let segments = Array.isArray(full.transcript_segments) ? full.transcript_segments : [];
+        // Library YouTube / empty DB captions → captions → local/cloud STT.
+        if (!segments.length && full.youtube_video_id) {
+          try {
+            segments = await fetchYouTubeCaptionsForVideo(full);
+          } catch (_) {}
+          if (!segments.length) {
+            try {
+              const data = await postMediaJson('resolve-cues', {
+                youtubeVideoId: full.youtube_video_id,
+                title: full.title || full.original_filename || '',
+                language: full.language || 'en',
+                allowAudioStt: true,
+              });
+              segments = normalizePodcastCues(data.cues || []);
+            } catch (_) {}
+          }
+          if (segments.length) {
+            full.transcript_segments = segments;
+            full.status = 'ready';
+          }
+        }
+        state.isLoadingTranscript = false;
+        const idx = state.videos.findIndex(v => String(v.id) === String(id));
         if (idx >= 0) state.videos[idx] = full;
-        if (state.selectedVideoId === id) {
+        if (String(state.selectedVideoId) === String(id)) {
           renderTranscript(full);
           setTimeout(() => {
             extractAndSaveVocabulary(full);
@@ -3289,23 +5133,22 @@ async function selectVideo(id) {
       })
       .catch(() => {
         state.isLoadingTranscript = false;
+        if (String(state.selectedVideoId) === String(id)) renderTranscript(video);
       });
   }
 
-  // 先显示加载状态，稍后在loadSpeakersForVideo完成后再完整渲染
-  // 这样避免了双重渲染的性能问题
-  if (video && video.status === 'ready' && video.transcript_segments && video.transcript_segments.length > 0) {
-    transcriptContent.innerHTML = '<div class="empty-state">Loading transcript...</div>';
-    transcriptLanguage.textContent = video.language ? `Language: ${video.language}` : '';
-  } else {
-    // 对于空视频或错误状态，立即渲染
-    renderTranscript(video);
-  }
+  // 立刻渲染字幕（含移动端字幕窗）。speakers 加载完成后会再刷一次角色信息。
+  // 以前有字幕时先空着等 speakers，speakers 失败/跳过就会一直「暂无字幕」。
+  renderTranscript(video);
 
-  // 只在切换到新视频时重置移动端字幕窗口
+  // 只在切换到新视频时重置移动端字幕位置；有字幕则落到第 1 句，不要清成空窗
   if (isNewVideo) {
     mobileSegmentPosition = null;
-    renderMobileTranscriptWindow(null);
+    if (Array.isArray(state.currentSegments) && state.currentSegments.length) {
+      renderMobileTranscriptWindow(0);
+    } else {
+      renderMobileTranscriptWindow(null);
+    }
   }
   if (mobileProgress) {
     mobileProgress.value = 0;
@@ -3314,8 +5157,10 @@ async function selectVideo(id) {
     mobileCurrentTime.textContent = '00:00';
   }
 
-  // 加载用户录音
-  audioModeManager.loadUserRecordings(id);
+  // 加载用户录音（仅站内数字 ID）
+  if (/^\d+$/.test(String(id))) {
+    audioModeManager.loadUserRecordings(id);
+  }
 
   // 延迟提取词汇，避免阻塞视频加载
   if (video) {
@@ -3325,17 +5170,83 @@ async function selectVideo(id) {
     }, 3000);
   }
 
-  // 在移动端，点击视频后隐藏左侧边栏，显示视频内容
-  if (window.innerWidth <= 768 && videoSidebar) {
-    videoSidebar.classList.add('hidden');
-    if (toggleSidebarBtn) {
-      toggleSidebarBtn.textContent = '☰';
+  // 在移动端，点选内容后收起视频库，露出播放区
+  if (window.innerWidth <= 768) {
+    if (typeof closeMobileVideoLibrary === 'function') {
+      closeMobileVideoLibrary();
+    } else if (videoSidebar) {
+      videoSidebar.classList.add('hidden');
+      renderToggleSidebarControl(false, '打开视频库');
     }
   }
 
   if (video) {
     const youtubePlayerWrapper = document.getElementById('youtube-player-wrapper');
     const youtubePlayerIframe = document.getElementById('youtube-player');
+
+    // 播客音频：直接用 HTML5 播放器（画面用封面板，避免黑屏）
+    if (video.external_podcast) {
+      hideYtEmbedFallback();
+      if (youtubePlayer) {
+        try { youtubePlayer.destroy(); } catch (_) {}
+        youtubePlayer = null;
+      }
+      if (youtubePlayerWrapper) youtubePlayerWrapper.style.display = 'none';
+      if (youtubePlayerIframe) youtubePlayerIframe.style.display = 'none';
+      const startPodcastPlayback = (podVideo) => {
+        syncPodcastFaceplate(podVideo);
+        if (!videoPlayer) return;
+        videoPlayer.style.display = 'block';
+        videoPlayer.removeAttribute('poster');
+        try { videoPlayer.removeAttribute('crossorigin'); } catch (_) {}
+        const audioSrc = String(podVideo && podVideo.audioUrl || '').replace(/^http:\/\//i, 'https://');
+        if (!audioSrc) {
+          showPodcastPlaybackError('这一集还没有音频链接，请返回播客列表重新打开');
+          if (typeof syncMobilePlayButton === 'function') syncMobilePlayButton();
+          return;
+        }
+        if (/sphinx\.acast\.com\/p\/open\//i.test(audioSrc)) {
+          showPodcastPlaybackError('这集音频链接失效了，请返回播客列表重新打开这一集');
+          if (typeof syncMobilePlayButton === 'function') syncMobilePlayButton();
+          return;
+        }
+        videoPlayer.src = audioSrc;
+        videoPlayer.load();
+        const resumePodcast = () => {
+          applyPendingResumeSeek();
+          videoPlayer.removeEventListener('loadedmetadata', resumePodcast);
+        };
+        videoPlayer.addEventListener('loadedmetadata', resumePodcast);
+        videoPlayer.play().then(() => {
+          if (typeof syncMobilePlayButton === 'function') syncMobilePlayButton();
+          syncPodcastFaceplatePlayState();
+        }).catch((err) => {
+          if (err && err.name === 'NotAllowedError') {
+            // 等用户点封面或底部 Play
+            if (typeof syncMobilePlayButton === 'function') syncMobilePlayButton();
+            syncPodcastFaceplatePlayState();
+            return;
+          }
+          showPodcastPlaybackError('这集音频暂时播不了，换一集或稍后再试');
+          if (typeof syncMobilePlayButton === 'function') syncMobilePlayButton();
+          syncPodcastFaceplatePlayState();
+        });
+      };
+      const resolver = window.LinglishMobileMediaLibrary
+        && typeof window.LinglishMobileMediaLibrary.resolvePlayablePodcastAudio === 'function'
+        ? window.LinglishMobileMediaLibrary.resolvePlayablePodcastAudio(video)
+        : Promise.resolve(video);
+      Promise.resolve(resolver).then((resolved) => {
+        if (resolved && resolved !== video) {
+          try { Object.assign(video, resolved); } catch (_) {}
+        }
+        startPodcastPlayback(resolved || video);
+      }).catch(() => startPodcastPlayback(video));
+      if (typeof configureMobileFocusVideoChrome === 'function') {
+        configureMobileFocusVideoChrome();
+      }
+    } else {
+      syncPodcastFaceplate(null);
 
     // 辅助函数：从YouTube URL中提取视频ID
     function extractYouTubeVideoId(url) {
@@ -3350,6 +5261,8 @@ async function selectVideo(id) {
       const patterns = [
         // Standard and mobile YouTube watch URLs
         /(?:(?:www\.|m\.)?youtube\.com\/watch\?v=)([a-zA-Z0-9_-]{11})/,
+        // YouTube Shorts
+        /(?:(?:www\.|m\.)?youtube\.com\/shorts\/)([a-zA-Z0-9_-]{11})/,
         // Short URLs
         /(?:youtu\.be\/)([a-zA-Z0-9_-]{11})/,
         // Embed URLs
@@ -3379,7 +5292,7 @@ async function selectVideo(id) {
       localVideoStatus: video.local_video_status || 'unknown',
     });
 
-    let youtubeVideoId = video.youtube_video_id;
+    let youtubeVideoId = video.external_podcast ? null : video.youtube_video_id;
     if (!youtubeVideoId && video.video_path) {
       console.log('[YouTube] Attempting to extract from video_path...');
       youtubeVideoId = extractYouTubeVideoId(video.video_path);
@@ -3426,23 +5339,37 @@ async function selectVideo(id) {
       videoMeta.textContent = `${video.title || video.original_filename || 'YouTube Video'}`;
       loadSpeakersForVideo(video.id);
 
-      // 隐藏play overlay（YouTube已有自己的播放控件）
-      const playOverlay = document.getElementById('play-overlay');
-      if (playOverlay) {
-        playOverlay.style.display = 'none';
-      }
+      hidePlayOverlay();
+      hideYtEmbedFallback();
 
       // 初始化 YouTube 播放器 (异步)
       (async function () {
         try {
           console.log('[YouTube] Initializing YouTubePlayer API');
           youtubePlayer = new YouTubePlayer('youtube-player');
-          await youtubePlayer.init(youtubeVideoId);
+          const ytOptions = isMobileReaderFocus()
+            ? { playerVars: { controls: 1, fs: 0, disablekb: 1, modestbranding: 1, rel: 0 } }
+            : {};
+          await youtubePlayer.init(youtubeVideoId, ytOptions);
           console.log('[YouTube] Player initialized successfully');
+          applyPendingResumeSeek();
+          if (video._captionFetchFailed) {
+            enableYouTubeNativeCaptionsFallback();
+          }
+
+          let ytEverPlayed = false;
+          if (isMobileReaderFocus()) {
+            window.setTimeout(() => {
+              if (!isCurrentSelection() || ytEverPlayed) return;
+              showYtEmbedFallback(youtubeVideoId);
+            }, 5000);
+          }
 
           // 监听播放状态变化以记录观看时长
           youtubePlayer.on('statechange', function (event) {
             if (event.data === YT.PlayerState.PLAYING) {
+              ytEverPlayed = true;
+              hideYtEmbedFallback();
               if (firstLessonSession.isActive() && firstLessonGoalBusy) { youtubePlayer.pause(); return; }
               noteLearningVideoStarted();
               startWatchTimer();
@@ -3454,17 +5381,41 @@ async function selectVideo(id) {
             } else if (event.data === YT.PlayerState.PAUSED) {
               stopWatchTimer(true);
             }
+            syncMobilePlayButton();
           });
 
           // 设置时间更新回调来触发字幕滚动
           // 复用与 HTML5 videoPlayer 相同的字幕高亮逻辑
           youtubePlayer.on('timeupdate', function (currentTime) {
-            if (firstLessonSession.isActive() && state.segmentPlaybackEnd != null && currentTime >= state.segmentPlaybackEnd) {
-              youtubePlayer.pause();
+            if (mobileCurrentTime) {
+              mobileCurrentTime.textContent = formatTime(currentTime || 0);
+            }
+            let ytDuration = 0;
+            try {
+              ytDuration = Number(youtubePlayer.getDuration && youtubePlayer.getDuration()) || 0;
+              if (mobileDuration && ytDuration > 0) {
+                mobileDuration.textContent = formatTime(ytDuration);
+              }
+              if (mobileProgress && ytDuration > 0 && !isMobileProgressDragging) {
+                mobileProgress.value = (currentTime / ytDuration) * 100;
+              }
+            } catch (_) {}
+            const nowTs = Date.now();
+            if (state.selectedVideoId && (nowTs - lastProgressSaveTime) > PROGRESS_SAVE_INTERVAL) {
+              lastProgressSaveTime = nowTs;
+              rememberPlaybackProgress(currentTime, ytDuration);
+            }
+            // Sentence practice / 跟读: stop at this cue for YouTube too (not only first-lesson).
+            if (state.segmentPlaybackEnd != null && currentTime >= state.segmentPlaybackEnd) {
+              try { youtubePlayer.pause(); } catch (_) {}
               state.segmentPlaybackEnd = null;
               const callback = state.segmentPlaybackCallback;
               state.segmentPlaybackCallback = null;
               if (callback) callback();
+              // Keep mobile window locked on the practiced sentence while shadowing.
+              if (mobileShadowBusy && Number.isFinite(mobileSegmentPosition)) {
+                try { renderMobileTranscriptWindow(mobileSegmentPosition); } catch (_) {}
+              }
             }
             if (!state.currentSegments.length) {
               console.log('[YouTube] No segments available, skipping');
@@ -3475,67 +5426,8 @@ async function selectVideo(id) {
             // 应用字幕偏移：正值=字幕提前，负值=字幕延迟
             const adjustedTime = currentTime + state.subtitleOffset;
 
-            // Strategy: Find the BEST matching segment, not just the first one
-            // This prevents subtitle delay when segments overlap or have timing tolerances
-            let index = -1;
-
-            // Step 1: Find all segments that contain the current time (with small tolerance)
-            // Important: do NOT allow matching segments that start in the future; that makes subtitles run ahead.
-            const tolerance = 0.1; // Reduced tolerance for more accurate matching (was 0.3)
-            const startTolerance = 0.0;
-            const endTolerance = tolerance;
-            const matchingSegments = [];
-
-            for (let i = 0; i < state.currentSegments.length; i++) {
-              const segment = state.currentSegments[i];
-              const start = Number(segment.start) || 0;
-              const end = Number(segment.end);
-              const effectiveEnd = Number.isFinite(end) ? end : start + 5;
-
-              // Check if current time is within segment bounds
-              if (adjustedTime >= (start - startTolerance) && adjustedTime < (effectiveEnd + endTolerance)) {
-                matchingSegments.push({
-                  index: i,
-                  start: start,
-                  end: effectiveEnd,
-                  distanceFromStart: Math.abs(adjustedTime - start),
-                  distanceFromMid: Math.abs(adjustedTime - (start + effectiveEnd) / 2)
-                });
-              }
-            }
-
-            // Step 2: If we have matches, choose the best one
-            if (matchingSegments.length > 0) {
-              // If multiple segments match, choose the one with:
-              // 1. Smallest distance from start time (prefer segments that just started)
-              // 2. If distances are similar, prefer the one closest to midpoint
-              matchingSegments.sort((a, b) => {
-                // Prioritize segments where current time is closest to start
-                const startDiff = a.distanceFromStart - b.distanceFromStart;
-                if (Math.abs(startDiff) > 0.5) {
-                  return startDiff;
-                }
-                // If start distances are similar, prefer segment closest to midpoint
-                return a.distanceFromMid - b.distanceFromMid;
-              });
-
-              index = matchingSegments[0].index;
-            }
-
-            // Step 3: If no exact match found, find closest *started* segment by start time
-            // (Never jump to a FUTURE segment; that makes subtitles "run ahead".)
-            if (index === -1 && state.currentSegments.length > 0) {
-              let minDiff = Infinity;
-              for (let i = 0; i < state.currentSegments.length; i++) {
-                const segment = state.currentSegments[i];
-                const start = Number(segment.start) || 0;
-                const diff = adjustedTime - start;
-                if (diff >= -tolerance && diff < minDiff && diff < 3.0) { // Within last ~3 seconds
-                  minDiff = diff;
-                  index = i;
-                }
-              }
-            }
+            // Source-anchored clock: raw cue by time → display card.
+            let index = currentSegmentIndexByTime(adjustedTime);
 
             observeMobileFirstLessonPlayback(currentTime, index, eventPlayerIsPlaying());
             // 只在segment改变时才更新DOM（性能优化）
@@ -3555,10 +5447,14 @@ async function selectVideo(id) {
             if (index >= 0) {
               const isMobile = isMobileLayout();
 
-              // 移动端：更新移动字幕窗口（独立于桌面端元素，必须在 active 检查之外）
+              // 移动端：更新移动字幕窗口（跟读进行中锁在当前句，不跟着进度往下跑）
               if (isMobile) {
-                mobileSegmentPosition = index;
-                renderMobileTranscriptWindow(index);
+                if (mobileShadowBusy && Number.isFinite(mobileSegmentPosition)) {
+                  renderMobileTranscriptWindow(mobileSegmentPosition);
+                } else {
+                  mobileSegmentPosition = index;
+                  renderMobileTranscriptWindow(index);
+                }
               }
 
               // 桌面端：高亮和滚动
@@ -3654,10 +5550,13 @@ async function selectVideo(id) {
                     // 使用 !important 强制覆盖所有可能的CSS规则
                     transcriptView.style.setProperty('display', 'flex', 'important');
                     transcriptView.style.setProperty('flex-direction', 'column', 'important');
-                    if (!focusedSizing) {
+                    if (focusedSizing) {
+                      transcriptView.style.removeProperty('min-height');
+                      transcriptView.style.removeProperty('height');
+                    } else {
                       transcriptView.style.setProperty('height', 'calc((100vh - 70px) * 0.55)', 'important');
+                      transcriptView.style.setProperty('min-height', '0', 'important');
                     }
-                    transcriptView.style.setProperty('min-height', '0', 'important');
                     transcriptView.style.setProperty('overflow', 'hidden', 'important');
 
                     // 强制浏览器重新计算布局
@@ -3690,7 +5589,12 @@ async function selectVideo(id) {
 
         } catch (error) {
           console.error('[YouTube] Failed to initialize player:', error);
-          alert('YouTube 播放器初始化失败: ' + error.message);
+          if (isMobileReaderFocus()) {
+            showYtEmbedFallback(youtubeVideoId);
+            setMobileSpeakHint('YouTube 内嵌播不了，可点播放器上的打开方式');
+          } else {
+            alert('YouTube 播放器初始化失败: ' + error.message);
+          }
         }
       })();
 
@@ -3759,20 +5663,26 @@ async function selectVideo(id) {
       videoMeta.textContent = `${video.title || video.original_filename || ''}`;
       loadSpeakersForVideo(video.id);
 
+      configureMobileFocusVideoChrome();
       // 添加一次性事件监听，视频可以播放时尝试播放
       const handleCanPlay = () => {
         console.log('Video ready to play');
-        // 在移动端显示播放overlay
-        if (window.innerWidth <= 768) {
-          const playOverlay = document.getElementById('play-overlay');
-          if (playOverlay) {
-            playOverlay.style.display = 'flex';
+        applyPendingResumeSeek();
+        // Focused mobile reader: no center play overlay. Legacy mobile still gets one.
+        if (window.innerWidth <= 768 && !isMobileReaderFocus()) {
+          const overlay = document.getElementById('play-overlay');
+          if (overlay) {
+            overlay.hidden = false;
+            overlay.style.display = 'flex';
           }
+        } else {
+          hidePlayOverlay();
         }
         videoPlayer.removeEventListener('canplay', handleCanPlay);
       };
       videoPlayer.addEventListener('canplay', handleCanPlay);
     }
+    } // end non-podcast media load
   } else {
     // 清理所有播放器
     const youtubePlayerWrapper = document.getElementById('youtube-player-wrapper');
@@ -3824,11 +5734,14 @@ async function loadVideos() {
     state.isMainlandUser = data && data.isMainlandUser ? true : false; // Save user's region
     console.log('[Region] User is from mainland China:', state.isMainlandUser);
     renderVideoList();
-    // 如果 URL 指定了 videoId，并且在列表中存在，则优先选中它
-    // Do not auto-select a video; only select if URL explicitly provided and exists
-    if (state.videos.length && !state.selectedVideoId && initialVideoIdFromURL) {
-      const exists = state.videos.some(v => v.id === initialVideoIdFromURL);
-      if (exists) selectVideo(initialVideoIdFromURL);
+    // Refresh keeps the last selected video (URL / localStorage / recent).
+    if (!state.selectedVideoId) {
+      try {
+        const restored = await restoreStudyVideoOnBoot();
+        if (restored) console.log('[Resume] Restored last study video');
+      } catch (resumeErr) {
+        console.warn('[Resume] Failed to restore study video:', resumeErr);
+      }
     }
   } catch (err) {
     console.error('Failed to load videos:', err);
@@ -3836,43 +5749,81 @@ async function loadVideos() {
   }
 }
 
+const videoFileInput = document.getElementById('video-file');
+const videoTitleInput = document.getElementById('video-title');
+if (videoFileInput && videoTitleInput) {
+  videoFileInput.addEventListener('change', () => {
+    const file = videoFileInput.files && videoFileInput.files[0];
+    if (!file) return;
+    const current = String(videoTitleInput.value || '').trim();
+    if (current && current !== 'My listening video') return;
+    const base = String(file.name || '').replace(/\.[^.]+$/, '').trim();
+    if (base) videoTitleInput.value = base.slice(0, 80);
+  });
+}
+
 uploadForm.addEventListener('submit', async (event) => {
   event.preventDefault();
   const formData = new FormData(uploadForm);
   const file = formData.get('video');
-  if (!file || file.size === 0) {
-    alert('Please select a video');
+  const submitBtn = document.getElementById('upload-submit-btn')
+    || uploadForm.querySelector('button[type="submit"]')
+    || uploadForm.querySelector('button');
+  if (!file || !(file instanceof File) || file.size === 0) {
+    if (uploadStatus) uploadStatus.textContent = '请先选择要上传的视频文件。';
     return;
   }
 
-  uploadStatus.textContent = 'Uploading...';
-  uploadForm.querySelector('button').disabled = true;
+  const authToken = resolveAuthToken() || token;
+  if (!authToken) {
+    if (uploadStatus) uploadStatus.textContent = '请先登录后再上传视频。';
+    return;
+  }
+
+  if (uploadStatus) uploadStatus.textContent = '正在上传…请勿离开页面。';
+  if (submitBtn) submitBtn.disabled = true;
 
   try {
     const response = await fetch(`${API_BASE}/video-resources/upload`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${token}`
+        'Authorization': `Bearer ${authToken}`
       },
       body: formData,
     });
 
+    const result = await response.json().catch(() => ({}));
+
     if (response.status === 401) {
-      throw new Error('Unauthorized');
+      throw new Error('登录已过期，请重新登录后再上传。');
+    }
+    if (response.status === 403) {
+      throw new Error(result.message === 'GUEST_UPLOAD_FORBIDDEN' || result.code === 'GUEST_UPLOAD_FORBIDDEN'
+        ? '游客不能上传。请先注册或登录。'
+        : (result.message || '今日上传次数已用完，或没有上传权限。'));
+    }
+    if (response.status === 413) {
+      throw new Error('文件太大，请压缩后再上传。');
+    }
+    if (response.status === 409 && result.existing_video_id) {
+      if (uploadStatus) {
+        uploadStatus.textContent = result.message || '该视频已存在，正在打开…';
+      }
+      await loadVideos();
+      selectVideo(result.existing_video_id);
+      return;
     }
 
-    const result = await response.json();
-
     if (!response.ok) {
-      throw new Error(result.message || 'Upload failed');
+      throw new Error(result.message || result.code || '上传失败，请稍后重试。');
     }
 
     if (result.error) {
       uploadStatus.textContent = result.error;
     } else if (response.status === 202) {
-      uploadStatus.textContent = 'Upload complete. Transcription is processing...';
+      uploadStatus.textContent = '上传成功，正在后台转写字幕…';
     } else {
-      uploadStatus.textContent = 'Upload & transcription complete!';
+      uploadStatus.textContent = '上传并转写完成。';
     }
 
     // Update VIP badge
@@ -3901,21 +5852,36 @@ uploadForm.addEventListener('submit', async (event) => {
     }
   } catch (err) {
     console.error('Upload failed:', err);
-    uploadStatus.textContent = 'Upload failed. Please try again.';
+    if (uploadStatus) {
+      uploadStatus.textContent = (err && err.message) || '上传失败，请稍后重试。';
+    }
   } finally {
-    uploadForm.querySelector('button').disabled = false;
-    setTimeout(() => {
-      uploadStatus.textContent = '';
-    }, 4000);
+    if (submitBtn) submitBtn.disabled = false;
+    const msg = uploadStatus ? String(uploadStatus.textContent || '') : '';
+    const keep = /失败|登录|权限|太大|游客/.test(msg);
+    if (!keep) {
+      setTimeout(() => {
+        if (uploadStatus && !/失败|登录|权限|太大|游客/.test(String(uploadStatus.textContent || ''))) {
+          uploadStatus.textContent = '';
+        }
+      }, 5000);
+    }
   }
 });
 
 videoListEl.addEventListener('click', function (event) {
+  if (event.target.closest('.video-action-btn')) return;
   const item = event.target.closest('.video-item');
   if (!item) return;
-  const id = Number(item.getAttribute('data-id'));
+  const raw = item.getAttribute('data-id');
+  if (raw == null || raw === '') return;
+  const id = /^\d+$/.test(String(raw)) ? Number(raw) : raw;
   selectVideo(id);
 });
+
+// 供频道 / 播客侧栏选取
+window.selectVideo = selectVideo;
+window.LinglishVideoReaderState = state;
 
 // 提取单词和字幕点击处理逻辑，支持触摸和点击事件
 const handleTranscriptInteraction = (event) => {
@@ -4016,13 +5982,28 @@ const handleTranscriptInteraction = (event) => {
     return; // 处理完单词点击后返回，不执行跳转
   }
 
-  // 处理整个字幕段点击（跳转视频）
+  // 处理整个字幕段点击：只练这一句，播完停下（不连播下一段）
   const segmentEl = event.target.closest('.transcript-segment');
   if (segmentEl) {
     const time = Number(segmentEl.getAttribute('data-start'));
+    const end = Number(segmentEl.getAttribute('data-end'));
     if (Number.isFinite(time)) {
-      videoPlayer.currentTime = time;
-      safePlayVideo();
+      if (Number.isFinite(end) && end > time + 0.2) {
+        state.segmentPlaybackEnd = end;
+      } else {
+        state.segmentPlaybackEnd = time + 4;
+      }
+      state.segmentPlaybackCallback = null;
+      if (youtubePlayer?.player || (youtubePlayer && typeof youtubePlayer.seekTo === 'function')) {
+        try {
+          youtubePlayer.seekTo(time, true);
+          if (typeof youtubePlayer.play === 'function') youtubePlayer.play();
+          else if (typeof youtubePlayer.playVideo === 'function') youtubePlayer.playVideo();
+        } catch (_) {}
+      } else if (videoPlayer) {
+        videoPlayer.currentTime = time;
+        safePlayVideo();
+      }
     }
     return;
   }
@@ -4127,16 +6108,20 @@ let timeupdateThrottleTimer = null;
 const TIMEUPDATE_THROTTLE = 200; // 限制处理频率到200ms一次
 
 videoPlayer.addEventListener('timeupdate', function () {
-  if (!state.currentSegments.length) return;
   const current = videoPlayer.currentTime;
 
-  // 即时更新时间显示（轻量级操作）
+  // 即时更新时间显示（轻量级操作）— 播客无字幕时也要走进度条
   if (mobileCurrentTime) {
     mobileCurrentTime.textContent = formatTime(current);
   }
   if (mobileProgress && videoPlayer.duration && !Number.isNaN(videoPlayer.duration) && !isMobileProgressDragging) {
     mobileProgress.value = (current / videoPlayer.duration) * 100;
   }
+  if (mobileDuration && videoPlayer.duration && !Number.isNaN(videoPlayer.duration)) {
+    mobileDuration.textContent = formatTime(videoPlayer.duration);
+  }
+
+  if (!state.currentSegments.length) return;
 
   // 节流localStorage写入：只在进度变化且超过间隔时才写入
   const now = Date.now();
@@ -4147,75 +6132,15 @@ videoPlayer.addEventListener('timeupdate', function () {
         localStorage.setItem(`video_progress_${state.selectedVideoId}`, String(percent));
         lastProgressPercent = percent;
         lastProgressSaveTime = now;
+        rememberPlaybackProgress(current, videoPlayer.duration);
       } catch (_) { }
     }
   }
 
-  // 查找当前segment索引
+  // Source-anchored clock: raw cue by time → display card.
   // 应用字幕偏移：正值=字幕提前，负值=字幕延迟
   const adjustedTime = current + state.subtitleOffset;
-
-  // Strategy: Find the BEST matching segment, not just the first one
-  // This prevents subtitle delay when segments overlap or have timing tolerances
-  let index = -1;
-
-  // Step 1: Find all segments that contain the current time (with small tolerance)
-  // Important: do NOT allow matching segments that start in the future; that makes subtitles run ahead.
-  const tolerance = 0.1; // Reduced tolerance for more accurate matching (was 0.3)
-  const startTolerance = 0.0;
-  const endTolerance = tolerance;
-  const matchingSegments = [];
-
-  for (let i = 0; i < state.currentSegments.length; i++) {
-    const segment = state.currentSegments[i];
-    const start = Number(segment.start) || 0;
-    const end = Number(segment.end);
-    const effectiveEnd = Number.isFinite(end) ? end : start + 5;
-
-    // Check if current time is within segment bounds
-    if (adjustedTime >= (start - startTolerance) && adjustedTime < (effectiveEnd + endTolerance)) {
-      matchingSegments.push({
-        index: i,
-        start: start,
-        end: effectiveEnd,
-        distanceFromStart: Math.abs(adjustedTime - start),
-        distanceFromMid: Math.abs(adjustedTime - (start + effectiveEnd) / 2)
-      });
-    }
-  }
-
-  // Step 2: If we have matches, choose the best one
-  if (matchingSegments.length > 0) {
-    // If multiple segments match, choose the one with:
-    // 1. Smallest distance from start time (prefer segments that just started)
-    // 2. If distances are similar, prefer the one closest to midpoint
-    matchingSegments.sort((a, b) => {
-      // Prioritize segments where current time is closest to start
-      const startDiff = a.distanceFromStart - b.distanceFromStart;
-      if (Math.abs(startDiff) > 0.5) {
-        return startDiff;
-      }
-      // If start distances are similar, prefer segment closest to midpoint
-      return a.distanceFromMid - b.distanceFromMid;
-    });
-
-    index = matchingSegments[0].index;
-  }
-
-  // Step 3: If no exact match found, find closest *started* segment by start time
-  // (Never jump to a FUTURE segment; that makes subtitles "run ahead".)
-  if (index === -1 && state.currentSegments.length > 0) {
-    let minDiff = Infinity;
-    for (let i = 0; i < state.currentSegments.length; i++) {
-      const segment = state.currentSegments[i];
-      const start = Number(segment.start) || 0;
-      const diff = adjustedTime - start;
-      if (diff >= -tolerance && diff < minDiff && diff < 3.0) { // Within last ~3 seconds
-        minDiff = diff;
-        index = i;
-      }
-    }
-  }
+  let index = currentSegmentIndexByTime(adjustedTime);
 
   observeMobileFirstLessonPlayback(current, index, !videoPlayer.paused && !videoPlayer.seeking);
   // 性能优化：只在segment改变时才更新DOM
@@ -4248,10 +6173,14 @@ videoPlayer.addEventListener('timeupdate', function () {
   if (index >= 0) {
     const isMobile = isMobileLayout();
 
-    // 移动端：更新移动字幕窗口（独立于桌面端元素）
+    // 移动端：更新移动字幕窗口（跟读进行中锁在当前句）
     if (isMobile) {
-      mobileSegmentPosition = index;
-      renderMobileTranscriptWindow(index);
+      if (mobileShadowBusy && Number.isFinite(mobileSegmentPosition)) {
+        renderMobileTranscriptWindow(mobileSegmentPosition);
+      } else {
+        mobileSegmentPosition = index;
+        renderMobileTranscriptWindow(index);
+      }
     }
 
     // 桌面端：高亮和滚动
@@ -5029,9 +6958,7 @@ async function playWordAudioSmart(word, dictAudioUrl) {
         let v = 'en-US';
         try {
           const pref = localStorage.getItem('linglish_tts_voice') || '';
-          v = pref.startsWith('zh-')
-            ? 'zh-CN'
-            : (window.LinglishTtsVoice && LinglishTtsVoice.synthesisLang ? LinglishTtsVoice.synthesisLang() : 'en-US');
+          v = pref && pref.startsWith('zh-') ? 'zh-CN' : 'en-US';
         } catch (_) { }
         u.lang = v;
         if (!alive()) return;
@@ -5161,9 +7088,7 @@ async function playWordAudioSmart(word, dictAudioUrl) {
       if (!alive()) return;
       clearGestureFallback();
       const utterance = new SpeechSynthesisUtterance(lemma);
-      utterance.lang = voiceLang.startsWith('zh')
-        ? 'zh-CN'
-        : (window.LinglishTtsVoice && LinglishTtsVoice.synthesisLang ? LinglishTtsVoice.synthesisLang() : 'en-US');
+      utterance.lang = voiceLang.startsWith('zh') ? 'zh-CN' : 'en-US';
       speechSynthesis.cancel();
       if (!alive()) return;
       speechSynthesis.speak(utterance);
@@ -5482,7 +7407,16 @@ function suggestMinimalPairs(word) {
 }
 
 async function loadSpeakersForVideo(videoId) {
-  if (!practicePanel) return;
+  const ensureTranscriptPaint = function () {
+    const currentVideo = state.videos.find((v) => String(v.id) === String(videoId));
+    if (currentVideo && String(state.selectedVideoId) === String(videoId)) {
+      renderTranscript(currentVideo);
+    }
+  };
+  if (!practicePanel) {
+    ensureTranscriptPaint();
+    return;
+  }
   try {
     const response = await fetch(`${API_BASE}/practice/speakers?videoId=${videoId}`, {
       headers: {
@@ -5503,10 +7437,7 @@ async function loadSpeakersForVideo(videoId) {
       });
     });
 
-    const currentVideo = state.videos.find((v) => v.id === videoId);
-    if (currentVideo) {
-      renderTranscript(currentVideo);
-    }
+    ensureTranscriptPaint();
 
     state.practiceArmed = false;
     updatePracticeArmUI();
@@ -5536,10 +7467,7 @@ async function loadSpeakersForVideo(videoId) {
     practicePanel.hidden = true;
 
     // 即使加载speakers失败，也要渲染转录（避免停留在loading状态）
-    const currentVideo = state.videos.find((v) => v.id === videoId);
-    if (currentVideo) {
-      renderTranscript(currentVideo);
-    }
+    ensureTranscriptPaint();
   }
 }
 
@@ -5618,12 +7546,7 @@ function updatePracticeArmUI() {
 
 // 辅助函数：同时更新主面板和右侧边栏的反馈消息
 function updatePracticeFeedback(text, color = '#333') {
-  if (firstLessonSession.isActive()) firstLessonGoalCard.feedback({
-    'Recording...': '正在录音，说完后点击「完成录音」。',
-    'Evaluating...': '正在听你的表达，马上给你反馈…',
-    'Detected silence, evaluating...': '已收好录音，正在获取反馈…',
-    'Time limit reached, evaluating...': '录音已结束，正在获取反馈…',
-  }[text] || text);
+  if (firstLessonSession.isActive()) firstLessonGoalCard.feedback(text);
   if (practiceFeedback) {
     practiceFeedback.textContent = text;
     practiceFeedback.style.color = color;
@@ -6102,6 +8025,7 @@ async function startPracticeRecording() {
       }
     });
     state.recorder.start();
+    playMicReadyCue();
     if (assessmentContext) firstLessonGoalCard.setState('recording');
     beginRecordingMonitor();
     updatePracticeButtons(true, true, false);
@@ -6155,8 +8079,8 @@ function stopPracticeRecording(reason) {
 
 async function submitPracticeRecording(blob, line, assessmentContext = null) {
   if (!token || !state.selectedVideoId) return;
-  // Save the recording blob for comparison
-  state.lastRecordingBlob = blob;
+  // Save the recording blob for comparison / self-preview
+  rememberLastRecording(blob, line && Number.isFinite(line.index) ? line.index : mobileSegmentPosition);
   if (assessmentContext && isMobileAssessmentContextCurrent(assessmentContext)) firstLessonGoalCard.setRecording(blob);
   try {
     let result = null;
@@ -6481,11 +8405,18 @@ function selectTag(tag) {
 
 function addTag() {
   const input = document.getElementById('new-tag-input');
+  if (!input) return;
   const tagName = input.value.trim();
-  if (!tagName) return;
+  if (!tagName) {
+    showToast('先输入标签名再点 +', 'warn');
+    input.focus();
+    return;
+  }
 
   if (state.tags.includes(tagName)) {
-    alert('标签已存在');
+    showToast('标签已存在', 'warn');
+    input.focus();
+    input.select();
     return;
   }
 
@@ -6493,6 +8424,7 @@ function addTag() {
   saveTagsToLocalStorage();
   renderTagList();
   input.value = '';
+  showToast(`已添加「${tagName}」`, 'success');
 }
 
 function deleteTag(tag) {
@@ -7122,12 +9054,150 @@ const videoSidebar = document.getElementById('video-sidebar');
 const mobileLibraryBackdrop = document.getElementById('mobile-library-backdrop');
 const mobileSidebarLayout = window.MobileReaderLayout;
 
+function renderToggleSidebarControl(isExpanded, label) {
+  const btn = document.getElementById('toggle-sidebar-btn');
+  if (!btn) return;
+  const accessibleLabel = label || (isExpanded ? '关闭视频库' : '打开视频库');
+  btn.setAttribute('aria-expanded', String(Boolean(isExpanded)));
+  btn.setAttribute('aria-label', accessibleLabel);
+  btn.title = isExpanded ? accessibleLabel : '视频库';
+  btn.classList.toggle('is-library-open', Boolean(isExpanded));
+
+  if (document.body.classList.contains('video-reader-mobile-focus')) {
+    const text = isExpanded ? '关闭' : '视频库';
+    let labelEl = btn.querySelector('.mobile-reader-lib-label');
+    if (!labelEl) {
+      btn.innerHTML = '<span class="mobile-reader-lib-label"></span>';
+      labelEl = btn.querySelector('.mobile-reader-lib-label');
+    }
+    if (labelEl) labelEl.textContent = text;
+    return;
+  }
+
+  btn.textContent = isExpanded ? '✕' : '☰';
+}
+
+function openMobileVideoLibrary(libSrc) {
+  if (
+    !document.body.classList.contains('video-reader-mobile-focus') ||
+    !mobileSidebarLayout ||
+    !toggleSidebarBtn ||
+    !videoSidebar
+  ) {
+    return;
+  }
+  // Voice DM is fullscreen above the library — close it so picks stay tappable.
+  try {
+    const bridge = window.LinglishVoiceChatBridge;
+    if (bridge && typeof bridge.closeSession === 'function') bridge.closeSession();
+  } catch (_) {}
+  if (firstLessonSession && firstLessonSession.isActive && firstLessonSession.isActive()) {
+    firstLessonSession.deactivate('library-open');
+  }
+  applyMobileVideoLibraryState(mobileSidebarLayout.openSidebarState
+    ? mobileSidebarLayout.openSidebarState()
+    : mobileSidebarLayout.nextSidebarState(true));
+  if (libSrc) {
+    const tab = document.querySelector(`[data-lib-src="${libSrc}"]`);
+    if (tab) tab.click();
+    else if (window.LinglishMobileMediaLibrary && typeof window.LinglishMobileMediaLibrary.setView === 'function') {
+      const view = libSrc === 'channels' || libSrc === 'podcasts' ? libSrc : 'videos';
+      window.LinglishMobileMediaLibrary.setView(view);
+    }
+  }
+}
+window.openMobileVideoLibrary = openMobileVideoLibrary;
+
+function syncPodcastFaceplatePlayState() {
+  const wrapper = document.getElementById('video-wrapper');
+  const playIcon = document.getElementById('podcast-faceplate-play');
+  const plate = document.getElementById('podcast-faceplate');
+  let playing = false;
+  try {
+    playing = Boolean(videoPlayer && !videoPlayer.paused && !videoPlayer.ended);
+  } catch (_) {}
+  if (wrapper) wrapper.classList.toggle('is-playing', playing);
+  if (playIcon) playIcon.textContent = playing ? '❚❚' : '▶';
+  if (plate) plate.setAttribute('aria-label', playing ? '暂停播客' : '播放播客');
+}
+
+function togglePodcastPlaybackFromFaceplate() {
+  if (!videoPlayer) return;
+  const current = state.videos.find((item) => String(item.id) === String(state.selectedVideoId));
+  if (!(current && current.external_podcast)) return;
+  if (!String(videoPlayer.currentSrc || videoPlayer.src || '').trim()) {
+    showPodcastPlaybackError('这一集还没有加载音频，请返回列表重新打开');
+    return;
+  }
+  if (videoPlayer.paused || videoPlayer.ended) {
+    safePlayVideo().finally(() => {
+      syncMobilePlayButton();
+      syncPodcastFaceplatePlayState();
+    });
+    return;
+  }
+  try { videoPlayer.pause(); } catch (_) {}
+  syncMobilePlayButton();
+  syncPodcastFaceplatePlayState();
+}
+
+function syncPodcastFaceplate(video) {
+  const wrapper = document.getElementById('video-wrapper');
+  const plate = document.getElementById('podcast-faceplate');
+  const art = document.getElementById('podcast-faceplate-art');
+  const titleEl = document.getElementById('podcast-faceplate-title');
+  const metaEl = document.getElementById('podcast-faceplate-meta');
+  const errEl = document.getElementById('podcast-faceplate-error');
+  const isPod = Boolean(video && video.external_podcast);
+  if (wrapper) wrapper.classList.toggle('is-podcast', isPod);
+  if (!plate) return;
+  if (!isPod) {
+    plate.hidden = true;
+    if (wrapper) wrapper.classList.remove('is-playing');
+    if (errEl) {
+      errEl.hidden = true;
+      errEl.textContent = '';
+    }
+    return;
+  }
+  plate.hidden = false;
+  if (titleEl) titleEl.textContent = video.title || video.original_filename || '播客';
+  if (metaEl) {
+    metaEl.textContent = video.collection_name
+      ? `${video.collection_name} · 点封面播放`
+      : '点封面播放 / 暂停';
+  }
+  if (art) {
+    const src = video.thumbnail_path || '';
+    if (src) {
+      art.hidden = false;
+      art.src = src;
+    } else {
+      art.removeAttribute('src');
+      art.hidden = true;
+    }
+  }
+  if (errEl) {
+    errEl.hidden = true;
+    errEl.textContent = '';
+  }
+  syncPodcastFaceplatePlayState();
+}
+
+function showPodcastPlaybackError(message) {
+  const errEl = document.getElementById('podcast-faceplate-error');
+  const text = message || '音频暂时播不了，请换一集或检查网络';
+  if (errEl) {
+    errEl.hidden = false;
+    errEl.textContent = text;
+  }
+  showSmartImportToast(text);
+}
+
 function applyMobileVideoLibraryState(nextState) {
   if (!nextState || !toggleSidebarBtn || !videoSidebar) return;
   videoSidebar.classList.toggle('hidden', nextState.hidden);
-  toggleSidebarBtn.setAttribute('aria-expanded', String(nextState.expanded));
-  toggleSidebarBtn.setAttribute('aria-label', nextState.label);
-  toggleSidebarBtn.textContent = nextState.text;
+  renderToggleSidebarControl(nextState.expanded, nextState.label);
   document.body.classList.toggle('mobile-library-open', nextState.expanded);
   if (mobileLibraryBackdrop) {
     mobileLibraryBackdrop.tabIndex = nextState.expanded ? 0 : -1;
@@ -7145,6 +9215,7 @@ function closeMobileVideoLibrary() {
   }
   applyMobileVideoLibraryState(mobileSidebarLayout.closedSidebarState());
 }
+window.closeMobileVideoLibrary = closeMobileVideoLibrary;
 
 if (toggleSidebarBtn && videoSidebar) {
   if (
@@ -7166,12 +9237,23 @@ if (toggleSidebarBtn && videoSidebar) {
       return;
     }
     videoSidebar.classList.toggle('hidden');
-    toggleSidebarBtn.textContent = videoSidebar.classList.contains('hidden') ? '☰' : '✕';
+    renderToggleSidebarControl(!videoSidebar.classList.contains('hidden'));
   });
 }
 
 if (mobileLibraryBackdrop) {
   mobileLibraryBackdrop.addEventListener('click', closeMobileVideoLibrary);
+}
+
+const mobileLibraryQuick = document.getElementById('mobile-library-quick');
+if (mobileLibraryQuick) {
+  mobileLibraryQuick.addEventListener('click', function (event) {
+    const btn = event.target && event.target.closest
+      ? event.target.closest('[data-open-lib]')
+      : null;
+    if (!btn) return;
+    openMobileVideoLibrary(btn.getAttribute('data-open-lib'));
+  });
 }
 
 document.addEventListener('keydown', function (event) {
@@ -7193,8 +9275,13 @@ function setActiveViewButtons(mode) {
   viewModeBtns.forEach((btn) => {
     btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
   });
+  // mobile-view-btn also covers 英文/双语/上一句/下一句 — only sync layout modes here
   mobileViewBtns.forEach((btn) => {
-    btn.classList.toggle('active', btn.getAttribute('data-mode') === mode);
+    const btnMode = btn.getAttribute('data-mode');
+    if (btnMode === 'english' || btnMode === 'bilingual' || btnMode === 'prev' || btnMode === 'next') {
+      return;
+    }
+    btn.classList.toggle('active', btnMode === mode);
   });
 }
 
@@ -7252,25 +9339,29 @@ mobileViewBtns.forEach(btn => {
   btn.addEventListener('click', function () {
     const mode = btn.getAttribute('data-mode');
 
-    // 处理字幕语言切换按钮
+    // 处理字幕语言切换按钮：双语 = 英文 + 中文翻译
     if (mode === 'english' || mode === 'bilingual') {
-      // 更新状态
       state.showBilingual = (mode === 'bilingual');
-      // 保存到 localStorage
+      if (mode === 'bilingual') bilingualLoginBlocked = false;
+      syncMobileBilingualClass();
       try {
         localStorage.setItem('transcript_mode', mode === 'bilingual' ? 'bi' : 'en');
       } catch (e) {
         console.warn('Failed to save transcript mode:', e);
       }
-      // 更新按钮激活状态
       mobileViewBtns.forEach(b => {
         const bMode = b.getAttribute('data-mode');
         if (bMode === 'english' || bMode === 'bilingual') {
           b.classList.toggle('active', bMode === mode);
         }
       });
-      // 重新渲染字幕以显示/隐藏翻译
+      lastMobileRenderPosition = -1;
       renderMobileTranscriptWindow(mobileSegmentPosition);
+      if (mode === 'bilingual') {
+        setMobileSpeakHint('双语：英文字幕 + 中文翻译');
+      } else {
+        setMobileSpeakHint('仅显示英文字幕');
+      }
     }
     // 处理导航按钮
     else if (mode === 'prev') {
@@ -7289,6 +9380,7 @@ mobileViewBtns.forEach(btn => {
 applyViewMode(currentViewMode);
 
 // 初始化移动端字幕语言按钮状态
+syncMobileBilingualClass();
 mobileViewBtns.forEach(btn => {
   const mode = btn.getAttribute('data-mode');
   if (mode === 'english' || mode === 'bilingual') {
@@ -7309,10 +9401,34 @@ const formatSpeedLabel = (value) => {
     : rounded.toFixed(2).replace(/0+$/, '').replace(/\.$/, '');
 };
 
+function applyPlaybackSpeed(speed) {
+  if (!Number.isFinite(speed)) return;
+  if (videoPlayer) {
+    try { videoPlayer.playbackRate = speed; } catch (_) {}
+  }
+  try {
+    if (youtubePlayer && typeof youtubePlayer.setPlaybackRate === 'function') {
+      youtubePlayer.setPlaybackRate(speed);
+    }
+  } catch (_) {}
+}
+
 const updateSpeedDisplay = (value) => {
-  if (!speedToggleButton) return;
-  speedToggleButton.textContent = `${formatSpeedLabel(value)}x`;
+  const label = `${formatSpeedLabel(value)}x`;
+  if (speedToggleButton) speedToggleButton.textContent = label;
+  const mobileTrigger = document.getElementById('mobile-speed-trigger');
+  if (mobileTrigger) mobileTrigger.textContent = label;
 };
+
+function setMobileSpeedMenuOpen(open) {
+  const trigger = document.getElementById('mobile-speed-trigger');
+  const menu = document.getElementById('mobile-speed-menu');
+  if (!trigger || !menu) return;
+  const next = Boolean(open);
+  menu.hidden = !next;
+  trigger.setAttribute('aria-expanded', next ? 'true' : 'false');
+  document.body.classList.toggle('mobile-speed-menu-open', next);
+}
 
 const syncSpeedButtons = (rate) => {
   if (!Number.isFinite(rate)) return;
@@ -7326,11 +9442,9 @@ const syncSpeedButtons = (rate) => {
   });
   mobileSpeedBtns.forEach((mobileBtn) => {
     const mobileSpeed = parseFloat(mobileBtn.dataset.speed);
-    if (Number.isFinite(mobileSpeed) && Math.abs(mobileSpeed - rate) < 0.001) {
-      mobileBtn.classList.add('active');
-    } else {
-      mobileBtn.classList.remove('active');
-    }
+    const on = Number.isFinite(mobileSpeed) && Math.abs(mobileSpeed - rate) < 0.001;
+    mobileBtn.classList.toggle('active', on);
+    mobileBtn.setAttribute('aria-selected', on ? 'true' : 'false');
   });
 };
 
@@ -7364,9 +9478,7 @@ speedBtns.forEach((btn) => {
   btn.addEventListener('click', function () {
     const speed = parseFloat(btn.getAttribute('data-speed'));
     if (!Number.isFinite(speed)) return;
-    if (videoPlayer) {
-      videoPlayer.playbackRate = speed;
-    }
+    applyPlaybackSpeed(speed);
     syncSpeedButtons(speed);
     updateSpeedDisplay(speed);
     if (speedFloatingMenu && speedFloatingMenu.classList.contains('open')) {
@@ -7382,11 +9494,11 @@ mobileSpeedBtns.forEach((btn) => {
   btn.addEventListener('click', function () {
     const speed = parseFloat(btn.dataset.speed);
     if (!Number.isFinite(speed)) return;
-    if (videoPlayer) {
-      videoPlayer.playbackRate = speed;
-    }
+    applyPlaybackSpeed(speed);
     syncSpeedButtons(speed);
     updateSpeedDisplay(speed);
+    setMobileSpeakHint(`速度 ${formatSpeedLabel(speed)}x`);
+    setMobileSpeedMenuOpen(false);
     if (speedFloatingMenu && speedFloatingMenu.classList.contains('open')) {
       speedFloatingMenu.classList.remove('open');
       if (speedToggleButton) {
@@ -7395,6 +9507,32 @@ mobileSpeedBtns.forEach((btn) => {
     }
   });
 });
+
+(function bindMobileSpeedDropdown() {
+  const trigger = document.getElementById('mobile-speed-trigger');
+  const menu = document.getElementById('mobile-speed-menu');
+  const shell = document.getElementById('mobile-speed-controls');
+  if (!trigger || !menu) return;
+
+  trigger.addEventListener('click', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    setMobileSpeedMenuOpen(menu.hidden);
+  });
+
+  document.addEventListener('click', function (event) {
+    if (menu.hidden) return;
+    if (shell && shell.contains(event.target)) return;
+    setMobileSpeedMenuOpen(false);
+  });
+
+  document.addEventListener('keydown', function (event) {
+    if (event.key === 'Escape' && !menu.hidden) {
+      setMobileSpeedMenuOpen(false);
+      trigger.focus();
+    }
+  });
+})();
 
 const initialSpeedBtn = Array.from(speedBtns).find((btn) => btn.classList.contains('active'));
 const initialSpeed = initialSpeedBtn
@@ -7470,30 +9608,610 @@ if (videoPlayer) {
   });
 }
 
-if (mobileReplayBtn) {
-  mobileReplayBtn.addEventListener('click', function () {
-    if (!videoPlayer) return;
-    videoPlayer.currentTime = 0;
-    safePlayVideo();
+function syncMobilePlayButton() {
+  if (!mobilePlayBtn) return;
+  if (mobileShadowHolding) {
+    mobilePlayBtn.classList.add('is-holding');
+    mobilePlayBtn.classList.toggle('is-mic-warming', !mobileShadowMicReady);
+    mobilePlayBtn.textContent = mobileShadowMicReady ? '●' : '…';
+    mobilePlayBtn.setAttribute('aria-label', mobileShadowMicReady ? '松开结束跟读' : '开麦中');
+    return;
+  }
+  let playing = false;
+  try {
+    const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
+    if (transport && typeof transport.isPlaying === 'function') {
+      playing = Boolean(transport.isPlaying());
+    } else if (videoPlayer) {
+      playing = !videoPlayer.paused && !videoPlayer.ended;
+    }
+  } catch (_) {}
+  mobilePlayBtn.classList.remove('is-holding', 'is-mic-warming', 'is-await-hold');
+  syncMobilePlayHoldLabel('');
+  mobilePlayBtn.classList.toggle('is-playing', playing);
+  mobilePlayBtn.textContent = playing ? '❚❚' : '▶';
+  mobilePlayBtn.setAttribute('aria-label', playing ? '暂停（长按说话）' : '播放（长按说话）');
+  mobilePlayBtn.setAttribute('title', '点按播放/暂停 · 长按像微信一样说话');
+  if (mobileSpeakHint && !mobileShadowBusy) {
+    if (playing) {
+      setMobileSpeakHint('点按暂停 · 长按说话');
+    } else if (state.lastRecordingBlob) {
+      setMobileSpeakHint('可在⋯里听自己，或长按播放键再说一次');
+    } else {
+      setMobileSpeakHint('点按播放/暂停 · 长按中间键说话');
+    }
+  }
+}
+
+function replayMobileCurrentClip() {
+  const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
+  const segment = getMobileShadowSegment();
+  let seekTo = 0;
+  if (segment) {
+    seekTo = Math.max(0, segment.start + 0.01);
+    mobileSegmentPosition = segment.index;
+    setMobileSpeakHint('重新播放本句');
+  } else {
+    let now = 0;
+    try {
+      now = transport && typeof transport.getCurrentTime === 'function'
+        ? Number(transport.getCurrentTime()) || 0
+        : (videoPlayer ? Number(videoPlayer.currentTime) || 0 : 0);
+    } catch (_) {}
+    // 暂无字幕时：回到开头，或从当前位置回退 5 秒再播
+    seekTo = now > 2 ? Math.max(0, now - 5) : 0;
+    setMobileSpeakHint(seekTo > 0 ? '从刚才位置重新播放' : '从头重新播放');
+  }
+  try {
+    if (transport && typeof transport.seek === 'function') transport.seek(seekTo);
+    else if (videoPlayer) videoPlayer.currentTime = seekTo;
+  } catch (_) {
+    if (videoPlayer) {
+      try { videoPlayer.currentTime = seekTo; } catch (__) {}
+    }
+  }
+  if (segment) {
+    state.segmentPlaybackEnd = segment.end;
+    state.segmentPlaybackCallback = () => {
+      try { pauseLearningVideoNow(); } catch (_) {}
+      syncMobilePlayButton();
+    };
+  }
+  return safePlayVideo().finally(syncMobilePlayButton);
+}
+
+function syncMobileReviewSheet() {
+  const hearBtn = document.getElementById('mobile-review-hear-me');
+  const hint = document.getElementById('mobile-review-hint');
+  const hasMine = Boolean(state.lastRecordingUrl || state.lastRecordingBlob);
+  if (hearBtn) hearBtn.disabled = !hasMine;
+  if (hint) {
+    hint.textContent = hasMine
+      ? '左右对比：先听原句，再听自己的跟读。'
+      : '还没有跟读录音。长按中间播放键说完一句，再回来听自己。';
+  }
+}
+
+function openMobileFeatureSheet() {
+  const sheet = document.getElementById('mobile-feature-sheet');
+  if (!sheet) return;
+  syncMobileReviewSheet();
+  sheet.hidden = false;
+  document.body.classList.add('mobile-feature-open');
+}
+
+function closeMobileFeatureSheet() {
+  const sheet = document.getElementById('mobile-feature-sheet');
+  if (sheet) sheet.hidden = true;
+  document.body.classList.remove('mobile-feature-open');
+}
+
+function closeMobileMicSheet() {
+  const sheet = document.getElementById('mobile-mic-sheet');
+  if (sheet) sheet.hidden = true;
+  document.body.classList.remove('mobile-feature-open');
+}
+
+function openMobileMicSheet() {
+  const sheet = document.getElementById('mobile-mic-sheet');
+  if (!sheet) return;
+  sheet.hidden = false;
+  document.body.classList.add('mobile-feature-open');
+  refreshMobileMicList().catch(() => {});
+}
+try { window.openMobileMicSheet = openMobileMicSheet; } catch (_) {}
+
+async function refreshMobileMicList() {
+  const list = document.getElementById('mobile-mic-list');
+  const mic = window.LinglishShadowMic;
+  if (!list || !mic || typeof mic.listAudioInputs !== 'function') return;
+  list.innerHTML = '<p class="mobile-mic-hint">正在读取麦克风…</p>';
+  let inputs = [];
+  try {
+    inputs = await mic.listAudioInputs({ warm: true });
+  } catch (_) {
+    inputs = [];
+  }
+  const preferred = typeof mic.getPreferredMicId === 'function' ? mic.getPreferredMicId() : '';
+  list.innerHTML = '';
+  if (!inputs.length) {
+    list.innerHTML = '<p class="mobile-mic-hint">没读到设备。请先允许麦克风，并确认领夹麦 / 耳机已连接。</p>';
+    return;
+  }
+  inputs.forEach((item) => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'mobile-feature-item';
+    btn.setAttribute('data-mic-id', item.deviceId || '');
+    btn.textContent = item.label || '麦克风';
+    if ((item.deviceId || '') === (preferred || '') || item.preferred) {
+      btn.classList.add('is-selected');
+    }
+    list.appendChild(btn);
   });
 }
 
-if (mobileProgress && videoPlayer) {
+function chooseMobileMic(deviceId) {
+  const mic = window.LinglishShadowMic;
+  if (mic && typeof mic.setPreferredMicId === 'function') {
+    mic.setPreferredMicId(deviceId || '');
+  }
+  closeMobileMicSheet();
+  setMobileSpeakHint(deviceId
+    ? '已切换麦克风，可开始跟读'
+    : '已用系统默认麦克风', { toast: true, kind: 'success' });
+}
+
+function runMobileFeature(feature) {
+  closeMobileFeatureSheet();
+  if (feature === 'mic') {
+    openMobileMicSheet();
+    return;
+  }
+  if (feature === 'replay-original') {
+    replayMobileCurrentClip();
+    setMobileSpeakHint('正在听原句', { toast: true });
+    return;
+  }
+  if (feature === 'shadow' || feature === 'shadow-again') {
+    setMobileSpeakHint('请长按中间播放键说话，说完再松手', { toast: true });
+    syncMobilePlayHoldLabel('长按说话');
+    if (mobilePlayBtn) {
+      mobilePlayBtn.classList.add('is-await-hold');
+      try { mobilePlayBtn.focus({ preventScroll: true }); } catch (_) {}
+    }
+    // Warm the same hold-ready path used by 跟读, without showing a second button.
+    startMobileSentenceShadow().catch(() => setMobileSpeakHint('跟读失败，请再试一次'));
+    return;
+  }
+  if (feature === 'hear-me') {
+    if (!state.lastRecordingUrl && !state.lastRecordingBlob) {
+      setMobileSpeakHint('还没有跟读录音，先长按中间键说一句', { toast: true, kind: 'warn' });
+      return;
+    }
+    playLastRecordingPreview();
+    setMobileSpeakHint('正在听自己的跟读', { toast: true });
+    return;
+  }
+  if (feature === 'prev') {
+    navigateMobileSegment(-1);
+    setMobileSpeakHint('上一句');
+    return;
+  }
+  if (feature === 'next') {
+    navigateMobileSegment(1);
+    setMobileSpeakHint('下一句');
+    return;
+  }
+  if (feature === 'english' || feature === 'bilingual') {
+    const btn = document.querySelector(`.mobile-view-btn[data-mode="${feature}"]`);
+    if (btn) btn.click();
+    else {
+      state.showBilingual = feature === 'bilingual';
+      renderMobileTranscriptWindow(mobileSegmentPosition);
+    }
+    setMobileSpeakHint(feature === 'bilingual' ? '已切到双语字幕' : '已切到仅英文');
+    return;
+  }
+  if (feature === 'coach') {
+    const toggle = document.querySelector('#coach-dock .coach-toggle, .coach-dock .coach-toggle');
+    if (toggle) toggle.click();
+    else setMobileSpeakHint('带教入口暂不可用');
+  }
+}
+
+if (mobileReplayBtn) {
+  mobileReplayBtn.addEventListener('click', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    replayMobileCurrentClip();
+  });
+}
+
+function toggleMobilePlayPause() {
+  let playing = false;
+  try {
+    const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
+    if (transport && typeof transport.isPlaying === 'function') {
+      playing = Boolean(transport.isPlaying());
+    } else if (videoPlayer) {
+      playing = !videoPlayer.paused && !videoPlayer.ended;
+    }
+  } catch (_) {}
+  if (playing) {
+    pauseLearningVideoNow();
+    syncMobilePlayButton();
+    return;
+  }
+  safePlayVideo().finally(syncMobilePlayButton);
+}
+
+/** Mobile video-reader always uses X-DM 跟读回听 when the bridge is loaded. */
+function canUseMobileVoiceChatHold() {
+  const bridge = window.LinglishVoiceChatBridge;
+  return !!(bridge && typeof bridge.beginHold === 'function');
+}
+
+function isMobileCoachVoiceMode() {
+  // Prefer chat hold on all mobile study modes once the session bridge exists.
+  if (canUseMobileVoiceChatHold()) return true;
+  return document.body.classList.contains('study-mode-coach')
+    || document.body.dataset.studyMode === 'coach'
+    || document.body.classList.contains('has-voice-chat');
+}
+
+function syncMobilePlayButtonVoiceHold(active, warming) {
+  syncMobileHoldButton(active, warming);
+  if (mobilePlayBtn) {
+    mobilePlayBtn.classList.remove('is-holding', 'is-mic-warming', 'is-await-hold');
+    if (!active && !warming) {
+      try { syncMobilePlayButton(); } catch (_) {}
+    }
+  }
+}
+window.syncMobilePlayButtonVoiceHold = syncMobilePlayButtonVoiceHold;
+
+function clearMobileCueKaraoke() {
+  if (!mobileTranscriptList) return;
+  mobileTranscriptList.querySelectorAll('.mobile-segment-text.is-karaoke').forEach((el) => {
+    el.classList.remove('is-karaoke');
+    const item = el.closest('.mobile-transcript-item');
+    const idx = item ? Number(item.dataset.index) : NaN;
+    const seg = Number.isFinite(idx) ? (state.currentSegments || [])[idx] : null;
+    if (seg) el.textContent = seg.text || '';
+  });
+}
+
+function paintMobileCueKaraoke(detail) {
+  if (!mobileTranscriptList) return;
+  if (!detail || !detail.holding) {
+    clearMobileCueKaraoke();
+    return;
+  }
+  const idx = Number(detail.index);
+  if (!Number.isFinite(idx)) return;
+  const item = mobileTranscriptList.querySelector('.mobile-transcript-item[data-index="' + idx + '"]')
+    || mobileTranscriptList.querySelector('.mobile-transcript-item.active');
+  if (!item) return;
+  const textEl = item.querySelector('.mobile-segment-text');
+  if (!textEl) return;
+  const html = detail.html
+    || (window.LinglishVoiceChatCoach && typeof window.LinglishVoiceChatCoach.karaokeEnHtml === 'function'
+      ? window.LinglishVoiceChatCoach.karaokeEnHtml(detail.text || '', detail.hitCount || 0, detail.partial || 0)
+      : '');
+  if (!html) return;
+  textEl.classList.add('is-karaoke');
+  textEl.innerHTML = html;
+}
+
+window.addEventListener('linglish:voice-live-match', (event) => {
+  try { paintMobileCueKaraoke(event && event.detail); } catch (_) {}
+});
+
+async function startMobilePlayButtonShadowHold() {
+  mobilePlayLongPressArmed = true;
+  mobilePlaySuppressClick = true;
+  mobileShadowIgnoreClickUntil = Date.now() + 900;
+  if (!mobilePlayPointerDown) {
+    mobilePlayLongPressArmed = false;
+    return;
+  }
+
+  // Same Hold pipeline as X DM compose — shared chat + karaoke sync.
+  if (canUseMobileVoiceChatHold()) {
+    const bridge = window.LinglishVoiceChatBridge;
+    const chat = bridge && typeof bridge.getChat === 'function' ? bridge.getChat() : null;
+    const segment = getMobileShadowSegment();
+    try { pauseLearningVideoNow(); } catch (_) {}
+    if (segment) {
+      mobileSegmentPosition = segment.index;
+      state.activeSegmentIndex = segment.index;
+      try { renderMobileTranscriptWindow(segment.index); } catch (_) {}
+      if (chat && typeof chat.lockPracticeTarget === 'function') {
+        try { chat.lockPracticeTarget(segment.index); } catch (_) {}
+      }
+    }
+    syncMobilePlayButtonVoiceHold(true, true);
+    try {
+      if (bridge && typeof bridge.beginHold === 'function') {
+        await bridge.beginHold();
+      }
+      syncMobilePlayButtonVoiceHold(true, false);
+      if (!mobilePlayPointerDown && bridge && typeof bridge.endHold === 'function') {
+        await bridge.endHold();
+        syncMobilePlayButtonVoiceHold(false, false);
+      }
+    } catch (err) {
+      console.warn('[Mobile Play] voice chat hold failed', err);
+      syncMobilePlayButtonVoiceHold(false, false);
+    } finally {
+      mobilePlayLongPressArmed = false;
+    }
+    return;
+  }
+
+  const segment = getMobileShadowSegment();
+  if (!segment) {
+    mobilePlayLongPressArmed = false;
+    syncMobilePlayButtonVoiceHold(false, false);
+    setMobileSpeakHint(state.isLoadingTranscript ? '字幕加载中…' : '暂无字幕，无法跟读', { toast: true, kind: 'warn' });
+    return;
+  }
+  const mic = window.LinglishShadowMic;
+  if (!mic || typeof mic.recordShadow !== 'function' || typeof mic.acquireMic !== 'function') {
+    mobilePlayLongPressArmed = false;
+    syncMobilePlayButtonVoiceHold(false, false);
+    setMobileSpeakHint('跟读录音组件还没加载，请强制刷新后再试', { toast: true, kind: 'warn' });
+    return;
+  }
+  try { pauseLearningVideoNow(); } catch (_) {}
+  mobileSegmentPosition = segment.index;
+  try { renderMobileTranscriptWindow(segment.index); } catch (_) {}
+  mobileShadowBusy = true;
+  mobileShadowAwaitHold = true;
+  mobileShadowHoldSegment = segment;
+  syncMobileShadowButton();
+  try {
+    await beginMobileShadowHoldRecord();
+    if (!mobilePlayPointerDown && (mobileShadowHolding || mobileShadowHoldWanted)) {
+      endMobileShadowHoldRecord();
+    }
+  } catch (err) {
+    console.warn('[Mobile Play] hold shadow failed', err);
+    resetMobileShadowUi();
+    setMobileSpeakHint('跟读失败，请再按住试一次', { toast: true, kind: 'warn' });
+  }
+}
+
+// Play = tap only. Mic = X-style Hold to record pill.
+if (mobilePlayBtn) {
+  mobilePlayBtn.addEventListener('click', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const bridge = window.LinglishVoiceChatBridge;
+    const voiceHolding = bridge && typeof bridge.isHolding === 'function' && bridge.isHolding();
+    if (mobileShadowHolding || mobileShadowAwaitHold || voiceHolding || Date.now() < mobileShadowIgnoreClickUntil) {
+      return;
+    }
+    toggleMobilePlayPause();
+  });
+}
+
+if (mobileHoldBtn) {
+  let holdPointerId = null;
+  const onHoldStart = function (event) {
+    if (event.pointerType === 'mouse' && event.button !== 0) return;
+    if (mobilePlayPointerDown) return;
+    event.preventDefault();
+    event.stopPropagation();
+    mobilePlayPointerDown = true;
+    mobilePlaySuppressClick = true;
+    holdPointerId = event.pointerId;
+    try {
+      if (typeof mobileHoldBtn.setPointerCapture === 'function') {
+        mobileHoldBtn.setPointerCapture(event.pointerId);
+      }
+    } catch (_) {}
+    clearMobilePlayLongPressTimer();
+    startMobilePlayButtonShadowHold();
+  };
+
+  const onHoldEnd = function (event) {
+    if (event && holdPointerId != null && event.pointerId !== holdPointerId) return;
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      try {
+        if (holdPointerId != null && typeof mobileHoldBtn.releasePointerCapture === 'function') {
+          mobileHoldBtn.releasePointerCapture(holdPointerId);
+        }
+      } catch (_) {}
+    }
+    holdPointerId = null;
+    if (!mobilePlayPointerDown) return;
+    mobilePlayPointerDown = false;
+    const bridge = window.LinglishVoiceChatBridge;
+    if (bridge && typeof bridge.isHolding === 'function' && bridge.isHolding()) {
+      Promise.resolve(bridge.endHold()).finally(() => syncMobilePlayButtonVoiceHold(false, false));
+      return;
+    }
+    // beginHold still opening mic — wait briefly then end if it became active
+    if (bridge && typeof bridge.endHold === 'function') {
+      window.setTimeout(() => {
+        if (bridge.isHolding && bridge.isHolding()) {
+          Promise.resolve(bridge.endHold()).finally(() => syncMobilePlayButtonVoiceHold(false, false));
+        } else {
+          syncMobilePlayButtonVoiceHold(false, false);
+        }
+      }, 80);
+    }
+    if (mobileShadowHolding || mobileShadowHoldWanted) {
+      endMobileShadowHoldRecord();
+    } else if (!bridge) {
+      syncMobilePlayButtonVoiceHold(false, false);
+    }
+  };
+
+  mobileHoldBtn.addEventListener('pointerdown', onHoldStart);
+  mobileHoldBtn.addEventListener('pointerup', onHoldEnd);
+  mobileHoldBtn.addEventListener('pointercancel', onHoldEnd);
+  // Do NOT end on pointerleave — finger drift used to cancel hold instantly ("no reaction").
+  mobileHoldBtn.addEventListener('lostpointercapture', onHoldEnd);
+  mobileHoldBtn.addEventListener('contextmenu', function (event) {
+    event.preventDefault();
+  });
+}
+
+if (mobileContinueBtn) {
+  mobileContinueBtn.addEventListener('click', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    const bridge = window.LinglishVoiceChatBridge;
+    // ⋯ = 跟读回听（近十条字幕 + 语音气泡），无提示。
+    if (bridge && typeof bridge.toggleSession === 'function') {
+      try { closeMobileFeatureSheet(); } catch (_) {}
+      bridge.toggleSession();
+      return;
+    }
+    const sheet = document.getElementById('mobile-feature-sheet');
+    if (sheet && !sheet.hidden) {
+      closeMobileFeatureSheet();
+      return;
+    }
+    openMobileFeatureSheet();
+  });
+}
+
+(function bindMobileFeatureSheet() {
+  const sheet = document.getElementById('mobile-feature-sheet');
+  if (!sheet) return;
+  const backdrop = document.getElementById('mobile-feature-backdrop');
+  const cancel = document.getElementById('mobile-feature-cancel');
+  if (backdrop) backdrop.addEventListener('click', closeMobileFeatureSheet);
+  if (cancel) cancel.addEventListener('click', closeMobileFeatureSheet);
+  sheet.addEventListener('click', function (event) {
+    const item = event.target.closest('[data-feature]');
+    if (!item) return;
+    event.preventDefault();
+    runMobileFeature(item.getAttribute('data-feature'));
+  });
+})();
+
+(function bindMobileMicSheet() {
+  const sheet = document.getElementById('mobile-mic-sheet');
+  if (!sheet) return;
+  const backdrop = document.getElementById('mobile-mic-backdrop');
+  const cancel = document.getElementById('mobile-mic-cancel');
+  if (backdrop) backdrop.addEventListener('click', closeMobileMicSheet);
+  if (cancel) cancel.addEventListener('click', closeMobileMicSheet);
+  sheet.addEventListener('click', function (event) {
+    const item = event.target.closest('[data-mic-id]');
+    if (!item) return;
+    event.preventDefault();
+    chooseMobileMic(item.getAttribute('data-mic-id') || '');
+  });
+})();
+
+if (mobileShadowBtn) {
+  const onShadowHoldStart = function (event) {
+    if (!(mobileShadowAwaitHold || mobileShadowHolding)) return;
+    if (mobileShadowHolding) return;
+    if (event.type === 'mousedown' && event.button !== 0) return;
+    // Prefer touch; ignore synthetic mouse after touch on WeChat/iOS.
+    if (event.type === 'mousedown' && event.sourceCapabilities && event.sourceCapabilities.firesTouchEvents) {
+      return;
+    }
+    event.preventDefault();
+    event.stopPropagation();
+    beginMobileShadowHoldRecord().catch((err) => {
+      console.warn('[Mobile Shadow] hold failed', err);
+      resetMobileShadowUi();
+      setMobileSpeakHint('录音失败，请再按住试一次', { toast: true, kind: 'warn' });
+    });
+  };
+
+  mobileShadowBtn.addEventListener('touchstart', onShadowHoldStart, { passive: false });
+  mobileShadowBtn.addEventListener('mousedown', onShadowHoldStart);
+  // Release is handled on document so sliding off the button still finishes (WeChat-like).
+  mobileShadowBtn.addEventListener('click', function (event) {
+    if (mobileShadowAwaitHold || mobileShadowHolding || Date.now() < mobileShadowIgnoreClickUntil) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (mobileShadowAwaitHold && !mobileShadowHolding) {
+        setMobileSpeakHint('请按住说话，说完再松手', { toast: true });
+      }
+      return;
+    }
+    startMobileSentenceShadow().catch((err) => {
+      console.warn('[Mobile Shadow] failed', err);
+      resetMobileShadowUi();
+      setMobileSpeakHint('跟读失败，请再试一次', { toast: true, kind: 'warn' });
+    });
+  });
+}
+
+if (mobileHearMeBtn) {
+  mobileHearMeBtn.addEventListener('click', function () {
+    playLastRecordingPreview();
+  });
+}
+
+if (videoPlayer) {
+  videoPlayer.addEventListener('play', () => {
+    syncMobilePlayButton();
+    syncPodcastFaceplatePlayState();
+  });
+  videoPlayer.addEventListener('pause', () => {
+    syncMobilePlayButton();
+    syncPodcastFaceplatePlayState();
+  });
+  videoPlayer.addEventListener('ended', () => {
+    syncMobilePlayButton();
+    syncPodcastFaceplatePlayState();
+  });
+}
+syncMobilePlayButton();
+
+if (mobileProgress) {
+  function mobileSeekDuration() {
+    try {
+      if (youtubePlayer && typeof youtubePlayer.getDuration === 'function') {
+        const ytDuration = Number(youtubePlayer.getDuration());
+        if (ytDuration > 0 && !Number.isNaN(ytDuration)) return ytDuration;
+      }
+    } catch (_) {}
+    if (videoPlayer && videoPlayer.duration && !Number.isNaN(videoPlayer.duration)) {
+      return videoPlayer.duration;
+    }
+    return 0;
+  }
+
   const commitMobileSeek = () => {
-    if (!videoPlayer.duration || Number.isNaN(videoPlayer.duration)) {
+    const duration = mobileSeekDuration();
+    if (!duration) {
       isMobileProgressDragging = false;
       return;
     }
     const fraction = Number(mobileProgress.value) / 100;
-    videoPlayer.currentTime = Math.max(0, Math.min(videoPlayer.duration * fraction, videoPlayer.duration));
+    const nextTime = Math.max(0, Math.min(duration * fraction, duration));
+    try {
+      if (youtubePlayer && typeof youtubePlayer.seekTo === 'function' && videoPlayer && videoPlayer.style.display === 'none') {
+        youtubePlayer.seekTo(nextTime, true);
+      } else if (videoPlayer) {
+        videoPlayer.currentTime = nextTime;
+      }
+    } catch (_) {
+      if (videoPlayer) videoPlayer.currentTime = nextTime;
+    }
     isMobileProgressDragging = false;
   };
 
   mobileProgress.addEventListener('input', function () {
-    if (!videoPlayer.duration || Number.isNaN(videoPlayer.duration)) return;
+    const duration = mobileSeekDuration();
+    if (!duration) return;
     isMobileProgressDragging = true;
     const fraction = Number(mobileProgress.value) / 100;
-    const previewTime = videoPlayer.duration * fraction;
+    const previewTime = duration * fraction;
     if (mobileCurrentTime) {
       mobileCurrentTime.textContent = formatTime(previewTime);
     }
@@ -7546,8 +10264,10 @@ if (mobileBackBtn) {
   });
 }
 if (mobileTranscriptList) {
+  // Subtitle list: tap only (listen / select). Practice via bottom play long-press
+  // or session 「Hold to record」— avoids finger covering the line.
   mobileTranscriptList.addEventListener('click', function (event) {
-    // 优先处理单词点击（查词功能）
+    // Tap a word → word card. Tap the rest of the cue → replay that line.
     const wordEl = event.target.closest('.transcript-word');
     if (wordEl) {
       event.preventDefault();
@@ -7587,7 +10307,7 @@ if (mobileTranscriptList) {
       return;
     }
 
-    // 处理整个字幕项点击（跳转视频）
+    // 单击字幕：锁定跟读目标 + 听这句；同一句正在播再点 → 暂停
     const item = event.target.closest('.mobile-transcript-item');
     if (!item || item.classList.contains('empty')) return;
     if (!isMobileLayout()) return;
@@ -7596,13 +10316,35 @@ if (mobileTranscriptList) {
     const segments = state.currentSegments || [];
     const segment = segments[index];
     if (!segment || !videoPlayer) return;
-    const startTime = Number(segment.start);
-    if (Number.isFinite(startTime)) {
-      videoPlayer.currentTime = Math.max(0, startTime);
+
+    const start = Number(segment.start);
+    const end = Number(segment.end != null ? segment.end : start + 8);
+    const t = Number(videoPlayer.currentTime);
+    const playingThis = !videoPlayer.paused
+      && Number.isFinite(start)
+      && t >= start - 0.35
+      && t <= end + 0.25;
+
+    mobileSegmentPosition = index;
+    state.activeSegmentIndex = index;
+    try { renderMobileTranscriptWindow(mobileSegmentPosition); } catch (_) {}
+
+    const bridge = window.LinglishVoiceChatBridge;
+    const chat = bridge && typeof bridge.getChat === 'function' ? bridge.getChat() : null;
+    if (chat && typeof chat.lockPracticeTarget === 'function') {
+      try { chat.lockPracticeTarget(index); } catch (_) {}
+    }
+
+    if (playingThis) {
+      try { pauseLearningVideoNow(); } catch (_) {}
+      try { syncMobilePlayButton(); } catch (_) {}
+      return;
+    }
+
+    if (Number.isFinite(start)) {
+      videoPlayer.currentTime = Math.max(0, start);
       safePlayVideo();
     }
-    mobileSegmentPosition = index;
-    renderMobileTranscriptWindow(mobileSegmentPosition);
   });
 }
 
@@ -8170,11 +10912,7 @@ async function deleteVocab(lemma) {
 async function playPronunciation(word) {
   try {
     const utterance = new SpeechSynthesisUtterance(word);
-    utterance.lang = (window.LinglishTtsVoice && LinglishTtsVoice.synthesisLang) ? LinglishTtsVoice.synthesisLang() : 'en-US';
-    const systemVoice = (window.LinglishTtsVoice && LinglishTtsVoice.findSystemVoice)
-      ? LinglishTtsVoice.findSystemVoice(window.speechSynthesis.getVoices())
-      : null;
-    if (systemVoice) utterance.voice = systemVoice;
+    utterance.lang = 'en-US';
     utterance.rate = 0.9;
     window.speechSynthesis.speak(utterance);
     // metrics: pronounce interaction
@@ -8292,9 +11030,7 @@ navItems.forEach(item => {
         // 显示视频库（左侧边栏）
         if (videoSidebar) {
           videoSidebar.classList.remove('hidden');
-          if (toggleSidebarBtn) {
-            toggleSidebarBtn.textContent = '✕';
-          }
+          renderToggleSidebarControl(true, '关闭视频库');
         }
         // 隐藏右侧边栏
         if (rightSidebar && window.innerWidth <= 768) {
@@ -8366,9 +11102,7 @@ if (backToVideoBtn) {
     // 显示视频库
     if (videoSidebar) {
       videoSidebar.classList.remove('hidden');
-      if (toggleSidebarBtn) {
-        toggleSidebarBtn.textContent = '✕';
-      }
+      renderToggleSidebarControl(true, '关闭视频库');
     }
 
     // 隐藏右侧边栏（移动端）
@@ -8402,17 +11136,6 @@ if (showVocabularyBtn) {
       rightSidebar.classList.remove('visible');
       rightSidebar.classList.remove('dict-open');
     }
-  });
-}
-
-// 会员面板折叠/展开功能
-const membershipExpandBtn = document.getElementById('membership-expand-btn');
-const membershipPanel = document.getElementById('membership-panel');
-
-if (membershipExpandBtn && membershipPanel) {
-  membershipExpandBtn.addEventListener('click', function (e) {
-    e.stopPropagation();
-    membershipPanel.classList.toggle('collapsed');
   });
 }
 

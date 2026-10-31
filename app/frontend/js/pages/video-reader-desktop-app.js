@@ -1,4 +1,3 @@
-
     // Debug helper: enable via localStorage.setItem('linglish_debug','1')
     function debugLog() {
       try { if (localStorage.getItem('linglish_debug') === '1') console.log('[VR-Desktop]', ...arguments); } catch (_) { }
@@ -39,6 +38,16 @@
     if (!enableNetworkUpload) {
       const youtubeUploadLink = document.getElementById('nav-youtube-upload');
       if (youtubeUploadLink) youtubeUploadLink.remove();
+      const uploadSwitch = document.getElementById('nav-upload-switch');
+      const localUpload = document.getElementById('nav-local-upload');
+      if (uploadSwitch && localUpload) {
+        const menu = uploadSwitch.querySelector('.upload-switch-menu');
+        const remaining = menu ? menu.querySelectorAll('a').length : 0;
+        if (remaining <= 1) {
+          localUpload.classList.add('pill');
+          uploadSwitch.replaceWith(localUpload);
+        }
+      }
     }
 
     // Removed: const token - now using dynamic getToken() function below
@@ -51,7 +60,8 @@
       localStorage.getItem('authToken') ||
       sessionStorage.getItem('authToken');
     if (!initialToken && !isGuest) {
-      showToast('登录后就能播放这一句，进度也会留下来', 'warn');
+      showToast('请先登录', 'warn');
+      setTimeout(() => { window.location.href = './desktop-auth.html'; }, 1200);
     }
 
     // ===== State =====
@@ -61,6 +71,8 @@
       currentVideo: null,
       vocab: [],
       vocabStats: null,
+      // rawSegments: original timed cues (sync clock). currentSegments: display cards.
+      rawSegments: [],
       currentSegments: [],
       vocabFilter: null,
       user: null,
@@ -69,6 +81,7 @@
       showBilingual: false,
       isMainlandUser: false,
       isLoadingVideos: false,
+      isLoadingTranscript: false,
       hasLoadedVideos: false,
       cacheHint: ''
     };
@@ -120,7 +133,6 @@
     const playerOverlayRefreshBtn = document.getElementById('player-overlay-refresh');
     const openSourceBtn = document.getElementById('open-source');
     const importWordsBtn = document.getElementById('import-words');
-    const openVocabTabBtn = document.getElementById('open-vocab-tab');
     const focusToggleBtn = document.getElementById('focus-toggle');
     const currentTitleEl = document.getElementById('current-title');
     const videoMetaEl = document.getElementById('video-meta');
@@ -133,6 +145,7 @@
     const activeSubtitleEl = document.getElementById('active-subtitle');
     const activeTranslationEl = document.getElementById('active-translation');
     const subtitleLocateBtn = document.getElementById('subtitle-locate-btn');
+    const openVocabTabBtn = document.getElementById('open-vocab-tab');
     const nextVideoCardEl = document.getElementById('next-video-card');
     const nextVideoTitleEl = document.getElementById('next-video-title');
     const nextVideoMetaEl = document.getElementById('next-video-meta');
@@ -409,6 +422,7 @@
       if (state.currentVideo) {
         recordVideoProgress(state.currentVideo.id, safeCurrent, safeDuration);
         updateVideoCardProgress(state.currentVideo.id, percent);
+        rememberPlaybackSeconds(safeCurrent, percent);
       }
     }
 
@@ -672,25 +686,17 @@
         locateBtn?.click();
       });
     }
-    const subtitleIntensiveNoteBtn = document.getElementById('subtitle-intensive-note');
-    if (subtitleIntensiveNoteBtn) {
-      subtitleIntensiveNoteBtn.addEventListener('click', () => {
-        if (!window.WorkbenchImport) {
-          showToast('精读笔记组件未加载', 'warn');
+    if (openVocabTabBtn) {
+      openVocabTabBtn.addEventListener('click', () => {
+        if (location.hash === '#vocabulary') {
+          location.hash = '';
+          setHashView('');
+          vocabStudyStop();
           return;
         }
-        const text = String(activeSubtitleEl?.innerText || activeSubtitleEl?.textContent || '').trim();
-        const titleEl = document.getElementById('current-title');
-        const title = String(titleEl?.textContent || '').trim();
-        const ok = window.WorkbenchImport.openIntensiveNote({
-          text,
-          title: title && !/请从视频|选择视频/.test(title) ? title : '视频字幕精读',
-          template: 'intensive-note',
-          orient: 'story',
-          source: 'video-reader',
-          onEmpty: () => showToast('请先播放并定位到一句字幕', 'warn'),
-        });
-        if (ok) showToast('已打开精读笔记', 'success');
+        location.hash = '#vocabulary';
+        setHashView('#vocabulary', { videoId: state.currentVideo && state.currentVideo.id });
+        vocabStudyStart();
       });
     }
     if (nextVideoBtn) {
@@ -730,98 +736,13 @@
       });
     }
 
-    function rememberVideoWords(videoId, segments) {
-      if (!videoId) return;
-      const words = new Set();
-      (segments || []).forEach((seg) => {
-        const text = String(seg?.text || seg?.transcript || '').toLowerCase();
-        const found = text.match(/[a-z][a-z'-]*/g) || [];
-        found.forEach((word) => { if (word.length > 1) words.add(word); });
-      });
-      try {
-        sessionStorage.setItem(`linglish-video-words:${videoId}`, JSON.stringify(Array.from(words)));
-      } catch (_) { }
-    }
-
-    function currentStudySegment() {
-      const active = transcriptListEl && transcriptListEl.querySelector('.seg.active');
-      if (active) {
-        return {
-          start: Number(active.dataset.start || 0),
-          text: active.querySelector('.text')?.textContent || activeSubtitleEl?.textContent || '',
-        };
-      }
-      const seg = state.currentSegments && state.currentSegments[0];
-      if (!seg) return null;
-      return {
-        start: Number(seg.start_sec ?? seg.start ?? seg.startTime ?? 0),
-        text: String(seg.text || seg.transcript || ''),
-      };
-    }
-
-    function playStudySegment(segment) {
-      if (!segment) {
-        showToast('先选一个视频，再听这一句', 'warn');
-        return;
-      }
-      const start = Number.isFinite(segment.start) ? segment.start : 0;
-      if (currentPlayerType === 'youtube' && youtubePlayer && typeof youtubePlayer.seekTo === 'function') {
-        youtubePlayer.seekTo(start);
-        try { youtubePlayer.playVideo && youtubePlayer.playVideo(); } catch (_) { }
-        return;
-      }
-      if (playerEl) {
-        playerEl.currentTime = start;
-        playerEl.play().catch(() => {});
-      }
-    }
-
-    document.getElementById('sentence-listen')?.addEventListener('click', () => {
-      playStudySegment(currentStudySegment());
-    });
-    document.getElementById('sentence-shadow')?.addEventListener('click', () => {
-      const segment = currentStudySegment();
-      const video = state.currentVideo;
-      if (!video || !segment) {
-        showToast('先选一个视频，再跟读这一句', 'warn');
-        return;
-      }
-      const params = new URLSearchParams({
-        mode: 'shadowing',
-        videoId: String(video.id),
-        startSec: String(segment.start || 0),
-      });
-      window.location.href = `./practice-session-desktop.html?${params.toString()}`;
-    });
-    document.getElementById('sentence-review')?.addEventListener('click', () => {
-      const video = state.currentVideo;
-      const segment = currentStudySegment();
-      if (!video || !segment) {
-        showToast('先听这一句，再复习里面的词', 'warn');
-        return;
-      }
-      try {
-        const words = String(segment.text || '').toLowerCase().match(/[a-z][a-z'-]*/g) || [];
-        sessionStorage.setItem(`linglish-sentence-words:${video.id}`, JSON.stringify(words.filter((word) => word.length > 1)));
-      } catch (_) { }
-      location.hash = '#vocabulary';
-      setHashView('#vocabulary', { videoId: video.id, sentence: true });
-      vocabStudyStart();
-    });
-
     playerOverlayRefreshBtn?.addEventListener('click', () => {
       try { location.reload(); } catch (_) { }
     });
-    playerOverlayRetryBtn?.addEventListener('click', async () => {
+    playerOverlayRetryBtn?.addEventListener('click', () => {
       try {
-        if (playerOverlayRetryBtn.textContent === '去登录') {
-          window.location.href = './desktop-auth.html';
-          return;
-        }
         if (!state.currentVideo) return;
-        if (window.LinglishMediaSession) {
-          try { await window.LinglishMediaSession.clear(); } catch (_) { }
-        }
+        // Re-select current video to retry loading strategy.
         selectVideo(state.currentVideo);
       } catch (_) { }
     });
@@ -855,7 +776,7 @@
         youtubePlayer = null;
       },
       clearTranscript: () => {
-        state.currentSegments = [];
+        clearTranscriptCues();
         renderTranscript();
         renderActiveSubtitle(-1);
       },
@@ -1065,12 +986,12 @@
     const savedMode = (localStorage.getItem('transcript_mode') || 'en').toLowerCase();
     state.showBilingual = savedMode === 'bi';
 
-    // 检测当前字幕是否有翻译（手动导入的双语字幕）
+    // 检测当前字幕是否已有中文（导入或已按需翻译）
     const hasTranslationAvailable = () => {
       if (!Array.isArray(state.currentSegments) || !state.currentSegments.length) return false;
       return state.currentSegments.some(seg => {
         const trans = seg.translation || seg.cn || seg.zh || seg.text_cn || '';
-        return String(trans).trim().length > 0;
+        return String(trans).trim().length > 0 && /[\u4e00-\u9fa5]/.test(String(trans));
       });
     };
 
@@ -1090,19 +1011,14 @@
 
     const syncModeButtons = () => {
       if (!modeEnBtn || !modeBiBtn) return;
-      const hasTrans = hasTranslationAvailable();
+      const hasSegs = Array.isArray(state.currentSegments) && state.currentSegments.length > 0;
       modeEnBtn.classList.toggle('active', !state.showBilingual);
-      modeBiBtn.classList.toggle('active', state.showBilingual && hasTrans);
-      // 如果没有翻译，禁用双语按钮
-      modeBiBtn.disabled = !hasTrans;
-      modeBiBtn.style.opacity = hasTrans ? '1' : '0.5';
-      modeBiBtn.style.cursor = hasTrans ? 'pointer' : 'not-allowed';
-      modeBiBtn.title = hasTrans ? '' : '暂无中文翻译';
-      // 如果当前选中双语但没有翻译，自动切换到英文
-      if (state.showBilingual && !hasTrans) {
-        state.showBilingual = false;
-        localStorage.setItem('transcript_mode', 'en');
-      }
+      modeBiBtn.classList.toggle('active', !!state.showBilingual);
+      // 有字幕即可点双语：没有现成中文时会按需翻译
+      modeBiBtn.disabled = !hasSegs;
+      modeBiBtn.style.opacity = hasSegs ? '1' : '0.5';
+      modeBiBtn.style.cursor = hasSegs ? 'pointer' : 'not-allowed';
+      modeBiBtn.title = hasSegs ? '显示中英双语（无译文时自动翻译）' : '暂无字幕';
     };
     syncModeButtons();
     modeEnBtn?.addEventListener('click', () => {
@@ -1113,12 +1029,16 @@
       syncActive();
     });
     modeBiBtn?.addEventListener('click', () => {
-      if (!hasTranslationAvailable()) return; // 无翻译时不响应点击
+      if (!Array.isArray(state.currentSegments) || !state.currentSegments.length) {
+        try { showToast('暂无字幕，无法切换双语', 'warn'); } catch (_) { }
+        return;
+      }
       state.showBilingual = true;
       localStorage.setItem('transcript_mode', 'bi');
       syncModeButtons();
       renderTranscript();
       syncActive();
+      ensureDesktopBilingualTranslations().catch(() => { });
     });
 
     // ===== Helpers =====
@@ -1720,10 +1640,15 @@
 
     function syncStudySwitch(isVocab) {
       if (!openVocabTabBtn) return;
-      const label = isVocab ? '返回' : '查看';
+      const label = isVocab ? '视频学习' : '查看词汇表';
       const labelEl = openVocabTabBtn.querySelector('.open-vocab-tab__label');
       if (labelEl) labelEl.textContent = label;
-      openVocabTabBtn.title = isVocab ? '返回视频播放' : '查看这个视频记下的词';
+      else openVocabTabBtn.textContent = label;
+      const vocabIcon = openVocabTabBtn.querySelector('.header-action-icon--vocab');
+      const videoIcon = openVocabTabBtn.querySelector('.header-action-icon--video');
+      if (vocabIcon) vocabIcon.hidden = !!isVocab;
+      if (videoIcon) videoIcon.hidden = !isVocab;
+      openVocabTabBtn.title = isVocab ? '返回视频播放' : '查看词汇表';
       openVocabTabBtn.setAttribute('aria-label', label);
       openVocabTabBtn.dataset.studyTarget = isVocab ? 'video' : 'vocab';
     }
@@ -2306,8 +2231,94 @@
     const vbState = { status: '', scope: 'all', channelKey: '', filtersOpen: false, libraryView: 'videos' };
     const CHANNEL_STORE_KEY = 'linglish_channels_v1';
     const PODCAST_STORE_KEY = 'linglish_podcasts_v1';
+    const MEDIA_DEFAULTS_VERSION_KEY = 'linglish_media_defaults_version';
+    const MEDIA_STORE_LIMIT = 120;
+    const mediaDefaults = window.LinglishMediaLibraryDefaults || null;
     const podState = { feedUrl: '' };
     let podcastDialogMode = 'search';
+    const channelHydratePromises = new Map();
+    const podcastHydratePromises = new Map();
+
+    function ensureDefaultMediaLibraries() {
+      if (!mediaDefaults) return;
+      try {
+        const version = localStorage.getItem(MEDIA_DEFAULTS_VERSION_KEY);
+        let podcasts = mediaDefaults.mergeDefaults(
+          readStore(PODCAST_STORE_KEY),
+          mediaDefaults.buildPodcastDefaults(),
+          'feedUrl'
+        );
+        let channels = mediaDefaults.mergeDefaults(
+          readStore(CHANNEL_STORE_KEY),
+          mediaDefaults.buildChannelDefaults(),
+          'channelId'
+        );
+        if (mediaDefaults.patchMissingImages) {
+          podcasts = mediaDefaults.patchMissingImages(podcasts, mediaDefaults.buildPodcastDefaults(), 'feedUrl');
+          channels = mediaDefaults.patchMissingImages(channels, mediaDefaults.buildChannelDefaults(), 'channelId');
+        }
+        writeStore(PODCAST_STORE_KEY, podcasts.slice(0, MEDIA_STORE_LIMIT));
+        writeStore(CHANNEL_STORE_KEY, channels.slice(0, MEDIA_STORE_LIMIT));
+        if (version !== mediaDefaults.VERSION) {
+          localStorage.setItem(MEDIA_DEFAULTS_VERSION_KEY, mediaDefaults.VERSION);
+        }
+      } catch (_) { }
+      hydrateMediaCovers();
+    }
+
+    let coverHydratePromise = null;
+    async function hydrateMediaCovers() {
+      if (coverHydratePromise) return coverHydratePromise;
+      coverHydratePromise = (async () => {
+        try {
+          const channels = readStore(CHANNEL_STORE_KEY);
+          const podcasts = readStore(PODCAST_STORE_KEY);
+          const items = [];
+          channels.forEach((ch) => {
+            if (!ch || ch.image) return;
+            items.push({
+              key: `ch:${ch.channelId}`,
+              title: ch.title || '',
+              query: ch.title || ch.handle || '',
+            });
+          });
+          podcasts.forEach((pod) => {
+            if (!pod || pod.image) return;
+            items.push({
+              key: `pod:${pod.feedUrl}`,
+              title: pod.title || '',
+              query: pod.query || pod.title || '',
+            });
+          });
+          if (!items.length) return;
+          const data = await postMedia('covers/resolve', { items });
+          const images = data.images || {};
+          let channelChanged = false;
+          let podcastChanged = false;
+          const nextChannels = channels.map((ch) => {
+            const image = images[`ch:${ch.channelId}`];
+            if (!image || ch.image) return ch;
+            channelChanged = true;
+            return { ...ch, image };
+          });
+          const nextPodcasts = podcasts.map((pod) => {
+            const image = images[`pod:${pod.feedUrl}`];
+            if (!image || pod.image) return pod;
+            podcastChanged = true;
+            return { ...pod, image };
+          });
+          if (channelChanged) writeStore(CHANNEL_STORE_KEY, nextChannels.slice(0, MEDIA_STORE_LIMIT));
+          if (podcastChanged) writeStore(PODCAST_STORE_KEY, nextPodcasts.slice(0, MEDIA_STORE_LIMIT));
+          if ((channelChanged || podcastChanged) && window.__vbOpen) {
+            renderVideoBrowser();
+          }
+        } catch (_) { }
+        finally {
+          coverHydratePromise = null;
+        }
+      })();
+      return coverHydratePromise;
+    }
 
     // Build an SVG data URI with a per-card gradient + big initial + play icon.
     // IMPORTANT: encodeURIComponent does NOT encode apostrophes, so always use
@@ -2476,9 +2487,8 @@
     }
     function activeLibraryView() {
       const key = String(vbState.channelKey || '');
-      if (key.startsWith('import:')) return vbState.libraryView === 'channels' ? 'channels' : 'mine';
-      if (key.startsWith('local:')) return 'channels';
-      if (vbState.libraryView === 'channels' || vbState.libraryView === 'mine') return vbState.libraryView;
+      if (key.startsWith('import:') || key.startsWith('local:')) return 'channels';
+      if (vbState.libraryView === 'channels' || vbState.libraryView === 'podcasts') return vbState.libraryView;
       return 'videos';
     }
     function syncLibraryChrome(filtering) {
@@ -2489,16 +2499,22 @@
       const inChannel = Boolean(vbState.channelKey);
       const view = activeLibraryView();
       const inChannels = view === 'channels';
-      const inMine = view === 'mine';
+      const inPodcasts = view === 'podcasts';
+      const inShow = inPodcasts && Boolean(podState.feedUrl);
+      const userLibrary = view === 'videos';
       const pop = document.getElementById('vb-filter-pop');
-      if (pop) pop.hidden = !inMine || inChannel || !vbState.filtersOpen;
+      const categoryBtn = document.getElementById('vb-view-mine');
+      const podPanel = document.getElementById('pod-panel');
+      const videoGrid = document.getElementById('vb-grid');
+      if (categoryBtn) categoryBtn.hidden = !userLibrary || inChannel;
+      if (pop) pop.hidden = !userLibrary || inChannel || !vbState.filtersOpen;
       if (chips) chips.hidden = false;
       if (hero) hero.hidden = !inChannel;
-      if (title && !inChannel) {
-        title.textContent = inChannels ? '频道库' : (inMine ? '选择分类' : '精选视频');
-      }
+      if (podPanel) podPanel.hidden = !inPodcasts;
+      if (videoGrid) videoGrid.hidden = inPodcasts;
+      if (title && !inChannel) title.textContent = inPodcasts ? '播客' : (inChannels ? '频道库' : '视频库');
       if (hint) {
-        const picking = inMine && new URLSearchParams(location.search).get('returnTo') === 'coach';
+        const picking = userLibrary && new URLSearchParams(location.search).get('returnTo') === 'coach';
         hint.hidden = !picking;
         if (picking) {
           const label = new URLSearchParams(location.search).get('mode') === 'dialogue' ? '实战场' : 'AI陪练';
@@ -2508,13 +2524,20 @@
       const filterBtn = document.getElementById('vb-filter-toggle');
       if (filterBtn) filterBtn.hidden = true;
       const addBtn = document.getElementById('vb-add-channel');
-      if (addBtn) addBtn.hidden = !inMine || inChannel;
+      if (addBtn) addBtn.hidden = !inChannels || inChannel;
+      const podAdd = document.getElementById('pod-add-wrap');
+      if (podAdd) podAdd.hidden = !inPodcasts || inShow;
       const search = document.getElementById('vb-search');
-      if (search && document.activeElement !== search) {
-        search.placeholder = inChannels && !inChannel ? '搜索频道名称…' : '搜索视频标题 / 合集 / 标签…';
+      if (search) {
+        search.placeholder = inPodcasts
+          ? (inShow ? '搜索这一档的单集' : '搜索已添加的播客')
+          : (inChannels && !inChannel ? '搜索频道名称…' : '搜索视频标题 / 合集 / 标签…');
       }
       document.querySelectorAll('[data-vb-view]').forEach((btn) => {
-        const on = btn.dataset.vbView === view;
+        const isCategory = btn.dataset.vbView === 'mine';
+        const on = isCategory
+          ? (userLibrary && vbState.filtersOpen && !inChannel)
+          : btn.dataset.vbView === view;
         btn.classList.toggle('active', on);
         btn.setAttribute('aria-selected', String(on));
       });
@@ -2580,11 +2603,13 @@
       return readStore(CHANNEL_STORE_KEY).map((ch) => ({
         key: `import:${ch.channelId}`,
         title: ch.title || 'YouTube 频道',
-        thumb: (ch.videos && ch.videos[0] && ch.videos[0].thumbnail) || '',
+        thumb: ch.image
+          || (ch.videos && ch.videos[0] && ch.videos[0].thumbnail)
+          || '',
       }));
     }
     function renderChannelShelf(grid, empty, stats, videos) {
-      const items = [];
+      const items = importedChannelItems();
       const seen = new Set();
       const groups = new Map();
       (videos || []).forEach((video) => {
@@ -2607,11 +2632,11 @@
           const title = empty.querySelector('.vb-empty-title');
           const hint = empty.querySelector('.vb-empty-hint');
           if (title) title.textContent = items.length ? '没有找到这个频道' : '还没有频道';
-          if (hint) hint.textContent = items.length ? '换个频道名称试试' : '';
+          if (hint) hint.textContent = items.length ? '换个频道名称试试' : '点「添加频道」，粘贴 YouTube 频道链接';
           const reset = empty.querySelector('#vb-reset-btn');
           if (reset) reset.hidden = true;
           const addEmpty = empty.querySelector('#vb-channel-empty-add');
-          if (addEmpty) addEmpty.hidden = true;
+          if (addEmpty) addEmpty.hidden = items.length > 0;
         }
         return;
       }
@@ -2622,17 +2647,108 @@
       if (addEmpty) addEmpty.hidden = true;
       const frag = document.createDocumentFragment();
       visible.forEach((item) => frag.appendChild(renderShelfCard(item, () => {
+        if (item.key.startsWith('import:')) {
+          const channelId = item.key.slice(7);
+          const stored = readStore(CHANNEL_STORE_KEY).find((ch) => ch.channelId === channelId);
+          if (stored && stored.hydrateFailed) {
+            updateChannelInStore(channelId, { hydrateFailed: false, hydrateError: '' });
+          }
+        }
         vbState.channelKey = item.key;
         renderVideoBrowser();
       })));
       grid.innerHTML = '';
       grid.appendChild(frag);
     }
+    function updateChannelInStore(channelId, patch) {
+      const list = readStore(CHANNEL_STORE_KEY);
+      const next = list.map((item) => (item.channelId === channelId ? { ...item, ...patch } : item));
+      writeStore(CHANNEL_STORE_KEY, next.slice(0, MEDIA_STORE_LIMIT));
+      return next.find((item) => item.channelId === channelId) || null;
+    }
+    async function hydrateChannelIfNeeded(channel) {
+      if (!channel || channel.local || (Array.isArray(channel.videos) && channel.videos.length)) return channel;
+      const url = channel.pageUrl || (channel.handle ? `https://www.youtube.com/@${channel.handle}` : '');
+      if (!url) return channel;
+      const key = String(channel.channelId || url);
+      if (channelHydratePromises.has(key)) return channelHydratePromises.get(key);
+      const pending = (async () => {
+        try {
+          const data = await postMedia('channels/preview', { url });
+          const live = data.channel || {};
+          return updateChannelInStore(channel.channelId, {
+            title: live.title || channel.title,
+            handle: live.handle || channel.handle,
+            pageUrl: live.pageUrl || channel.pageUrl,
+            youtubeChannelId: live.channelId || channel.youtubeChannelId || '',
+            description: `来自 YouTube · ${(live.videos || []).length} 个视频`,
+            videos: live.videos || [],
+            seeded: channel.seeded === true,
+            defaultId: channel.defaultId || '',
+            hydrateFailed: false,
+            hydrateError: '',
+          }) || channel;
+        } catch (err) {
+          const message = err.message || '频道读取失败';
+          showToast(message, 'warn');
+          return updateChannelInStore(channel.channelId, {
+            hydrateFailed: true,
+            hydrateError: message,
+          }) || channel;
+        } finally {
+          channelHydratePromises.delete(key);
+        }
+      })();
+      channelHydratePromises.set(key, pending);
+      return pending;
+    }
     function renderChannelFeed(grid, empty, stats, q) {
       const channel = findOpenChannel();
       if (!channel) {
         vbState.channelKey = '';
         renderVideoBrowser();
+        return;
+      }
+      if (!channel.local && !(channel.videos || []).length) {
+        grid.innerHTML = '';
+        if (channel.hydrateFailed) {
+          if (stats) stats.textContent = '0 个视频';
+          if (empty) {
+            empty.hidden = false;
+            const title = empty.querySelector('.vb-empty-title');
+            const hint = empty.querySelector('.vb-empty-hint');
+            if (title) title.textContent = '暂时读不到这个频道';
+            if (hint) hint.textContent = channel.hydrateError || '当前网络读不到 YouTube，稍后重试或配置代理';
+            const reset = empty.querySelector('#vb-reset-btn');
+            if (reset) {
+              reset.hidden = false;
+              reset.textContent = '重新读取';
+              reset.onclick = () => {
+                updateChannelInStore(channel.channelId, { hydrateFailed: false, hydrateError: '' });
+                renderVideoBrowser();
+              };
+            }
+            const addEmpty = empty.querySelector('#vb-channel-empty-add');
+            if (addEmpty) addEmpty.hidden = true;
+          }
+          return;
+        }
+        if (stats) stats.textContent = '读取中…';
+        if (empty) {
+          empty.hidden = false;
+          const title = empty.querySelector('.vb-empty-title');
+          const hint = empty.querySelector('.vb-empty-hint');
+          if (title) title.textContent = '正在读取频道…';
+          if (hint) hint.textContent = '第一次打开会多花十几秒';
+          const reset = empty.querySelector('#vb-reset-btn');
+          if (reset) reset.hidden = true;
+          const addEmpty = empty.querySelector('#vb-channel-empty-add');
+          if (addEmpty) addEmpty.hidden = true;
+        }
+        hydrateChannelIfNeeded(channel).then((next) => {
+          if (vbState.channelKey === `import:${channel.channelId}`) renderVideoBrowser();
+          return next;
+        });
         return;
       }
       const nameEl = document.getElementById('vb-channel-name');
@@ -2697,23 +2813,31 @@
       try {
         const data = await postMedia('channels/preview', { url });
         const channel = data.channel;
-        const list = readStore(CHANNEL_STORE_KEY).filter((item) => item.channelId !== channel.channelId);
+        const existing = mediaDefaults
+          ? mediaDefaults.findChannelDuplicate(readStore(CHANNEL_STORE_KEY), channel)
+          : readStore(CHANNEL_STORE_KEY).find((item) => item.channelId === channel.channelId);
+        if (existing) {
+          if (error) error.textContent = '这个频道已经在库里了';
+          return;
+        }
+        const list = readStore(CHANNEL_STORE_KEY);
         list.unshift({
           channelId: channel.channelId,
+          youtubeChannelId: channel.channelId,
           handle: channel.handle,
           title: channel.title,
           pageUrl: channel.pageUrl,
           description: `来自 YouTube · ${channel.videos.length} 个视频`,
           videos: channel.videos,
         });
-        writeStore(CHANNEL_STORE_KEY, list.slice(0, 40));
+        writeStore(CHANNEL_STORE_KEY, list.slice(0, MEDIA_STORE_LIMIT));
         closeChannelDialog();
         if (input) input.value = '';
         openVideoBrowser();
         vbState.libraryView = 'channels';
         vbState.channelKey = `import:${channel.channelId}`;
         renderVideoBrowser();
-        showToast('频道已添加，可从顶部「频道」再次进入', 'info');
+        showToast('频道已添加，点开即可选择视频', 'info');
       } catch (err) {
         if (error) error.textContent = err.message || '添加失败';
       } finally {
@@ -2723,42 +2847,111 @@
         }
       }
     }
-    function rememberPodcast(podcast) {
-      const list = readStore(PODCAST_STORE_KEY).filter((item) => item.feedUrl !== podcast.feedUrl);
+    function rememberPodcast(podcast, options = {}) {
+      const allowReplace = options.allowReplace === true;
+      const existing = mediaDefaults
+        ? mediaDefaults.findPodcastDuplicate(readStore(PODCAST_STORE_KEY), podcast)
+        : readStore(PODCAST_STORE_KEY).find((item) => item.feedUrl === podcast.feedUrl);
+      if (existing && !allowReplace) {
+        const err = new Error('这个播客已经在库里了');
+        err.code = 'PODCAST_DUPLICATE';
+        throw err;
+      }
+      const list = readStore(PODCAST_STORE_KEY).filter((item) => {
+        if (existing && item === existing) return false;
+        if (item.feedUrl === podcast.feedUrl) return false;
+        if (podcast.defaultId && item.defaultId === podcast.defaultId) return false;
+        return true;
+      });
       list.unshift({
+        defaultId: podcast.defaultId || (existing && existing.defaultId) || '',
         feedUrl: podcast.feedUrl,
         title: podcast.title,
         author: podcast.author || '',
         image: podcast.image || '',
         description: podcast.description || podcast.author || '',
+        query: podcast.query || (existing && existing.query) || podcast.title,
         episodes: podcast.episodes || [],
+        seeded: Boolean(podcast.seeded || (existing && existing.seeded)),
       });
-      writeStore(PODCAST_STORE_KEY, list.slice(0, 40));
+      writeStore(PODCAST_STORE_KEY, list.slice(0, MEDIA_STORE_LIMIT));
       return list[0];
     }
+    function openLibrary(library) {
+      const next = library === 'channels' || library === 'podcasts' ? library : 'videos';
+      vbState.libraryView = next;
+      vbState.channelKey = '';
+      vbState.filtersOpen = false;
+      podState.feedUrl = '';
+      openVideoBrowser();
+    }
     function openPodcastBrowser() {
-      const modal = document.getElementById('podcast-browser-modal');
-      if (!modal) return;
-      modal.hidden = false;
-      modal.setAttribute('aria-hidden', 'false');
-      window.__podOpen = true;
-      renderPodcastBrowser();
+      openLibrary('podcasts');
     }
     function closePodcastBrowser() {
-      const modal = document.getElementById('podcast-browser-modal');
-      if (!modal) return;
-      modal.hidden = true;
-      modal.setAttribute('aria-hidden', 'true');
       window.__podOpen = false;
       const menu = document.getElementById('pod-add-menu');
       if (menu) menu.hidden = true;
+      closeVideoBrowser();
+    }
+    function updatePodcastInStore(feedUrl, patch) {
+      const list = readStore(PODCAST_STORE_KEY);
+      const next = list.map((item) => (item.feedUrl === feedUrl ? { ...item, ...patch } : item));
+      writeStore(PODCAST_STORE_KEY, next.slice(0, MEDIA_STORE_LIMIT));
+      const nextFeed = patch.feedUrl || feedUrl;
+      return next.find((item) => item.feedUrl === nextFeed) || null;
+    }
+    async function hydratePodcastIfNeeded(show) {
+      if (!show) return show;
+      const seeded = String(show.feedUrl || '').startsWith('seed:podcast:');
+      if (!seeded && Array.isArray(show.episodes) && show.episodes.length) return show;
+      const seedKey = show.feedUrl;
+      if (podcastHydratePromises.has(seedKey)) return podcastHydratePromises.get(seedKey);
+      const pending = (async () => {
+        try {
+          const data = await postMedia('podcasts/preview', {
+            url: show.feedUrl,
+            query: show.query || show.title,
+            collectionId: show.collectionId || '',
+          });
+          const live = data.podcast || {};
+          const saved = updatePodcastInStore(seedKey, {
+            feedUrl: live.feedUrl || show.feedUrl,
+            title: live.title || show.title,
+            author: live.author || show.author || '',
+            image: live.image || show.image || '',
+            description: live.description || show.description || show.author || '',
+            episodes: live.episodes || [],
+            collectionId: live.collectionId || show.collectionId || '',
+            seeded: true,
+            defaultId: show.defaultId || '',
+            query: show.query || show.title,
+            hydrateFailed: false,
+            hydrateError: '',
+          });
+          if (podState.feedUrl === seedKey && saved) podState.feedUrl = saved.feedUrl;
+          return saved || show;
+        } catch (err) {
+          const message = err.message || '播客读取失败';
+          showToast(message, 'warn');
+          return updatePodcastInStore(seedKey, {
+            hydrateFailed: true,
+            hydrateError: message,
+          }) || show;
+        } finally {
+          podcastHydratePromises.delete(seedKey);
+        }
+      })();
+      podcastHydratePromises.set(seedKey, pending);
+      return pending;
     }
     function renderPodcastBrowser() {
       const grid = document.getElementById('pod-grid');
       const empty = document.getElementById('pod-empty');
       const hero = document.getElementById('pod-show-hero');
-      const search = document.getElementById('pod-search');
+      const search = document.getElementById('vb-search');
       if (!grid) return;
+      syncLibraryChrome(false);
       const q = ((search && search.value) || '').trim().toLowerCase();
       const shows = readStore(PODCAST_STORE_KEY);
       const show = shows.find((item) => item.feedUrl === podState.feedUrl) || null;
@@ -2779,11 +2972,37 @@
           feedUrl: item.feedUrl,
           square: true,
         }, (picked) => {
+          const stored = readStore(PODCAST_STORE_KEY).find((show) => show.feedUrl === picked.feedUrl);
+          if (stored && stored.hydrateFailed) {
+            updatePodcastInStore(picked.feedUrl, { hydrateFailed: false, hydrateError: '' });
+          }
           podState.feedUrl = picked.feedUrl;
-          renderPodcastBrowser();
+          renderVideoBrowser();
         })));
         grid.innerHTML = '';
         grid.appendChild(frag);
+        return;
+      }
+      if (!(show.episodes || []).length || String(show.feedUrl || '').startsWith('seed:podcast:')) {
+        grid.innerHTML = '';
+        if (show.hydrateFailed) {
+          if (empty) {
+            empty.hidden = false;
+            const title = empty.querySelector('.vb-empty-title');
+            const hint = empty.querySelector('.vb-empty-hint');
+            if (title) title.textContent = '暂时读不到这个播客';
+            if (hint) hint.textContent = show.hydrateError || '请稍后重试，或用右上角「添加播客」换一个源';
+          }
+          return;
+        }
+        if (empty) {
+          empty.hidden = false;
+          const title = empty.querySelector('.vb-empty-title');
+          const hint = empty.querySelector('.vb-empty-hint');
+          if (title) title.textContent = '正在读取播客…';
+          if (hint) hint.textContent = '第一次打开会多花十几秒';
+        }
+        hydratePodcastIfNeeded(show).then(() => renderVideoBrowser());
         return;
       }
       const nameEl = document.getElementById('pod-show-name');
@@ -2853,12 +3072,22 @@
     }
     async function subscribePodcastFeed(url) {
       const data = await postMedia('podcasts/preview', { url });
-      const saved = rememberPodcast(data.podcast);
-      closePodcastDialog();
-      openPodcastBrowser();
-      podState.feedUrl = saved.feedUrl;
-      renderPodcastBrowser();
-      showToast('播客已添加', 'info');
+      try {
+        const saved = rememberPodcast(data.podcast);
+        closePodcastDialog();
+        openPodcastBrowser();
+        podState.feedUrl = saved.feedUrl;
+        renderPodcastBrowser();
+        showToast('播客已添加', 'info');
+      } catch (err) {
+        if (err && err.code === 'PODCAST_DUPLICATE') {
+          const error = document.getElementById('podcast-dialog-error');
+          if (error) error.textContent = err.message;
+          showToast(err.message, 'warn');
+          return;
+        }
+        throw err;
+      }
     }
     async function submitPodcastDialog() {
       const input = document.getElementById('podcast-query');
@@ -2946,10 +3175,14 @@
         external_podcast: true,
         language: 'en',
         episode_notes: episode.description || show.description || '',
+        audioUrl: episode.audioUrl,
+        transcriptUrl: episode.transcriptUrl || '',
       };
       state.currentVideo = video;
-      state.currentSegments = [];
+      clearTranscriptCues();
+      rememberStudyVideo(video);
       if (currentTitleEl) currentTitleEl.textContent = video.title;
+      try { if (typeof renderVideoIntro === 'function') renderVideoIntro(video); } catch (_) { }
       updateVideoMeta(video);
       if (youtubePlayer) {
         try { youtubePlayer.destroy(); } catch (_) { }
@@ -2977,20 +3210,271 @@
       try {
         const data = await postMedia('cues', { url: episode.transcriptUrl });
         if (!state.currentVideo || state.currentVideo.id !== id) return;
-        let cues = (data.cues || []).map((cue, index) => ({ index, text: cue.text, start: cue.start, end: cue.end }));
-        if (window.LinglishSentenceSegments?.toDisplayedParagraphs) {
-          cues = window.LinglishSentenceSegments.toDisplayedParagraphs(cues);
-        } else if (window.LinglishSentenceSegments?.toCompleteSentences) {
-          cues = window.LinglishSentenceSegments.toCompleteSentences(cues);
-        }
-        state.currentSegments = cues;
+        const cues = (data.cues || []).map((cue, index) => ({ index, text: cue.text, start: cue.start, end: cue.end }));
+        applyTranscriptCues(cues, { persistOnVideo: true });
         if (window.LinglishStudyMedia && window.LinglishStudyMedia.id === id) {
-          window.LinglishStudyMedia.cues = cues;
+          window.LinglishStudyMedia.cues = state.rawSegments;
         }
         video.episode_notes = '';
         renderTranscript();
         syncActive();
       } catch (_) { }
+    }
+
+    const LAST_STUDY_MEDIA_KEY = 'linglish.last_study_media.v1';
+
+    function readLastStudyMediaSnap() {
+      try {
+        const data = JSON.parse(localStorage.getItem(LAST_STUDY_MEDIA_KEY) || 'null');
+        return data && data.id != null ? data : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function videoFromStudyMediaSnap(snap) {
+      if (!snap || snap.id == null || snap.id === '') return null;
+      const id = String(snap.id);
+      const ytFromId = (id.match(/^yt:([\w-]{6,})$/i) || [])[1] || '';
+      const youtubeId = String(snap.youtube_video_id || ytFromId || '').trim();
+      if (snap.external_podcast || snap.audioUrl) {
+        return {
+          id,
+          title: snap.title || '播客',
+          original_filename: snap.title || '播客',
+          audioUrl: snap.audioUrl || '',
+          transcriptUrl: snap.transcriptUrl || '',
+          external_podcast: true,
+          thumbnail_path: snap.thumbnail_path || '',
+          collection_name: snap.collection_name || '',
+          status: 'ready',
+          duration_sec: 0,
+        };
+      }
+      if (youtubeId) {
+        return {
+          id: id.startsWith('yt:') ? id : ('yt:' + youtubeId),
+          title: snap.title || ('YouTube ' + youtubeId),
+          original_filename: snap.title || ('YouTube ' + youtubeId),
+          youtube_video_id: youtubeId,
+          external_youtube: true,
+          thumbnail_path: snap.thumbnail_path || ('https://i.ytimg.com/vi/' + youtubeId + '/hqdefault.jpg'),
+          collection_name: snap.collection_name || '',
+          status: 'ready',
+          duration_sec: 0,
+        };
+      }
+      if (/^\d+$/.test(id)) {
+        return {
+          id: Number(id) || id,
+          title: snap.title || '',
+          original_filename: snap.title || '',
+          thumbnail_path: snap.thumbnail_path || '',
+          status: 'ready',
+        };
+      }
+      return null;
+    }
+
+    function syncStudyVideoUrl(v) {
+      if (!v || v.id == null) return;
+      try {
+        const url = new URL(window.location.href);
+        const id = String(v.id);
+        url.searchParams.set('videoId', id);
+        if (v.youtube_video_id) url.searchParams.set('yt', String(v.youtube_video_id));
+        else url.searchParams.delete('yt');
+        // Keep refresh/share links on the learning page, not a stale level picker.
+        url.searchParams.delete('level');
+        url.searchParams.delete('difficulty');
+        window.history.replaceState({}, '', url.pathname + url.search + url.hash);
+      } catch (_) {}
+    }
+
+    function rememberPlaybackSeconds(seconds, percent) {
+      const video = state.currentVideo;
+      if (!video || video.id == null) return;
+      const sec = Math.max(0, Math.round(Number(seconds) || 0));
+      if (sec < 1) return;
+      try {
+        const snap = readLastStudyMediaSnap() || { id: String(video.id) };
+        if (String(snap.id) !== String(video.id)) return;
+        snap.seconds = sec;
+        if (Number.isFinite(Number(percent)) && Number(percent) > 0) {
+          snap.percent = Math.max(0, Math.min(100, Math.round(Number(percent))));
+        }
+        snap.updatedAt = Date.now();
+        localStorage.setItem(LAST_STUDY_MEDIA_KEY, JSON.stringify(snap));
+      } catch (_) {}
+      if (window.LinglishStudyRecent) {
+        try {
+          window.LinglishStudyRecent.touch(String(video.id), {
+            seconds: sec,
+            percent: Number.isFinite(Number(percent)) ? Number(percent) : undefined,
+          });
+        } catch (_) {}
+      }
+    }
+
+    function rememberStudyVideo(v) {
+      if (!v || v.id == null || v.id === '') return;
+      const id = String(v.id);
+      if (/^\d+$/.test(id)) {
+        try { localStorage.setItem('last_video_id', id); } catch (_) {}
+      }
+      const snap = {
+        id,
+        title: v.title || v.original_filename || ('视频 ' + id),
+        youtube_video_id: v.youtube_video_id || '',
+        audioUrl: v.audioUrl || '',
+        transcriptUrl: v.transcriptUrl || '',
+        external_podcast: Boolean(v.external_podcast || v.audioUrl),
+        external_youtube: Boolean(v.external_youtube || v.youtube_video_id),
+        thumbnail_path: v.thumbnail_path || '',
+        collection_name: v.collection_name || v.show_title || '',
+        updatedAt: Date.now(),
+      };
+      try {
+        const prevSnap = readLastStudyMediaSnap();
+        if (prevSnap && String(prevSnap.id) === id) {
+          snap.seconds = Number(prevSnap.seconds) || 0;
+          snap.percent = Number(prevSnap.percent) || 0;
+        }
+        localStorage.setItem(LAST_STUDY_MEDIA_KEY, JSON.stringify(snap));
+      } catch (_) {}
+      try { syncStudyVideoUrl(v); } catch (_) {}
+      try {
+        if (!window.LinglishStudyRecent) return;
+        const prev = window.LinglishStudyRecent.get(id);
+        const percent = typeof getVideoProgressPercent === 'function' ? getVideoProgressPercent(id) : 0;
+        let thumb = '';
+        try { thumb = resolveThumbnail(v) || v.thumbnail_path || ''; } catch (_) { thumb = v.thumbnail_path || ''; }
+        window.LinglishStudyRecent.record({
+          id,
+          title: snap.title,
+          thumb,
+          seconds: prev ? prev.seconds : 0,
+          percent: percent || (prev ? prev.percent : 0),
+          audioUrl: snap.audioUrl,
+          transcriptUrl: snap.transcriptUrl,
+          youtube_video_id: snap.youtube_video_id,
+          showTitle: snap.collection_name,
+        });
+        try { renderStudyRecent(); } catch (_) {}
+      } catch (_) {}
+    }
+
+    function findPodcastFromRecent(entry) {
+      const id = String(entry && entry.id || '');
+      if (!id) return null;
+      const rawId = id.startsWith('pod:') ? id.slice(4) : id;
+      const shows = typeof readStore === 'function' ? readStore(PODCAST_STORE_KEY) : [];
+      for (let i = 0; i < shows.length; i += 1) {
+        const show = shows[i];
+        const episodes = Array.isArray(show && show.episodes) ? show.episodes : [];
+        const episode = episodes.find((ep) => {
+          if (!ep) return false;
+          const epId = String(ep.id || '');
+          const audio = String(ep.audioUrl || '');
+          return epId === rawId || epId === id || `pod:${epId}` === id
+            || audio === rawId || `pod:${audio}` === id;
+        });
+        if (episode) return { show, episode };
+      }
+      let audioUrl = entry.audioUrl || '';
+      let transcriptUrl = entry.transcriptUrl || '';
+      let title = entry.title || '';
+      let thumb = entry.thumb || '';
+      try {
+        const last = JSON.parse(localStorage.getItem('linglish.last_study_media.v1') || 'null');
+        if (last && String(last.id) === id) {
+          audioUrl = audioUrl || last.audioUrl || '';
+          transcriptUrl = transcriptUrl || last.transcriptUrl || '';
+          title = title || last.title || '';
+          thumb = thumb || last.thumbnail_path || '';
+        }
+      } catch (_) {}
+      if (!audioUrl) return null;
+      return {
+        show: { title: entry.showTitle || title || '播客', image: thumb, description: '', author: '' },
+        episode: {
+          id: rawId,
+          title: title || '播客单集',
+          audioUrl,
+          transcriptUrl,
+          image: thumb,
+          description: '',
+          duration: '',
+          published: '',
+        },
+      };
+    }
+
+    async function openRecentVideo(entry) {
+      if (!entry || entry.id == null) return;
+      const id = String(entry.id);
+      if (id.startsWith('pod:') || entry.audioUrl) {
+        const hit = findPodcastFromRecent(entry);
+        if (hit && hit.episode && hit.episode.audioUrl) {
+          if (Number(entry.seconds) > 1) {
+            pendingSeek = { videoId: `pod:${hit.episode.id || hit.episode.audioUrl}`, startSec: Number(entry.seconds) };
+          }
+          closeVideoBrowser();
+          await playPodcastEpisode(hit.show, hit.episode);
+          return;
+        }
+      }
+      let found = (state.videos || []).find((item) => String(item.id) === id);
+      if (!found && /^\d+$/.test(id)) {
+        try {
+          const res = await fetch(`${API_BASE}/video-resources/${id}`, { headers: headers() });
+          if (res.ok) {
+            const data = await res.json();
+            const video = data?.video || data;
+            if (video && video.id) {
+              if (!(state.videos || []).some((item) => String(item.id) === String(video.id))) {
+                state.videos = [video, ...(state.videos || [])];
+              }
+              state.filteredVideos = state.videos;
+              found = video;
+            }
+          }
+        } catch (_) {}
+      }
+      if (!found) {
+        const ytMatch = id.match(/^yt:([A-Za-z0-9_-]{6,})$/)
+          || String(entry.youtube_video_id || '').match(/^([A-Za-z0-9_-]{6,})$/)
+          || String(entry.thumb || '').match(/\/vi\/([A-Za-z0-9_-]{6,})\//)
+          || String(entry.title || '').match(/\bYouTube\s+([A-Za-z0-9_-]{6,})\b/i);
+        const youtubeId = ytMatch && ytMatch[1];
+        if (youtubeId) {
+          found = {
+            id: id.startsWith('yt:') ? id : `yt:${youtubeId}`,
+            title: entry.title && !/^YouTube\s+/i.test(entry.title) ? entry.title : `YouTube ${youtubeId}`,
+            youtube_video_id: youtubeId,
+            external_youtube: true,
+            status: 'ready',
+            thumbnail_path: entry.thumb || `https://img.youtube.com/vi/${youtubeId}/hqdefault.jpg`,
+          };
+        }
+      }
+      if (!found) {
+        showToast('这条记录对应的视频暂时打不开', 'warn');
+        return;
+      }
+      if (Number(entry.seconds) > 1) pendingSeek = { videoId: found.id, startSec: Number(entry.seconds) };
+      closeVideoBrowser();
+      await selectVideo(found);
+    }
+
+    function renderStudyRecent() {
+      const api = window.LinglishStudyRecent;
+      const modal = document.getElementById('vb-recent');
+      if (!api || !modal) return;
+      // Keep recent history visible across 视频库 / 频道库 / 播客.
+      api.render(modal, (entry) => {
+        openRecentVideo(entry);
+      }, { previewCount: 6 });
     }
 
     function renderVideoBrowser() {
@@ -2999,6 +3483,7 @@
       const empty = document.getElementById('vb-empty');
       const stats = document.getElementById('vb-stats');
       const vbSearch = document.getElementById('vb-search');
+      try { renderStudyRecent(); } catch (_) {}
 
       // Keep chip selected states in sync with the shared sidebar filter state.
       vbSyncChipsFromSidebar();
@@ -3008,10 +3493,19 @@
       // scope 现由共享闭包状态统一处理；这里再传一次保持幂等（闭包未初始化时兜底 vbState.scope）。
       const sharedNow = window.getLibraryFilterState ? window.getLibraryFilterState() : null;
       const view = activeLibraryView();
+      if (view === 'podcasts') {
+        syncLibraryChrome(false);
+        if (empty) empty.hidden = true;
+        window.__podOpen = true;
+        renderPodcastBrowser();
+        return;
+      }
+      window.__podOpen = false;
       const catalog = Array.isArray(state.videos) ? state.videos : [];
-      let videos = catalog.filter((video) => view === 'mine' ? isMemberVideo(video) : !isMemberVideo(video));
+      const userLibrary = view === 'videos';
+      let videos = catalog.filter((video) => userLibrary ? isMemberVideo(video) : !isMemberVideo(video));
       const q = ((vbSearch && vbSearch.value) || '').trim();
-      const mineFilters = view === 'mine';
+      const mineFilters = userLibrary;
       if (window.LibraryFilter) {
         videos = window.LibraryFilter.filterVideos(
           videos,
@@ -3035,7 +3529,7 @@
       // 清除全部筛选按钮：任一筛选生效时显示。
       const clearBtn = document.getElementById('vb-clear-all-btn');
       const shared = sharedNow || {};
-      const filtering = view === 'mine' && Boolean(q || vbState.status
+      const filtering = userLibrary && Boolean(q || vbState.status
         || shared.difficulty || shared.scene || shared.tagId);
       if (clearBtn) clearBtn.hidden = !filtering;
       syncLibraryChrome(filtering);
@@ -3049,42 +3543,28 @@
       }
       const emptyTitle = document.querySelector('#vb-empty .vb-empty-title');
       const emptyHint = document.querySelector('#vb-empty .vb-empty-hint');
-      const mineChannels = view === 'mine'
-        ? importedChannelItems().filter((item) => !q || String(item.title || '').toLowerCase().includes(q.toLowerCase()))
-        : [];
       if (emptyTitle) {
-        emptyTitle.textContent = view === 'mine'
-          ? (q ? '没有找到你的视频' : '还没有你导入的视频')
-          : (q ? '没有找到这个视频' : '还没有视频');
+        emptyTitle.textContent = q ? '没有找到你的视频' : '还没有你导入的视频';
       }
       if (emptyHint) {
-        emptyHint.textContent = view === 'mine'
-          ? (q ? '换个关键词，或调整难度、场景、状态、标签' : '上传或导入的视频会出现在这里，可用难度、场景、状态和标签筛选')
-          : (q ? '换个关键词试试' : '');
+        emptyHint.textContent = q
+          ? '换个关键词，或调整难度、场景、状态、标签'
+          : '上传或导入的视频会出现在这里。点「选择分类」，按难度、场景、状态和标签筛选';
       }
       const resetInEmpty = document.getElementById('vb-reset-btn');
-      if (resetInEmpty) resetInEmpty.hidden = view !== 'mine';
+      if (resetInEmpty) resetInEmpty.hidden = !userLibrary;
       const addEmpty = document.getElementById('vb-channel-empty-add');
       if (addEmpty) addEmpty.hidden = true;
+      if (stats) stats.textContent = `${videos.length} 个视频`;
 
-      if (!videos.length && !mineChannels.length) {
+      if (!videos.length) {
         grid.innerHTML = '';
         if (empty) empty.hidden = false;
         return;
       }
       if (empty) empty.hidden = true;
-      if (stats && view === 'mine') {
-        stats.textContent = mineChannels.length
-          ? `${videos.length} 个视频 · ${mineChannels.length} 个频道`
-          : `${videos.length} 个视频`;
-      }
 
       const frag = document.createDocumentFragment();
-      mineChannels.forEach((item) => frag.appendChild(renderShelfCard(item, () => {
-        vbState.libraryView = 'mine';
-        vbState.channelKey = item.key;
-        renderVideoBrowser();
-      })));
       const currentId = state.currentVideo ? String(state.currentVideo.id) : null;
       const currentUserId = state.user?.id;
 
@@ -3273,18 +3753,12 @@
 
     // Wire trigger, close, keyboard, chip & search interactions once DOM is ready for these IDs.
     (function wireVideoBrowser() {
-      const trigger = document.getElementById('open-video-browser');
-      if (trigger) {
-        trigger.addEventListener('click', (e) => {
-          e.preventDefault();
-          vbState.libraryView = 'videos';
-          vbState.channelKey = '';
-          openVideoBrowser();
-        });
-      }
-      document.getElementById('open-channel-browser')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        openChannelBrowser();
+      ensureDefaultMediaLibraries();
+      document.getElementById('nav-library-switch')?.addEventListener('click', (event) => {
+        const choice = event.target.closest('[data-library]');
+        if (!choice) return;
+        event.preventDefault();
+        openLibrary(choice.dataset.library);
       });
       document.getElementById('vb-channel-empty-add')?.addEventListener('click', openChannelDialog);
       document.querySelectorAll('[data-vb-close]').forEach(el => el.addEventListener('click', closeVideoBrowser));
@@ -3320,17 +3794,17 @@
         btn.addEventListener('click', (e) => {
           const nextView = btn.dataset.vbView;
           if (nextView === 'mine') {
-            const opening = vbState.libraryView !== 'mine' || !vbState.filtersOpen;
-            vbState.libraryView = 'mine';
+            vbState.libraryView = 'videos';
             vbState.channelKey = '';
-            vbState.filtersOpen = opening;
+            vbState.filtersOpen = !vbState.filtersOpen;
             e.stopPropagation();
             renderVideoBrowser();
             return;
           }
           vbState.filtersOpen = false;
-          vbState.libraryView = nextView === 'channels' ? 'channels' : 'videos';
+          vbState.libraryView = nextView === 'channels' || nextView === 'podcasts' ? nextView : 'videos';
           vbState.channelKey = '';
+          if (nextView !== 'podcasts') podState.feedUrl = '';
           renderVideoBrowser();
         });
       });
@@ -3355,15 +3829,9 @@
       document.getElementById('channel-dialog')?.addEventListener('click', (e) => {
         if (e.target.id === 'channel-dialog') closeChannelDialog();
       });
-      document.getElementById('open-podcast-browser')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        openPodcastBrowser();
-      });
-      document.querySelectorAll('[data-pod-close]').forEach((el) => el.addEventListener('click', closePodcastBrowser));
-      document.getElementById('pod-close-btn')?.addEventListener('click', closePodcastBrowser);
       document.getElementById('pod-back')?.addEventListener('click', () => {
         podState.feedUrl = '';
-        renderPodcastBrowser();
+        renderVideoBrowser();
       });
       document.getElementById('pod-unsubscribe')?.addEventListener('click', () => {
         writeStore(PODCAST_STORE_KEY, readStore(PODCAST_STORE_KEY).filter((item) => item.feedUrl !== podState.feedUrl));
@@ -3371,7 +3839,6 @@
         renderPodcastBrowser();
         showToast('已取消这个播客', 'info');
       });
-      document.getElementById('pod-search')?.addEventListener('input', () => renderPodcastBrowser());
       document.getElementById('pod-add-btn')?.addEventListener('click', (e) => {
         e.stopPropagation();
         const menu = document.getElementById('pod-add-menu');
@@ -4132,9 +4599,125 @@
       return refined;
     }
 
-    function loadCurrentTranscript(v, selectionToken) {
-      if (v && v.external_youtube) return loadExternalTranscript(v, selectionToken);
-      return loadVideoDetails(v.id, selectionToken);
+    function rememberVideoWords(videoId, segments) {
+      if (!videoId) return;
+      const words = new Set();
+      (segments || []).forEach((seg) => {
+        const text = String(seg?.text || seg?.transcript || '').toLowerCase();
+        const found = text.match(/[a-z][a-z'-]*/g) || [];
+        found.forEach((word) => { if (word.length > 1) words.add(word); });
+      });
+      try {
+        sessionStorage.setItem(`linglish-video-words:${videoId}`, JSON.stringify(Array.from(words)));
+      } catch (_) { }
+    }
+
+    function coerceSegmentList(raw) {
+      let segs = raw;
+      if (typeof segs === 'string') {
+        const trimmed = segs.trim();
+        if (!trimmed || trimmed === 'null' || trimmed === 'undefined') return [];
+        try { segs = JSON.parse(trimmed); } catch (_) { return []; }
+      }
+      if (Array.isArray(segs)) return segs.filter(Boolean);
+      if (segs && Array.isArray(segs.segments)) return segs.segments.filter(Boolean);
+      if (segs && typeof segs === 'object') {
+        const vals = Object.keys(segs)
+          .filter((k) => /^\d+$/.test(k))
+          .sort((a, b) => Number(a) - Number(b))
+          .map((k) => segs[k])
+          .filter((v) => v && typeof v === 'object');
+        if (vals.length) return vals;
+      }
+      return [];
+    }
+
+    function normalizeDisplayedSegments(rawSegments) {
+      const segArray = coerceSegmentList(rawSegments);
+      if (!segArray.length) return [];
+      let nextSegments = segArray;
+      try {
+        if (window.LinglishSentenceSegments?.toDisplayedSentences) {
+          nextSegments = window.LinglishSentenceSegments.toDisplayedSentences(segArray);
+        } else if (window.LinglishSentenceSegments?.toCompleteSentences) {
+          nextSegments = window.LinglishSentenceSegments.toCompleteSentences(segArray);
+        }
+      } catch (err) {
+        console.warn('[Transcript] sentence normalize failed, using raw segments:', err);
+        nextSegments = segArray;
+      }
+      // Never wipe a usable transcript if sentence rebuild drops everything.
+      if ((!Array.isArray(nextSegments) || !nextSegments.length) && segArray.length) {
+        return segArray.map((seg, index) => ({
+          ...seg,
+          index,
+          source_indices: Array.isArray(seg.source_indices) ? seg.source_indices : [index],
+        }));
+      }
+      return Array.isArray(nextSegments) ? nextSegments : segArray;
+    }
+
+    // Keep original timed cues immutable; display cards are derived only.
+    function clearTranscriptCues() {
+      state.rawSegments = [];
+      state.currentSegments = [];
+    }
+
+    let transcriptFetchKey = '';
+    let transcriptFetchPromise = null;
+    function beginTranscriptLoad(v, selectionToken) {
+      const key = `${selectionToken?.generation ?? ''}:${v && v.id != null ? v.id : ''}`;
+      if (transcriptFetchKey === key && transcriptFetchPromise) return transcriptFetchPromise;
+      transcriptFetchKey = key;
+      state.isLoadingTranscript = true;
+      clearTranscriptCues();
+      try { renderTranscript(); } catch (_) { }
+      try { renderActiveSubtitle(-1); } catch (_) { }
+      transcriptFetchPromise = loadCurrentTranscript(v, selectionToken).finally(() => {
+        const stillCurrent = v
+          && state.currentVideo
+          && String(state.currentVideo.id) === String(v.id)
+          && (!selectionToken || videoSelectionGuard.isCurrent(selectionToken, v.id));
+        if (!stillCurrent || transcriptFetchKey !== key) return;
+        state.isLoadingTranscript = false;
+        try { renderTranscript(); } catch (_) { }
+        try { syncActive(); } catch (_) { }
+        if (state.showBilingual) ensureDesktopBilingualTranslations().catch(() => { });
+      });
+      return transcriptFetchPromise;
+    }
+
+    function applyTranscriptCues(rawCues, options) {
+      const raw = coerceSegmentList(rawCues).map((seg, index) => ({
+        ...(seg || {}),
+        index,
+        source_indices: [index],
+      }));
+      const display = normalizeDisplayedSegments(raw);
+      state.rawSegments = raw;
+      state.currentSegments = display;
+      if (options && options.persistOnVideo && state.currentVideo) {
+        // Persist RAW cues only — never overwrite with display rewrite.
+        state.currentVideo.transcript_segments = raw;
+      }
+      return display;
+    }
+
+    async function loadCurrentTranscript(v, selectionToken) {
+      if (v && v.external_youtube && v.youtube_video_id) {
+        return loadExternalTranscript(v, selectionToken);
+      }
+      if (v && /^\d+$/.test(String(v.id))) {
+        await loadVideoDetails(v.id, selectionToken);
+        const stillEmpty = !Array.isArray(state.currentSegments) || !state.currentSegments.length;
+        if (stillEmpty && v.youtube_video_id) {
+          return loadExternalTranscript(v, selectionToken);
+        }
+        return;
+      }
+      if (v && v.youtube_video_id) {
+        return loadExternalTranscript(v, selectionToken);
+      }
     }
     async function loadExternalTranscript(v, selectionToken) {
       const isExpected = () => {
@@ -4142,6 +4725,7 @@
         if (currentId == null || String(currentId) !== String(v.id)) return false;
         return !selectionToken || videoSelectionGuard.isCurrent(selectionToken, v.id);
       };
+      if (!v || !v.youtube_video_id) return;
       try {
         const res = await fetch(`${API_BASE}/youtube/transcript`, {
           method: 'POST',
@@ -4151,22 +4735,35 @@
         const data = await res.json().catch(() => ({}));
         if (!isExpected()) return;
         if (!res.ok || data.success === false) throw new Error(data.error || '这一集暂时没有字幕');
-        let nextSegments = refineTranscriptSegments(Array.isArray(data.segments) ? data.segments : []);
-        if (window.LinglishSentenceSegments?.toDisplayedParagraphs) {
-          nextSegments = window.LinglishSentenceSegments.toDisplayedParagraphs(nextSegments);
-        } else if (window.LinglishSentenceSegments?.toCompleteSentences) {
-          nextSegments = window.LinglishSentenceSegments.toCompleteSentences(nextSegments);
-        }
+        const raw = Array.isArray(data.segments) ? data.segments : [];
         if (!isExpected()) return;
-        state.currentSegments = nextSegments;
-        rememberVideoWords(v.id, nextSegments);
+        // Refine once, then paint once — double apply/render reshuffles the right rail.
+        const refined = refineTranscriptSegments(raw);
+        if (!isExpected()) return;
+        applyTranscriptCues(refined, { persistOnVideo: true });
+        rememberVideoWords(v.id, state.currentSegments);
+        state.isLoadingTranscript = false;
         renderTranscript();
         if (typeof syncModeButtons === 'function') syncModeButtons();
+        if (state.showBilingual) ensureDesktopBilingualTranslations().catch(() => { });
+        try {
+          if (youtubePlayer && typeof youtubePlayer.disableNativeCaptions === 'function') {
+            youtubePlayer.disableNativeCaptions();
+          }
+        } catch (_) { }
       } catch (error) {
         if (!isExpected()) return;
-        state.currentSegments = [];
-        renderTranscript();
-        showToast(error.message || '这一集暂时没有字幕', 'warn');
+        if (!Array.isArray(state.currentSegments) || !state.currentSegments.length) {
+          clearTranscriptCues();
+          state.isLoadingTranscript = false;
+          renderTranscript();
+          showToast(error.message || '这一集暂时没有字幕', 'warn');
+          try {
+            if (youtubePlayer && typeof youtubePlayer.enableNativeCaptions === 'function') {
+              youtubePlayer.enableNativeCaptions('en');
+            }
+          } catch (_) { }
+        }
       }
     }
     async function loadVideoDetails(id, selectionToken = null) {
@@ -4182,7 +4779,7 @@
         if (!isExpectedVideo()) return;
         if (!res.ok) throw new Error(data?.message || '加载视频详情失败');
         const video = data?.video || {};
-        let segs = video.transcript_segments;
+        let segs = coerceSegmentList(video.transcript_segments);
 
         // Enhanced debug logging
         console.log('[DEBUG] ========== Video Details Debug ==========');
@@ -4190,63 +4787,55 @@
         console.log('[DEBUG] Video status:', video.status);
         console.log('[DEBUG] Video has_subtitles:', video.has_subtitles);
         console.log('[DEBUG] Raw transcript length:', video.transcript?.length || 0);
-        console.log('[DEBUG] Raw transcript_segments type:', typeof segs);
-        console.log('[DEBUG] Raw transcript_segments value:', segs);
-        console.log('[DEBUG] Is Array:', Array.isArray(segs));
-        if (Array.isArray(segs)) {
-          console.log('[DEBUG] Array length:', segs.length);
-          if (segs.length > 0) {
-            console.log('[DEBUG] First segment:', segs[0]);
-          }
-        }
+        console.log('[DEBUG] Coerced segments length:', segs.length);
+        if (segs.length > 0) console.log('[DEBUG] First segment:', segs[0]);
         console.log('[DEBUG] =====================================');
 
-        // Handle string representations (including "undefined", "null", etc.)
-        if (typeof segs === 'string') {
-          if (segs === 'undefined' || segs === 'null' || segs === '') {
-            console.log('[DEBUG] transcript_segments is invalid string, setting to []');
-            segs = [];
-          } else {
-            try {
-              segs = JSON.parse(segs);
-              console.log('[DEBUG] Parsed transcript_segments:', segs.length, 'segments');
-            } catch (err) {
-              console.warn('[DEBUG] Failed to parse transcript_segments:', err);
-              segs = [];
-            }
-          }
+        // Detail payload sometimes omits segments (cache / processing). Try dedicated transcript route.
+        if (!segs.length && /^\d+$/.test(String(id))) {
+          try {
+            const trRes = await fetch(`${API_BASE}/video-resources/${id}/transcript`, { headers: headers() });
+            const trData = trRes.ok ? await trRes.json().catch(() => ({})) : null;
+            if (!isExpectedVideo()) return;
+            const fetched = coerceSegmentList(trData?.segments);
+            if (fetched.length) segs = fetched;
+          } catch (_) { /* keep empty; YouTube fallback may still help */ }
         }
 
-        const segArray = Array.isArray(segs) ? segs : [];
-        const hasTranslations = segArray.some(s => {
+        const resolvedSegs = segs;
+        const hasTranslations = resolvedSegs.some(s => {
           const t = String(s?.translation || s?.cn || s?.zh || s?.text_cn || '').trim();
           return t.length > 0;
         });
-        // Refine timing first, then rebuild complete sentences for both translated
-        // and untranslated sources. This prevents narrow ASR fragments from leaking
-        // into the reader while keeping translation text attached to its source.
-        let nextSegments;
-        if (firstLessonSession.isActive() && window.LinglishSentenceSegments?.toDisplayedSentences) {
-          nextSegments = window.LinglishSentenceSegments.toDisplayedSentences(segArray);
-        } else {
-          nextSegments = refineTranscriptSegments(segArray);
-          nextSegments = await splitSegmentsByWaveformSilence(nextSegments, video.id, { skipIfTranslated: hasTranslations });
-          if (!isExpectedVideo()) return;
-          if (window.LinglishSentenceSegments?.toDisplayedParagraphs) {
-            nextSegments = window.LinglishSentenceSegments.toDisplayedParagraphs(nextSegments);
-          } else if (window.LinglishSentenceSegments?.toCompleteSentences) {
-            nextSegments = window.LinglishSentenceSegments.toCompleteSentences(nextSegments);
-          } else {
-            nextSegments = mergeIncompleteSentences(nextSegments);
+        // Keep youtube_video_id on current video so loadCurrentTranscript can live-fetch captions.
+        if (video.youtube_video_id && state.currentVideo && String(state.currentVideo.id) === String(id)) {
+          state.currentVideo.youtube_video_id = state.currentVideo.youtube_video_id || video.youtube_video_id;
+          if (video.has_subtitles != null) state.currentVideo.has_subtitles = video.has_subtitles;
+        }
+
+        // Guided practice needs its committed sentence immediately. Ordinary reading
+        // still waits for refinement so display identity is committed only once.
+        let rawForSync = resolvedSegs;
+        if (!firstLessonSession.isActive()) {
+          try {
+            rawForSync = refineTranscriptSegments(resolvedSegs);
+            rawForSync = await splitSegmentsByWaveformSilence(rawForSync, video.id, { skipIfTranslated: hasTranslations });
+            if (!isExpectedVideo()) return;
+          } catch (refineErr) {
+            console.warn('[DEBUG] segment refine failed, using raw segments:', refineErr);
+            rawForSync = resolvedSegs;
           }
         }
         if (!isExpectedVideo()) return;
-        state.currentSegments = nextSegments;
-        console.log('[DEBUG] Final currentSegments length:', state.currentSegments.length);
-        rememberVideoWords(state.currentVideo && state.currentVideo.id, nextSegments);
-
+        applyTranscriptCues(rawForSync, { persistOnVideo: true });
+        rememberVideoWords(state.currentVideo.id, state.currentSegments);
+        state.isLoadingTranscript = false;
         renderTranscript();
-        syncModeButtons(); // 更新双语按钮状态
+        if (state.currentSegments.length && youtubePlayer && typeof youtubePlayer.disableNativeCaptions === 'function') {
+          try { youtubePlayer.disableNativeCaptions(); } catch (_) { }
+        }
+        syncModeButtons();
+        if (state.showBilingual) ensureDesktopBilingualTranslations().catch(() => { });
         if (!isExpectedVideo()) return;
         startFirstLessonProgress(state.currentVideo, state.currentSegments);
         if (firstLessonSession.isActive()) {
@@ -4262,8 +4851,12 @@
       } catch (e) {
         console.warn('[DEBUG] loadVideoDetails error:', e);
         if (!isExpectedVideo()) return;
-        state.currentSegments = [];
-        renderTranscript();
+        // Do not clobber captions that may already be on screen / in memory.
+        if (!Array.isArray(state.currentSegments) || !state.currentSegments.length) {
+          clearTranscriptCues();
+          state.isLoadingTranscript = false;
+          renderTranscript();
+        }
         syncModeButtons(); // 更新双语按钮状态
       }
     }
@@ -4365,9 +4958,33 @@
     }
 
     async function selectVideo(v) {
+      rememberStudyVideo(v);
       if (leaveForCoach(v && v.id)) return;
-      window.LinglishStudyVideoId = v && /^\d+$/.test(String(v.id)) ? String(v.id) : '';
-      if (!(v && /^\d+$/.test(String(v.id)))) window.LinglishStudyMedia = null;
+      if (v && /^\d+$/.test(String(v.id))) {
+        window.LinglishStudyVideoId = String(v.id);
+        window.LinglishStudyMedia = null;
+      } else if (v && v.id != null) {
+        window.LinglishStudyVideoId = '';
+        window.LinglishStudyMedia = {
+          id: String(v.id),
+          title: v.title || v.original_filename || '',
+          youtube_video_id: v.youtube_video_id || '',
+          audioUrl: v.audioUrl || '',
+          transcriptUrl: v.transcriptUrl || '',
+          external_podcast: Boolean(v.external_podcast),
+          external_youtube: Boolean(v.external_youtube || v.youtube_video_id),
+          thumbnail_path: v.thumbnail_path || '',
+          collection_name: v.collection_name || '',
+        };
+      } else {
+        window.LinglishStudyVideoId = '';
+        window.LinglishStudyMedia = null;
+      }
+      try {
+        window.LinglishVideoReaderState = window.LinglishVideoReaderState || {};
+        window.LinglishVideoReaderState.selectedVideoId = v && v.id != null ? v.id : null;
+        window.LinglishVideoReaderState.currentVideo = v || null;
+      } catch (_) {}
       teardownFirstLessonRecording('video-selection');
       firstLessonGoal = null;
       firstLessonGoalCard.hide();
@@ -4380,6 +4997,22 @@
       };
       const isNewVideo = !state.currentVideo || state.currentVideo.id !== v.id;
       state.currentVideo = v; renderVideoList();
+      try {
+        if (isNewVideo) {
+          state.lastRecordingBlob = null;
+          if (state.lastRecordingUrl) {
+            try { URL.revokeObjectURL(state.lastRecordingUrl); } catch (_) {}
+          }
+          state.lastRecordingUrl = null;
+          state.lastRecordingSegmentIndex = null;
+          window.__lastShadowBlob = null;
+          window.__lastShadowUrl = '';
+          window.__lastShadowIndex = null;
+          if (typeof window.hydrateShadowRecording === 'function') {
+            window.hydrateShadowRecording(v.id).catch(() => {});
+          }
+        }
+      } catch (_) {}
       let lastLoadedUrl = '';
 
       // Always show friendly loading overlay immediately (covers YouTube API wait too)
@@ -4388,9 +5021,12 @@
         descKey: 'video.overlay.loading_desc',
         tips: [
           tOverlay('video.overlay.tip_switch', '加载期间仍可从左侧切换其它视频。'),
-          tOverlay('video.overlay.tip_subtitle', '视频加载后会自动加载字幕；如果没字幕，可能还在转录中。'),
+          tOverlay('video.overlay.tip_subtitle', '字幕与视频并行加载；右侧会先显示「字幕加载中…」。'),
         ]
       });
+
+      // Start transcript ASAP in parallel with player/proxy init (do not await).
+      beginTranscriptLoad(v, selectionToken);
 
       // 自动滚动到播放器位置，让视频完整显示（标题可以被遮住）
       const playerBox = document.querySelector('.player');
@@ -4436,14 +5072,6 @@
 
       stopWatchTimer(false);
 
-      // Prepare available English text independently of slow third-party media.
-      let transcriptRequest = null;
-      const loadSelectedTranscript = () => {
-        if (!transcriptRequest) transcriptRequest = loadCurrentTranscript(v, selectionToken);
-        return transcriptRequest;
-      };
-      if (firstLessonSession.isActive()) loadSelectedTranscript();
-
       // Check if this is a YouTube video
       const isYouTube = !!v.youtube_video_id;
 
@@ -4465,9 +5093,8 @@
             needsProxy = false;
           }
           if (!isCurrentSelection()) return;
-          if (v.external_youtube) needsProxy = false;
 
-          // Strategy: Mainland users use local video if available, otherwise use YouTube iframe
+          // Strategy: Mainland users use local video if available, otherwise use YouTube iframe / proxy
           const hasLocalVideo = v.local_video_path && v.local_video_status === 'completed';
 
           if (needsProxy && hasLocalVideo) {
@@ -4506,7 +5133,6 @@
             openSourceBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${v.youtube_video_id}`, '_blank');
             importWordsBtn.disabled = false;
             setExtractButtonState(true);
-            loadSelectedTranscript();
 
             // Auto-import vocabulary in background (non-blocking)
             autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -4581,7 +5207,6 @@
             openSourceBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${v.youtube_video_id}`, '_blank');
             importWordsBtn.disabled = false;
             setExtractButtonState(true);
-            loadSelectedTranscript();
 
             // Auto-import vocabulary in background (non-blocking)
             autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -4650,7 +5275,6 @@
             openSourceBtn.onclick = () => window.open(`https://www.youtube.com/watch?v=${v.youtube_video_id}`, '_blank');
             importWordsBtn.disabled = false;
             setExtractButtonState(true);
-            loadSelectedTranscript();
 
             // Auto-import vocabulary in background (non-blocking)
             autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -4695,31 +5319,19 @@
 
         if (src) {
           const url = src.startsWith('http') ? src : `${API_BASE}${src.startsWith('/') ? '' : '/'}${src}`;
-          let playable = null;
           try {
-            playable = await setProtectedMediaSource(playerEl, url, isCurrentSelection);
+            const playable = await setProtectedMediaSource(playerEl, url, isCurrentSelection);
+            if (!playable || !isCurrentSelection()) return;
+            try { lastLoadedUrl = new URL(playable, location.href).href; } catch (_) { lastLoadedUrl = playable; }
           } catch (_) {
             if (!isCurrentSelection()) return;
-            try {
-              if (window.LinglishMediaSession) await window.LinglishMediaSession.clear();
-              if (!isCurrentSelection()) return;
-              playable = await setProtectedMediaSource(playerEl, url, isCurrentSelection);
-            } catch (err) {
-              playable = null;
-            }
-          }
-          if (!playable || !isCurrentSelection()) {
-            if (!isCurrentSelection()) return;
-            const signedIn = !!getToken();
             setPlayerOverlay('error', {
               titleKey: 'video.overlay.error_title',
-              desc: signedIn ? '播放授权没通过。点重试，再取一次授权。' : '登录后就能播放这一句。',
-              tips: [signedIn ? '如果还是失败，换一条视频，或刷新页面。' : '登录后进度会留在你的账号里。']
+              desc: '媒体授权失败，请重试。',
+              tips: [tOverlay('video.overlay.tip_retry', '可以尝试重试加载，或切换到其它视频。')]
             });
-            if (!signedIn && playerOverlayRetryBtn) playerOverlayRetryBtn.textContent = '去登录';
             return;
           }
-          try { lastLoadedUrl = new URL(playable, location.href).href; } catch (_) { lastLoadedUrl = playable; }
 
           // graceful 404 handling
           playerEl.onerror = () => {
@@ -4740,7 +5352,6 @@
           openSourceBtn.onclick = () => window.open(lastLoadedUrl, '_blank');
           importWordsBtn.disabled = false;
           setExtractButtonState(true);
-          loadSelectedTranscript();
 
           // Auto-import vocabulary in background (non-blocking)
           autoImportVocabulary(v.id).catch(err => debugLog('Auto-import failed:', err));
@@ -4749,7 +5360,8 @@
           openSourceBtn.disabled = true;
           importWordsBtn.disabled = true;
           setExtractButtonState(false);
-          state.currentSegments = [];
+          clearTranscriptCues();
+          state.isLoadingTranscript = false;
           renderTranscript();
           setPlayerOverlay('idle', {
             titleKey: 'video.overlay.empty_title',
@@ -4764,25 +5376,13 @@
       updateNextVideoCard();
     }
     // Manual import button - allows re-importing even if already processed
-    if (openVocabTabBtn) {
-      openVocabTabBtn.addEventListener('click', () => {
-        if (location.hash === '#vocabulary') {
-          location.hash = '';
-          setHashView('');
-          vocabStudyStop();
-          return;
-        }
-        location.hash = '#vocabulary';
-        setHashView('#vocabulary', { videoId: state.currentVideo && state.currentVideo.id });
-        vocabStudyStart();
-      });
-    }
     importWordsBtn.addEventListener('click', async () => {
       const v = state.currentVideo; if (!v) return;
       // Require auth for manual import
       const tk = getToken() || '';
       if (!tk || tk === 'null' || tk === 'undefined') { showToast('请先登录后再提取词汇', 'warn'); return; }
-      const importWordsLabel = importWordsBtn.querySelector('.import-words-label');
+      const importWordsLabel = importWordsBtn.querySelector('[data-i18n="video.extract_words"]');
+      const oldLabel = importWordsLabel ? importWordsLabel.textContent : importWordsBtn.textContent;
       importWordsBtn.disabled = true;
       if (importWordsLabel) importWordsLabel.textContent = '提取中…';
       try {
@@ -4803,12 +5403,12 @@
 
         // Reload vocabulary and switch to vocabulary tab
         await Promise.all([loadVocab(), loadVocabStats()]);
-        location.hash = '#vocabulary'; setHashView('#vocabulary', { videoId: v.id });
+        location.hash = '#vocabulary'; setHashView('#vocabulary');
       } catch (err) { showToast(err.message || '提取失败', 'warn'); }
       finally {
-        importWordsBtn.disabled = !state.currentVideo;
-        setExtractButtonState(!!state.currentVideo);
-        if (importWordsLabel) importWordsLabel.textContent = '提取';
+        importWordsBtn.disabled = false;
+        setExtractButtonState(true);
+        if (importWordsLabel) importWordsLabel.textContent = oldLabel;
       }
     });
     refreshVideosBtn.addEventListener('click', () => loadVideos().catch(e => showToast(e.message || '加载失败', 'warn')));
@@ -4986,7 +5586,7 @@
           openSourceBtn.disabled = true;
           importWordsBtn.disabled = true;
           setExtractButtonState(false);
-          state.currentSegments = [];
+          clearTranscriptCues();
           renderTranscript();
           updateNextVideoCard();
         }
@@ -5085,11 +5685,19 @@
         });
       }
 
-      document.addEventListener('fullscreenchange', () => {
-        if (!document.fullscreenElement && document.body.classList.contains('focus-mode')) {
-          setFocusMode(false);
-        }
+      document.getElementById('focus-video-entry')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        vbState.libraryView = 'videos';
+        vbState.channelKey = '';
+        openVideoBrowser();
       });
+
+      const keepFocusIfFullscreenEnds = () => {
+        // 触控屏幕、Esc 或浏览器自己退出全屏时，页面仍停在专注。
+        // 只有再点「专注中」才会回到普通页面。
+      };
+      document.addEventListener('fullscreenchange', keepFocusIfFullscreenEnds);
+      document.addEventListener('webkitfullscreenchange', keepFocusIfFullscreenEnds);
 
       try {
         const savedPreference = localStorage.getItem('linglish_focus_mode');
@@ -5113,7 +5721,7 @@
           // Clear current video state
           videoSelectionGuard.invalidate();
           state.currentVideo = null;
-          state.currentSegments = [];
+          clearTranscriptCues();
           // Reset UI
           if (currentTitleEl) currentTitleEl.textContent = '请选择左侧视频';
           updateVideoMeta(null);
@@ -5493,6 +6101,8 @@
         const notes = state.currentVideo && state.currentVideo.episode_notes;
         if (notes) {
           transcriptListEl.innerHTML = `<div class="seg"><div class="time">节目简介</div><div class="text">${esc(notes)}</div></div>`;
+        } else if (state.isLoadingTranscript) {
+          transcriptListEl.innerHTML = `<div class="empty">字幕加载中…</div>`;
         } else {
           const noSubText = typeof i18n !== 'undefined' ? i18n.t('video.no_subtitle') : '暂无字幕';
           transcriptListEl.innerHTML = `<div class="empty">${noSubText}</div>`;
@@ -5515,25 +6125,15 @@
         el.dataset.start = String(startTime);
         el.dataset.end = String(endTime);
         const textHTML = wrapWordsToHTML(s.text || '', missedWordsForSegment(i));
+        const hasZh = translation && /[\u4e00-\u9fa5]/.test(translation);
+        // Only paint Chinese when ready — do not reserve a "翻译中…" row for every cue
+        // (that stacks hundreds of placeholders and makes the right rail look piled up).
+        const showTransLine = state.showBilingual && hasZh;
         el.innerHTML = `
             <div class="time">${start} – ${end}</div>
             <div class="text">${speaker ? `<span class=\"speaker\">${esc(speaker)}:</span>` : ''}${textHTML}</div>
-            ${state.showBilingual && translation ? `<div class="translation">${esc(translation)}</div>` : ''}
+            ${showTransLine ? `<div class="translation">${esc(translation)}</div>` : ''}
           `;
-        if (state.showBilingual && translation && shouldAutoTranslateSegment(s.text || '', translation) && !s._autoTranslatePending && !s._autoTranslated) {
-          s._autoTranslatePending = true;
-          const translationEl = el.querySelector('.translation');
-          translateText(s.text || '').then((newTranslation) => {
-            s._autoTranslatePending = false;
-            if (newTranslation) {
-              s.translation = newTranslation;
-              s._autoTranslated = true;
-              if (translationEl) translationEl.textContent = newTranslation;
-            }
-          }).catch(() => {
-            s._autoTranslatePending = false;
-          });
-        }
         el.addEventListener('click', () => {
           if (!Number.isFinite(Number(startTime))) return;
           try {
@@ -5553,67 +6153,59 @@
       });
       transcriptListEl.appendChild(frag);
       highlightActiveSegment(-1, false);
+      if (state.showBilingual) {
+        queueVisibleBilingualTranslations();
+        ensureDesktopBilingualTranslations().catch(() => { });
+      }
     }
     function currentSegmentIndexByTime(t) {
-      const segs = state.currentSegments || [];
-      if (!segs.length) return -1;
-
-      // Strategy: Find the BEST matching segment, not just the first one
-      // This prevents issues when segments overlap or have timing tolerances
-
-      // Step 1: Find all segments that contain the current time (with small tolerance)
-      const tolerance = 0.1; // Reduced tolerance for more accurate matching
+      const display = state.currentSegments || [];
+      if (!display.length) return -1;
+      const raw = state.rawSegments || [];
+      const api = window.LinglishSentenceSegments;
+      // Source-anchored clock: raw cue by time → display card via source_indices.
+      if (api && typeof api.displayIndexForTime === 'function' && raw.length) {
+        try {
+          return api.displayIndexForTime(display, raw, t, 0.1);
+        } catch (_) { /* fall through */ }
+      }
+      if (api && typeof api.findIndexByTime === 'function') {
+        try {
+          return api.findIndexByTime(display, t, 0.1);
+        } catch (_) { /* fall through */ }
+      }
+      const tolerance = 0.1;
       const matchingSegments = [];
-
-      for (let i = 0; i < segs.length; i++) {
-        const s = segs[i];
+      for (let i = 0; i < display.length; i++) {
+        const s = display[i];
         const startTime = Number(s.start_sec ?? s.start ?? s.startTime ?? 0);
         const endTime = Number(s.end_sec ?? s.end ?? s.endTime ?? Infinity);
-
-        // Check if current time is within segment bounds
         if (t >= (startTime - tolerance) && t < (endTime + tolerance)) {
           matchingSegments.push({
             index: i,
-            start: startTime,
-            end: endTime,
             distanceFromStart: Math.abs(t - startTime),
             distanceFromMid: Math.abs(t - (startTime + endTime) / 2)
           });
         }
       }
-
-      // Step 2: If we have matches, choose the best one
       if (matchingSegments.length > 0) {
-        // If multiple segments match, choose the one with:
-        // 1. Smallest distance from start time (prefer segments that just started)
-        // 2. If distances are similar, prefer the one closest to midpoint
         matchingSegments.sort((a, b) => {
-          // Prioritize segments where current time is closest to start
           const startDiff = a.distanceFromStart - b.distanceFromStart;
-          if (Math.abs(startDiff) > 0.5) {
-            return startDiff;
-          }
-          // If start distances are similar, prefer segment closest to midpoint
+          if (Math.abs(startDiff) > 0.5) return startDiff;
           return a.distanceFromMid - b.distanceFromMid;
         });
-
         return matchingSegments[0].index;
       }
-
-      // Step 3: If no exact match found, find closest segment by start time
       let idx = -1;
       let minDiff = Infinity;
-      for (let i = 0; i < segs.length; i++) {
-        const s = segs[i];
-        const startTime = Number(s.start_sec ?? s.start ?? s.startTime ?? 0);
-        // Find segment with start time closest to current time
-        const diff = Math.abs(t - startTime);
-        if (diff < minDiff && diff < 3.0) { // Within 3 seconds
+      for (let i = 0; i < display.length; i++) {
+        const startTime = Number(display[i].start_sec ?? display[i].start ?? display[i].startTime ?? 0);
+        const diff = t - startTime;
+        if (diff >= -tolerance && diff < minDiff && diff < 3.0) {
           minDiff = diff;
           idx = i;
         }
       }
-
       return idx;
     }
     let _lastActiveIdx = -1;
@@ -5701,22 +6293,24 @@
         { start: 48.5, end: 51.4, text: 'Try clicking a paragraph.' },
         { start: 51.5, end: 55, text: 'The highlight follows that thought, and the words stay together until the idea is finished.' },
       ];
-      const paragraphs = window.LinglishSentenceSegments?.toDisplayedParagraphs
-        ? window.LinglishSentenceSegments.toDisplayedParagraphs(raw)
-        : raw;
-      state.currentSegments = paragraphs;
+      applyTranscriptCues(raw);
+      const sentences = state.currentSegments;
       renderTranscript();
       let index = 0;
       const show = () => {
         highlightActiveSegment(index, true);
-        index = (index + 1) % paragraphs.length;
+        index = (index + 1) % Math.max(1, sentences.length);
       };
       show();
-      window.setInterval(show, 3200);
+      if (window.__subtitleDemoTimer) clearInterval(window.__subtitleDemoTimer);
+      window.__subtitleDemoTimer = window.setInterval(show, 3200);
     }
 
     if (new URLSearchParams(location.search).has('subtitle-demo')) {
       startSubtitleDemo();
+    } else if (window.__subtitleDemoTimer) {
+      clearInterval(window.__subtitleDemoTimer);
+      window.__subtitleDemoTimer = null;
     }
     // Unified sync function that works with both local and YouTube players
     const syncActive = () => {
@@ -5756,10 +6350,18 @@
     // Click to lookup word (mobile-like UX)
     const handleLookupEvent = async (e) => {
       const target = e.target;
-      // Case 1: already wrapped span.word
-      const wordEl = target && target.closest ? target.closest('.word') : null;
+      // Case 1: wrapped word span (.word / .transcript-word / .coach-word)
+      const wordEl = target && target.closest
+        ? target.closest('.word, .transcript-word, .coach-word')
+        : null;
       if (wordEl) {
-        const lemma = normalizeLemma(wordEl.dataset.lemma || wordEl.textContent || '');
+        const lemma = normalizeLemma(
+          wordEl.dataset.lemma
+          || wordEl.dataset.word
+          || wordEl.getAttribute('data-word')
+          || wordEl.textContent
+          || ''
+        );
         if (!lemma) return;
         // Check if video is playing before pausing (Case 1: marked words)
         try {
@@ -5784,10 +6386,6 @@
         const endSec = segEl?.dataset?.end ? Number(segEl.dataset.end) : (seg?.end_sec ?? seg?.end ?? seg?.endTime ?? null);
         e.stopPropagation();
         const lookupCtx = { index, startSec, endSec, sentence: seg?.text || activeSubtitleEl?.textContent || '' };
-        if (wordEl.closest('#active-subtitle')) {
-          showSubtitleAssist(lemma, lookupCtx, wordEl);
-          return;
-        }
         openDrawerLookup(lemma, lookupCtx);
         return;
       }
@@ -5852,8 +6450,7 @@
       const startSec = segEl?.dataset?.start ? Number(segEl.dataset.start) : (seg?.start_sec ?? seg?.start ?? seg?.startTime ?? null);
       const endSec = segEl?.dataset?.end ? Number(segEl.dataset.end) : (seg?.end_sec ?? seg?.end ?? seg?.endTime ?? null);
       const lookupCtx = { index, startSec, endSec, sentence: seg?.text || activeSubtitleEl?.textContent || '' };
-      if (target.closest('#active-subtitle')) showSubtitleAssist(got.lemma, lookupCtx, null);
-      else openDrawerLookup(got.lemma, lookupCtx);
+      openDrawerLookup(got.lemma, lookupCtx);
     };
 
     function bindSubtitleAssist(card) {
@@ -5910,7 +6507,21 @@
       bindSubtitleAssist(card);
       try { ensureLearning(word, ctx || {}, true); } catch (_) { }
     }
-    // Transcript single-click seeks; double-click looks up a word.
+    // Shared hook for coaching-dock / voice-chat word taps → full 生词 drawer card.
+    window.linglishShowSubtitleWordCard = function linglishShowSubtitleWordCard(word, ctx) {
+      const lemma = normalizeLemma(word || '');
+      if (!lemma) return;
+      openDrawerLookup(lemma, ctx || {});
+    };
+
+    // Click / tap a word → word card. Click the line (not a word) → replay that cue.
+    transcriptListEl?.addEventListener('click', (e) => {
+      const tw = e.target.closest('.transcript-word, .word');
+      if (!tw) return;
+      e.preventDefault();
+      e.stopPropagation();
+      handleLookupEvent(e);
+    }, true);
     transcriptListEl?.addEventListener('dblclick', handleLookupEvent);
     activeSubtitleEl?.addEventListener('click', handleLookupEvent, true);
     document.getElementById('lyric-current')?.addEventListener('click', handleLookupEvent, true);
@@ -6204,6 +6815,8 @@
     const shellEl = document.querySelector('.shell');
     let wasPlayingBeforeLookup = false; // Track if video was playing before dictionary lookup
     let dictLangMode = (() => { try { return localStorage.getItem('dict_lang_mode') || 'en'; } catch (_) { return 'en'; } })();
+    let dictAccentMode = (() => { try { return localStorage.getItem('dict_accent_mode') || 'us'; } catch (_) { return 'us'; } })();
+    if (dictAccentMode !== 'uk') dictAccentMode = 'us';
     let lastLookup = { word: null, ctx: null };
     let isLookupOpen = false;
     let isVideoPlaying = false;
@@ -6253,12 +6866,12 @@
       // Ignore if user is typing in an input/textarea
       const target = ev.target;
       const isInputField = target && (
-        target.closest?.('.topbar') ||
-        target.closest?.('.goal-studio') ||
         target.tagName === 'INPUT' ||
         target.tagName === 'TEXTAREA' ||
         target.tagName === 'SELECT' ||
         target.tagName === 'SUMMARY' ||
+        target.closest?.('.topbar') ||
+        target.closest?.('.goal-studio') ||
         target.getAttribute?.('role') === 'slider' ||
         target.isContentEditable
       );
@@ -6299,66 +6912,41 @@
         return;
       }
 
-      // Left arrow - previous segment
-      if (ev.key === 'ArrowLeft') {
+      // Left/Right — jump sentence and always play (avoid seek-only frozen video).
+      if (ev.key === 'ArrowLeft' || ev.key === 'ArrowRight') {
         ev.preventDefault();
         try {
+          if (window.VRP && typeof window.VRP.jumpSegments === 'function') {
+            window.VRP.jumpSegments(ev.key === 'ArrowRight' ? +1 : -1);
+            return;
+          }
           const segs = state.currentSegments || [];
           if (!segs.length) return;
-
           let currentTime = 0;
           if (currentPlayerType === 'youtube' && youtubePlayer) {
             currentTime = youtubePlayer.getCurrentTime() || 0;
           } else {
             currentTime = playerEl.currentTime || 0;
           }
-
           const currentIdx = currentSegmentIndexByTime(currentTime);
-          const prevIdx = Math.max(0, currentIdx - 1);
-
-          if (prevIdx >= 0 && segs[prevIdx]) {
-            const startTime = Number(segs[prevIdx].start_sec ?? segs[prevIdx].start ?? segs[prevIdx].startTime ?? 0);
-            if (currentPlayerType === 'youtube' && youtubePlayer) {
-              youtubePlayer.seekTo(startTime);
-            } else if (playerEl) {
-              playerEl.currentTime = startTime;
-            }
-            highlightActiveSegment(prevIdx, true);
-          }
-        } catch (err) {
-          console.error('[Keyboard] Failed to go to previous segment:', err);
-        }
-        return;
-      }
-
-      // Right arrow - next segment
-      if (ev.key === 'ArrowRight') {
-        ev.preventDefault();
-        try {
-          const segs = state.currentSegments || [];
-          if (!segs.length) return;
-
-          let currentTime = 0;
+          const targetIdx = ev.key === 'ArrowRight'
+            ? Math.min(segs.length - 1, currentIdx + 1)
+            : Math.max(0, currentIdx - 1);
+          const seg = segs[targetIdx];
+          if (!seg) return;
+          const startTime = Math.max(0, Number(seg.start_sec ?? seg.start ?? seg.startTime ?? 0) + 0.01);
+          stopSpokenAudio();
           if (currentPlayerType === 'youtube' && youtubePlayer) {
-            currentTime = youtubePlayer.getCurrentTime() || 0;
-          } else {
-            currentTime = playerEl.currentTime || 0;
+            youtubePlayer.seekTo(startTime);
+            try { youtubePlayer.play(); } catch (_) {}
+          } else if (playerEl) {
+            playerEl.currentTime = startTime;
+            const p = playerEl.play();
+            if (p && p.catch) p.catch(() => {});
           }
-
-          const currentIdx = currentSegmentIndexByTime(currentTime);
-          const nextIdx = Math.min(segs.length - 1, currentIdx + 1);
-
-          if (nextIdx >= 0 && nextIdx < segs.length && segs[nextIdx]) {
-            const startTime = Number(segs[nextIdx].start_sec ?? segs[nextIdx].start ?? segs[nextIdx].startTime ?? 0);
-            if (currentPlayerType === 'youtube' && youtubePlayer) {
-              youtubePlayer.seekTo(startTime);
-            } else if (playerEl) {
-              playerEl.currentTime = startTime;
-            }
-            highlightActiveSegment(nextIdx, true);
-          }
+          highlightActiveSegment(targetIdx, true);
         } catch (err) {
-          console.error('[Keyboard] Failed to go to next segment:', err);
+          console.error('[Keyboard] Failed to jump segment:', err);
         }
         return;
       }
@@ -6379,6 +6967,28 @@
       hideDrawer();
     }, true);
 
+    function pickAccentPhonetics(entry) {
+      const list = Array.isArray(entry && entry.phonetics) ? entry.phonetics : [];
+      let us = null;
+      let uk = null;
+      list.forEach((p) => {
+        if (!p) return;
+        const audio = String(p.audio || '').toLowerCase();
+        const text = String(p.text || p.phonetic || '').trim();
+        if (!text && !audio) return;
+        const item = { text, audio: p.audio || '' };
+        if (/uk|gb|british/.test(audio)) uk = uk || item;
+        else if (/us|american/.test(audio)) us = us || item;
+        else if (!us) us = item;
+        else if (!uk) uk = item;
+      });
+      const fallbackText = String((entry && entry.phonetic) || (us && us.text) || (uk && uk.text) || '').trim();
+      return {
+        us: us || { text: fallbackText, audio: '' },
+        uk: uk || { text: fallbackText, audio: (us && us.audio) || '' },
+      };
+    }
+
     function buildDictCardHTML(word, entry, zh, ctx) {
       const defs = [];
       if (entry && Array.isArray(entry.meanings)) {
@@ -6390,14 +7000,17 @@
         });
       }
 
-      let phon = '';
-      if (entry) {
-        phon = entry.phonetic || '';
-        if ((!phon || phon.trim() === '') && Array.isArray(entry.phonetics)) {
-          const p = entry.phonetics.find(p => p && (p.text || p.phonetic));
-          phon = p?.text || p?.phonetic || '';
-        }
-      }
+      const accents = pickAccentPhonetics(entry);
+      const activeAccent = dictAccentMode === 'uk' ? accents.uk : accents.us;
+      const phon = String((activeAccent && activeAccent.text) || '').replace(/^\/+|\/+$/g, '');
+      const accentLabel = dictAccentMode === 'uk' ? '英' : '美';
+      const primaryPos = (defs[0] && defs[0].pos) || (entry && Array.isArray(entry.meanings) && entry.meanings[0] && entry.meanings[0].partOfSpeech) || '';
+      const posZhMap = { noun: '名词', verb: '动词', adjective: '形容词', adverb: '副词', pronoun: '代词', preposition: '介词', conjunction: '连词', interjection: '感叹词' };
+      const primaryPosZh = posZhMap[String(primaryPos || '').toLowerCase()] || primaryPos;
+      const zhGloss = String(zh || (defs[0] && defs[0].zh) || '').trim();
+      const zhLine = zhGloss
+        ? `<div class="dict-zh-gloss">${primaryPosZh ? `(${esc(primaryPosZh)}) ` : ''}${esc(zhGloss)}</div>`
+        : '';
 
       const defsHTML = defs.slice(0, 4).map((d, idx) => `
 	          <div class="dict-def-row" data-def-idx="${idx}">
@@ -6415,27 +7028,34 @@
       const startSec = ctx?.startSec ?? ctx?.start ?? ctx?.start_sec;
       const ctxVideoId = ctx?.videoId ?? ctx?.video_id ?? ctx?.video_resource_id;
       const ctxTime = Number.isFinite(Number(startSec)) ? fmtSec(Number(startSec)) : '';
-      const ctxJump = (ctxVideoId && Number.isFinite(Number(startSec)))
-        ? `<a href="./video-reader-desktop.html?videoId=${encodeURIComponent(ctxVideoId)}&startSec=${encodeURIComponent(Number(startSec))}" style="margin-left:.4rem;color:#2563eb;text-decoration:none;">跳回</a>`
+      const ctxJumpHref = (ctxVideoId && Number.isFinite(Number(startSec)))
+        ? `./video-reader-desktop.html?videoId=${encodeURIComponent(ctxVideoId)}&startSec=${encodeURIComponent(Number(startSec))}`
         : '';
 
       const exampleList = [];
-      if (ctxSentence) exampleList.push({ timeHtml: `${esc(ctxTime || '⋯⋯')}${ctxJump}`, en: ctxSentence, zh: ctxZh, idx: 'ctx' });
+      if (ctxSentence) {
+        exampleList.push({
+          meta: `${esc(ctxTime || '语境')}${ctxJumpHref ? ` <a href="${esc(ctxJumpHref)}">跳回</a>` : ''}`,
+          en: ctxSentence,
+          zh: ctxZh,
+          idx: 'ctx',
+        });
+      }
       defs.filter(d => d.example).slice(0, 3).forEach((d, i) => {
-        exampleList.push({ timeHtml: esc('例句'), en: d.example, zh: d.exampleZh || '', idx: `def-${i}` });
+        exampleList.push({ meta: esc('例句'), en: d.example, zh: d.exampleZh || '', idx: `def-${i}` });
       });
 
       const examplesHTML = exampleList.length
         ? exampleList.map(ex => `
 	            <div class="dict-example">
-	              <div class="time">${ex.timeHtml || esc('例句')}</div>
+	              <div class="dict-example-meta">${ex.meta || esc('例句')}</div>
 	              <div class="lines">
-	                <div style="display:flex;align-items:flex-start;gap:.4rem;">
-	                  <button class="dict-def-speak" data-text="${esc(ex.en || '')}" aria-label="朗读例句" style="border:none;background:transparent;cursor:pointer;font-size:1rem;padding:.2rem;opacity:.8;flex-shrink:0;-webkit-tap-highlight-color:transparent;">🔊</button>
+	                <div style="display:flex;align-items:flex-start;gap:.45rem;">
+	                  <button class="dict-def-speak" data-text="${esc(ex.en || '')}" aria-label="朗读例句" style="border:none;background:transparent;cursor:pointer;font-size:1rem;padding:.1rem;opacity:.8;flex-shrink:0;-webkit-tap-highlight-color:transparent;">🔊</button>
 	                  <span>${esc(ex.en)}</span>
 	                </div>
 	                ${dictLangMode === 'zh'
-            ? `<div class="zh" data-ex-idx="${esc(ex.idx || '')}" style="color:#475569;font-size:.92rem;">${ex.zh ? esc(ex.zh) : '翻译暂不可用'}</div>`
+            ? `<div class="zh" data-ex-idx="${esc(ex.idx || '')}">${ex.zh ? esc(ex.zh) : '翻译暂不可用'}</div>`
             : ''}
 	              </div>
 	            </div>
@@ -6445,28 +7065,40 @@
       return `
         <div class="dict-card">
           <div class="dict-header">
-            <div class="dict-meta">
-              <div class="dict-word">${esc(word)}</div>
-              ${phon ? `<div class="dict-phon">/${esc(phon)}/</div>` : ''}
-            </div>
-            <div class="dict-actions">
-              <div class="dict-lang-toggle" aria-label="切换翻译语言">
-                <button type="button" data-lang="en" class="${dictLangMode === 'en' ? 'active' : ''}">EN</button>
-                <button type="button" data-lang="zh" class="${dictLangMode === 'zh' ? 'active' : ''}">中</button>
+            <div class="dict-title-row">
+              <div class="dict-meta">
+                <div class="dict-word">${esc(word)}</div>
+                ${primaryPos ? `<div class="dict-pos">${esc(primaryPos)}</div>` : ''}
               </div>
-              <button class="dict-btn speak" id="dict-speak-btn" aria-label="朗读">🔊</button>
-              <button class="dict-btn primary" id="dict-add-btn">添加生词</button>
-              <button class="dict-close" id="dict-close-inline" aria-label="关闭">✕</button>
+              <div class="dict-actions">
+                <div class="dict-lang-toggle" aria-label="切换翻译语言">
+                  <button type="button" data-lang="en" class="${dictLangMode === 'en' ? 'active' : ''}">EN</button>
+                  <button type="button" data-lang="zh" class="${dictLangMode === 'zh' ? 'active' : ''}">中</button>
+                </div>
+              </div>
+            </div>
+            <div class="dict-phon-row">
+              <button class="dict-btn speak" id="dict-speak-btn" aria-label="朗读单词" data-audio="${esc((activeAccent && activeAccent.audio) || (ctx && ctx.audioUrl) || '')}">🔊</button>
+              <span class="dict-phon-label">${accentLabel}</span>
+              ${phon ? `<span class="dict-phon">/${esc(phon)}/</span>` : ''}
+              <div class="dict-accent-toggle" aria-label="切换美式/英式读音">
+                <button type="button" data-accent="us" class="${dictAccentMode === 'us' ? 'active' : ''}">US</button>
+                <button type="button" data-accent="uk" class="${dictAccentMode === 'uk' ? 'active' : ''}">UK</button>
+              </div>
+            </div>
+            ${zhLine}
+            <div class="dict-add-row">
+              <button class="dict-btn primary" id="dict-add-btn">加入生词本</button>
             </div>
           </div>
-	          ${dictLangMode === 'zh' && zh ? `<div class="dict-zh">${esc(zh)}</div>` : ''}
-	          <div class="dict-definitions">
-	            ${defsHTML || `<div class="dict-zh" style="padding:.5rem;">暂无释义</div>`}
-	          </div>
-          <div class="dict-section-title">详细释义</div>
+          <div class="dict-definitions">
+            ${defsHTML || (exampleList.length ? '' : `<div class="dict-empty">暂无释义</div>`)}
+          </div>
+          ${exampleList.length ? `
+          <div class="dict-section-title">${defs.length ? '详细释义' : '语境例句'}</div>
           <div class="dict-example-list">
             ${examplesHTML}
-          </div>
+          </div>` : (defs.length ? '' : `<div class="dict-example-list"><div class="dict-zh">暂无例句</div></div>`)}
         </div>
       `;
     }
@@ -6822,18 +7454,55 @@
     }
     // ─────────────────────────────────────────────────────────────────────────
 
+    const desktopTranslateCache = new Map();
+    const desktopTranslateInflight = new Map();
+    const desktopTranslateFailed = new Set();
+
+    function bilingualCacheKey(text) {
+      return String(text || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    }
+
     async function translateText(text) {
-      if (!text) return '';
+      const source = String(text || '').trim();
+      if (!source) return '';
+      const key = bilingualCacheKey(source);
+      if (desktopTranslateCache.has(key)) return desktopTranslateCache.get(key) || '';
+      if (desktopTranslateFailed.has(key)) return '';
+      if (desktopTranslateInflight.has(key)) return desktopTranslateInflight.get(key);
+
+      const job = (async () => {
+        try {
+          const res = await fetch(`${API_BASE}/dictionary/translate-text`, {
+            method: 'POST',
+            headers: Object.assign({ 'Content-Type': 'application/json' }, headers()),
+            body: JSON.stringify({ text: source })
+          });
+          if (res.status === 401 || res.status === 403) return '';
+          if (!res.ok) {
+            desktopTranslateFailed.add(key);
+            return '';
+          }
+          const j = await res.json().catch(() => ({}));
+          const zh = String(j?.translation || j?.zh || '').trim();
+          if (zh && /[\u4e00-\u9fa5]/.test(zh) && (j.success !== false)) {
+            desktopTranslateCache.set(key, zh);
+            desktopTranslateFailed.delete(key);
+            return zh;
+          }
+          desktopTranslateFailed.add(key);
+          return '';
+        } catch (_) {
+          desktopTranslateFailed.add(key);
+          return '';
+        }
+      })();
+
+      desktopTranslateInflight.set(key, job);
       try {
-        const res = await fetch(`${API_BASE}/dictionary/translate-text`, {
-          method: 'POST',
-          headers: Object.assign({ 'Content-Type': 'application/json' }, headers()),
-          body: JSON.stringify({ text })
-        });
-        if (!res.ok) return '';
-        const j = await res.json().catch(() => ({}));
-        return j?.translation || '';
-      } catch (_) { return ''; }
+        return await job;
+      } finally {
+        desktopTranslateInflight.delete(key);
+      }
     }
 
     function shouldAutoTranslateSegment(text, translation) {
@@ -6844,6 +7513,142 @@
       const zhChars = (zh.match(/[\u4e00-\u9fa5]/g) || []).length;
       if (enLen < 50 || zhChars === 0) return false;
       return (zhChars / enLen) < 0.2;
+    }
+
+    function patchDesktopTranslationDom(index, zh) {
+      const segEl = transcriptListEl && transcriptListEl.querySelector(`.seg[data-index="${index}"]`);
+      const text = String(zh || '').trim();
+      const hasZh = text && /[\u4e00-\u9fa5]/.test(text);
+      if (segEl) {
+        let el = segEl.querySelector('.translation');
+        if (hasZh) {
+          if (!el) {
+            el = document.createElement('div');
+            el.className = 'translation';
+            segEl.appendChild(el);
+          }
+          el.textContent = text;
+        } else if (el) {
+          // Keep the rail clean when translation is unavailable.
+          el.remove();
+        }
+      }
+      if (activeSubtitleEl && Number(activeSubtitleEl.dataset.index) === Number(index) && activeTranslationEl) {
+        if (hasZh) {
+          activeTranslationEl.textContent = text;
+          activeTranslationEl.style.display = 'block';
+        } else if (state.showBilingual) {
+          activeTranslationEl.textContent = '';
+          activeTranslationEl.style.display = 'none';
+        }
+      }
+    }
+
+    let desktopBilingualToken = 0;
+    let desktopBilingualDrainTimer = null;
+    async function ensureDesktopBilingualTranslations(indices) {
+      if (!state.showBilingual) return;
+      const segments = Array.isArray(state.currentSegments) ? state.currentSegments : [];
+      if (!segments.length) return;
+      const tokenAtStart = ++desktopBilingualToken;
+      let targets = (Array.isArray(indices) ? indices : [])
+        .map((n) => Number(n))
+        .filter((n) => Number.isFinite(n) && n >= 0 && n < segments.length);
+      if (!targets.length) {
+        // Prefer active cue + nearby lines first, then fill more of the list.
+        const active = Number(document.querySelector('.seg.active')?.dataset?.index);
+        const prefer = Number.isFinite(active)
+          ? [active - 1, active, active + 1, active + 2, active + 3, active + 4]
+          : [0, 1, 2, 3, 4, 5];
+        targets = prefer.filter((n) => n >= 0 && n < segments.length);
+        for (let i = 0; i < segments.length && targets.length < 24; i += 1) {
+          if (!targets.includes(i)) targets.push(i);
+        }
+      }
+      // Unique preserve order
+      targets = Array.from(new Set(targets));
+
+      const CONCURRENCY = 4;
+      for (let offset = 0; offset < targets.length; offset += CONCURRENCY) {
+        if (tokenAtStart !== desktopBilingualToken) return;
+        const batch = targets.slice(offset, offset + CONCURRENCY);
+        await Promise.all(batch.map(async (index) => {
+          const seg = segments[index];
+          if (!seg) return;
+          const existing = String(seg.translation || seg.cn || seg.zh || seg.text_cn || '').trim();
+          if (existing && /[\u4e00-\u9fa5]/.test(existing) && !shouldAutoTranslateSegment(seg.text || '', existing)) return;
+          const en = String(seg.text || '').trim();
+          if (!en || seg._autoTranslatePending) return;
+          const key = bilingualCacheKey(en);
+          if (desktopTranslateFailed.has(key) && !desktopTranslateCache.has(key)) {
+            patchDesktopTranslationDom(index, '');
+            return;
+          }
+          seg._autoTranslatePending = true;
+          try {
+            const zh = await translateText(en);
+            if (tokenAtStart !== desktopBilingualToken) return;
+            if (zh && /[\u4e00-\u9fa5]/.test(zh)) {
+              seg.translation = zh;
+              seg.cn = zh;
+              seg._autoTranslated = true;
+              patchDesktopTranslationDom(index, zh);
+            } else {
+              patchDesktopTranslationDom(index, '');
+            }
+          } catch (_) {
+            patchDesktopTranslationDom(index, '');
+          } finally {
+            seg._autoTranslatePending = false;
+          }
+        }));
+      }
+
+      if (tokenAtStart !== desktopBilingualToken) return;
+      // Keep draining remaining untranslated lines without blocking playback.
+      scheduleDesktopBilingualDrain();
+    }
+
+    function scheduleDesktopBilingualDrain() {
+      if (!state.showBilingual) return;
+      if (desktopBilingualDrainTimer) return;
+      desktopBilingualDrainTimer = setTimeout(() => {
+        desktopBilingualDrainTimer = null;
+        if (!state.showBilingual) return;
+        const segments = Array.isArray(state.currentSegments) ? state.currentSegments : [];
+        const missing = [];
+        for (let i = 0; i < segments.length && missing.length < 16; i += 1) {
+          const seg = segments[i];
+          if (!seg) continue;
+          const en = String(seg.text || '').trim();
+          if (!en) continue;
+          const existing = String(seg.translation || seg.cn || seg.zh || seg.text_cn || '').trim();
+          const hasZh = existing && /[\u4e00-\u9fa5]/.test(existing) && !shouldAutoTranslateSegment(en, existing);
+          if (!hasZh && !seg._autoTranslatePending) missing.push(i);
+        }
+        if (missing.length) ensureDesktopBilingualTranslations(missing).catch(() => { });
+      }, 350);
+    }
+
+    function queueVisibleBilingualTranslations() {
+      if (!state.showBilingual || !transcriptListEl) return;
+      try {
+        if (!transcriptListEl._lxBiObserver) {
+          transcriptListEl._lxBiObserver = new IntersectionObserver((entries) => {
+            if (!state.showBilingual) return;
+            const idxs = [];
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              const idx = Number(entry.target && entry.target.dataset && entry.target.dataset.index);
+              if (Number.isFinite(idx)) idxs.push(idx);
+            });
+            if (idxs.length) ensureDesktopBilingualTranslations(idxs).catch(() => { });
+          }, { root: transcriptListEl, rootMargin: '80px 0px', threshold: 0.01 });
+        }
+        transcriptListEl.querySelectorAll('.seg[data-index]').forEach((node) => {
+          try { transcriptListEl._lxBiObserver.observe(node); } catch (_) { }
+        });
+      } catch (_) { }
     }
 
     let dictTranslatePollTimer = null;
@@ -6872,6 +7677,15 @@
     async function openDrawerLookup(word, ctx) {
       if (!dictBody) return;
       clearDictTranslatePoll();
+      const assistCard = document.getElementById('subtitle-assist');
+      if (assistCard) {
+        assistCard.hidden = true;
+        activeSubtitleEl?.querySelectorAll('.word-lookup').forEach((el) => el.classList.remove('word-lookup'));
+      }
+      try {
+        const vcCard = document.querySelector('[data-vc-word-card]');
+        if (vcCard) vcCard.hidden = true;
+      } catch (_) { }
       const ctxLocal = Object.assign({}, ctx || {});
       if (!ctxLocal.videoId && state.currentVideo?.id) {
         ctxLocal.videoId = state.currentVideo.id;
@@ -6895,15 +7709,28 @@
           zh = data?.zh || ''; // Translation is included in same response
         }
 
-        let audioSrc = '';
-        if (entry && Array.isArray(entry.phonetics)) {
-          const ph = entry.phonetics.find(p => p.audio && p.audio.trim() !== '');
-          if (ph) audioSrc = ph.audio;
+        function resolveAccentAudio(currentEntry) {
+          const accents = pickAccentPhonetics(currentEntry);
+          const active = dictAccentMode === 'uk' ? accents.uk : accents.us;
+          if (active && active.audio) return active.audio;
+          if (entry && Array.isArray(entry.phonetics)) {
+            const ph = entry.phonetics.find(p => p && p.audio && String(p.audio).trim());
+            if (ph) return ph.audio;
+          }
+          return '';
         }
+
+        let audioSrc = resolveAccentAudio(entry);
 
         function wireDrawerHandlers() {
           const speakBtn = dictBody.querySelector('#dict-speak-btn');
-          if (speakBtn) speakBtn.addEventListener('click', (e) => { e.stopPropagation(); speak(word, audioSrc); });
+          if (speakBtn) {
+            speakBtn.addEventListener('click', (e) => {
+              e.stopPropagation();
+              const fromBtn = speakBtn.getAttribute('data-audio') || '';
+              speak(word, fromBtn || audioSrc || null);
+            });
+          }
 
           const addBtn = dictBody.querySelector('#dict-add-btn');
           if (addBtn) addBtn.addEventListener('click', () => addToVocab(word, ctxLocal || {}));
@@ -6933,10 +7760,29 @@
               });
             });
           }
+
+          const accentToggle = dictBody.querySelector('.dict-accent-toggle');
+          if (accentToggle) {
+            accentToggle.querySelectorAll('button').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const mode = btn.dataset.accent === 'uk' ? 'uk' : 'us';
+                if (mode === dictAccentMode) {
+                  speak(word, resolveAccentAudio(entry) || audioSrc || null);
+                  return;
+                }
+                dictAccentMode = mode;
+                try { localStorage.setItem('dict_accent_mode', mode); } catch (_) { }
+                audioSrc = resolveAccentAudio(entry);
+                renderDrawer(entry, zh);
+                speak(word, audioSrc || null);
+              });
+            });
+          }
         }
 
         function renderDrawer(currentEntry, currentZh) {
           const prevScrollTop = dictBody.scrollTop || 0;
+          audioSrc = resolveAccentAudio(currentEntry);
           dictBody.innerHTML = buildDictCardHTML(word, currentEntry, currentZh, Object.assign({}, ctxLocal, { audioUrl: audioSrc }));
           try { dictBody.scrollTop = prevScrollTop; } catch (_) { }
           wireDrawerHandlers();
@@ -7016,7 +7862,7 @@
         ownedLemmaSet.add(lemma);
         document.querySelectorAll(`.word[data-lemma="${CSS.escape(lemma)}"]`).forEach(el => el.classList.add('owned'));
         // 立即显示toast，提升响应速度
-        showToast(`已添加 "${lemma}" 到词汇表`, 'success');
+        showToast(`已加入生词本：${lemma}`, 'success');
         try { localStorage.setItem('vocab_update', JSON.stringify({ ts: Date.now(), lemma: String(lemma || '').toLowerCase(), state: 'learning' })); } catch (_) { }
         // 异步更新词汇列表，不阻塞用户操作
         Promise.all([loadVocabStats(), loadVocab()]).catch(() => { });
@@ -7817,70 +8663,171 @@
         await loadUser();
         await Promise.all([loadVideos(), loadVocab(), loadVocabStats(), loadVocabMap()]);
       } catch (e) { console.error(e); }
-      setHashView(location.hash);
+      try { setHashView(location.hash); } catch (_) {}
       const params = new URLSearchParams(location.search);
       const vid = params.get('videoId') || params.get('id');
+      const ytParam = String(params.get('yt') || '').trim();
       const startSec = readStartSecFromUrl();
       if (vid && startSec != null) {
         pendingSeek = { videoId: vid, startSec };
       }
-      if (vid) {
-        let found = (state.videos || []).find(v => String(v.id) === String(vid));
-        if (!found) {
-          // 直达链接时，列表可能未包含旧视频，单独拉取并追加
-          try {
-            const res = await fetch(`${API_BASE}/video-resources/${vid}`, { headers: headers() });
-            if (res.ok) {
-              const data = await res.json();
-              const video = data?.video || data;
-              if (video && video.id) {
-                // 避免重复添加
-                if (!(state.videos || []).some(v => Number(v.id) === Number(video.id))) {
-                  state.videos = [video, ...(state.videos || [])];
-                }
-                state.filteredVideos = state.videos;
-                renderVideoList();
-                found = video;
-              }
-            } else {
-              const err = await res.json().catch(() => ({}));
-              showToast(err?.message || '未找到该视频，可能已删除', 'warn');
-            }
-          } catch (_) {
-            showToast('加载视频失败，请稍后再试', 'warn');
+
+      function resumeSecondsFor(video) {
+        if (!video || video.id == null) return 0;
+        if (startSec != null) return 0;
+        try {
+          const snap = readLastStudyMediaSnap();
+          if (snap && String(snap.id) === String(video.id) && Number(snap.seconds) > 1) {
+            return Number(snap.seconds);
           }
+        } catch (_) {}
+        try {
+          const entry = videoProgressMap.get(String(video.id));
+          if (entry && Number(entry.seconds) > 1) return Number(entry.seconds);
+        } catch (_) {}
+        return 0;
+      }
+
+      function resolveExternalFromUrlOrMemory(videoId) {
+        const id = String(videoId || '');
+        const ytFromId = (id.match(/^yt:([\w-]{6,})$/i) || [])[1] || '';
+        const youtubeId = ytFromId || ytParam;
+        if (youtubeId) {
+          const snap = readLastStudyMediaSnap();
+          const matched = snap && (
+            String(snap.id) === id
+            || String(snap.youtube_video_id || '') === youtubeId
+            || String(snap.id) === ('yt:' + youtubeId)
+          );
+          return videoFromStudyMediaSnap(matched ? Object.assign({}, snap, {
+            id: id.startsWith('yt:') ? id : ('yt:' + youtubeId),
+            youtube_video_id: youtubeId,
+            external_youtube: true,
+          }) : {
+            id: id.startsWith('yt:') ? id : ('yt:' + youtubeId),
+            youtube_video_id: youtubeId,
+            external_youtube: true,
+            title: 'YouTube ' + youtubeId,
+          });
         }
-        if (found) {
-          await selectVideo(found);
-          return;
+        if (/^pod:/.test(id)) {
+          try {
+            const recent = window.LinglishStudyRecent && window.LinglishStudyRecent.get(id);
+            const pod = findPodcastFromRecent(recent || { id });
+            if (pod && pod.episode) {
+              return {
+                id,
+                title: pod.episode.title || (pod.show && pod.show.title) || '播客',
+                original_filename: pod.episode.title || '',
+                thumbnail_path: pod.episode.image || (pod.show && pod.show.image) || '',
+                collection_name: (pod.show && pod.show.title) || '',
+                external_podcast: true,
+                audioUrl: pod.episode.audioUrl || '',
+                transcriptUrl: pod.episode.transcriptUrl || '',
+                status: 'ready',
+                duration_sec: 0,
+              };
+            }
+          } catch (_) {}
+          return videoFromStudyMediaSnap(readLastStudyMediaSnap());
+        }
+        return null;
+      }
+
+      async function openRestoredVideo(video) {
+        if (!video) return false;
+        try {
+          const resumeSec = resumeSecondsFor(video);
+          if (resumeSec > 1 && !pendingSeek) {
+            pendingSeek = { videoId: String(video.id), startSec: resumeSec };
+          }
+          await selectVideo(video);
+          return Boolean(state.currentVideo);
+        } catch (err) {
+          console.warn('[Resume] openRestoredVideo failed', err);
+          return false;
         }
       }
 
-      // Default selection to avoid black screen on first open.
-      if (!state.currentVideo) {
-        let restored = null;
-        try {
-          const lastId = localStorage.getItem('last_video_id');
-          // Validate ID is within PostgreSQL INTEGER range (max ~2.1 billion)
-          const MAX_INTEGER = 2147483647;
-          if (lastId) {
-            const numId = Number(lastId);
-            if (numId > 0 && numId <= MAX_INTEGER) {
-              restored = (state.videos || []).find(v => String(v.id) === String(lastId));
-            } else {
-              // Clear invalid ID (likely from fallback mode with timestamp-based ID)
-              console.warn('[Init] Clearing invalid last_video_id:', lastId);
-              localStorage.removeItem('last_video_id');
+      async function restoreStudySelection() {
+        if (state.currentVideo) return true;
+        if (vid) {
+          let found = (state.videos || []).find(v => String(v.id) === String(vid));
+          if (!found && /^\d+$/.test(String(vid))) {
+            try {
+              const res = await fetch(`${API_BASE}/video-resources/${vid}`, { headers: headers() });
+              if (res.ok) {
+                const data = await res.json();
+                const video = data?.video || data;
+                if (video && video.id) {
+                  if (!(state.videos || []).some(v => Number(v.id) === Number(video.id))) {
+                    state.videos = [video, ...(state.videos || [])];
+                  }
+                  state.filteredVideos = state.videos;
+                  renderVideoList();
+                  found = video;
+                }
+              } else {
+                const err = await res.json().catch(() => ({}));
+                showToast(err?.message || '未找到该视频，可能已删除', 'warn');
+              }
+            } catch (_) {
+              showToast('加载视频失败，请稍后再试', 'warn');
             }
           }
-        } catch (_) { }
-        // If URL requests a specific level, don't restore a mismatched last video.
-        if (urlLevelOverride && restored && String(restored.difficulty_level || '').toLowerCase() !== urlLevelOverride) {
+          if (!found) {
+            try { found = resolveExternalFromUrlOrMemory(vid); }
+            catch (err) { console.warn('[Resume] resolve external failed', err); }
+          }
+          if (found && await openRestoredVideo(found)) return true;
+        }
+
+        let restored = null;
+        try {
+          const restoreFromSnap = readLastStudyMediaSnap();
+          if (restoreFromSnap && restoreFromSnap.id != null) {
+            restored = (state.videos || []).find(v => String(v.id) === String(restoreFromSnap.id));
+            if (!restored) restored = videoFromStudyMediaSnap(restoreFromSnap);
+          }
+        } catch (_) {}
+        if (!restored) {
+          try {
+            const lastId = localStorage.getItem('last_video_id');
+            const MAX_INTEGER = 2147483647;
+            if (lastId) {
+              const numId = Number(lastId);
+              if (numId > 0 && numId <= MAX_INTEGER) {
+                restored = (state.videos || []).find(v => String(v.id) === String(lastId));
+              } else if (!/^yt:|^pod:/i.test(String(lastId))) {
+                console.warn('[Init] Clearing invalid last_video_id:', lastId);
+                localStorage.removeItem('last_video_id');
+              }
+            }
+          } catch (_) {}
+        }
+        if (urlLevelOverride && restored && restored.difficulty_level
+          && String(restored.difficulty_level).toLowerCase() !== urlLevelOverride) {
           restored = null;
         }
+        if (restored && await openRestoredVideo(restored)) return true;
         const baseList = (state.filteredVideos && state.filteredVideos.length) ? state.filteredVideos : state.videos;
-        const fallback = restored || pickDefaultVideo(baseList, urlLevelOverride);
-        if (fallback) await selectVideo(fallback);
+        const fallback = pickDefaultVideo(baseList, urlLevelOverride);
+        if (fallback) {
+          try { await selectVideo(fallback); } catch (_) {}
+          return Boolean(state.currentVideo);
+        }
+        return false;
+      }
+
+      try {
+        await restoreStudySelection();
+      } catch (err) {
+        console.warn('[Resume] restoreStudySelection failed', err);
+      }
+      if (!state.currentVideo) {
+        window.setTimeout(() => {
+          restoreStudySelection().catch((err) => console.warn('[Resume] delayed restore failed', err));
+        }, 400);
       }
       coachPickReady = true;
     })();
@@ -8129,4 +9076,3 @@
     } catch (e) {
       console.warn('[VRP] bridge expose failed:', e);
     }
-  

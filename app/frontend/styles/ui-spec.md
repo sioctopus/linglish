@@ -1,7 +1,8 @@
 # Linglish 界面规范
 
 对照来源：https://www.speak.com/tw ，2026-10-15 从页面上量到的实际样式。
-这套规范管营销页和产品页的外观。文案、链接、登录和上课入口保持原样。
+这套规范管营销页和产品页在宽屏上的外观。文案、链接、登录和上课入口保持原样。
+安卓、iPhone、iPad 的尺寸和导航见 `ui-spec-mobile.md`；练习页的「完整又简洁」见 `ui-spec-mobile-practice.md`；顶栏/侧栏/底栏壳层（参照 YouTube）见 `ui-spec-shell.md`。颜色、字体、图标各份规范共用。
 
 Axiforma 是 Speak 的商用字体，不能直接嵌进 Linglish。界面用 Manrope，中文回落到苹方、微软雅黑。
 

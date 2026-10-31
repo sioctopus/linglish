@@ -1,15 +1,19 @@
-/* Mobile Header Components */
+/* Mobile Header — ui-spec-mobile: 56px bar, white, 1px line, max 2 right icons */
 
 .mobile-header {
-  background: white;
-  padding: 16px;
+  background: var(--lx-surface, #ffffff);
+  padding: 0 16px;
+  padding-top: env(safe-area-inset-top, 0px);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid var(--border-color);
+  gap: 12px;
+  border-bottom: 1px solid var(--lx-line, #e2e8f0);
   position: sticky;
   top: 0;
   z-index: 100;
+  min-height: calc(56px + env(safe-area-inset-top, 0px));
+  box-sizing: border-box;
 }
 
 .language-selector {
@@ -41,41 +45,135 @@
 
 .header-actions {
   display: flex;
-  gap: 8px;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  flex: 0 0 auto;
+  min-width: 0;
 }
 
-/* Video Library Header */
-.video-library-header {
-  background: var(--lx-grad-brand, linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%));
-  color: white;
+/* Page title — left-aligned product title, no icon tile */
+.mobile-header .page-title,
+.mobile-header .brand-section h1 {
+  margin: 0;
+  color: var(--lx-ink-900, #0f172a);
+  font-family: var(--lx-font-body, Manrope, "PingFang SC", "Microsoft YaHei", sans-serif);
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
+.mobile-header .page-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Quiet text action (首页) — not a second title */
+.header-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0 10px;
+  border-radius: 10px;
+  color: var(--lx-ink-500, #64748b);
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.header-link:active {
+  color: var(--lx-primary, #0f766e);
+  background: #f1f5f9;
+}
+
+/* Icon buttons — 48 touch / ~22 glyph */
+.mobile-header .icon-btn {
+  width: 48px;
+  height: 48px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  color: var(--lx-ink-700, #334155);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mobile-header .icon-btn:active {
+  background: #f1f5f9;
+  color: var(--lx-primary, #0f766e);
+}
+
+.mobile-header .icon-btn svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+/* Legacy brand block — flatten to title row (no emoji tile) */
 .brand-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0;
+  min-width: 0;
+  flex: 1 1 auto;
 }
 
 .brand-icon {
-  font-size: 32px;
-  width: 48px;
-  height: 48px;
+  display: none !important;
+}
+
+.brand-section > div {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
+  gap: 0;
+  min-width: 0;
 }
 
 .brand-section h1 {
-  font-size: 24px;
-  font-weight: 700;
-  color: white;
   margin: 0;
 }
 
-.video-library-header .icon-btn {
-  color: white;
+a.brand-section.brand-home,
+a.brand-home {
+  display: flex;
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+a.brand-home:active {
+  opacity: 0.75;
+}
+
+/* Hide inline “回首页” under the title — use header-link instead */
+.mobile-header .brand-sub {
+  display: none !important;
+}
+
+/* Tab pages share the same 56px shell */
+.mobile-header.today-header,
+.mobile-header.explore-header,
+.mobile-header.power-header,
+.mobile-header.arena-header,
+.mobile-header.treasure-header,
+.video-library-header {
+  background: var(--lx-surface, #ffffff);
+  color: var(--lx-ink-900, #0f172a);
+  border-bottom: 1px solid var(--lx-line, #e2e8f0);
+  box-shadow: none;
 }
 
 /* Stats Header */
@@ -101,59 +199,15 @@
   justify-content: center;
 }
 
-/* Explore World Header */
-.explore-header {
-  background: var(--lx-grad-brand, linear-gradient(135deg, #0f766e 0%, #0ea5e9 100%));
-  color: white;
-}
-
-.explore-header .icon-btn {
-  color: white;
-}
-
-/* Power Station Header */
-.power-header {
-  background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
-  color: #1a1a1a;
-}
-
-.power-header .icon-btn {
-  color: #1a1a1a;
-}
-
-/* Arena Header */
-.arena-header {
-  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
-  color: white;
-}
-
-.arena-header .icon-btn {
-  color: white;
-}
-
-/* Treasure Header */
-.treasure-header {
-  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-  color: white;
-}
-
-.treasure-header .icon-btn {
-  color: white;
-}
-
-/* Vocabulary Header */
-.vocabulary-header {
-  padding: 12px 16px;
-}
-
-/* Playlist Header */
+/* Vocabulary / playlist / more */
+.vocabulary-header,
 .playlist-header {
-  padding: 12px 16px;
+  padding: 0 16px;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .playlist-icon {
-  width: 48px;
-  height: 48px;
+  display: none;
 }
 
 .playlist-info {
@@ -161,7 +215,7 @@
 }
 
 .playlist-info h1 {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 700;
   margin: 0;
 }
@@ -172,32 +226,30 @@
   font-size: 14px;
 }
 
-/* More Page Header */
 .more-header {
-  padding: 16px;
+  padding: 0 16px;
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .more-header h1 {
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 700;
 }
 
-/* Logout button in explore page */
 .logout-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  background: transparent;
 }
 
 .logout-btn:active {
-  background: rgba(255, 255, 255, 0.3);
+  background: #f1f5f9;
 }
 
-/* Mobile User Info - Compact Design */
+/* Compact user / VIP — text chip, no crown tile */
 .mobile-user-info {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-right: 8px;
+  gap: 4px;
+  margin: 0;
 }
 
 .mobile-user-info[hidden] {
@@ -205,53 +257,103 @@
 }
 
 .mobile-user-name {
-  display: none; /* Hide username on mobile to save space */
+  display: none;
 }
 
-/* Mobile VIP Badge - Compact Icon-Only Design */
 .mobile-vip-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: 50%;
-  font-size: 16px;
-  font-weight: 700;
+  min-height: 28px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
+  background: #fffbeb;
+  color: #b45309;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
   text-decoration: none;
-  transition: all 0.2s ease;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: none;
+  font-style: normal;
 }
 
-.mobile-vip-badge[hidden] {
+.mobile-vip-badge[hidden],
+.mobile-vip-badge[style*="display: none"] {
   display: none !important;
 }
 
 .mobile-vip-badge .vip-icon {
-  font-size: 18px;
-  line-height: 1;
+  display: none;
 }
 
 .mobile-vip-badge .vip-text {
-  display: none; /* Hide text, show icon only */
+  display: inline;
 }
 
-.mobile-vip-badge.vip {
-  background: linear-gradient(135deg, #FFD700, #FFA500);
-  color: #7c2d12;
-}
-.mobile-vip-badge.svip {
-  background: linear-gradient(135deg, #0ea5e9, #2563eb);
-  color: #e0f2fe;
-}
-
+.mobile-vip-badge.vip,
+.mobile-vip-badge.svip,
 .mobile-vip-badge.family {
-  background: linear-gradient(135deg, #ec4899, #2dd4bf);
-  color: white;
+  background: #fffbeb;
+  color: #b45309;
+}
+
+.mobile-vip-badge.svip {
+  background: #f0fdfa;
+  color: #0f766e;
 }
 
 .mobile-vip-badge:active {
-  transform: scale(0.95);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  transform: none;
+  opacity: 0.85;
+}
+
+/* Explore search under header — quiet field, no floating card */
+.search-container {
+  padding: 10px 16px 12px;
+  background: var(--lx-surface, #ffffff);
+  border-bottom: 1px solid var(--lx-line, #e2e8f0);
+}
+
+.search-input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--lx-line, #e2e8f0);
+  border-radius: 999px;
+  background: #f8fafc;
+  box-shadow: none;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.search-input-wrapper:focus-within {
+  border-color: #99f6e4;
+  background: #ffffff;
+  box-shadow: none;
+  transform: none;
+}
+
+.search-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 16px;
+  line-height: 1.3;
+}
+
+.search-icon {
+  flex: 0 0 auto;
+  color: #94a3b8;
+  font-size: 0;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  background: no-repeat center / 18px 18px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m20 20-3.5-3.5'/%3E%3C/svg%3E");
 }

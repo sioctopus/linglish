@@ -46,10 +46,15 @@
     edit: '<path d="M4 20h4L19 9l-4-4L4 16v4z"/><path d="m13 7 4 4"/>',
     plus: '<path d="M12 5v14"/><path d="M5 12h14"/>',
     check: '<path d="m5 12 5 5L20 7"/>',
+    circle: '<circle cx="12" cy="12" r="8"/>',
+    tag: '<path d="M4 12V5a1 1 0 0 1 1-1h7l8 8-7 7-8-8z"/><circle cx="9" cy="9" r="1.2"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
     settings: '<circle cx="12" cy="12" r="3"/><path d="M12 3v2"/><path d="M12 19v2"/><path d="m4.9 6.5 1.7 1"/><path d="m17.4 16.5 1.7 1"/><path d="M3 12h2"/><path d="M19 12h2"/><path d="m4.9 17.5 1.7-1"/><path d="m17.4 7.5 1.7-1"/>',
     bookmark: '<path d="M7 4h10a1 1 0 0 1 1 1v15l-6-3.5L6 20V5a1 1 0 0 1 1-1z"/>',
     star: '<path d="m12 3 2.6 5.4 6 .9-4.3 4.2 1 6L12 16.8 6.7 19.5l1-6L3.4 9.3l6-.9L12 3z"/>',
+    eye: '<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+    'eye-off': '<path d="m3 3 18 18"/><path d="M10.7 10.7a2.5 2.5 0 0 0 3.6 3.6"/><path d="M9.9 5.1A11 11 0 0 1 12 5c6.5 0 10 7 10 7a18 18 0 0 1-1.7 2.5"/><path d="M6.1 6.1C3.7 7.8 2 12 2 12s3.5 7 10 7a10 10 0 0 0 4.3-1"/>',
+    keyboard: '<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01"/><path d="M11 10h.01"/><path d="M15 10h.01"/><path d="M7 14h10"/>',
     send: '<path d="m4 11 15-7-7 15-2-6-6-2z"/>',
     share: '<circle cx="18" cy="5" r="2.5"/><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="19" r="2.5"/><path d="m8.2 13.2 7.6 4.4"/><path d="m15.8 6.4-7.6 4.4"/>',
 
@@ -84,6 +89,8 @@
     translate: '<path d="M5 7h8"/><path d="M9 5v2"/><path d="m7 7 3 8"/><path d="m13 7-1.5 4"/><path d="M14 17h6"/><path d="m17 13 3 8"/><path d="m14 21 1.5-4"/>',
     workbench: '<rect x="3" y="4" width="18" height="6" rx="1"/><path d="M5 10v8a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-8"/><path d="M10 14h4"/>',
     materials: '<path d="M5 5h10l4 4v10H5V5z"/><path d="M15 5v4h4"/><path d="M8 13h8"/><path d="M8 17h5"/>',
+    logout: '<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/>',
+    fire: '<path d="M12 21c4 0 7-2.8 7-6.5 0-2.4-1.3-4.2-2.6-5.5-.4 2.2-1.8 3.2-1.8 3.2S15.4 8 13.5 5.5C12.2 3.8 12 3 12 3s-.5 2.2-1.8 4C8.8 9.2 8 11 8 13c0 1.2.4 2.3 1 3.2C8.4 15.4 8 14.2 8 13c-1.8 1.6-3 3.8-3 5.5C5 18.2 8 21 12 21z"/>',
   };
 
   const ALIASES = {
@@ -106,6 +113,8 @@
     question: 'help',
     stats: 'chart',
     magic: 'spark',
+    exit: 'logout',
+    signout: 'logout',
   };
 
   function resolveName(name) {

@@ -1,6 +1,42 @@
 (function (global) {
   const STORAGE_KEY = 'linglish-workbench-import';
+  const MAX_AGE_MS = 10 * 60 * 1000;
   const EMPTY_HINTS = /选择视频|暂无字幕|先自己说|请从视频|加载中|暂无/;
+
+  const SOURCE_BACK = {
+    'daily-speaking': './daily-speaking.html',
+    'practice-session': './practice-session-desktop.html',
+    'video-reader': './video-reader-desktop.html',
+  };
+
+  function writeStore(payload) {
+    try {
+      global.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function readStore() {
+    const keys = ['sessionStorage'];
+    for (const name of keys) {
+      try {
+        const raw = global[name].getItem(STORAGE_KEY);
+        if (!raw) continue;
+        const data = JSON.parse(raw);
+        if (!data || typeof data !== 'object') continue;
+        const age = Date.now() - Number(data.ts || 0);
+        if (Number.isFinite(age) && age >= 0 && age <= MAX_AGE_MS) return { data, store: name };
+      } catch (_) {}
+    }
+    return null;
+  }
+
+  function clearStore() {
+    try { global.sessionStorage.removeItem(STORAGE_KEY); } catch (_) {}
+    try { global.localStorage.removeItem(STORAGE_KEY); } catch (_) {}
+  }
 
   function openIntensiveNote(options = {}) {
     const text = String(options.text || '').replace(/\s+/g, ' ').trim();
@@ -20,12 +56,9 @@
       ts: Date.now(),
     };
 
-    try {
-      global.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-    } catch (_) {
+    if (!writeStore(payload)) {
       if (typeof global.alert === 'function') global.alert('暂时无法保存选中的内容，请允许浏览器存储后重试。');
       return false;
-      /* ignore quota */
     }
 
     const query = new URLSearchParams({ import: '1' });
@@ -34,26 +67,26 @@
     if (payload.source) query.set('from', payload.source);
     const url = `./workbench.html?${query.toString()}`;
 
+    // Keep the private session payload in the same tab; noopener tabs cannot inherit it.
     global.location.assign(url);
     return true;
   }
 
   function consume() {
-    try {
-      const raw = global.sessionStorage.getItem(STORAGE_KEY);
-      if (!raw) return null;
-      global.sessionStorage.removeItem(STORAGE_KEY);
-      const data = JSON.parse(raw);
-      if (!data || typeof data !== 'object') return null;
-      return data;
-    } catch (_) {
-      return null;
-    }
+    const hit = readStore();
+    if (!hit) return null;
+    clearStore();
+    return hit.data;
+  }
+
+  function backHrefForSource(source) {
+    return SOURCE_BACK[String(source || '')] || './index-desktop.html';
   }
 
   global.WorkbenchImport = {
     STORAGE_KEY,
     openIntensiveNote,
     consume,
+    backHrefForSource,
   };
 })(window);

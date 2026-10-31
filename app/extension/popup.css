@@ -1,0 +1,88 @@
+:root {
+  --bg: #f8fafc;
+  --ink: #0f172a;
+  --muted: #64748b;
+  --teal: #0f766e;
+  --mint: #2dd4bf;
+  --line: #e2e8f0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  width: 280px;
+  padding: 14px;
+  font: 13px/1.45 Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+  color: var(--ink);
+  background: linear-gradient(180deg, #f0fdfa 0%, var(--bg) 48%);
+}
+
+.header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.logo {
+  border-radius: 8px;
+}
+
+.brand {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.status {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.links {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.links button,
+.actions button {
+  appearance: none;
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font: inherit;
+}
+
+.links button:hover,
+.actions button:hover {
+  border-color: #99f6e4;
+}
+
+.actions {
+  display: grid;
+  gap: 8px;
+}
+
+.actions .primary {
+  border: 0;
+  color: #fff;
+  background: linear-gradient(135deg, #0d9488, var(--mint));
+  font-weight: 600;
+}
+
+.actions .ghost {
+  background: #fff;
+}
+
+.hint {
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}

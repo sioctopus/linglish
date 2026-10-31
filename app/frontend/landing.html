@@ -21,7 +21,7 @@
   <meta name="twitter:title" content="Linglish - AI英语教练">
   <meta name="twitter:description" content="真实内容输入 + 跟读输出 + AI反馈 + 复习，每天 15 分钟练会英语表达。">
   <meta name="twitter:image" content="https://www.example.com/assets/lingbao_3d.jpg">
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="./manifest.json?v=2026103001">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml" sizes="any">
   <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
@@ -2025,9 +2025,8 @@
   </footer>
 
   <script src="./js/visitor-context.js?v=1"></script>
-  <script src="./js/auth-manager.js?v=20261019"></script>
-<script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/first-lesson-entry.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <script src="./js/first-lesson-entry.js?v=2026103001"></script>
   <script>
     const VISITOR_ID_KEY = 'linglish_visitor_id';
     const landingParams = new URLSearchParams(window.location.search || '');
@@ -2159,7 +2158,8 @@
     }
 
     function landingStarterHref(source) {
-      return `today.html?from=${encodeURIComponent(source)}&starter=1`;
+      const page = isMobile() ? 'mobile-today.html' : 'today.html';
+      return `${page}?from=${encodeURIComponent(source)}&starter=1`;
     }
 
     function startLandingFirstLesson(event, source) {
@@ -2258,11 +2258,7 @@
     loginBtn.addEventListener('click', () => {
       redirect(true);
     });
-    if (readToken() && !isGuestSession(readToken())) {
-      window.location.replace(isMobile() ? 'mobile-today.html?from=landing' : 'index-desktop.html?from=landing');
-    } else {
-      renderLoggedInAccount();
-    }
+    renderLoggedInAccount();
     document.getElementById('account-logout')?.addEventListener('click', () => {
       if (!window.confirm('确定要退出登录吗？')) return;
       if (window.AuthManager && typeof window.AuthManager.clearToken === 'function') {

@@ -216,6 +216,7 @@
     function requestUrl(input) {
         if (typeof input === 'string') return input;
         if (input && typeof input.url === 'string') return input.url;
+            if (input && typeof input.href === 'string') return input.href;
         return '';
     }
 
@@ -492,13 +493,24 @@
         }
     }
 
+    function sameOriginRequest(input) {
+        const url = requestUrl(input);
+        if (input && !url) return false;
+        try { return new URL(url, window.location.href).origin === new URL(window.location.href).origin; }
+        catch (_) { return !url || (/^(?:\/(?!\/)|\.\.?\/)/.test(url) && !url.includes('\\')); }
+    }
+
     if (originalFetch) {
         window.fetch = function (input, init) {
+            if (!sameOriginRequest(input)) return originalFetch(input, init);
+            let retryInput = input;
+            try { if (input && typeof input.clone === 'function') retryInput = input.clone(); } catch (_) {}
+
             const url = requestUrl(input);
             const nextInit = isSessionEndpoint(url) || /\/auth\/logout(?:\?|$)/.test(url)
                 ? Object.assign({}, init, {
                     headers: (function () {
-                        const headers = new Headers(init && init.headers || undefined);
+                        const headers = new Headers((init && init.headers) || (input && input.headers) || undefined);
                         if (!headers.has('X-Linglish-Device')) headers.set('X-Linglish-Device', getDeviceId());
                         return headers;
                     })()
@@ -515,10 +527,10 @@
                 }
                 return AuthManager.ensureSession({ force: true }).then(function (renewed) {
                     if (!renewed) return response;
-                    const headers = new Headers((nextInit && nextInit.headers) || (init && init.headers) || undefined);
+                    const headers = new Headers((nextInit && nextInit.headers) || (init && init.headers) || (input && input.headers) || undefined);
                     headers.set('Authorization', 'Bearer ' + renewed);
                     const retryInit = Object.assign({}, nextInit || init, { headers: headers, __linglishRetried: true });
-                    return originalFetch(input, retryInit);
+                    return originalFetch(retryInput, retryInit);
                 });
             });
         };

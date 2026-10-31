@@ -18,18 +18,22 @@
       hidden: true,
       expanded: false,
       label: '打开视频库',
-      text: '☰ 视频库'
+      text: '视频库'
+    };
+  }
+
+  function openSidebarState() {
+    return {
+      hidden: false,
+      expanded: true,
+      label: '关闭视频库',
+      text: '关闭'
     };
   }
 
   function nextSidebarState(currentlyHidden) {
     if (currentlyHidden) {
-      return {
-        hidden: false,
-        expanded: true,
-        label: '关闭视频库',
-        text: '✕ 关闭'
-      };
+      return openSidebarState();
     }
     return closedSidebarState();
   }
@@ -44,6 +48,7 @@
     shouldStartSidebarHidden,
     nextSidebarState,
     closedSidebarState,
+    openSidebarState,
     usesFocusedTranscriptSizing
   };
 });

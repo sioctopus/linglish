@@ -14,10 +14,13 @@ const PRACTICE_VOICES = new Set([
   'en-US-AndrewMultilingualNeural',
   'en-US-EmmaMultilingualNeural',
   'en-US-BrianMultilingualNeural',
+  'en-US-JennyNeural',
+  'en-US-RogerNeural',
   'en-GB-LibbyNeural',
   'en-GB-MaisieNeural',
   'en-GB-RyanNeural',
   'en-GB-ThomasNeural',
+  'en-GB-SoniaNeural',
 ]);
 
 // Unknown voices fall back to the default so an edge-tts run can never be

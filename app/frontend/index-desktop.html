@@ -18,11 +18,11 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Linglish">
-  <link rel="stylesheet" href="/css/install-desktop.css?v=3">
-  <script src="/js/install-desktop.js?v=3" defer></script>
+  <link rel="stylesheet" href="/css/install-desktop.css?v=2">
+  <script src="/js/install-desktop.js?v=2026103001" defer></script>
   <link rel="preload" href="/env.js?v=1" as="script">
-  <link rel="preload" href="./global-ui.js?v=20250108" as="script">
-  <link rel="preload" href="./js/auth-manager.js?v=20261019" as="script">
+  <link rel="preload" href="./global-ui.js?v=2026103001" as="script">
+  <link rel="preload" href="./js/auth-manager.js?v=2026103001" as="script">
   <link rel="preload" href="./js/storage-helper.js?v=1" as="script">
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <link rel="stylesheet" href="./css/quick-win.css?v=1">
@@ -297,7 +297,7 @@
     }
 
     /* ========== 加载性能优化 ========== */
-    /* 页面加载器已迁移到 global-ui.js 统一管理 */
+    /* 页面加载器已迁移到 global-ui.js?v=2026103001 统一管理 */
 
     /* GPU 加速优化 */
     .feature-card,
@@ -606,8 +606,17 @@
       box-shadow: none;
     }
 
-    /* 学习等级选择器（桌面） */
+    /* 首页不展示学习等级栏 */
     .level-switch {
+      display: none !important;
+    }
+
+    .level-switch[hidden] {
+      display: none !important;
+    }
+
+    /* 学习等级选择器（保留样式供其它逻辑引用，本页隐藏） */
+    .level-switch-legacy {
       position: relative;
       display: inline-flex;
       align-items: center;
@@ -777,25 +786,22 @@
 
     .hero-actions {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-      align-items: center;
-    }
-
-    #hero-user-actions.hero-actions {
       flex-wrap: nowrap;
       gap: 0.5rem;
+      align-items: center;
       width: 100%;
-      overflow-x: auto;
+      max-width: 620px;
     }
 
-    #hero-user-actions .btn-hero {
+    .hero-actions .btn-hero {
       flex: 1 1 0;
-      min-width: max-content;
-      min-height: 46px;
-      padding: 0 0.7rem;
-      font-size: 0.92rem;
+      min-width: 0;
+      min-height: 44px;
+      padding: 0 0.55rem;
+      font-size: 0.9rem;
       white-space: nowrap;
+      text-align: center;
+      justify-content: center;
     }
 
     .hero-metrics {
@@ -1569,48 +1575,6 @@
       position: relative;
       width: min(380px, 100%);
       margin: 0 auto;
-    }
-
-    .lingbao-entry {
-      width: min(280px, 92%);
-      margin: 8px auto 0;
-      display: grid;
-      gap: 10px;
-      padding: 16px;
-      background: #fff;
-      border-radius: 24px;
-      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.08);
-    }
-
-    .lingbao-entry[hidden] {
-      display: none !important;
-    }
-
-    .lingbao-entry p {
-      margin: 0;
-      color: #64748b;
-      font-size: 14px;
-      line-height: 20px;
-      text-align: center;
-    }
-
-    .lingbao-entry a {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 46px;
-      border-radius: 999px;
-      border: 1px solid #e2e8f0;
-      color: #0f172a;
-      background: #fff;
-      text-decoration: none;
-      font-weight: 700;
-    }
-
-    .lingbao-entry a:hover {
-      background: #f0fdfa;
-      border-color: #99f6e4;
-      color: #0f766e;
     }
 
     .demo-reel-lingbao {
@@ -4937,22 +4901,66 @@
     /* 响应式 */
     @media (max-width: 968px) {
       .navbar {
-        flex-wrap: wrap;
+        flex-wrap: nowrap !important;
         align-items: center;
-        row-gap: 0.75rem;
+        gap: 0.5rem;
+        padding: 0.55rem 0.75rem;
+      }
+
+      .logo {
+        gap: 0.4rem;
+        font-size: 1.1rem;
+        flex: 0 1 auto;
+        min-width: 0;
+      }
+
+      .logo-mark {
+        width: 28px;
+        height: 28px;
+        flex: 0 0 auto;
+      }
+
+      .logo-tag {
+        display: none;
+      }
+
+      .nav-links {
+        display: none !important;
       }
 
       .level-switch {
-        order: 3;
-        width: 100%;
-        justify-content: space-between;
+        display: none !important;
       }
 
-      .level-menu {
-        left: 0;
-        right: auto;
-        width: min(100%, 360px);
+      .nav-buttons,
+      .user-info {
+        display: inline-flex !important;
+        flex-wrap: nowrap;
+        align-items: center;
+        gap: 0.4rem;
+        flex: 0 0 auto;
+        margin-left: auto;
+      }
+
+      .navbar .btn {
+        padding: 0.45rem 0.7rem;
+        font-size: 0.82rem;
+        white-space: nowrap;
+        min-height: 36px;
+      }
+
+      .hero-actions {
+        flex-wrap: nowrap;
+        gap: 0.4rem;
+        max-width: 100%;
+      }
+
+      .hero-actions .btn-hero {
+        flex: 1 1 0;
         min-width: 0;
+        padding: 0 0.4rem;
+        font-size: 0.82rem;
+        min-height: 42px;
       }
 
       .hero {
@@ -5486,7 +5494,7 @@
   </style>
   <script src="/env.js?v=1"></script>
   <!-- 统一加载和错误处理系统 -->
-  <script src="./global-ui.js?v=20250108"></script>
+  <script src="./global-ui.js?v=2026103001"></script>
 </head>
 
 <body>
@@ -5495,7 +5503,7 @@
   <!-- 顶部公告栏 -->
   <div class="announcement-bar" id="announcement-bar">
     <span class="announcement-text">
-      <span>今天先听懂一句，再跟读这一句，最后复习这句里卡住的词。</span>
+      <span>今日训练建议：真实视频输入 + 逐句跟读反馈 + 词汇复习，15 分钟完成一轮。</span>
     </span>
     <a href="#" class="announcement-cta" onclick="startTodayLearning(event, 'announcement'); return false;">开始训练</a>
   </div>
@@ -5516,42 +5524,14 @@
       <a class="nav-link" href="#features" data-track="nav_learn_more">功能</a>
     </div>
 
-    <div class="level-switch" id="level-switch">
-      <span class="level-label">学习等级</span>
-      <button class="btn btn-outline" id="level-btn" type="button" title="学习等级">
-        <span id="level-btn-text">🌱 初级</span>
-      </button>
-      <div class="level-menu" id="level-menu" aria-label="learning level">
-        <div class="level-opt" data-level="beginner">
-          <div class="icon">🌱</div>
-          <div>
-            <div class="title">初级</div>
-            <div class="desc">核心 1–3000 词：适合日常交流与基础输入。</div>
-          </div>
-        </div>
-        <div class="level-opt" data-level="intermediate">
-          <div class="icon">🌿</div>
-          <div>
-            <div class="title">中级</div>
-            <div class="desc">3001–8000 词：适合扩展表达与更丰富的真实内容。</div>
-          </div>
-        </div>
-        <div class="level-opt" data-level="advanced">
-          <div class="icon">🌳</div>
-          <div>
-            <div class="title">高级</div>
-            <div class="desc">8001+ 词：适合高阶阅读、写作与更复杂话题。</div>
-          </div>
-        </div>
-        <div class="level-hint">提示：默认按你的学习等级推荐内容；你也可以随时切换查看其它等级的视频 / 练习 / 词汇。</div>
-      </div>
-    </div>
+    <!-- 本页不展示学习等级栏，等级在训练页内调整 -->
+    <div class="level-switch" id="level-switch" hidden aria-hidden="true"></div>
 
     <!-- 未登录状态 -->
     <div id="guest-actions" class="nav-buttons">
       <button class="btn btn-outline" onclick="showLogin({ source: 'nav', userInitiated: true })"
         data-track="nav_login_click">登录</button>
-      <button class="btn btn-primary" onclick="startTodayLearning(event, 'nav_guest')" data-track="nav_guest_click" data-role="guest-cta">开始今日训练</button>
+      <button class="btn btn-primary" onclick="startTodayLearning(event, 'nav_guest')" data-track="nav_guest_click" data-role="guest-cta">今日训练</button>
     </div>
 
     <!-- 已登录状态 -->
@@ -5575,21 +5555,21 @@
       <!-- 未登录状态的按钮 -->
       <div id="hero-guest-actions" class="hero-actions" hidden>
         <a class="btn btn-primary btn-hero btn-cta" href="./game.html"
-          data-track="hero_game_entry" data-role="guest-cta">进入词汇游戏</a>
+          data-track="hero_game_entry" data-role="guest-cta">词汇游戏</a>
         <a class="btn btn-outline btn-hero" id="hero-guest-speaking" href="./daily-speaking.html"
           data-track="hero_speaking_entry">日常用语</a>
         <a class="btn btn-outline btn-hero" id="hero-guest-document" href="./document-import.html"
-          data-track="hero_document_entry">导入学习文档</a>
+          data-track="hero_document_entry">学习文档</a>
       </div>
 
       <!-- 已登录状态的按钮 -->
       <div id="hero-user-actions" class="hero-actions" hidden>
         <a class="btn btn-primary btn-hero btn-cta" id="start-learning-btn" href="./game.html"
-          data-track="hero_game_entry">进入词汇游戏</a>
+          data-track="hero_game_entry">词汇游戏</a>
         <a class="btn btn-outline btn-hero" id="hero-user-speaking" href="./daily-speaking.html"
           data-track="hero_speaking_entry">日常用语</a>
         <a class="btn btn-outline btn-hero" id="hero-user-document" href="./document-import.html"
-          data-track="hero_document_entry">导入学习文档</a>
+          data-track="hero_document_entry">学习文档</a>
       </div>
       <div class="hero-metrics" aria-label="Linglish 训练闭环">
         <div class="hero-metric">
@@ -5608,7 +5588,7 @@
     </div>
     <div class="hero-visual">
       <div class="lingbao-home">
-      <a class="hero-lingbao-link" id="hero-lingbao-link" href="#lingbao-entry" aria-label="点击 Ling宝，进入日常用语或实战场。鼠标移动可以给 Ling宝挠痒痒">
+      <a class="hero-lingbao-link" id="hero-lingbao-link" href="./video-reader-desktop.html?level=beginner&v=20260102b" aria-label="进入视频学习。鼠标移动可以给 Ling宝挠痒痒">
         <span class="lingbao-stage">
           <span class="lingbao-shadow" aria-hidden="true"></span>
           <span class="lingbao-giggle" aria-hidden="true">Hey, let’s learn English together!</span>
@@ -5619,11 +5599,6 @@
           </span>
         </span>
       </a>
-      <div class="lingbao-entry" id="lingbao-entry" hidden>
-        <p>点 Ling宝，从这里进入</p>
-        <a id="lingbao-coach" href="./daily-speaking.html">日常用语</a>
-        <a id="lingbao-arena" href="./practice-session-desktop.html?mode=dialogue">实战场</a>
-      </div>
       </div>
     </div>
   </section>
@@ -6837,6 +6812,18 @@
     </p>
   </footer>
 
+  <div class="recall-modal" id="first-sentence-modal" hidden>
+    <div class="recall-panel" role="dialog" aria-labelledby="first-sentence-title">
+      <div class="lingbao-stamp">第一句</div>
+      <h3 id="first-sentence-title">开口说这一句</h3>
+      <p>先听原声，再跟着说出来。说完这一句就可以停，也可以现在关掉。</p>
+      <div class="recall-actions">
+        <button class="btn btn-primary" type="button" id="first-sentence-start">开始说这一句</button>
+        <button class="btn btn-outline" type="button" id="first-sentence-dismiss">先不用</button>
+      </div>
+    </div>
+  </div>
+
   <div class="recall-modal" id="recall-modal" hidden>
     <div class="recall-panel">
       <div class="lingbao-stamp">LINGBAO · 想念你</div>
@@ -6911,9 +6898,18 @@
     </div>
   </div>
 
-  <script src="./js/auth-manager.js?v=20261019"></script>
-<script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/oauth-bootstrap.js?v=1"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <script src="./js/oauth-bootstrap.js?v=2026103001"></script>
+  <script>
+    (function prefillSavedAccount() {
+      const input = document.getElementById('email');
+      if (!input || input.value) return;
+      try {
+        const saved = localStorage.getItem('userEmail') || sessionStorage.getItem('userEmail') || '';
+        if (saved && !/@temp\.linglish\.local$/i.test(saved)) input.value = saved;
+      } catch (_) { }
+    })();
+  </script>
   <script src="./js/storage-helper.js?v=1"></script>
   <script src="./gamification.js?v=1"></script>
   <script src="./js/quick-win.js?v=1"></script>
@@ -7035,9 +7031,7 @@
       };
       currentVideoHref = videoHref;
 
-      setHref('#home-link-video, #home-core-link-video', videoHref);
-      const arena = document.getElementById('lingbao-arena');
-      if (arena) arena.href = `./practice-session-desktop.html?mode=dialogue&level=${encodeURIComponent(lv)}&v=${encodeURIComponent(v)}`;
+      setHref('#home-link-video, #home-core-link-video, #hero-lingbao-link', videoHref);
       setHref('#home-link-practice, #home-core-link-practice', practiceHref);
       setHref('#home-link-vocab, #home-core-link-vocab', vocabHref);
       if (navLearnLink) navLearnLink.href = videoHref;
@@ -7087,24 +7081,11 @@
       requestAnimationFrame(frame);
     }
 
-    function canEnterVideoFromLingbao() {
-      const auth = checkAuthStatus();
-      return Boolean(auth.isLoggedIn && !auth.isGuest);
-    }
-
     document.getElementById('hero-lingbao-link')?.addEventListener('click', (event) => {
       if (event.defaultPrevented || event.button !== 0) return;
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
-      const panel = document.getElementById('lingbao-entry');
-      if (!panel) return;
-      panel.hidden = !panel.hidden;
-    });
-    document.addEventListener('click', (event) => {
-      const panel = document.getElementById('lingbao-entry');
-      const home = event.target.closest?.('.lingbao-home');
-      if (!panel || home) return;
-      panel.hidden = true;
+      window.location.href = getVideoHrefForLevel(getStoredActiveLevel());
     });
 
     function bindLingbaoPlay(root) {
@@ -7342,7 +7323,11 @@
       const switchWrap = document.getElementById('level-switch');
       const btnText = document.getElementById('level-btn-text');
       const menu = document.getElementById('level-menu');
-      if (switchWrap) switchWrap.hidden = false;
+      // 首页不展示学习等级栏
+      if (switchWrap) {
+        switchWrap.hidden = true;
+        switchWrap.setAttribute('aria-hidden', 'true');
+      }
       if (btnText) btnText.textContent = `${meta.icon} ${meta.label}`;
       if (menu) {
         menu.querySelectorAll('.level-opt').forEach(opt => {
@@ -8399,7 +8384,43 @@
     };
 
     // 页面加载时检查登录状态
+    function firstSentenceAlreadyDone() {
+      try {
+        const saved = JSON.parse(localStorage.getItem('linglish_first_lesson_completion') || 'null');
+        return Boolean(saved && (saved.completed_at || saved.lines));
+      } catch (_) {
+        return false;
+      }
+    }
+
+    function maybeShowFirstSentencePrompt(force) {
+      const params = new URLSearchParams(window.location.search || '');
+      const from = params.get('from') || '';
+      const asked = force === true || params.get('first') === '1' || ['login', 'register', 'auth', 'auth_cached', 'google', 'wechat', 'onboarding', 'onboarding_skip'].includes(from);
+      if (!asked) return;
+      try {
+        if (localStorage.getItem('linglish_first_sentence_prompt') === 'dismissed') return;
+      } catch (_) {}
+      if (firstSentenceAlreadyDone()) return;
+      const modal = document.getElementById('first-sentence-modal');
+      if (modal) modal.hidden = false;
+    }
+
+    function dismissFirstSentencePrompt() {
+      try { localStorage.setItem('linglish_first_sentence_prompt', 'dismissed'); } catch (_) {}
+      const modal = document.getElementById('first-sentence-modal');
+      if (modal) modal.hidden = true;
+    }
+
+    window.maybeShowFirstSentencePrompt = maybeShowFirstSentencePrompt;
+
+    document.getElementById('first-sentence-dismiss')?.addEventListener('click', dismissFirstSentencePrompt);
+    document.getElementById('first-sentence-start')?.addEventListener('click', () => {
+      window.location.href = './video-reader-desktop.html?from=home_first_lesson&focus=first_lesson';
+    });
+
     document.addEventListener('DOMContentLoaded', async () => {
+      maybeShowFirstSentencePrompt();
       // ========== 隐藏加载指示器 ==========
       updateHomeGamify();
       loadReminderSettings();
@@ -8967,7 +8988,7 @@
 
   </script>
   <script type="module">
-    import { persistAuthSession } from './js/app/auth.js';
+    import { persistAuthSession } from './js/app/auth.js?v=2026103001';
 
     // 登录函数
     async function login(email, password) {
@@ -8987,7 +9008,8 @@
 
       return {
         token: data.access_token || data.token,
-        user: data.user
+        user: data.user,
+        session: data
       };
     }
 
@@ -9009,7 +9031,8 @@
 
       return {
         token: data.access_token || data.token,
-        user: data.user
+        user: data.user,
+        session: data
       };
     }
 
@@ -9034,7 +9057,7 @@
         }
 
         if (result && result.token) {
-          persistAuthSession(result.token, email);
+          await persistAuthSession(result.token, email, { remember: true, session: result.session || result });
           trackEvent(isLoginMode ? 'login_success' : 'register_success');
 
           // 获取并保存用户会员信息
@@ -9143,6 +9166,7 @@
           user_id: scopedResult.user_id
         });
         updateUserUI();
+        if (isNew && typeof window.maybeShowFirstSentencePrompt === 'function') window.maybeShowFirstSentencePrompt(true);
         if (typeof GlobalUI !== 'undefined') {
           GlobalUI.showToast(isNew ? '注册成功！请选择你的学习等级' : '登录成功！', 'success');
         }

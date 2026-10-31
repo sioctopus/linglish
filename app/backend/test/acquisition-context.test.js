@@ -85,5 +85,5 @@ test('page tracker decorates both anonymous and authenticated visit payloads', (
   assert.equal((tracker.match(/JSON\.stringify\(decorateEvent\(/g) || []).length, 2);
   assert.match(tracker, /fetch\('\/track\/page-visit'/);
   assert.match(tracker, /fetch\('\/events'/);
-  assert.match(landing, /<script src="\.\/js\/visitor-context\.js\?v=\d+"><\/script>[\s\S]*?<script src="\.\/js\/first-lesson-entry\.js\?v=\d+"><\/script>/);
+  assert.match(landing, /<script src="\.\/js\/visitor-context\.js\?v=1"><\/script>[\s\S]*?<script src="\.\/js\/first-lesson-entry\.js\?v=2026103001"><\/script>/);
 });

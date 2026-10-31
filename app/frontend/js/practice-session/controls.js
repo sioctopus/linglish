@@ -307,6 +307,13 @@ export async function startAutoRecording(state, updateAutoStatus, handleRecordin
     state.recordingStartAt = Date.now();
     state.firstVoiceAt = null;
     state.voicedMs = 0;
+    try {
+      if (typeof window !== 'undefined'
+        && window.LinglishAudioCues
+        && typeof window.LinglishAudioCues.playMicReadyCue === 'function') {
+        window.LinglishAudioCues.playMicReadyCue();
+      }
+    } catch (_) {}
 
     updateAutoStatus('🎤', '正在录音，请说话...');
 
@@ -470,7 +477,7 @@ export async function handleRecordingFailed(state, updateAutoStatus, startAutoRe
 
         if (!state.isPaused) {
           // Import moveToNextLine dynamically to avoid circular dependency
-          const { moveToNextLine } = await import('./controls.js');
+          const { moveToNextLine } = await import('./controls.js?v=2026103001');
           setTimeout(() => {
             // This will be handled by the caller
             playOriginalThenNext();

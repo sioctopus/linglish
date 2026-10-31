@@ -1,7 +1,35 @@
 const zlib = require('zlib');
 
+function decodeHtmlEntities(value) {
+  return String(value || '')
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+      const code = parseInt(hex, 16);
+      if (!Number.isFinite(code) || code < 0 || code > 0x10ffff) return _;
+      try {
+        return String.fromCodePoint(code);
+      } catch (_) {
+        return _;
+      }
+    })
+    .replace(/&#(\d+);/g, (_, dec) => {
+      const code = Number(dec);
+      if (!Number.isFinite(code) || code < 0 || code > 0x10ffff) return _;
+      try {
+        return String.fromCodePoint(code);
+      } catch (_) {
+        return _;
+      }
+    })
+    .replace(/&nbsp;/gi, ' ')
+    .replace(/&amp;/gi, '&')
+    .replace(/&lt;/gi, '<')
+    .replace(/&gt;/gi, '>')
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;|&apos;/gi, "'");
+}
+
 function buildReadingSubtitles(text) {
-  const normalized = String(text || '')
+  const normalized = decodeHtmlEntities(String(text || ''))
     .replace(/\r/g, '\n')
     .replace(/[ \t]+\n/g, '\n')
     .replace(/[^\S\n]+/g, ' ')
@@ -21,12 +49,26 @@ function buildReadingSubtitles(text) {
   return cues;
 }
 
+function isChineseCue(line) {
+  const text = String(line || '').trim();
+  if (!text) return false;
+  const cjk = (text.match(/[\u4e00-\u9fff]/g) || []).length;
+  if (cjk < 4) return false;
+  const latin = (text.match(/[A-Za-z]/g) || []).length;
+  return cjk >= latin;
+}
+
 function isEnglishCue(line) {
-  const words = String(line || '').match(/[A-Za-z][A-Za-z']*/g) || [];
+  const text = String(line || '').trim();
+  if (!text) return false;
+  // Undecoded hex entities contain the letter "x" and used to pass as English.
+  if ((text.match(/&#x[0-9a-f]+;/gi) || []).length >= 3) return false;
+  if (isChineseCue(text)) return false;
+  const words = text.match(/[A-Za-z][A-Za-z']*/g) || [];
   if (words.join('').length < 6) return false;
-  const lowered = words.map(word => word.toLowerCase());
+  const lowered = words.map((word) => word.toLowerCase());
   const filler = new Set(['of', 'page', 'pages']);
-  if (lowered.every(word => filler.has(word))) return false;
+  if (lowered.every((word) => filler.has(word))) return false;
   return true;
 }
 
@@ -123,24 +165,19 @@ function readZipEntries(buffer, { include = () => true } = {}) {
   return files;
 }
 
-function decodeXmlText(value) {
-  return String(value || '')
-    .replace(/&amp;/g, '&')
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;|&apos;/g, "'");
-}
-
 function extractDocxText(buffer) {
   const files = readZipEntries(buffer, { include: name => name === 'word/document.xml' });
   const xml = files.get('word/document.xml');
   if (!xml) throw new Error('这份 Word 里没有可读取的正文');
-  return decodeXmlText(xml.toString('utf8'))
+  return decodeHtmlEntities(xml.toString('utf8'))
     .replace(/<w:tab\/>/g, ' ')
     .replace(/<w:br\/>/g, '\n')
-    .replace(/<\/w:p>/g, '\n')
-    .replace(/<[^>]+>/g, '');
+    .replace(/<\/w:p>/g, '\n\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }
 
 function extractEpubText(buffer) {
@@ -150,14 +187,21 @@ function extractEpubText(buffer) {
     if (!/\.(xhtml|html|htm)$/i.test(name)) continue;
     const html = data.toString('utf8');
     const body = html.match(/<body\b[^>]*>([\s\S]*?)<\/body\s*>/i);
-    const text = decodeXmlText(body ? body[1] : html)
+    const text = decodeHtmlEntities(body ? body[1] : html)
       .replace(/<script[\s\S]*?<\/script>/gi, ' ')
       .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-      .replace(/<[^>]+>/g, ' ');
-    if (text.trim()) parts.push(text);
+      .replace(/<\/(p|div|h[1-6]|li|tr|blockquote|section|article)>/gi, '\n\n')
+      .replace(/<br\s*\/?>/gi, '\n')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/[^\S\n]+/g, ' ')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    if (text) parts.push(text);
   }
   if (!parts.length) throw new Error('这本电子书里没有可读取的正文');
-  return parts.join('\n');
+  return parts.join('\n\n');
 }
 
 function storeZip(files) {
@@ -201,9 +245,11 @@ function storeZip(files) {
 }
 
 module.exports = {
+  decodeHtmlEntities,
   buildReadingSubtitles,
   subtitleContent,
   isEnglishCue,
+  isChineseCue,
   readZipEntries,
   extractDocxText,
   extractEpubText,

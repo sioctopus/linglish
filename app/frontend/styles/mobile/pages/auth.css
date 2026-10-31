@@ -1,14 +1,19 @@
 /* Auth Page Styles - Login/Registration */
 
 .auth-body {
-  background: linear-gradient(135deg, #0f766e 0%, #0d9488 45%, #0ea5e9 100%);
+  background: #f8fafc;
   min-height: 100vh;
   padding-bottom: 0;
+  color: #0f172a;
 }
 
 .auth-hero {
-  padding: 48px 24px 32px;
+  padding: 12px 16px 10px;
   text-align: center;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% -10%, rgba(45, 212, 191, 0.18), transparent 55%),
+    linear-gradient(180deg, #ecfeff 0%, #f8fafc 100%);
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .auth-logo {
@@ -18,38 +23,67 @@
 }
 
 .logo-circle {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.24);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 48px;
-  margin-bottom: 20px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  font-size: 0;
+  margin-bottom: 6px;
+  border: 0;
+  position: relative;
+}
+
+/* Linglish smile mark — matches desktop brand */
+.logo-circle::before {
+  content: '';
+  position: absolute;
+  top: 12px;
+  left: 10px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #0f172a;
+  box-shadow: 11px 0 0 #0f172a;
+}
+
+.logo-circle::after {
+  content: '';
+  position: absolute;
+  bottom: 8px;
+  left: 11px;
+  width: 15px;
+  height: 8px;
+  border: 2px solid #0f172a;
+  border-top: 0;
+  border-radius: 0 0 10px 10px;
 }
 
 .app-name {
-  font-size: 32px;
-  font-weight: 700;
-  color: white;
-  margin: 0 0 12px 0;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 2px 0;
+  letter-spacing: -0.02em;
+  text-shadow: none;
 }
 
 .app-tagline {
-  font-size: 16px;
-  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
   margin: 0;
+  line-height: 1.35;
 }
 
 .auth-main {
   background: white;
-  border-radius: 24px 24px 0 0;
-  padding: 32px 24px;
-  min-height: calc(100vh - 280px);
+  border-radius: 18px 18px 0 0;
+  padding: 16px 20px 24px;
+  min-height: calc(100vh - 160px);
 }
 
 .auth-tabs {

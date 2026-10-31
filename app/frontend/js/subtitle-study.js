@@ -19,6 +19,7 @@
     'a', 'an', 'the', 'this', 'that', 'these', 'those', 'my', 'your', 'his', 'her',
     'our', 'their', 'in', 'on', 'at', 'for', 'with', 'from', 'to', 'of', 'into',
   ]);
+  const STUDY_KEY = 'linglish.subtitle.study';
   const cache = new Map();
   const state = {
     armed: false,
@@ -30,6 +31,24 @@
     token: 0,
     root: null,
   };
+
+  function readStudy() {
+    try {
+      const data = JSON.parse(localStorage.getItem(STUDY_KEY) || '');
+      return data && typeof data === 'object' ? data : {};
+    } catch (_) {
+      return {};
+    }
+  }
+
+  function writeStudy() {
+    try {
+      localStorage.setItem(STUDY_KEY, JSON.stringify({
+        armed: state.armed,
+        method: state.method,
+      }));
+    } catch (_) {}
+  }
 
   function escapeHtml(value) {
     return String(value || '')
@@ -98,12 +117,14 @@
       '<button type="button" data-method="speak">先说再看</button>',
       '<button type="button" data-method="gloss">实景五段</button>',
       '</div>',
+      '<div class="subtitle-study-body">',
       '<p class="subtitle-study-hint">在右侧点一段字幕，这里生成这一句。</p>',
       '<p class="subtitle-study-zh" hidden></p>',
       '<div class="subtitle-study-gloss" hidden></div>',
       '<p class="subtitle-study-en" hidden></p>',
       '<button type="button" class="subtitle-study-reveal" hidden>看原句</button>',
       '<button type="button" class="subtitle-study-mic" hidden aria-label="听这一句">🎤</button>',
+      '</div>',
     ].join('');
     host.appendChild(root);
     root.querySelector('.subtitle-study-methods').addEventListener('click', onMethod);
@@ -121,6 +142,7 @@
     if (!button) return;
     state.method = button.dataset.method;
     state.revealed = state.method !== 'speak';
+    writeStudy();
     paint();
   }
 
@@ -159,7 +181,11 @@
     en.textContent = state.text;
     gloss.hidden = !(hasLine && state.method === 'gloss');
     reveal.hidden = !(hasLine && state.method === 'speak' && !state.revealed);
-    mic.hidden = !hasLine;
+    // AI陪练：Hold 已是唯一开麦入口，不展示字幕区 🎤
+    const coachOnlyHold = document.body.classList.contains('mode-shadowing')
+      || document.body.classList.contains('study-mode-coach')
+      || document.body.getAttribute('data-study-mode') === 'coach';
+    mic.hidden = !hasLine || coachOnlyHold;
     document.querySelectorAll('#subtitle-study-toggle, #practice-study-toggle').forEach((button) => {
       button.classList.toggle('is-on', state.armed);
       button.setAttribute('aria-pressed', state.armed ? 'true' : 'false');
@@ -215,14 +241,21 @@
     paintGloss(words);
   }
 
+  function oneStudySentence(text) {
+    const api = window.LinglishSentenceSegments;
+    const parts = api && typeof api.splitSentences === 'function' ? api.splitSentences(text) : [];
+    return parts.length ? parts[0] : String(text || '').trim();
+  }
+
   function show(detail) {
     const next = detail || {};
-    state.text = String(next.text || '').replace(/\s+/g, ' ').trim();
+    state.text = oneStudySentence(String(next.text || '').replace(/\s+/g, ' ').trim());
     state.translation = String(next.translation || '').trim();
     state.onListen = typeof next.onListen === 'function' ? next.onListen : null;
     state.revealed = state.method !== 'speak';
     state.token += 1;
     state.armed = true;
+    writeStudy();
     paint();
     const words = wordsOf(state.text);
     if (words.length) loadGloss(words);
@@ -234,6 +267,7 @@
       state.text = '';
       state.translation = '';
     }
+    writeStudy();
     paint();
   }
 
@@ -259,6 +293,11 @@
   }
 
   function bind() {
+    const saved = readStudy();
+    if (saved.method === 'listen' || saved.method === 'speak' || saved.method === 'gloss') {
+      state.method = saved.method;
+    }
+    state.armed = Boolean(saved.armed);
     ensureRoot();
     paint();
     document.querySelectorAll('#subtitle-study-toggle, #practice-study-toggle').forEach((button) => {

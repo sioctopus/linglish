@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <script>
@@ -117,12 +117,12 @@
 
   <!-- Preload critical resources -->
   <link rel="preload" href="./guest-check.js?v=1" as="script">
-  <link rel="preload" href="./auth-helpers.js?v=1" as="script">
+  <link rel="preload" href="./auth-helpers.js?v=2026103001" as="script">
   <link rel="dns-prefetch" href="https://fonts.googleapis.com">
 
   <!-- Scripts with cache busting -->
   <script src="./guest-check.js?v=1"></script>
-  <script src="./auth-helpers.js?v=1"></script>
+  <script src="./auth-helpers.js?v=2026103001"></script>
   <style>
     * {
       margin: 0;
@@ -425,26 +425,42 @@
     function detectDevice() {
       const userAgent = navigator.userAgent.toLowerCase();
       const screenWidth = window.innerWidth || document.documentElement.clientWidth;
+      const info = window.LxDevice && window.LxDevice.classify
+        ? window.LxDevice.classify({
+          userAgent: navigator.userAgent,
+          viewportWidth: screenWidth,
+          maxTouchPoints: navigator.maxTouchPoints || 0,
+          pointer: window.matchMedia('(pointer: coarse)').matches ? 'coarse' : 'fine',
+          hover: window.matchMedia('(hover: hover)').matches ? 'hover' : 'none'
+        })
+        : null;
 
-      // 移动设备检测
-      const isMobile = /mobile|android|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      if (info) {
+        return {
+          isMobile: info.tier === 'phone',
+          isTablet: info.form === 'tablet',
+          isDesktop: info.tier === 'desktop',
+          isTouchDevice: info.pointer === 'coarse' || (navigator.maxTouchPoints || 0) > 0,
+          screenWidth: screenWidth,
+          userAgent: userAgent,
+          tier: info.tier,
+          os: info.os
+        };
+      }
 
-      // 平板检测
-      const isTablet = /ipad|android(?!.*mobile)|tablet/i.test(userAgent);
-
-      // 屏幕宽度检测（小于768px视为移动设备）
+      const isMobile = /mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent);
+      const isTablet = /ipad|android(?!.*mobile)|tablet/i.test(userAgent) || (navigator.maxTouchPoints > 1 && /macintosh/i.test(userAgent));
       const isSmallScreen = screenWidth < 768;
-
-      // 触摸设备检测
       const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 
       return {
         isMobile: (isMobile && !isTablet) || isSmallScreen,
-        isTablet: isTablet,
-        isDesktop: !isMobile && !isTablet && screenWidth >= 768,
+        isTablet: isTablet && !isSmallScreen,
+        isDesktop: !isMobile && !isTablet && screenWidth >= 1024,
         isTouchDevice: isTouchDevice,
         screenWidth: screenWidth,
-        userAgent: userAgent
+        userAgent: userAgent,
+        tier: isSmallScreen ? 'phone' : (isTablet ? 'tablet-portrait' : 'desktop')
       };
     }
 
@@ -455,13 +471,13 @@
 
       if (device.isMobile) {
         deviceIcon.textContent = '📱';
-        deviceText.textContent = '移动设备 - 加载中...';
+        deviceText.textContent = '移动设备 - 加载中....';
       } else if (device.isTablet) {
         deviceIcon.textContent = '💻';
-        deviceText.textContent = '平板设备 - 加载中...';
+        deviceText.textContent = '平板设备 - 加载中....';
       } else {
         deviceIcon.textContent = '🖥️';
-        deviceText.textContent = '桌面设备 - 加载中...';
+        deviceText.textContent = '桌面设备 - 加载中....';
       }
     }
 
@@ -592,7 +608,7 @@
 
       if (override === 'mobile') {
         console.log('📱 手动选择移动体验');
-        redirectTo(authToken ? localHref('mobile-today.html', { from: 'router_override' }) : 'mobile-auth.html', 'override_mobile', device);
+        redirectTo(authToken ? localHref('index-desktop.html', { from: 'router_override' }) : 'mobile-auth.html', 'override_mobile', device);
         return;
       }
 
@@ -603,14 +619,14 @@
         return;
       }
 
-      if (device.isMobile || device.isTablet) {
-        // 移动端/平板 + 已登录 -> 今日学习
-        console.log('📅 跳转到今日学习页面');
-        redirectTo(localHref('mobile-today.html', { from: 'router' }), 'mobile_today', device);
-      } else {
-        // 桌面端 + 已登录 -> 今日训练闭环
+      if (device.tier === 'tablet-landscape' || device.isDesktop) {
+        // Mac，以及优画平板 / iPad 横屏：宽屏训练页
         console.log('📅 跳转到桌面今日训练');
         redirectTo(localHref('today.html', { from: 'router' }), 'desktop_today', device);
+      } else {
+        // 手机，以及平板竖屏：进入学习主页（非「今日」游戏卡片页）
+        console.log('🏠 跳转到学习主页');
+        redirectTo(localHref('index-desktop.html', { from: 'router' }), 'mobile_home', device);
       }
     }
 
@@ -649,7 +665,7 @@
     window.forceMobile = function() {
       console.log('📱 强制跳转移动版');
       const authToken = readAuthToken();
-      window.location.href = authToken ? 'mobile-today.html?from=router_force' : 'mobile-auth.html';
+      window.location.href = authToken ? 'index-desktop.html?from=router_force' : 'mobile-auth.html';
     };
   </script>
 </body>

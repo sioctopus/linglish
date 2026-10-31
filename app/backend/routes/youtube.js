@@ -242,6 +242,7 @@ async function getTranscript(req, res) {
     const uniqueWordCount = new Set(words).size;
 
     return sendJson(res, 200, {
+      success: true,
       ...transcript,
       wordCount,
       uniqueWordCount,
@@ -421,6 +422,16 @@ async function importVideo(req, res) {
           status: 'completed',
           failure_reason: null,
         });
+
+        try {
+          const cacheService = require('../services/cache');
+          await Promise.all([
+            cacheService.del(`video:detail:${resource.id}`),
+            cacheService.del(`transcript:${resource.id}`),
+            cacheService.del('videos:public:lite'),
+            cacheService.del('videos:public:full'),
+          ]);
+        } catch (_) { /* cache best-effort */ }
 
         await applyAutoDifficulty(resource.id, transcriptData);
 

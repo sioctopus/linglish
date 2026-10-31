@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
@@ -339,7 +339,7 @@
           <div id="recent-activities">
             <div class="admin-empty-state">
               <div class="admin-loading"></div>
-              <p class="admin-empty-text">加载中...</p>
+              <p class="admin-empty-text">加载中....</p>
             </div>
           </div>
         </div>
@@ -400,7 +400,7 @@
     async function loadDashboardData(silent = false) {
       try {
         if (!silent) {
-          updateSystemStatus('database', 'loading', '加载中...');
+          updateSystemStatus('database', 'loading', '加载中....');
         }
 
         // 加载用户统计

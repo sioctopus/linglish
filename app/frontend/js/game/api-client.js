@@ -186,7 +186,7 @@
       return (tts && typeof tts.current === 'function') ? tts.current() : 'en-US-AvaMultilingualNeural';
     }
 
-    function speakLocally(text) {
+    function speakLocally(text, rate) {
       const host = synthesisHost();
       if (!host) return false;
       locallyPaused = false;
@@ -206,7 +206,7 @@
       } else {
         utter.lang = 'en-US';
       }
-      utter.rate = 0.92;
+      utter.rate = rate || 0.92;
       utter.onend = function () { noteIdle(generation); };
       host.speechSynthesis.speak(utter);
       return true;
@@ -224,13 +224,16 @@
       return audioIsPlaying() ? 'playing' : (audioIsPaused() ? 'paused' : 'idle');
     }
 
-    async function speak(text) {
+    async function speak(text, options) {
+      const requestedRate = Number(options && options.rate);
+      const rate = requestedRate > 0 ? Math.min(1.5, Math.max(0.5, requestedRate)) : 0.92;
       if (!text) return false;
       const generation = ++speakGeneration;
       locallyPaused = false;
       const host = synthesisHost();
       if (host) host.speechSynthesis.cancel();
       if (audio) {
+        if (typeof audio.setRate === 'function') audio.setRate(rate);
         speechSource = 'audio';
         if (typeof audio.setEnded === 'function') {
           audio.setEnded(function () { noteIdle(generation); });
@@ -249,7 +252,7 @@
           }
         }
       }
-      if (speakLocally(text)) return true;
+      if (speakLocally(text, rate)) return true;
       speechSource = null;
       noteIdle(generation);
       return false;

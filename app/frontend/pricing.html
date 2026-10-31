@@ -18,14 +18,14 @@
   <meta name="twitter:title" content="Linglish 会员方案">
   <meta name="twitter:description" content="选择适合你的英语训练强度：免费体验、Pro 高频 AI 反馈或团队试用。">
   <meta name="twitter:image" content="https://www.example.com/assets/lingbao_3d.jpg">
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="./manifest.json?v=2026103001">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;600;700;800&display=swap">
   <link rel="stylesheet" href="./styles/tokens.css?v=3">
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml" sizes="any">
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <script type="application/ld+json">
     {
@@ -111,27 +111,35 @@
       top: 0;
       z-index: 20;
       display: flex;
+      flex-direction: row;
+      flex-wrap: nowrap;
       align-items: center;
       justify-content: space-between;
-      height: 64px;
-      padding: 0 clamp(18px, 5vw, 64px);
+      gap: 8px;
+      height: 56px;
+      min-height: 56px;
+      padding: 0 clamp(12px, 4vw, 48px);
       background: rgba(255, 255, 255, 0.88);
       border-bottom: 1px solid var(--line);
       backdrop-filter: blur(16px);
+      isolation: isolate;
     }
 
     .brand {
       display: inline-flex;
+      flex: 0 0 auto;
       align-items: center;
-      gap: 10px;
-      font-size: 18px;
+      gap: 8px;
+      min-width: 0;
+      font-size: 17px;
       font-weight: 800;
+      white-space: nowrap;
     }
 
     .brand-mark {
       display: grid;
-      width: 30px;
-      height: 30px;
+      width: 28px;
+      height: 28px;
       place-items: center;
       border-radius: var(--radius);
       color: #ffffff;
@@ -141,19 +149,120 @@
 
     .nav-actions {
       display: flex;
+      flex: 1 1 auto;
       align-items: center;
-      gap: 10px;
+      justify-content: center;
+      gap: 4px;
+      min-width: 0;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: none;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-actions::-webkit-scrollbar {
+      display: none;
     }
 
     .nav-link {
-      padding: 8px 10px;
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      justify-content: center;
+      min-height: 34px;
+      padding: 0 10px;
+      border-radius: 999px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+      writing-mode: horizontal-tb;
     }
 
     .nav-link:hover {
       color: var(--teal-strong);
+      background: #f0fdfa;
+    }
+
+    .nav-end {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .nav-menu-btn {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      min-width: 40px;
+      height: 40px;
+      padding: 0;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: #ffffff;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .nav-menu-btn-bars {
+      display: block;
+      width: 16px;
+      height: 2px;
+      border-radius: 2px;
+      background: currentColor;
+      box-shadow: 0 -5px 0 currentColor, 0 5px 0 currentColor;
+    }
+
+    .nav-menu-sheet {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: clamp(12px, 4vw, 48px);
+      z-index: 30;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 168px;
+      padding: 8px;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: #ffffff;
+      box-shadow: 0 12px 32px rgba(15, 23, 42, 0.14);
+    }
+
+    .nav-menu-sheet[hidden],
+    .nav-menu-backdrop[hidden] {
+      display: none !important;
+    }
+
+    .nav-menu-sheet a {
+      display: flex;
+      align-items: center;
+      min-height: 40px;
+      padding: 0 12px;
+      border-radius: 10px;
+      color: var(--ink);
+      font-size: 14px;
+      font-weight: 700;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .nav-menu-sheet a:hover {
+      background: #f0fdfa;
+      color: var(--teal-strong);
+    }
+
+    .nav-menu-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 25;
+      border: 0;
+      padding: 0;
+      background: transparent;
+      cursor: default;
     }
 
     .btn {
@@ -286,27 +395,85 @@
     }
 
     .demo-panel {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: #0b1220;
-      box-shadow: var(--shadow);
+      display: grid;
+      justify-items: center;
+      align-content: start;
+      gap: 18px;
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      box-shadow: none;
     }
 
-    .demo-panel video {
+    .demo-panel-stage {
+      position: relative;
+      width: min(340px, 88%);
+      margin: 0 auto;
+    }
+
+    .demo-panel-stage::after {
+      content: "";
+      position: absolute;
+      left: 50%;
+      bottom: 4%;
+      width: 46%;
+      height: 16px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.16);
+      filter: blur(8px);
+      transform: translateX(-50%);
+      animation: pricingLingbaoShadow 7.6s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .demo-panel-actor {
+      position: relative;
+      z-index: 1;
       display: block;
+      transform-origin: 50% 82%;
+      animation: pricingLingbaoLife 7.6s ease-in-out infinite;
+    }
+
+    .demo-panel-actor img {
       width: 100%;
-      aspect-ratio: 16 / 10;
-      object-fit: cover;
-      opacity: 0.92;
+      height: auto;
+      display: block;
+      background: transparent;
+      object-fit: contain;
+    }
+
+    @keyframes pricingLingbaoLife {
+      0%, 100% { transform: translateY(0) rotate(0deg) scale(1); }
+      8% { transform: translateY(-10px) rotate(-3deg) scale(1.02, 0.99); }
+      14% { transform: translateY(2px) rotate(0deg) scale(1.045, 0.955); }
+      22% { transform: translateY(-20px) rotate(3deg) scale(0.98, 1.04); }
+      30% { transform: translateY(0) rotate(0deg) scale(1.03, 0.97); }
+      38% { transform: translateY(0) rotate(0deg) scale(1); }
+      48% { transform: rotate(-9deg) translateY(-4px); }
+      56% { transform: rotate(11deg) translateY(-12px); }
+      64% { transform: rotate(-7deg) translateY(-3px); }
+      72% { transform: rotate(0deg) translateY(0) scale(1); }
+      82% { transform: translateY(-8px) rotate(5deg) scale(1.02); }
+      90% { transform: translateY(2px) rotate(-4deg) scale(1.03, 0.97); }
+    }
+
+    @keyframes pricingLingbaoShadow {
+      0%, 38%, 72%, 100% { transform: translateX(-50%) scaleX(1); opacity: 0.55; }
+      22%, 56%, 82% { transform: translateX(-50%) scaleX(0.68); opacity: 0.22; }
+      14%, 30%, 90% { transform: translateX(-50%) scaleX(1.08); opacity: 0.7; }
     }
 
     .demo-caption {
       display: grid;
       gap: 8px;
+      width: 100%;
       padding: 18px;
       color: #e5edf7;
       background: #0b1220;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
     }
 
     .demo-caption strong {
@@ -1033,11 +1200,21 @@
 
     @media (max-width: 640px) {
       .topbar {
-        height: 58px;
+        height: 56px;
+        min-height: 56px;
+        flex-direction: row;
+        gap: 6px;
       }
 
-      .nav-actions .nav-link:nth-child(1),
-      .nav-actions .nav-link:nth-child(4) {
+      .brand span:last-child {
+        display: none;
+      }
+
+      .nav-menu-btn {
+        display: inline-flex;
+      }
+
+      .nav-link[data-nav-extra] {
         display: none;
       }
 
@@ -1078,25 +1255,49 @@
         transition: none;
       }
 
-      .demo-panel video {
-        display: none;
+      .demo-panel-actor,
+      .demo-panel-stage::after {
+        animation: none;
       }
     }
   </style>
 </head>
 <body>
   <header class="topbar" aria-label="Linglish">
-    <a class="brand" href="/" aria-label="Linglish 首页">
+    <a class="brand" href="./index-desktop.html" aria-label="Linglish 学习首页">
       <span class="brand-mark">L</span>
       <span>Linglish</span>
     </a>
     <nav class="nav-actions" aria-label="主要导航">
-      <a class="nav-link" href="/" data-track="nav_landing">首页</a>
-      <a class="nav-link" href="#plan-advisor" data-track="nav_advisor">推荐</a>
+      <a class="nav-link" href="./index-desktop.html" data-track="nav_home">学习首页</a>
       <a class="nav-link" href="#plans" data-track="nav_plans">方案</a>
-      <a class="nav-link" href="#faq" data-track="nav_faq">常见问题</a>
-      <a class="btn btn-secondary" id="login-link" href="./desktop-auth.html?next=pricing.html" data-track="nav_login">登录</a>
+      <a class="nav-link" href="./landing.html" data-track="nav_product">产品介绍</a>
+      <a class="nav-link" data-nav-extra href="#plan-advisor" data-track="nav_advisor">推荐</a>
+      <a class="nav-link" data-nav-extra href="#faq" data-track="nav_faq">常见问题</a>
     </nav>
+    <div class="nav-end">
+      <a class="btn btn-secondary" id="login-link" href="./desktop-auth.html?next=pricing.html" data-track="nav_login">登录</a>
+      <button
+        class="nav-menu-btn"
+        id="pricing-nav-menu"
+        type="button"
+        aria-label="打开导航菜单"
+        aria-haspopup="true"
+        aria-expanded="false"
+        aria-controls="pricing-nav-sheet"
+      >
+        <span class="nav-menu-btn-bars" aria-hidden="true"></span>
+      </button>
+    </div>
+    <button class="nav-menu-backdrop" id="pricing-nav-backdrop" type="button" aria-label="关闭菜单" hidden></button>
+    <div class="nav-menu-sheet" id="pricing-nav-sheet" role="menu" aria-label="Tab 选择" hidden>
+      <a role="menuitem" href="./index-desktop.html">学习首页</a>
+      <a role="menuitem" href="#plans">方案</a>
+      <a role="menuitem" href="./landing.html">产品介绍</a>
+      <a role="menuitem" href="#plan-advisor">推荐</a>
+      <a role="menuitem" href="#faq">常见问题</a>
+      <a role="menuitem" href="./membership.html">会员中心</a>
+    </div>
   </header>
 
   <main class="page">
@@ -1129,7 +1330,11 @@
       </div>
 
       <aside class="demo-panel" aria-label="产品演示">
-        <img src="./assets/lingbao_3d.jpg" alt="Ling宝" style="width:100%;height:100%;object-fit:cover">
+        <div class="demo-panel-stage">
+          <div class="demo-panel-actor">
+            <img src="./assets/lingbao_nobg.png" alt="Ling宝">
+          </div>
+        </div>
         <div class="demo-caption">
           <strong>会员不是多一个资料库，而是更完整的训练系统。</strong>
           <span>把真实视频切成可跟读的句子，再把错句、生词和表达放回后续复习。</span>
@@ -1743,18 +1948,26 @@
       return null;
     }
 
+    function isMobileClient() {
+      const ua = navigator.userAgent.toLowerCase();
+      return /mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(ua) || window.innerWidth < 768;
+    }
+
     function authUrl() {
       const next = encodeURIComponent('pricing.html');
-      const ua = navigator.userAgent.toLowerCase();
-      const mobile = /mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(ua) || window.innerWidth < 768;
-      return mobile ? `mobile-auth.html?next=${next}` : `desktop-auth.html?next=${next}`;
+      return isMobileClient() ? `mobile-auth.html?next=${next}` : `desktop-auth.html?next=${next}`;
+    }
+
+    function trainingUrl() {
+      const page = isMobileClient() ? './video-reader.html' : './video-reader-desktop.html';
+      return `${page}?from=pricing_nav`;
     }
 
     const loginLink = document.getElementById('login-link');
     if (loginLink) {
       if (readToken()) {
         loginLink.textContent = '进入训练';
-        loginLink.href = 'today.html?from=pricing_nav';
+        loginLink.href = trainingUrl();
       } else {
         loginLink.href = authUrl();
       }
@@ -2049,6 +2262,33 @@
     }
     document.getElementById('team-lead-form')?.addEventListener('submit', submitTeamLead);
     postPricingEvent('pricing_page_view');
+
+    (function setupPricingNavMenu() {
+      const topbar = document.querySelector('.topbar');
+      const menuBtn = document.getElementById('pricing-nav-menu');
+      const sheet = document.getElementById('pricing-nav-sheet');
+      const backdrop = document.getElementById('pricing-nav-backdrop');
+      if (!topbar || !menuBtn || !sheet || !backdrop) return;
+
+      function setMenuOpen(open) {
+        sheet.hidden = !open;
+        backdrop.hidden = !open;
+        menuBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
+
+      menuBtn.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        setMenuOpen(sheet.hidden);
+      });
+      backdrop.addEventListener('click', function () { setMenuOpen(false); });
+      sheet.addEventListener('click', function (event) {
+        if (event.target.closest('a')) setMenuOpen(false);
+      });
+      document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') setMenuOpen(false);
+      });
+    })();
   </script>
 <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
 </body>

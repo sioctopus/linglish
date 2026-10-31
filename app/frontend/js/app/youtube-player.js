@@ -28,6 +28,7 @@ class YouTubePlayer {
     this._initGeneration = 0;
     this._destroyed = false;
     this._cancelInit = null;
+    this._nativeCaptionsWanted = false;
   }
 
   _createInitCancelledError() {
@@ -411,6 +412,11 @@ class YouTubePlayer {
               modestbranding: 1,
               origin: getYouTubeOrigin(),
               rel: 0,
+              // Keep YouTube's own CC off by default. Auto-captions wrap mid-sentence
+              // ("…here" lands on the next line) and fight the video's on-screen lines
+              // plus our caption / coaching dock. Re-enable only as a fallback when
+              // clickable transcript segments cannot be fetched.
+              cc_load_policy: 3,
               ...options.playerVars
             },
             events: {
@@ -420,11 +426,18 @@ class YouTubePlayer {
                   return;
                 }
                 console.log('[YouTube] Player ready event fired');
+                this.disableNativeCaptions();
                 if (this.onReadyCallback) {
                   this.onReadyCallback(event);
                 }
                 this.startTimeUpdateLoop();
                 resolveOnce(this.player);
+              },
+              onApiChange: () => {
+                if (this._isInitCancelled(generation)) return;
+                // Captions module can load after ready and turn CC back on — keep it off
+                // unless a caller explicitly asked for the native fallback.
+                if (!this._nativeCaptionsWanted) this.disableNativeCaptions();
               },
               onStateChange: (event) => {
                 if (this._isInitCancelled(generation)) return;
@@ -507,6 +520,49 @@ class YouTubePlayer {
     if (this.timeUpdateInterval) {
       clearInterval(this.timeUpdateInterval);
       this.timeUpdateInterval = null;
+    }
+  }
+
+  /**
+   * Turn on YouTube's built-in caption track (visual fallback when
+   * clickable transcript segments cannot be fetched).
+   */
+  enableNativeCaptions(languageCode = 'en') {
+    if (!this.player) return false;
+    this._nativeCaptionsWanted = true;
+    try {
+      if (typeof this.player.loadModule === 'function') {
+        this.player.loadModule('captions');
+      }
+      if (typeof this.player.setOption === 'function') {
+        this.player.setOption('captions', 'track', { languageCode: languageCode || 'en' });
+      }
+      return true;
+    } catch (err) {
+      console.warn('[YouTube] enableNativeCaptions failed:', err);
+      return false;
+    }
+  }
+
+  /**
+   * Hide YouTube CC so it does not compete with baked-in video text or our dock.
+   */
+  disableNativeCaptions() {
+    this._nativeCaptionsWanted = false;
+    if (!this.player) return false;
+    try {
+      if (typeof this.player.setOption === 'function') {
+        try { this.player.setOption('captions', 'track', {}); } catch (_) { }
+        try { this.player.setOption('cc', 'track', {}); } catch (_) { }
+      }
+      if (typeof this.player.unloadModule === 'function') {
+        try { this.player.unloadModule('captions'); } catch (_) { }
+        try { this.player.unloadModule('cc'); } catch (_) { }
+      }
+      return true;
+    } catch (err) {
+      console.warn('[YouTube] disableNativeCaptions failed:', err);
+      return false;
     }
   }
 
@@ -714,7 +770,9 @@ class YouTubePlayer {
   }
 }
 
-// Export for use in other modules
+// Export for use in other modules / classic script pages
+if (typeof globalThis !== 'undefined') globalThis.YouTubePlayer = YouTubePlayer;
+if (typeof window !== 'undefined') window.YouTubePlayer = YouTubePlayer;
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = YouTubePlayer;
 }

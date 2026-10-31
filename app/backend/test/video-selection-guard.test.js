@@ -59,7 +59,7 @@ test('desktop reader guards both player and transcript commits with the selectio
   const html = readPage('video-reader-desktop.html');
 
   assert.match(html, /js\/video-reader\/video-selection-guard\.js/);
-  assert.match(html, /js\/app\/youtube-player\.js\?v=20260803/);
+  assert.match(html, /js\/app\/youtube-player\.js\?v=2026103001/);
   assert.doesNotMatch(html, /youtube-player\.js\?v=1(?:[\"'])/);
   assert.match(html, /videoSelectionGuard\.begin\(v\.id\)/);
   assert.match(html, /createVideoSelectionLifecycle\(\{/);

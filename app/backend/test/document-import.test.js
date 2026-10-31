@@ -137,7 +137,7 @@ test('desktop home links document import and the page posts lessons to the impor
   assert.match(home, /id="hero-guest-document"[^>]*href="\.\/document-import\.html"/);
   assert.match(home, /id="hero-user-document"[^>]*href="\.\/document-import\.html"/);
   assert.match(page, /\/documents\/import/);
-  assert.match(page, /accept="\.pdf,\.txt,\.docx,\.epub,\.html,\.htm,\.png,\.jpg,\.jpeg,\.webp"/);
+  assert.match(page, /accept="\.pdf,\.txt,\.md,\.markdown,\.docx,\.epub,\.html,\.htm,\.png,\.jpg,\.jpeg,\.webp"/);
   assert.match(page, /daily-speaking\.html\?material=/);
   assert.match(server, /registerDocumentRoutes/);
   assert.match(server, /pathname === '\/ocr\/extract'/);

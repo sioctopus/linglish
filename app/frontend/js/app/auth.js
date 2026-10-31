@@ -89,9 +89,11 @@ export function clearAuthSession() {
  * @param {Object} options - Persistence options
  * @param {boolean} options.remember - Whether to persist to localStorage (default: true)
  */
-export function persistAuthSession(token, email, { remember = true } = {}) {
-  if (window.AuthManager) {
-    window.AuthManager.setToken(token, remember);
+export async function persistAuthSession(token, email, { remember = true, session = null } = {}) {
+  if (window.AuthManager && session && typeof window.AuthManager.saveLogin === 'function') {
+    await window.AuthManager.saveLogin(session, remember);
+  } else if (window.AuthManager) {
+    await window.AuthManager.setToken(token, remember);
   }
 
   try {

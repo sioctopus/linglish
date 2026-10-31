@@ -2,13 +2,11 @@
 <html lang="zh-CN">
 
 <head>
-  <script src="./js/video-reader/device-router.js?v=1"></script>
+  <script src="./js/video-reader/device-router.js?v=2026103001"></script>
   <script>window.VideoReaderDeviceRouter && window.VideoReaderDeviceRouter.redirectIfNeeded(window);</script>
   <script src="/env.js"></script>
-  <script src="./js/auth-manager.js?v=20261019"></script>
-<script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/tts-voice.js?v=2"></script>
-  <script src="./js/workbench/import-bridge.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <script src="./js/tts-voice.js?v=2026103001"></script>
   <script src="./js/visitor-context.js?v=1"></script>
   <script src="./js/storage-helper.js"></script>
   <script>
@@ -243,7 +241,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Linglish">
   <link rel="stylesheet" href="/css/install-desktop.css?v=3">
-  <script src="/js/install-desktop.js?v=3" defer></script>
+  <script src="/js/install-desktop.js?v=2026103001" defer></script>
   <script>
     // Filter noisy extension + Cloudflare beacon errors (does not affect app logic)
     // IMPORTANT: This must be the first script to catch extension/ETP/CORS noise
@@ -361,7 +359,7 @@
   <title>视频学习（桌面版） - linglish</title>
 
   <!-- Preload critical resources for video playback -->
-  <link rel="preload" href="./js/app/youtube-player.js?v=20260803" as="script">
+  <link rel="preload" href="./js/app/youtube-player.js?v=2026103001" as="script">
   <link rel="preconnect" href="https://www.youtube.com">
   <link rel="preconnect" href="https://i.ytimg.com">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -369,45 +367,46 @@
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@600;700&family=Manrope:wght@400;500;600;700&family=Noto+Serif+SC:wght@600;700&display=swap" rel="stylesheet">
 
   <link rel="stylesheet" href="./styles/tokens.css?v=20261018-focus-player">
-  <link rel="stylesheet" href="./styles/icons.css?v=1">
-  <script src="./js/icons.js?v=1"></script>
   <link rel="stylesheet" href="./styles.css?v=1" />
-  <script src="./i18n.js?v=20261019"></script>
-  <script src="./global-ui.js?v=20250108"></script>
+  <script src="./i18n.js?v=2026103001"></script>
+  <script src="./global-ui.js?v=2026103001"></script>
   <script src="./guest-check.js?v=1"></script>
-  <script src="./auth-helpers.js?v=1"></script>
+  <script src="./auth-helpers.js?v=2026103001"></script>
   <script src="./feedback.js?v=1"></script>
   <script src="./js/app/lazy-loader.js?v=1"></script>
   <script src="./video-tag-system.js?v=20251223"></script>
-  <script src="./js/video-reader/library-filter.js?v=20261019"></script>
-  <script src="./js/video-reader/video-metadata-editor.js?v=20261019"></script>
+  <script src="./js/video-reader/library-filter.js?v=2026103001"></script>
+  <script src="./js/video-reader/video-metadata-editor.js?v=2026103001"></script>
   <script src="./js/video-reader/video-browser-scope-sync.js?v=1"></script>
   <script src="./js/video-reader/today-recommendation-session.js?v=1"></script>
   <script src="./js/video-recommendation-client.js?v=20260925"></script>
-  <script src="./js/video-reader/sentence-segments.js?v=20261019"></script>
+  <script src="./js/video-reader/sentence-segments.js?v=2026103001"></script>
   <script src="./js/video-reader/reader-layout-state.js?v=20261014"></script>
+  <script src="./js/video-reader/media-library-defaults.js?v=2026103001"></script>
   <script src="./js/video-reader/video-selection-guard.js?v=20260803"></script>
+  <script src="./js/practice/original-audio-replay.js?v=20261014"></script>
   <script src="./js/video-reader/first-lesson-focus.js?v=20260822"></script>
   <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-  <script src="./js/video-reader/first-lesson-goal.js?v=2026102804"></script>
-  <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026102803">
+  <script src="./js/video-reader/first-lesson-goal.js?v=2026103001"></script>
+  <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026103002">
     <script src="./js/video-reader/missed-words.js?v=20261015"></script>
     <script src="./js/video-reader/sentence-assist.js?v=20261015"></script>
-  <script src="./js/video-reader/first-lesson-practice.js?v=20260822"></script>
+  <script src="./js/video-reader/first-lesson-practice.js?v=2026103001"></script>
   <script src="./js/video-reader/first-lesson-readiness.js?v=20260808"></script>
   <script>
     window.LinglishFirstLessonFocus.applyDocumentState(document, window.location.search);
   </script>
-  <script src="./js/app/youtube-player.js?v=20260803"></script>
+  <script src="./js/app/youtube-player.js?v=2026103001"></script>
   <script>
     // Enable debug logs only via URL param ?debug=1
     try { window.__DEBUG_LOGS = /[?&]debug=1\b/.test(location.search || ''); } catch (_) { window.__DEBUG_LOGS = false; }
   </script>
   <link rel="stylesheet" href="./shared/dictionary.css?v=20260224f" />
-  <link rel="stylesheet" href="./styles/video-reader-pro.css?v=20261017-center2" />
-  <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=20261018-note-save" />
-  <link rel="stylesheet" href="./css/subtitle-study.css?v=20261019-study2" />
-  <link rel="stylesheet" href="./css/study-switch.css?v=20261017-nav" />
+  <link rel="stylesheet" href="./styles/video-reader-pro.css?v=2026103001" />
+  <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=2026103001" />
+  <link rel="stylesheet" href="./styles/practice-voice-chat.css?v=2026103001" />
+  <link rel="stylesheet" href="./styles/practice-voice-chat-x.css?v=2026103001" />
+  <link rel="stylesheet" href="./css/study-switch.css?v=2026103001" />
   <script src="./shared/dictionary-render.js?v=1765726957"></script>
   <script src="./shared/dictionary-lookup.js?v=1734439600"></script>
   <style>
@@ -833,12 +832,14 @@
     .daily-goal {
       display: flex;
       flex-direction: column;
+      align-items: center;
       gap: 0.25rem;
-      padding: 0.35rem 0.6rem;
-      border-radius: 14px;
+      padding: 0.35rem 0.85rem;
+      border-radius: 999px;
       background: var(--button-soft-bg);
       border: 1px solid var(--border);
-      min-width: 150px;
+      width: max-content;
+      min-width: 0;
       box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
     }
 
@@ -847,10 +848,12 @@
       font-weight: 600;
       color: var(--text-secondary);
       white-space: nowrap;
+      text-align: center;
     }
 
     .daily-goal-bar {
-      width: 100%;
+      align-self: stretch;
+      width: auto;
       height: 6px;
       border-radius: 999px;
       background: rgba(148, 163, 184, 0.35);
@@ -941,6 +944,20 @@
       -webkit-text-fill-color: transparent;
       background-clip: text;
       letter-spacing: -0.3px;
+    }
+
+    .brand .learning-compact-brand {
+      margin: 0;
+      color: var(--text-primary, #0f172a);
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .brand .learning-compact-brand:hover {
+      color: var(--brand, #0f766e);
     }
 
     .brand p {
@@ -1536,14 +1553,43 @@
       min-width: 0;
     }
 
-    .transcript .header-top #subtitle-study-toggle {
-      flex: 0 0 auto;
-      white-space: nowrap;
-    }
-
     .transcript .header-top .mode-toggle {
       margin-left: auto;
       flex: 0 0 auto;
+    }
+
+    #focus-video-entry {
+      display: none !important;
+    }
+
+    body.focus-mode .transcript .header-top {
+      flex-wrap: wrap;
+    }
+
+    body.focus-mode .transcript .header-top .mode-toggle {
+      margin-left: 0;
+    }
+
+    body.focus-mode #focus-video-entry {
+      display: inline-flex !important;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      margin-left: auto;
+      height: 32px;
+      padding: 0 0.85rem;
+      border-radius: 999px;
+      border: 1px solid #99f6e4;
+      background: #f0fdfa;
+      color: #0f766e;
+      font-size: 0.78rem;
+      font-weight: 650;
+      cursor: pointer;
+    }
+
+    body.focus-mode #focus-video-entry:hover {
+      background: #ccfbf1;
+      border-color: #5eead4;
     }
 
     .transcript .header h3 {
@@ -1884,27 +1930,35 @@
 
     .dict-header {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1rem 1.15rem;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 0.9rem 1rem 0.85rem;
       border-bottom: 1px solid var(--border);
-      gap: 0.6rem;
+      gap: 0.65rem;
       background: var(--section-header-bg);
+    }
+
+    .dict-title-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.75rem;
     }
 
     .dict-header .dict-meta {
       display: flex;
       flex-direction: column;
-      gap: 0.25rem;
+      gap: 0.15rem;
+      min-width: 0;
+      flex: 1 1 auto;
     }
 
     .dict-header .dict-word {
-      font-size: 1.15rem;
-      font-weight: 700;
+      font-size: 1.35rem;
+      font-weight: 800;
       color: var(--text-primary);
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
     }
 
     .dict-header .dict-phon {
@@ -1913,34 +1967,71 @@
       font-size: 0.88rem;
     }
 
-    .dict-lang-toggle {
+    .dict-lang-toggle,
+    .dict-accent-toggle {
       display: inline-flex;
+      flex-shrink: 0;
       border: 1px solid var(--border);
       border-radius: 999px;
       overflow: hidden;
       background: var(--button-soft-bg);
     }
 
-    .dict-lang-toggle button {
+    .dict-lang-toggle button,
+    .dict-accent-toggle button {
       border: none;
       background: transparent;
-      padding: 0.3rem 0.7rem;
+      padding: 0.28rem 0.65rem;
       font-weight: 600;
-      font-size: 0.82rem;
+      font-size: 0.78rem;
       color: var(--text-muted);
       cursor: pointer;
       transition: all 0.2s ease;
+      line-height: 1.2;
     }
 
-    .dict-lang-toggle button.active {
+    .dict-lang-toggle button.active,
+    .dict-accent-toggle button.active {
       background: linear-gradient(135deg, var(--brand-strong) 0%, var(--accent) 100%);
       color: white;
+    }
+
+    .dict-pos {
+      color: var(--text-muted);
+      font-style: italic;
+      font-size: 0.85rem;
+    }
+
+    .dict-phon-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.4rem 0.5rem;
+    }
+
+    .dict-phon-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .dict-zh-gloss {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.92rem;
+      line-height: 1.45;
     }
 
     .dict-actions {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.45rem;
+      flex-shrink: 0;
+    }
+
+    .dict-add-row {
+      display: flex;
+      width: 100%;
     }
 
     .dict-btn {
@@ -1964,11 +2055,15 @@
       background: linear-gradient(135deg, var(--brand-strong) 0%, var(--accent) 100%);
       color: white;
       border: none;
-      box-shadow: 0 6px 20px var(--brand-glow);
+      box-shadow: 0 4px 14px var(--brand-glow);
+      width: 100%;
+      padding: 0.55rem 0.9rem;
+      font-size: 0.9rem;
+      border-radius: 10px;
     }
 
     .dict-btn.primary:hover {
-      box-shadow: 0 8px 25px var(--brand-glow);
+      box-shadow: 0 6px 18px var(--brand-glow);
       transform: translateY(-1px);
     }
 
@@ -1976,6 +2071,13 @@
       background: rgba(14, 165, 233, 0.15);
       color: var(--brand);
       border-color: rgba(14, 165, 233, 0.3);
+      width: 2rem;
+      height: 2rem;
+      padding: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
     .dict-close {
@@ -2016,10 +2118,16 @@
     }
 
     .dict-definitions {
-      padding: 0.5rem 0.85rem;
+      padding: 0.75rem 1rem 0.35rem;
       display: flex;
       flex-direction: column;
-      gap: 0.6rem;
+      gap: 0.55rem;
+    }
+
+    .dict-definitions .dict-empty {
+      padding: 0.15rem 0 0.35rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
     }
 
     .dict-def-row {
@@ -2093,27 +2201,45 @@
 
     .dict-example {
       display: flex;
-      gap: 0.65rem;
-      padding: 0.6rem 0.7rem;
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 0.65rem 0.75rem;
       border-radius: var(--radius-sm);
       border: 1px solid var(--border);
       background: rgba(251, 146, 60, 0.08);
     }
 
-    .dict-example .time {
+    .dict-example .time,
+    .dict-example-meta {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.35rem 0.55rem;
       font-weight: 700;
-      color: #5eead4;
-      min-width: 50px;
+      color: var(--brand-strong, #0f766e);
       font-size: 0.78rem;
       font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .dict-example-meta a {
+      color: #2563eb;
+      text-decoration: none;
+      font-family: inherit;
+      font-weight: 600;
+    }
+
+    .dict-example-meta a:hover {
+      text-decoration: underline;
     }
 
     .dict-example .lines {
       display: flex;
       flex-direction: column;
-      gap: 0.2rem;
+      gap: 0.25rem;
       color: var(--text-secondary);
       font-size: 0.9rem;
+      line-height: 1.5;
+      min-width: 0;
     }
 
     .dict-example .zh {
@@ -2740,17 +2866,6 @@
     .subtitle-tip {
       font-size: 0.85rem;
       color: #475569;
-    }
-
-    .subtitle-actions {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex: none;
-    }
-
-    .subtitle-actions .pill {
-      white-space: nowrap;
     }
 
     .subtitle-text {
@@ -4661,6 +4776,8 @@
     }
 
     .vb-head {
+      position: relative;
+      z-index: 6;
       flex: 0 0 auto;
       padding: 1rem 1.4rem 0.75rem;
       border-bottom: 1px solid var(--border, #e2e8f0);
@@ -4750,6 +4867,12 @@
     }
     .vb-filter-pop[hidden] { display: none !important; }
     .vb-filter-pop .vb-chip-rows { gap: 0.55rem; }
+    .vb-view-btn[hidden],
+    #vb-add-channel[hidden],
+    #vb-channel-empty-add[hidden],
+    #pod-add-wrap[hidden],
+    #pod-panel[hidden],
+    #vb-grid[hidden] { display: none !important; }
     .vb-view-btn {
       border: 0;
       background: transparent;
@@ -5459,21 +5582,23 @@
 
       .player {
         flex: 0 0 auto;
-        width: min(100%, calc(min(60vh, 620px) * 16 / 9));
-        width: min(100%, calc(min(60dvh, 620px) * 16 / 9));
+        width: min(100%, calc(min(52vh, 560px) * 16 / 9));
+        width: min(100%, calc(min(52dvh, 560px) * 16 / 9));
         max-width: 100%;
         height: auto;
-        max-height: min(60vh, 620px);
-        max-height: min(60dvh, 620px);
+        max-height: min(52vh, 560px);
+        max-height: min(52dvh, 560px);
         aspect-ratio: 16 / 9;
         margin: 12px auto 0;
       }
 
       .main .player-wrap > .vrp-control-dock,
-      .main .player-wrap > .caption-bar {
-        width: min(100%, calc(min(60vh, 620px) * 16 / 9));
-        width: min(100%, calc(min(60dvh, 620px) * 16 / 9));
+      .main .player-wrap > .caption-bar,
+      .main .player-wrap > .desk-speak-dock {
+        width: min(100%, calc(min(52vh, 560px) * 16 / 9));
+        width: min(100%, calc(min(52dvh, 560px) * 16 / 9));
         flex: 0 0 auto;
+        margin-inline: auto;
       }
 
       body.focus-mode .player {
@@ -5484,7 +5609,8 @@
       }
 
       body.focus-mode .main .player-wrap > .vrp-control-dock,
-      body.focus-mode .main .player-wrap > .caption-bar {
+      body.focus-mode .main .player-wrap > .caption-bar,
+      body.focus-mode .main .player-wrap > .desk-speak-dock {
         width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9)));
       }
     }
@@ -5644,14 +5770,13 @@
       align-items: center;
     }
 
-    .transcript .video-controls-actions #import-words,
-    .transcript .video-controls-actions #open-vocab-tab {
+    .transcript .video-controls-actions #open-vocab-tab,
+    .transcript .video-controls-actions #import-words {
       flex: 0 0 auto;
       white-space: nowrap;
     }
 
-    .transcript .header-top #import-words,
-    .transcript .header-top #open-vocab-tab {
+    .transcript .header-top #import-words {
       height: 32px;
       padding: 0 0.75rem !important;
       border-radius: 999px !important;
@@ -5665,8 +5790,7 @@
       transform: none !important;
     }
 
-    .transcript .header-top #import-words:hover:not(:disabled),
-    .transcript .header-top #open-vocab-tab:hover {
+    .transcript .header-top #import-words:hover:not(:disabled) {
       background: #ccfbf1 !important;
       border-color: #5eead4 !important;
       color: #0f766e !important;
@@ -5680,6 +5804,12 @@
       cursor: not-allowed;
       box-shadow: none !important;
       transform: none !important;
+    }
+
+    .transcript .video-controls-actions #open-vocab-tab[data-study-target="video"] {
+      color: #0f766e;
+      background: #f0fdfa;
+      border-color: #5eead4;
     }
 
     .transcript .video-controls .title {
@@ -5842,7 +5972,7 @@
       display: none;
     }
 
-    body.focus-mode .video-controls-actions .btn:not(#focus-toggle):not(#import-words):not(#open-vocab-tab) {
+    body.focus-mode .video-controls-actions .btn:not(#focus-toggle):not(#import-words) {
       display: none;
     }
 
@@ -5850,6 +5980,8 @@
     html[data-learning-focus="first-lesson"] #open-channel-browser,
     html[data-learning-focus="first-lesson"] #nav-youtube-upload,
     html[data-learning-focus="first-lesson"] a[href="./video-upload.html"],
+    html[data-learning-focus="first-lesson"] #nav-library-switch,
+    html[data-learning-focus="first-lesson"] #nav-upload-switch,
     html[data-learning-focus="first-lesson"] #today-reco-card,
     html[data-learning-focus="first-lesson"] #tag-filter-section {
       display: none !important;
@@ -5863,6 +5995,241 @@
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
+    }
+
+    /* X DM Hold under desktop player (same language as mobile) */
+    .desk-speak-dock.is-x-compose {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      width: 100%;
+      margin: 10px 0 0;
+      padding: 0 2px;
+      box-sizing: border-box;
+    }
+
+    .desk-hold-btn {
+      flex: 0 0 auto;
+      width: auto;
+      max-width: none;
+      height: 36px;
+      margin: 0;
+      padding: 0 14px;
+      border: 0;
+      border-radius: var(--lx-radius-pill, 999px);
+      background: var(--lx-paper, #f8fafc);
+      color: var(--lx-ink-900, #0f172a);
+      font-family: var(--lx-font-body, Manrope, "PingFang SC", "Microsoft YaHei", sans-serif);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 1;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .desk-hold-btn.is-mic-warming {
+      background: var(--lx-paper, #f8fafc);
+      color: var(--lx-ink-500, #64748b);
+    }
+
+    .desk-hold-btn.is-holding,
+    .desk-hold-btn:active {
+      background: var(--lx-grad-fresh, linear-gradient(135deg, #0d9488 0%, #2dd4bf 100%));
+      color: #fff;
+    }
+
+    /* Speaking dots left / right while holding */
+    .desk-hold-btn.is-holding::before,
+    .desk-hold-btn.is-holding::after {
+      content: "";
+      flex: 0 0 auto;
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: -7px 0 0 currentColor, 7px 0 0 currentColor;
+      animation: desk-hold-speak 0.9s ease-in-out infinite;
+    }
+
+    .desk-hold-btn.is-holding::after {
+      animation-delay: 0.35s;
+    }
+
+    @keyframes desk-hold-speak {
+      0%, 100% { opacity: 0.35; transform: scale(0.85); }
+      50% { opacity: 1; transform: scale(1); }
+    }
+
+    .desk-hold-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .desk-hold-btn [data-hold-label] {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .desk-hear-btn {
+      flex: 0 0 auto;
+      height: 44px;
+      padding: 0 16px;
+      border: 1px solid #e2e8f0;
+      border-radius: 999px;
+      background: #fff;
+      color: #0f766e;
+      font: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .desk-hear-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* KTV karaoke fill while Hold (same as mobile) */
+    #caption-bar .coach-row.is-karaoke .vc-kword,
+    #caption-bar .lyric-line.is-karaoke .vc-kword,
+    #transcript-list .is-karaoke .vc-kword {
+      color: inherit;
+      transition: color 0.14s ease;
+    }
+
+    #caption-bar .coach-row.is-karaoke .vc-kword.is-hit,
+    #caption-bar .lyric-line.is-karaoke .vc-kword.is-hit,
+    #transcript-list .is-karaoke .vc-kword.is-hit {
+      color: var(--lx-primary, #0f766e);
+    }
+
+    #caption-bar .coach-row.is-karaoke .vc-kword.is-partial,
+    #caption-bar .lyric-line.is-karaoke .vc-kword.is-partial,
+    #transcript-list .is-karaoke .vc-kword.is-partial {
+      background-image: linear-gradient(
+        90deg,
+        var(--lx-primary, #0f766e) 0%,
+        var(--lx-primary, #0f766e) calc(var(--p, 0.4) * 100%),
+        currentColor calc(var(--p, 0.4) * 100%)
+      );
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* Under-player chat dump removed — conversation lives in #desktop-voice-session. */
+    .desk-speak-dock .desk-session-btn {
+      flex: 0 0 auto;
+      height: 36px;
+      padding: 0 14px;
+      border: 1px solid var(--lx-line, #e2e8f0);
+      border-radius: var(--lx-radius-pill, 999px);
+      background: var(--lx-surface, #fff);
+      color: var(--lx-ink-900, #0f172a);
+      font-family: var(--lx-font-body, Manrope, "PingFang SC", "Microsoft YaHei", sans-serif);
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .desk-speak-dock .desk-session-btn:hover {
+      background: var(--lx-teal-50, #f0fdfa);
+      border-color: var(--lx-teal-300, #5eead4);
+      color: var(--lx-primary, #0f766e);
+    }
+
+    body:not(.voice-session-open) #desktop-voice-session,
+    #desktop-voice-session[hidden] {
+      display: none !important;
+      pointer-events: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Hard lock session chrome (beats stale CSS cache): compact + Linglish colors */
+    #desktop-voice-session.x-dm-session {
+      align-items: center !important;
+      justify-content: center !important;
+      padding: 20px 16px !important;
+      background: rgba(15, 23, 42, 0.35) !important;
+    }
+    #desktop-voice-session .desk-voice-session-panel.x-dm-panel {
+      width: min(420px, calc(100vw - 32px)) !important;
+      height: min(560px, calc(100dvh - 40px)) !important;
+      max-height: min(68dvh, 560px) !important;
+      border-radius: 24px !important;
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12) !important;
+    }
+    #desktop-voice-session #voice-chat-coach,
+    #desktop-voice-session .voice-chat,
+    #desktop-voice-session .voice-chat-stream {
+      background: #f8fafc !important;
+      min-height: 0 !important;
+      height: auto !important;
+      max-height: none !important;
+    }
+    #desktop-voice-session .voice-chat-row.is-them .voice-chat-bubble {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+    #desktop-voice-session .voice-chat-row.is-them .voice-chat-bubble.is-active {
+      background: #f0fdfa !important;
+      border-color: #0f766e !important;
+    }
+    #desktop-voice-session .voice-chat-dock {
+      background: #ffffff !important;
+    }
+    /* Host cover art must stay 44px — unconstrained 600px art painted the chat red */
+    #desktop-voice-session .voice-chat-avatar,
+    #desktop-voice-session .voice-chat-avatar.is-host-photo,
+    #desktop-voice-session .voice-chat-avatar.is-cue-bot {
+      width: 44px !important;
+      height: 44px !important;
+      min-width: 44px !important;
+      min-height: 44px !important;
+      max-width: 44px !important;
+      max-height: 44px !important;
+      overflow: hidden !important;
+      border-radius: 50% !important;
+      flex: 0 0 44px !important;
+      position: relative !important;
+    }
+    #desktop-voice-session .voice-chat-host-img,
+    #desktop-voice-session img.voice-chat-host-img {
+      position: absolute !important;
+      inset: 0 !important;
+      width: 44px !important;
+      height: 44px !important;
+      max-width: 44px !important;
+      max-height: 44px !important;
+      object-fit: cover !important;
+      border-radius: 50% !important;
+    }
+    /* Never dump chat bubbles under the player on desktop video learning */
+    .player-wrap > .voice-chat,
+    .player-wrap > #voice-chat-coach,
+    .desk-speak-dock ~ .voice-chat,
+    .voice-chat.is-desktop-reader {
+      display: none !important;
+    }
+    #desktop-voice-session #voice-chat-coach,
+    #desktop-voice-session .voice-chat {
+      display: flex !important;
     }
 
     @media (max-width: 1179px) {
@@ -5910,47 +6277,22 @@
       display: grid;
       grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
-      gap: 12px;
-      margin-top: 8px;
-      padding: 10px 14px;
-      border-radius: 16px;
-      background: #fff;
-      border: 1px solid #e7e9ef;
-    }
-
-    .sentence-path {
-      grid-column: 1 / -1;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .sentence-path-label {
-      color: #64748b;
-      font-size: 13px;
-      font-weight: 700;
-    }
-
-    .sentence-path button {
-      height: 32px;
-      padding: 0 12px;
-      border: 1px solid #99f6e4;
-      border-radius: 999px;
-      background: #f0fdfa;
-      color: #0f766e;
-      font: inherit;
-      font-size: 13px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    .sentence-path button:hover {
-      background: #ccfbf1;
+      gap: 14px;
+      margin-top: 10px;
+      padding: 18px 18px 20px;
+      min-height: 168px;
+      border-radius: 0;
+      background: transparent;
+      border: none;
+      box-shadow: none;
+      box-sizing: border-box;
     }
 
     .caption-bar:has(.coach-dock[data-open="true"]) {
-      display: block;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      justify-content: center;
     }
 
     .caption-bar:has(.coach-dock[data-open="true"]) .lyric-stage {
@@ -5960,12 +6302,12 @@
     .lyric-stage {
       position: static;
       display: grid;
-      grid-template-rows: 1.35em auto 1.35em;
+      grid-template-rows: 1.5em auto 1.5em;
       align-items: center;
       justify-items: center;
-      gap: 6px;
-      min-height: 5.1em;
-      padding: 0;
+      gap: 10px;
+      min-height: 7.2em;
+      padding: 4px 0;
       overflow: visible;
       background: transparent;
       pointer-events: none;
@@ -5977,7 +6319,7 @@
       border: 0;
       background: transparent;
       color: #6d7280;
-      font: 600 0.92rem/1.35 "Segoe UI", "PingFang SC", sans-serif;
+      font: 600 1.05rem/1.4 "Segoe UI", "PingFang SC", sans-serif;
       text-align: center;
       text-shadow: none;
       white-space: nowrap;
@@ -5989,9 +6331,9 @@
     }
     .lyric-line.is-current {
       color: #17191f;
-      font-size: clamp(1.05rem, 1.6vw, 1.28rem);
+      font-size: clamp(1.35rem, 2.4vw, 1.85rem);
       font-weight: 750;
-      line-height: 1.55;
+      line-height: 1.5;
       white-space: normal;
       overflow: visible;
       text-overflow: unset;
@@ -6034,16 +6376,39 @@
     }
 
     .caption-bar .coach-rows {
+      width: 100%;
+      gap: 10px;
       text-align: center;
+      min-height: 132px;
+      align-content: center;
     }
 
     .caption-bar .coach-row {
       color: #8b909a;
       text-align: center;
+      max-width: 100%;
     }
 
-    .caption-bar .coach-row.is-current {
+    .caption-bar .coach-row.is-depth-1,
+    .caption-bar .coach-row.is-previous,
+    .caption-bar .coach-row.is-next {
+      font-size: clamp(15px, 1.5vw, 18px);
+      line-height: 1.4;
+      opacity: 0.72;
+    }
+
+    .caption-bar .coach-row.is-depth-2,
+    .caption-bar .coach-row.is-depth-3 {
+      display: none;
+    }
+
+    .caption-bar .coach-row.is-current,
+    .caption-bar .coach-row.is-depth-0,
+    .caption-bar .coach-row.is-current.is-depth-0 {
       color: #17191f;
+      font-size: clamp(22px, 2.6vw, 32px);
+      font-weight: 800;
+      line-height: 1.45;
     }
 
     .caption-bar .coach-word {
@@ -6092,8 +6457,9 @@
     }
 
     [data-theme="dark"] .caption-bar {
-      background: #1e293b;
-      border-color: rgba(148, 163, 184, 0.22);
+      background: transparent;
+      border: none;
+      box-shadow: none;
     }
 
     [data-theme="dark"] .lyric-line,
@@ -6111,8 +6477,7 @@
     }
 
     [data-theme="dark"] .transcript .header-top #focus-toggle,
-    [data-theme="dark"] .transcript .header-top #import-words,
-    [data-theme="dark"] .transcript .header-top #open-vocab-tab {
+    [data-theme="dark"] .transcript .header-top #import-words {
       background: rgba(45, 212, 191, 0.12) !important;
       color: #5eead4 !important;
       border-color: rgba(45, 212, 191, 0.35) !important;
@@ -6179,7 +6544,7 @@
       background: #fff;
       border: 1px solid #e2e8f0;
       box-shadow: 0 16px 40px rgba(15, 23, 42, 0.16);
-      z-index: 5;
+      z-index: 40;
     }
     .vb-add-menu[hidden] { display: none !important; }
     .vb-add-menu button {
@@ -6324,16 +6689,22 @@
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js" defer></script>
 <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
 <style>
-  /* 桌面学习页导航项多，共享顶栏的 1180px 胶囊会把标题和按钮文字挤成两行。 */
+  /* 桌面学习页：顶栏压矮，少占纵向空间；宽于共享 1180px 胶囊以免挤成两行。 */
   body > .topbar {
-    width: min(1880px, calc(100% - 32px));
+    top: 8px;
+    width: min(1880px, calc(100% - 24px));
     align-items: center;
     justify-content: space-between;
-    gap: 8px 16px;
-    min-height: 64px;
-    padding: 8px 12px 8px 20px;
-    flex-wrap: wrap;
-    border-radius: 28px;
+    gap: 6px 10px;
+    min-height: 46px;
+    height: auto;
+    margin: 8px auto 0;
+    padding: 4px 10px 4px 14px;
+    flex-wrap: nowrap;
+    border-radius: 16px;
+    background: rgba(248, 250, 252, 0.92) !important;
+    border: 1px solid rgba(23, 25, 31, 0.06) !important;
+    box-shadow: 0 4px 14px rgba(23, 25, 31, 0.05);
   }
 
   body > .topbar .brand {
@@ -6341,10 +6712,11 @@
     min-width: max-content;
   }
 
-  body > .topbar .brand h1 {
+  body > .topbar .brand h1,
+  body > .topbar .brand .learning-compact-brand {
     white-space: nowrap;
-    font-size: 1.05rem;
-    line-height: 1.2;
+    font-size: 0.98rem;
+    line-height: 1.15;
   }
 
   body > .topbar .nav {
@@ -6353,14 +6725,16 @@
     justify-content: flex-end;
     align-items: center;
     flex-wrap: nowrap;
-    gap: 0.4rem;
+    gap: 0.28rem;
   }
 
   body > .topbar .pill,
   body > .topbar .theme-toggle,
   body > .topbar .daily-goal,
   body > .topbar .lang-selector,
-  body > .topbar .vip-badge {
+  body > .topbar .vip-badge,
+  body > .topbar .upload-switch,
+  body > .topbar .library-switch {
     flex-shrink: 0;
   }
 
@@ -6370,11 +6744,11 @@
   }
 
   body > .topbar .pill {
-    height: 36px;
-    padding: 0 0.72rem;
-    gap: 0.28rem;
+    height: 30px;
+    padding: 0 0.58rem;
+    gap: 0.22rem;
     line-height: 1;
-    font-size: 0.8rem;
+    font-size: 0.76rem;
   }
 
   body > .topbar .lang-selector {
@@ -6382,15 +6756,27 @@
   }
 
   body > .topbar .daily-goal {
-    min-width: 148px;
-    padding: 0.28rem 0.65rem;
-    gap: 0.18rem;
+    width: max-content;
+    min-width: 0;
+    padding: 0.12rem 0.65rem;
+    gap: 0.1rem;
+    align-items: center;
+    border-radius: 999px;
+  }
+
+  body > .topbar .daily-goal-label {
+    font-size: 0.72rem;
+  }
+
+  body > .topbar .daily-goal-bar {
+    height: 4px;
   }
 
     body > .topbar .theme-toggle {
-      width: 36px;
-      height: 36px;
-      flex-basis: 36px;
+      width: 30px;
+      height: 30px;
+      flex-basis: 30px;
+      font-size: 0.95rem;
     }
 
     body.focus-mode > .topbar {
@@ -6460,12 +6846,15 @@
     }
 
     body.focus-mode .main .player-wrap > .vrp-control-dock,
-    body.focus-mode .main .player-wrap > .caption-bar {
+    body.focus-mode .main .player-wrap > .caption-bar,
+    body.focus-mode .main .player-wrap > .desk-speak-dock {
       width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9)));
+      margin-inline: auto;
     }
 
     body.focus-mode .player-wrap > .caption-bar,
-    body.focus-mode #caption-bar {
+    body.focus-mode #caption-bar,
+    body.focus-mode .player-wrap > .desk-speak-dock {
       flex: 0 0 auto;
     }
 
@@ -6490,38 +6879,43 @@
     }
 
     body.focus-mode .coach-dock[data-allowed="true"] .coach-bar,
-    body.focus-mode .coach-dock[data-allowed="true"] .coach-rows {
-      display: none !important;
-    }
-
+    body.focus-mode .coach-dock[data-allowed="true"] .coach-rows,
+    body.focus-mode .coach-dock[data-allowed="true"] .coach-chrome,
     body.focus-mode .coach-dock[data-allowed="true"] .coach-actions {
-      display: flex !important;
-      padding-bottom: 0;
+      display: none !important;
     }
 
   @media (max-width: 1280px) {
     body > .topbar {
-      width: calc(100% - 16px);
-      gap: 10px;
-      padding-left: 14px;
+      width: calc(100% - 12px);
+      gap: 6px;
+      padding: 3px 8px 3px 12px;
+      min-height: 44px;
     }
 
-    body > .topbar .brand h1 {
-      font-size: 0.95rem;
+    body > .topbar .brand h1,
+    body > .topbar .brand .learning-compact-brand {
+      font-size: 0.9rem;
     }
 
     body > .topbar .nav {
-      gap: 0.28rem;
+      gap: 0.2rem;
     }
 
     body > .topbar .pill {
-      padding: 0 0.55rem;
-      font-size: 0.75rem;
+      height: 28px;
+      padding: 0 0.48rem;
+      font-size: 0.72rem;
     }
   }
+
+  [data-theme="dark"] body > .topbar,
+  body[data-theme="dark"] > .topbar {
+    background: rgba(15, 23, 42, 0.88) !important;
+    border-color: rgba(148, 163, 184, 0.16) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.22);
+  }
 </style>
-  <link rel="stylesheet" href="./css/learning-navigation.css?v=20261019-nav10">
-  <script src="./js/learning-navigation.js?v=20261019-nav3" defer></script>
 </head>
 
 <body>
@@ -6534,18 +6928,23 @@
   <div class="topbar">
     <div class="brand">
       <a class="learning-compact-brand" href="./index-desktop.html" aria-label="Linglish 首页">Linglish</a>
-      <h1 data-i18n="video.desktop_title">linglish · 视频学习（桌面版）</h1>
     </div>
     <div class="nav">
+      <nav class="study-switch" id="study-switch" aria-label="学习板块">
+        <button type="button" class="study-switch-trigger" aria-expanded="false" aria-haspopup="listbox" aria-controls="study-switch-menu">
+          <span data-study-label>视频学习</span>
+          <span class="study-switch-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="study-switch-menu" id="study-switch-menu" hidden role="listbox" aria-label="切换学习模式">
+          <a href="./video-reader-desktop.html" data-study="video" role="option">视频学习</a>
+          <a href="./practice-session-desktop.html?mode=shadowing" data-study="coach" role="option">AI陪练</a>
+          <a href="./practice-session-desktop.html?mode=dialogue" data-study="arena" role="option">实战场</a>
+        </div>
+      </nav>
       <div class="daily-goal" id="daily-goal">
         <div class="daily-goal-label" id="daily-goal-label">今日目标：1/3视频</div>
         <div class="daily-goal-bar"><span id="daily-goal-fill"></span></div>
       </div>
-      <nav class="study-switch" id="study-switch" aria-label="学习板块">
-        <a href="./video-reader-desktop.html" data-study="video">视频学习</a>
-        <a href="./practice-session-desktop.html?mode=shadowing" data-study="coach">AI陪练</a>
-        <a href="./practice-session-desktop.html?mode=dialogue" data-study="arena">实战场</a>
-      </nav>
       <!-- Theme Toggle Button -->
       <button class="theme-toggle" id="theme-toggle" title="切换主题">
         <span class="icon-sun">☀️</span>
@@ -6571,36 +6970,56 @@
         </div>
       </div>
       <a href="./membership.html" id="vip-badge" class="vip-badge" hidden>
-        <span class="vip-icon" data-lx-icon="crown" data-lx-class="lx-icon--sm"></span>
+        <span class="vip-icon">👑</span>
         <span class="vip-text">VIP</span>
       </a>
-      <a class="pill" href="#" id="back-to-list" data-learning-primary="back" aria-label="返回" title="返回视频列表" style="padding-left: 0.7rem; padding-right: 0.9rem;">
-        <span data-lx-icon="back" data-lx-size="16" data-lx-class="lx-icon--sm"></span>
+      <a class="pill" href="#" id="back-to-list" title="返回视频列表" style="padding-left: 0.7rem; padding-right: 0.9rem;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
+          <path d="M19 12H5" />
+          <path d="M12 19l-7-7 7-7" />
+        </svg>
         <span data-i18n="nav.back">返回</span>
       </a>
-      <a class="pill" data-nav="home" href="./index-desktop.html" title="首页" style="padding-left: 0.7rem; padding-right: 0.9rem;">
-        <span data-lx-icon="home" data-lx-size="14" data-lx-class="lx-icon--sm"></span>
+      <a class="pill" href="./index-desktop.html" title="返回首页" style="padding-left: 0.7rem; padding-right: 0.9rem;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+          stroke-linecap="round" stroke-linejoin="round" style="margin-right: 2px;">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
         <span data-i18n="nav.home">首页</span>
       </a>
-      <a class="pill pill-browser" href="#" id="open-video-browser" data-learning-primary="library" title="浏览视频库" style="padding-left: 0.8rem; padding-right: 0.95rem;">
-        <span data-lx-icon="video" data-lx-class="lx-icon--sm"></span>
-        <span data-i18n="nav.library">视频库</span>
-      </a>
-      <a class="pill pill-browser" href="#" id="open-channel-browser" title="浏览官方频道库" style="padding-left: 0.8rem; padding-right: 0.95rem;">
-        <span data-lx-icon="channel" data-lx-class="lx-icon--sm"></span>
-        <span>频道库</span>
-      </a>
-      <a class="pill" href="#" id="open-podcast-browser" title="浏览播客">
-        <span data-lx-icon="mic" data-lx-class="lx-icon--sm"></span>
-        <span>播客</span>
-      </a>
-      <a class="pill" href="./youtube-import.html" title="网络上传" id="nav-youtube-upload">
-        <span data-lx-icon="upload" data-lx-class="lx-icon--sm"></span>
-        <span data-i18n="nav.youtube">网络上传</span>
-      </a>
-      <a class="pill" href="./video-upload.html"><span data-lx-icon="upload" data-lx-class="lx-icon--sm"></span> <span data-i18n="nav.upload">上传视频</span></a>
-      <a class="pill" href="./feedback.html"><span data-lx-icon="message" data-lx-class="lx-icon--sm"></span> <span data-i18n="nav.feedback">反馈</span></a>
-      <a class="pill primary" id="goto-vocab" href="#vocabulary"><span data-lx-icon="book" data-lx-class="lx-icon--sm"></span> <span data-i18n="nav.vocabulary">词汇表</span></a>
+      <nav class="upload-switch library-switch" id="nav-library-switch" aria-label="视频库">
+        <button type="button" class="upload-switch-trigger" aria-expanded="false" aria-haspopup="listbox" aria-controls="library-switch-menu">
+          <span>📺</span>
+          <span data-i18n="nav.library">视频库</span>
+          <span class="upload-switch-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="upload-switch-menu" id="library-switch-menu" hidden role="listbox" aria-label="选择内容库">
+          <a href="#" data-library="videos" role="option">选择视频库</a>
+          <a href="#" data-library="channels" role="option">选择频道库</a>
+          <a href="#" data-library="podcasts" role="option">选择播客</a>
+        </div>
+      </nav>
+      <nav class="upload-switch" id="nav-upload-switch" aria-label="上传">
+        <button type="button" class="upload-switch-trigger" aria-expanded="false" aria-haspopup="listbox" aria-controls="upload-switch-menu">
+          <span>⤴️</span>
+          <span data-i18n="nav.upload_entry">上传</span>
+          <span class="upload-switch-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="upload-switch-menu" id="upload-switch-menu" hidden role="listbox" aria-label="选择上传方式">
+          <a href="./youtube-import.html" id="nav-youtube-upload" role="option" title="网络上传">
+            <span>🎥</span>
+            <span data-i18n="nav.youtube">网络上传</span>
+          </a>
+          <a href="./video-upload.html" id="nav-local-upload" role="option" title="本地上传">
+            <span>⤴️</span>
+            <span data-i18n="nav.upload">本地上传</span>
+          </a>
+        </div>
+      </nav>
+      <a class="pill" href="./feedback.html">💬 <span data-i18n="nav.feedback">反馈</span></a>
+      <a class="pill primary" id="goto-vocab" href="#vocabulary">📚 <span data-i18n="nav.vocabulary">词汇表</span></a>
     </div>
   </div>
   <script>document.getElementById('pageLoader')?.remove();</script>
@@ -6611,7 +7030,7 @@
     <div class="vb-shell" role="document">
       <header class="vb-head">
         <div class="vb-head-row">
-          <h2 class="vb-title" id="vb-title">精选视频</h2>
+          <h2 class="vb-title" id="vb-title">视频库</h2>
           <div class="vb-search-wrap">
             <span class="vb-search-icon">🔎</span>
             <input id="vb-search" type="search" class="vb-search-input" placeholder="搜索视频标题 / 合集 / 标签…" autocomplete="off">
@@ -6619,9 +7038,10 @@
           </div>
           <div class="vb-head-actions">
             <button class="vb-filter-toggle" id="vb-filter-toggle" type="button" hidden>筛选</button>
-            <div class="vb-view-switch" role="tablist" aria-label="视频库、频道库或选择分类">
+            <div class="vb-view-switch" role="tablist" aria-label="视频库、频道库或播客">
               <button class="vb-view-btn active" id="vb-view-videos" type="button" data-vb-view="videos" role="tab" aria-selected="true">视频库</button>
               <button class="vb-view-btn" id="vb-view-channels" type="button" data-vb-view="channels" role="tab" aria-selected="false">频道库</button>
+              <button class="vb-view-btn" id="vb-view-podcasts" type="button" data-vb-view="podcasts" role="tab" aria-selected="false">播客</button>
               <button class="vb-view-btn" id="vb-view-mine" type="button" data-vb-view="mine" role="tab" aria-selected="false">选择分类</button>
               <div class="vb-filter-pop" id="vb-filter-pop" hidden>
                 <div class="vb-chip-rows" id="vb-chip-rows">
@@ -6672,6 +7092,13 @@
               </div>
             </div>
             <button class="vb-add-btn" id="vb-add-channel" type="button" hidden>+ 添加频道</button>
+            <div class="vb-add-wrap" id="pod-add-wrap" hidden>
+              <button class="vb-add-btn" id="pod-add-btn" type="button">+ 添加播客</button>
+              <div class="vb-add-menu" id="pod-add-menu" hidden>
+                <button type="button" id="pod-add-search"><strong>搜索播客</strong><span>按节目名称查找</span></button>
+                <button type="button" id="pod-add-rss"><strong>通过 RSS 链接添加</strong></button>
+              </div>
+            </div>
             <span class="vb-stats" id="vb-stats"></span>
             <button class="vb-close" id="vb-close-btn" type="button" title="关闭 (Esc)">✕</button>
           </div>
@@ -6688,55 +7115,34 @@
           </div>
           <button class="vb-sub" id="vb-channel-sub" type="button">已订阅</button>
         </section>
+        <div class="study-recent study-recent--modal" id="vb-recent" hidden>
+          <div class="study-recent-head"><span>最近学习</span><span>不用在库里重找</span></div>
+          <div data-study-recent-list></div>
+        </div>
         <div class="vb-grid" id="vb-grid"></div>
+        <div id="pod-panel" hidden>
+          <section class="vb-channel-hero" id="pod-show-hero" hidden>
+            <button class="vb-back" id="pod-back" type="button" aria-label="返回播客列表">←</button>
+            <div class="vb-channel-avatar" id="pod-show-avatar"></div>
+            <div class="vb-channel-copy">
+              <h3 id="pod-show-name">播客</h3>
+              <p id="pod-show-desc"></p>
+            </div>
+            <button class="vb-sub" id="pod-unsubscribe" type="button">已订阅</button>
+          </section>
+          <div class="vb-grid pod-grid" id="pod-grid"></div>
+          <div class="vb-empty" id="pod-empty" hidden>
+            <div class="vb-empty-emoji">🎙️</div>
+            <div class="vb-empty-title">还没有播客</div>
+            <div class="vb-empty-hint">点右上角「添加播客」，按名称搜索或粘贴 RSS 链接</div>
+          </div>
+        </div>
         <div class="vb-empty" id="vb-empty" hidden>
           <div class="vb-empty-emoji">🔍</div>
           <div class="vb-empty-title">没有找到匹配的视频</div>
           <div class="vb-empty-hint">试着清除筛选，或换个关键词</div>
           <button class="vb-btn" id="vb-reset-btn" type="button">清除全部筛选</button>
           <button class="vb-btn" id="vb-channel-empty-add" type="button" hidden>添加 YouTube 频道</button>
-        </div>
-      </main>
-    </div>
-  </div>
-
-  <div class="vb-modal" id="podcast-browser-modal" hidden aria-hidden="true" role="dialog" aria-labelledby="pod-title">
-    <div class="vb-backdrop" data-pod-close></div>
-    <div class="vb-shell" role="document">
-      <header class="vb-head">
-        <div class="vb-head-row">
-          <h2 class="vb-title" id="pod-title">精选播客</h2>
-          <div class="vb-search-wrap">
-            <span class="vb-search-icon">🔎</span>
-            <input id="pod-search" type="search" class="vb-search-input" placeholder="在已添加的播客里搜索" autocomplete="off">
-          </div>
-          <div class="vb-head-actions">
-            <div class="vb-add-wrap">
-              <button class="vb-add-btn" id="pod-add-btn" type="button">+ 添加播客</button>
-              <div class="vb-add-menu" id="pod-add-menu" hidden>
-                <button type="button" id="pod-add-search"><strong>搜索播客</strong><span>按节目名称查找</span></button>
-                <button type="button" id="pod-add-rss"><strong>通过 RSS 链接添加</strong></button>
-              </div>
-            </div>
-            <button class="vb-close" id="pod-close-btn" type="button" title="关闭 (Esc)">✕</button>
-          </div>
-        </div>
-      </header>
-      <main class="vb-body" id="pod-body">
-        <section class="vb-channel-hero" id="pod-show-hero" hidden>
-          <button class="vb-back" id="pod-back" type="button" aria-label="返回播客列表">←</button>
-          <div class="vb-channel-avatar" id="pod-show-avatar"></div>
-          <div class="vb-channel-copy">
-            <h3 id="pod-show-name">播客</h3>
-            <p id="pod-show-desc"></p>
-          </div>
-          <button class="vb-sub" id="pod-unsubscribe" type="button">已订阅</button>
-        </section>
-        <div class="vb-grid pod-grid" id="pod-grid"></div>
-        <div class="vb-empty" id="pod-empty" hidden>
-          <div class="vb-empty-emoji">🎙️</div>
-          <div class="vb-empty-title">还没有播客</div>
-          <div class="vb-empty-hint">点右上角，按名称搜索或粘贴 RSS 链接</div>
         </div>
       </main>
     </div>
@@ -6750,7 +7156,7 @@
       </div>
       <label for="channel-url">频道链接</label>
       <input id="channel-url" type="text" placeholder="youtube.com/@channel" autocomplete="off">
-      <p class="lib-dialog-hint">读取大约需要十几秒。添加成功后，从「选择分类」进入。</p>
+      <p class="lib-dialog-hint">读取大约需要十几秒。添加成功后，留在频道库里，点开频道再选视频。</p>
       <p class="lib-dialog-error" id="channel-dialog-error"></p>
       <div class="lib-dialog-actions">
         <button class="lib-dialog-cancel" id="channel-cancel" type="button">取消</button>
@@ -6892,19 +7298,35 @@
               </div>
             </div>
             <div class="caption-bar" id="caption-bar">
-              <div class="sentence-path" id="sentence-path">
-                <span class="sentence-path-label">今天先练这一句</span>
-                <button type="button" id="sentence-listen">听这一句</button>
-                <button type="button" id="sentence-shadow">跟读这一句</button>
-                <button type="button" id="sentence-review">复习这句的词</button>
-              </div>
               <div class="lyric-stage" id="lyric-stage" hidden>
                 <button type="button" class="lyric-line is-prev subtitle-text" id="lyric-prev"></button>
                 <button type="button" class="lyric-line is-current subtitle-text" id="lyric-current"></button>
                 <button type="button" class="lyric-line is-next subtitle-text" id="lyric-next"></button>
               </div>
               <div id="coach-slot"></div>
-              <div id="subtitle-study-host"></div>
+            </div>
+            <div class="desk-speak-dock is-x-compose" id="desk-speak-dock" role="group" aria-label="跟读">
+              <button type="button" class="desk-hold-btn" id="desk-hold" aria-label="按住跟读">
+                <span data-hold-label>Hold to record</span>
+              </button>
+              <button type="button" class="desk-session-btn" id="desk-open-voice-session" aria-label="打开跟读会话">@linglish</button>
+            </div>
+            <div class="desk-voice-session x-dm-session" id="desktop-voice-session" hidden>
+              <button type="button" class="desk-voice-session-backdrop x-dm-backdrop" id="desktop-voice-session-backdrop" aria-label="关闭"></button>
+              <div class="desk-voice-session-panel x-dm-panel" role="dialog" aria-label="Voice practice">
+                <header class="x-dm-nav">
+                  <button type="button" class="x-dm-nav-back" id="desktop-voice-session-close" aria-label="返回">←</button>
+                  <div class="x-dm-nav-title">
+                    <span class="x-dm-nav-bot" aria-hidden="true">
+                      <img class="x-dm-nav-logo" src="./linglish-favicon.svg?v=4" alt="" width="36" height="36" decoding="async">
+                    </span>
+                    <span class="x-dm-nav-name">Linglish Coach</span>
+                    <span class="x-dm-nav-handle">@linglish</span>
+                  </div>
+                  <button type="button" class="x-dm-nav-more" id="desktop-voice-session-mic" aria-label="麦克风" hidden>ⓘ</button>
+                </header>
+                <div class="voice-chat is-xdm" id="voice-chat-coach" hidden aria-label="Voice DM"></div>
+              </div>
             </div>
             <div class="video-meta-panel" id="video-meta">
               <div class="video-meta-top">
@@ -6926,9 +7348,7 @@
                   <span class="subtitle-pill">字幕 × 词汇</span>
                   <span class="subtitle-tip">点这一句里的词，释义留在下面</span>
                 </div>
-                <div class="subtitle-actions">
-                  <button type="button" class="pill" id="subtitle-intensive-note" title="把当前字幕做成 9:16 精读笔记卡">做成精读笔记</button>
-                </div>
+                <div class="subtitle-actions"></div>
               </div>
               <div class="subtitle-text text" id="active-subtitle">选择视频后显示当前字幕</div>
               <div id="subtitle-assist" class="subtitle-assist" hidden></div>
@@ -6969,7 +7389,6 @@
         <section id="first-lesson-goal" hidden aria-label="今日跟读小目标"></section>
         <div class="header">
           <div class="header-top">
-            <button class="btn soft" id="subtitle-study-toggle" type="button" title="拆句学习" aria-pressed="false">拆句学</button>
             <button class="btn soft" id="focus-toggle" type="button" title="专注模式" aria-pressed="false">
               <svg class="focus-toggle__icon focus-toggle__icon--off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 14v-3a9 9 0 0 1 18 0v3"/><path d="M21 16a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h3z"/><path d="M3 16a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-2a2 2 0 0 0-2-2H3z"/></svg>
               <svg class="focus-toggle__icon focus-toggle__icon--on" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="3.25"/><path d="M6.5 19.5c1.2-3.2 3.1-4.75 5.5-4.75s4.3 1.55 5.5 4.75"/><path d="M12 11.75v2.5"/><path d="M9.75 12.5 12 14.25l2.25-1.75"/></svg>
@@ -6977,13 +7396,15 @@
             </button>
             <div class="video-controls-actions">
               <button class="btn soft" id="open-source" disabled data-i18n="video.open_new">在新标签打开</button>
-              <button class="btn primary" id="import-words" disabled title="提取词汇并打开词汇表">
-                <span class="import-words-label">提取</span>
+              <button class="btn primary" id="import-words" disabled>
+                <svg class="header-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8M8 11h6"/></svg>
+                <span data-i18n="video.extract_words">提取词汇</span>
               </button>
-              <button class="btn soft" id="open-vocab-tab" type="button" data-study-target="vocab" title="查看词汇表">
-                <span class="open-vocab-tab__label">查看</span>
+              <button class="pill" id="open-vocab-tab" type="button" data-study-target="vocab">
+                <span class="open-vocab-tab__label">查看词汇表</span>
               </button>
             </div>
+            <button class="btn soft" id="focus-video-entry" type="button" title="打开视频库">视频库</button>
             <div class="mode-toggle">
               <button id="mode-en" class="active">英文</button>
               <button id="mode-bilingual">双语</button>
@@ -7137,8 +7558,7 @@
   </div>
 
   <script src="./js/video-reader/voice-slot.js?v=1"></script>
-  <script src="./js/practice/original-audio-replay.js?v=20261014"></script>
-  <script src="./js/pages/video-reader-desktop-app.js?v=2026102805"></script>
+  <script src="./js/pages/video-reader-desktop-app.js?v=2026103001"></script>
 
   <!-- Tag Manager Overlay -->
   <div class="tag-manager-overlay" id="tag-manager-overlay">
@@ -8405,12 +8825,23 @@
     });
   </script>
   <script src="./js/page-tracker.js"></script>
-  <script src="./js/video-reader/coaching-mode.js?v=20261015"></script>
+  <script src="./js/video-reader/coaching-mode.js?v=2026103001"></script>
   <script src="./js/video-reader/sentence-analysis.js?v=20261018"></script>
-  <script src="./js/subtitle-study.js?v=20261019-study"></script>
-  <script src="./js/video-reader/coaching-dock.js?v=20261018-note-save" defer></script>
-  <script src="./js/video-reader/pro-controls.js?v=2026102804" defer></script>
-  <script src="./js/study-switch.js?v=20261017-instant" defer></script>
+  <script src="./js/audio-cues.js?v=2026103001"></script>
+  <script src="./js/practice/shadow-mic.js?v=2026103001"></script>
+  <script src="./js/practice/shadow-recording-cache.js?v=2026103001"></script>
+  <script src="./js/practice/voice-chat-coach.js?v=2026103001"></script>
+  <script src="./js/practice/voice-chat-bridge.js?v=2026103001"></script>
+  <script src="./js/practice/pronunciation-coach-ui.js?v=20261030-weakness"></script>
+  <script src="./js/practice/pronunciation-profile-ui.js?v=2026103001"></script>
+  <link rel="stylesheet" href="./styles/pronunciation-coach.css?v=2026103001">
+  <script src="./js/video-reader/desktop-x-hold.js?v=2026103001"></script>
+  <script src="./js/video-reader/coaching-dock.js?v=2026103001" defer></script>
+  <script src="./js/video-reader/sentence-path.js?v=2026103001" defer></script>
+  <script src="./js/video-reader/pro-controls.js?v=2026103001" defer></script>
+  <script src="./js/study-recent.js?v=2026103001"></script>
+  <script src="./js/study-switch.js?v=2026103001" defer></script>
+  <script src="./js/upload-switch.js?v=2026103001" defer></script>
 
 </body>
 

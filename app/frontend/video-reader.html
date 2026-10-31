@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
 <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/tts-voice.js?v=2"></script>
+  <script src="./js/tts-voice.js?v=2026103001"></script>
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
     // IMPORTANT: This must be the first script to catch extension errors
@@ -322,27 +322,37 @@
     <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
 
     <!-- Preload critical resources for video playback -->
-    <link rel="preload" href="./js/video-reader/main.js?v=2026102804" as="script">
-    <link rel="preload" href="./js/app/youtube-player.js" as="script">
-    <link rel="preload" href="./css/video-reader/components.css?v=20261019" as="style">
+    <link rel="preload" href="./js/video-reader/main.js?v=2026103001" as="script">
+    <link rel="preload" href="./js/app/youtube-player.js?v=2026103001" as="script">
+    <link rel="preload" href="./css/video-reader/components.css?v=2026103001" as="style">
     <link rel="preconnect" href="https://www.youtube.com">
     <link rel="preconnect" href="https://i.ytimg.com">
 
     <link rel="stylesheet" href="./styles.css?v=1" />
     <link rel="stylesheet" href="./membership.css?v=1" />
+    <link rel="stylesheet" href="./styles/tokens.css?v=2" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap"
+    />
 
     <!-- Video Reader CSS Modules -->
     <link rel="stylesheet" href="./css/video-reader/variables.css?v=1" />
     <link rel="stylesheet" href="./css/video-reader/animations.css?v=1" />
-    <link rel="stylesheet" href="./css/video-reader/components.css?v=20261019" />
-    <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=20261018-note" />
-    <link rel="stylesheet" href="./styles/mobile/pages/video-reader-focus.css?v=2" />
+    <link rel="stylesheet" href="./css/video-reader/components.css?v=2026103001" />
+    <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=2026103001" />
+    <link rel="stylesheet" href="./styles/practice-voice-chat.css?v=2026103001" />
+    <link rel="stylesheet" href="./styles/practice-voice-chat-x.css?v=2026103001" />
+    <link rel="stylesheet" href="./styles/mobile/pages/video-reader-focus.css?v=2026103001" />
     <link rel="stylesheet" href="./styles/mobile/components/modals.css?v=4" />
+    <link rel="stylesheet" href="./css/study-switch.css?v=2026103001" />
 
     <script src="./guest-check.js?v=1"></script>
-    <script src="./auth-helpers.js?v=1"></script>
-    <script src="./i18n.js?v=20261019"></script>
-    <script src="./global-ui.js?v=20250108"></script>
+    <script src="./auth-helpers.js?v=2026103001"></script>
+    <script src="./i18n.js?v=2026103001"></script>
+    <script src="./global-ui.js?v=2026103001"></script>
     <script src="./feedback.js?v=1"></script>
     <script src="./js/app/lazy-loader.js?v=1"></script>
     <link rel="stylesheet" href="./shared/dictionary.css?v=20260224f" />
@@ -350,24 +360,36 @@
     <script src="./shared/dictionary-lookup.js?v=1734439600"></script>
     <script src="./shared/deep-analysis.js?v=20260224f"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-    <script src="./js/video-reader/device-router.js?v=1"></script>
+    <script src="./js/video-reader/device-router.js?v=2026103001"></script>
     <script>window.VideoReaderDeviceRouter && window.VideoReaderDeviceRouter.redirectIfNeeded(window);</script>
-    <link rel="stylesheet" href="./styles/icons.css?v=1">
+    <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
 </head>
   <body class="video-reader-mobile-focus">
     <header class="mobile-reader-header">
-      <a class="mobile-reader-home" data-nav="back" href="./index.html" aria-label="返回">‹</a>
-      <div class="mobile-reader-heading">
-        <strong>视频学习</strong>
-        <span>看视频 · 跟字幕</span>
-      </div>
+      <a class="mobile-reader-home" data-nav="back" href="./index.html" aria-label="返回" title="返回">‹</a>
+      <strong class="mobile-reader-brand">Linglish</strong>
+      <nav class="study-switch mobile-reader-title" id="study-switch" aria-label="学习板块">
+        <button type="button" class="study-switch-trigger" aria-expanded="false" aria-haspopup="listbox" aria-controls="study-switch-menu">
+          <span data-study-label>视频学习</span>
+          <span class="study-switch-caret" aria-hidden="true">▾</span>
+        </button>
+        <div class="study-switch-menu" id="study-switch-menu" hidden role="listbox" aria-label="切换学习模式">
+          <a href="./video-reader.html" data-study="video" role="option">视频学习</a>
+          <a href="./video-reader.html?study=coach" data-study="coach" role="option">AI陪练</a>
+          <a href="./video-reader.html?study=arena" data-study="arena" role="option">实战场</a>
+        </div>
+      </nav>
       <button
         class="toggle-btn toggle-sidebar-btn"
         id="toggle-sidebar-btn"
+        type="button"
         aria-controls="video-sidebar"
         aria-expanded="false"
         aria-label="打开视频库"
-      >☰ 视频库</button>
+        title="视频库"
+      >
+        <span class="mobile-reader-lib-label">视频库</span>
+      </button>
     </header>
     <button
       class="mobile-library-backdrop"
@@ -379,19 +401,20 @@
 
     <div class="video-lab-container">
       <aside class="video-sidebar hidden" id="video-sidebar">
-        <h2>🎬 Video Lab</h2>
+        <header class="sidebar-lab-head">
+          <h2>视频</h2>
+        </header>
 
-        <!-- 学习统计面板 -->
         <div class="stats-panel">
           <div class="stat-card">
             <div class="stat-icon">🔥</div>
             <div class="stat-content">
               <div class="stat-value" id="stat-streak">0</div>
-              <div class="stat-label">天连击</div>
+              <div class="stat-label">天连</div>
             </div>
           </div>
           <div class="stat-card">
-            <div class="stat-icon">⭐</div>
+            <div class="stat-icon">📘</div>
             <div class="stat-content">
               <div class="stat-value" id="stat-words">0</div>
               <div class="stat-label">已学单词</div>
@@ -406,114 +429,56 @@
           </div>
         </div>
 
-        <!-- 上传按钮 -->
-        <button class="upload-toggle-btn" id="upload-toggle-btn">
-          <span class="upload-icon">📤</span>
-          <span>上传新视频</span>
-          <span class="toggle-arrow">▼</span>
-        </button>
-
-        <!-- 上传表单（默认隐藏） -->
-        <div class="video-upload collapsed" id="video-upload">
-          <form id="upload-form" method="post" enctype="multipart/form-data" action="javascript:void(0);">
-            <label for="video-title">Title</label>
-            <input id="video-title" name="title" type="text" placeholder="My listening video" required />
-
-            <label for="video-file">Select video</label>
-            <input id="video-file" name="video" type="file" accept="video/*" required />
-
-            <label for="video-language">Audio language</label>
-            <select id="video-language" name="language">
-              <option value="en" selected>English</option>
-              <option value="auto">Auto detect</option>
-            </select>
-
-            <button type="submit">Upload &amp; Transcribe</button>
-          </form>
-          <p id="upload-status" style="font-size: 0.8rem; color: #555; margin-top: 0.75rem;"></p>
+        <div class="library-source-tabs" role="tablist" aria-label="内容来源">
+          <button type="button" class="library-source-tab active" data-lib-src="videos" role="tab" aria-selected="true">我的视频</button>
+          <button type="button" class="library-source-tab" data-lib-src="channels" role="tab" aria-selected="false">订阅频道</button>
+          <button type="button" class="library-source-tab" data-lib-src="podcasts" role="tab" aria-selected="false">播客</button>
         </div>
 
-        <div class="tag-management">
-          <h4>📁 视频分类</h4>
-          <div class="tag-list" id="tag-list">
-            <span class="tag-item active" data-tag="">全部</span>
+        <div class="library-panel library-panel--mine" id="library-panel-mine">
+          <button class="upload-toggle-btn" id="upload-toggle-btn" type="button">
+            <span class="upload-icon">📤</span>
+            <span>上传新视频</span>
+            <span class="toggle-arrow">▾</span>
+          </button>
+
+          <div class="video-upload collapsed" id="video-upload">
+            <form id="upload-form" method="post" enctype="multipart/form-data" action="javascript:void(0);">
+              <label for="video-title">视频标题</label>
+              <input id="video-title" name="title" type="text" placeholder="例如：今日听力练习" required />
+
+              <label for="video-file">选择视频文件</label>
+              <input id="video-file" name="video" type="file" accept="video/*,.mp4,.mov,.webm,.mkv" required />
+
+              <label for="video-language">音频语言</label>
+              <select id="video-language" name="language">
+                <option value="en" selected>英语</option>
+                <option value="auto">自动检测</option>
+              </select>
+
+              <button type="submit" id="upload-submit-btn">开始上传并转写</button>
+            </form>
+            <p id="upload-status"></p>
           </div>
-          <div class="tag-add-form">
-            <input type="text" id="new-tag-input" placeholder="新建标签..." />
-            <button id="add-tag-btn">+</button>
+
+          <div class="tag-management">
+            <h4>视频分类</h4>
+            <div class="tag-list" id="tag-list">
+              <span class="tag-item active" data-tag="">全部</span>
+            </div>
+            <div class="tag-add-form">
+              <input type="text" id="new-tag-input" placeholder="新建标签..." maxlength="24" autocomplete="off" enterkeyhint="done" aria-label="新建标签" />
+              <button id="add-tag-btn" type="button" aria-label="添加标签" title="添加标签">+</button>
+            </div>
           </div>
+
+          <ul class="video-list" id="video-list">
+            <li class="empty-state">还没有视频。点上方上传，或切换到「订阅频道」「播客」。</li>
+          </ul>
         </div>
 
-        <ul class="video-list" id="video-list">
-          <li class="empty-state">Upload a video to get started.</li>
-        </ul>
-
-        <!-- 会员等级说明 - 可折叠 -->
-        <div class="membership-panel collapsed" id="membership-panel">
-          <div class="membership-summary" id="membership-summary">
-            <div class="current-tier">
-              <span>🆓</span>
-              <span>免费会员</span>
-            </div>
-            <button class="expand-btn" id="membership-expand-btn">
-              <span>查看会员权益</span>
-              <span class="expand-icon">▼</span>
-            </button>
-          </div>
-          <div class="membership-tiers" id="membership-tiers">
-            <!-- 免费会员 -->
-            <div class="membership-tier free">
-              <div class="tier-header">
-                <div class="tier-name">
-                  <span>🆓</span>
-                  <span>免费会员</span>
-                </div>
-                <span class="tier-badge free">FREE</span>
-              </div>
-              <ul class="tier-features">
-                <li>基础视频播放</li>
-                <li>字幕查看</li>
-                <li>每日3个视频</li>
-              </ul>
-            </div>
-
-            <!-- 初级会员 -->
-            <div class="membership-tier basic">
-              <div class="tier-header">
-                <div class="tier-name">
-                  <span>⭐</span>
-                  <span>初级会员</span>
-                </div>
-                <span class="tier-badge basic">BASIC</span>
-              </div>
-              <ul class="tier-features">
-                <li>无限视频数量</li>
-                <li>角色扮演练习</li>
-                <li>语音录制对比</li>
-                <li>词典查询功能</li>
-                <li>视频带教模式</li>
-              </ul>
-            </div>
-
-            <!-- 高级会员 -->
-            <div class="membership-tier premium">
-              <div class="tier-header">
-                <div class="tier-name">
-                  <span>👑</span>
-                  <span>高级会员</span>
-                </div>
-                <span class="tier-badge premium">PREMIUM</span>
-              </div>
-              <ul class="tier-features">
-                <li>初级会员所有功能</li>
-                <li>视频带教模式</li>
-                <li>AI智能评分</li>
-                <li>发音纠正建议</li>
-                <li>学习进度分析</li>
-                <li>优先客服支持</li>
-              </ul>
-            </div>
-          </div>
+        <div class="library-panel library-panel--browse" id="library-panel-browse" hidden>
+          <ul class="media-shelf" id="media-shelf"></ul>
         </div>
       </aside>
 
@@ -521,13 +486,13 @@
         <div class="video-toolbar" id="video-toolbar">
           <div class="toolbar-group">
             <a href="./index.html" data-nav="back">返回</a>
-            <button id="show-vocabulary-btn" class="vocabulary-btn-desktop" aria-label="查看我的词汇表">
+            <button id="show-vocabulary-btn" class="vocabulary-btn-desktop" aria-label="查看我的词汇">
               <span class="toolbar-icon toolbar-icon-lg">📚</span>
               <span class="toolbar-label">我的词汇表</span>
             </button>
           </div>
           <div class="playback-speed-toggle">
-            <span class="toolbar-hint">⚡ 速度:</span>
+            <span class="toolbar-hint">?速度:</span>
             <button class="speed-btn" data-speed="0.5">0.5x</button>
             <button class="speed-btn active" data-speed="1">1x</button>
             <button class="speed-btn" data-speed="1.5">1.5x</button>
@@ -558,6 +523,7 @@
                 x5-video-player-type="h5"
                 x5-video-player-fullscreen="true"
                 x5-playsinline
+                controlslist="nodownload noremoteplayback"
               ></video>
               <!-- YouTube iframe player for YouTube videos -->
               <div id="youtube-player-wrapper" style="display: none; position: relative; width: 100%; height: 100%;">
@@ -565,10 +531,20 @@
                   id="youtube-player"
                   style="position: absolute; top: 0; left: 0; width: 100%; height: 100%;"
                 ></div>
+                <div class="yt-embed-fallback" id="yt-embed-fallback" hidden></div>
               </div>
+              <button type="button" class="podcast-faceplate" id="podcast-faceplate" hidden aria-label="播放或暂停播客">
+                <img class="podcast-faceplate-art" id="podcast-faceplate-art" alt="" />
+                <div class="podcast-faceplate-copy">
+                  <strong id="podcast-faceplate-title">播客</strong>
+                  <span id="podcast-faceplate-meta">点封面播放 / 暂停</span>
+                </div>
+                <span class="podcast-faceplate-play" id="podcast-faceplate-play" aria-hidden="true">▶</span>
+                <p class="podcast-faceplate-error" id="podcast-faceplate-error" hidden></p>
+              </button>
               <div id="play-overlay" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; cursor: pointer; z-index: 10; display: none;">
                 <div style="text-align: center; color: white;">
-                  <div style="font-size: 3rem; margin-bottom: 0.5rem;">▶</div>
+                  <div style="font-size: 3rem; margin-bottom: 0.5rem;"></div>
                   <div style="font-size: 1rem;">点击播放</div>
                 </div>
               </div>
@@ -590,8 +566,25 @@
               <summary>字幕、查词与播放设置</summary>
             <div class="mobile-transcript-view" id="mobile-transcript" aria-live="polite">
               <div class="mobile-view-toggle" id="mobile-view-toggle" role="group" aria-label="字幕控制">
-                <button class="mobile-view-btn" data-mode="english">英文</button>
-                <button class="mobile-view-btn active" data-mode="bilingual">双语</button>
+                <div class="mobile-speed-controls coach-speed-dropdown" id="mobile-speed-controls">
+                  <button
+                    type="button"
+                    class="mobile-speed-trigger"
+                    id="mobile-speed-trigger"
+                    aria-haspopup="listbox"
+                    aria-expanded="false"
+                    aria-controls="mobile-speed-menu"
+                    title="播放倍数"
+                  >1x</button>
+                  <div class="mobile-speed-menu" id="mobile-speed-menu" role="listbox" aria-label="选择播放倍数" hidden>
+                    <button type="button" class="mobile-speed-btn" role="option" data-speed="0.75" aria-selected="false">0.75x</button>
+                    <button type="button" class="mobile-speed-btn active" role="option" data-speed="1" aria-selected="true">1x</button>
+                    <button type="button" class="mobile-speed-btn" role="option" data-speed="1.25" aria-selected="false">1.25x</button>
+                    <button type="button" class="mobile-speed-btn" role="option" data-speed="1.5" aria-selected="false">1.5x</button>
+                  </div>
+                </div>
+                <button class="mobile-view-btn active" data-mode="english">英文</button>
+                <button class="mobile-view-btn" data-mode="bilingual">双语</button>
                 <button class="mobile-view-btn" data-mode="prev" id="mobile-subtitle-prev">上一句</button>
                 <button class="mobile-view-btn" data-mode="next" id="mobile-subtitle-next">下一句</button>
               </div>
@@ -603,18 +596,81 @@
             </div>
             <div class="mobile-player-controls" id="mobile-player-controls">
               <div id="first-lesson-progress" role="status" aria-live="polite" hidden>已练 0/0 · 0%</div>
-              <div class="mobile-speed-controls" role="group" aria-label="播放速度">
-                <button class="mobile-speed-btn" data-speed="0.75">0.75x</button>
-                <button class="mobile-speed-btn active" data-speed="1">1x</button>
-                <button class="mobile-speed-btn" data-speed="1.25">1.25x</button>
-                <button class="mobile-speed-btn" data-speed="1.5">1.5x</button>
+              <div class="mobile-progress-row" hidden aria-hidden="true">
+                <input
+                  type="range"
+                  id="mobile-progress"
+                  min="0"
+                  max="100"
+                  value="0"
+                  step="0.1"
+                  tabindex="-1"
+                  aria-hidden="true"
+                />
               </div>
-              <div class="mobile-progress-row">
-                <span id="mobile-current-time">00:00</span>
-                <input type="range" id="mobile-progress" min="0" max="100" step="0.1" value="0" aria-label="播放进度" />
-                <span id="mobile-duration">00:00</span>
+              <div class="mobile-speak-dock is-x-compose" role="group" aria-label="播放与跟读">
+                <button class="mobile-replay-btn" id="mobile-replay" type="button" aria-label="重新播放本句" title="重新播放">↻</button>
+                <button class="mobile-play-btn" id="mobile-play" type="button" aria-label="播放或暂停" title="播放 / 暂停">▶</button>
+                <button type="button" class="mobile-hold-btn" id="mobile-hold" aria-label="按住跟读">
+                  <span class="mobile-hold-main" data-hold-label>Hold to record</span>
+                </button>
+                <span id="mobile-current-time" hidden>00:00</span>
+                <span id="mobile-duration" hidden>00:00</span>
+                <button class="mobile-continue-btn" id="mobile-continue" type="button" aria-label="跟读回听" title="跟读回听">⋯</button>
+                <span class="mobile-play-hold-label" id="mobile-play-hold-label" hidden aria-hidden="true"></span>
               </div>
-              <button class="mobile-replay-btn" id="mobile-replay" aria-label="重新播放">↺</button>
+              <div class="mobile-speak-tools" role="group" aria-label="回听">
+                <button type="button" class="mobile-speak-tool is-integrated-off" id="mobile-shadow-btn" aria-hidden="true" tabindex="-1">跟读</button>
+                <button type="button" class="mobile-speak-tool" id="mobile-hear-me-btn" disabled>听自己</button>
+              </div>
+              <p class="mobile-speak-hint" id="mobile-speak-hint" hidden aria-hidden="true"></p>
+            </div>
+            <div class="mobile-feature-sheet mobile-voice-session x-dm-session" id="mobile-voice-session" hidden>
+              <button type="button" class="mobile-feature-backdrop x-dm-backdrop" id="mobile-voice-session-backdrop" aria-label="关闭"></button>
+              <div class="mobile-feature-panel mobile-voice-session-panel x-dm-panel" role="dialog" aria-label="Voice practice">
+                <header class="x-dm-nav">
+                  <button type="button" class="x-dm-nav-back" id="mobile-voice-session-close" aria-label="返回">←</button>
+                  <div class="x-dm-nav-title">
+                    <span class="x-dm-nav-bot" aria-hidden="true">
+                      <img class="x-dm-nav-logo" src="./linglish-favicon.svg?v=4" alt="" width="36" height="36" decoding="async">
+                    </span>
+                    <span class="x-dm-nav-name">Linglish Coach</span>
+                    <span class="x-dm-nav-handle">@linglish</span>
+                  </div>
+                  <button type="button" class="x-dm-nav-more" id="mobile-voice-session-mic" aria-label="麦克风">ⓘ</button>
+                </header>
+                <div class="voice-chat is-xdm" id="voice-chat-coach" hidden aria-label="Voice DM"></div>
+              </div>
+            </div>
+            <div class="mobile-feature-sheet" id="mobile-feature-sheet" hidden>
+              <button type="button" class="mobile-feature-backdrop" id="mobile-feature-backdrop" aria-label="关闭"></button>
+              <div class="mobile-feature-panel mobile-review-panel" role="dialog" aria-label="跟读回听">
+                <p class="mobile-feature-title">跟读回听</p>
+                <p class="mobile-review-hint" id="mobile-review-hint">先听原句，再长按中间键跟读；录完可点「听自己」对比。</p>
+                <div class="mobile-review-actions" role="group" aria-label="回听对比">
+                  <button type="button" class="mobile-review-btn mobile-review-btn-original" data-feature="replay-original">
+                    <span class="mobile-review-btn-kicker">原声</span>
+                    <strong>听原句</strong>
+                  </button>
+                  <button type="button" class="mobile-review-btn mobile-review-btn-mine" data-feature="hear-me" id="mobile-review-hear-me" disabled>
+                    <span class="mobile-review-btn-kicker">我的</span>
+                    <strong>听自己</strong>
+                  </button>
+                </div>
+                <button type="button" class="mobile-feature-item mobile-review-shadow" data-feature="shadow-again">再跟读一次</button>
+                <button type="button" class="mobile-feature-item mobile-review-mic" data-feature="mic">选择麦克风</button>
+                <button type="button" class="mobile-feature-cancel" id="mobile-feature-cancel">关闭</button>
+              </div>
+            </div>
+            <div class="mobile-feature-sheet" id="mobile-mic-sheet" hidden>
+              <button type="button" class="mobile-feature-backdrop" id="mobile-mic-backdrop" aria-label="关闭"></button>
+              <div class="mobile-feature-panel" role="dialog" aria-label="选择麦克风">
+                <p class="mobile-feature-title">选择麦克风</p>
+                <p class="mobile-mic-hint">支持领夹麦、有线耳机麦、无线耳机麦。先连上设备，再点选。</p>
+                <div id="mobile-mic-list" class="mobile-mic-list"></div>
+                <button type="button" class="mobile-feature-item" data-mic-id="">系统默认</button>
+                <button type="button" class="mobile-feature-cancel" id="mobile-mic-cancel">取消</button>
+              </div>
             </div>
             </details>
             <div class="transcript-panel">
@@ -639,7 +695,7 @@
               <div class="practice-current-line" id="practice-current-line" hidden></div>
               <ul class="practice-line-list" id="practice-line-list"></ul>
               <div class="practice-controls" id="practice-controls" hidden>
-                <button id="practice-play-original" style="background:#4a5ff7; color:#fff;">▶ Original</button>
+                <button id="practice-play-original" style="background:#4a5ff7; color:#fff;">▾Original</button>
                 <button id="practice-start" aria-label="录制当前句并获取 AI 反馈" style="background:#10b981; color:#fff;">🎙 Record</button>
                 <button id="practice-compare" style="background:#f59e0b; color:#fff;">🔄 Compare</button>
               </div>
@@ -654,7 +710,7 @@
               <button class="practice-toggle-btn-right expanded" id="practice-toggle-btn-right">
                 <span class="practice-icon">🎭</span>
                 <span>角色扮演练习</span>
-                <span class="toggle-arrow">▼</span>
+                <span class="toggle-arrow"></span>
               </button>
 
               <!-- 角色扮演面板 -->
@@ -674,7 +730,7 @@
 
               <!-- 控制按钮（独立） -->
               <div class="practice-controls-right" id="practice-controls-right" hidden>
-                <button id="practice-play-original-right" style="background:#4a5ff7; color:#fff;">▶ Original</button>
+                <button id="practice-play-original-right" style="background:#4a5ff7; color:#fff;">▾Original</button>
                 <button id="practice-start-right" style="background:#10b981; color:#fff;">🎙 Record</button>
                 <button id="practice-compare-right" style="background:#f59e0b; color:#fff;">🔄 Compare</button>
               </div>
@@ -685,7 +741,7 @@
 
             <!-- 词典区域 -->
 	            <div class="dictionary-section-right" id="dictionary-section-right" style="display: none;">
-              <!-- X号关闭按钮 - 固定在卡片右上角，不滚动 -->
+              <!-- X号关闭按 固定在卡片右上角，不滚动 -->
               <button class="dictionary-close-btn-right" id="dictionary-close-btn-right"
                       style="position: absolute; top: 12px; right: 12px; z-index: 10;
                              width: 32px; height: 32px; border-radius: 50%;
@@ -695,10 +751,9 @@
                              justify-content: center; transition: all 0.2s;
                              box-shadow: 0 2px 4px rgba(0,0,0,0.1);
                              -webkit-tap-highlight-color: transparent;">
-                ✕
-              </button>
+                             </button>
 
-	              <!-- 内层可滚动内容容器 -->
+	              <!-- 内层可滚动内容容?-->
 	              <div class="dictionary-scroll">
                 <!-- 词典标题卡片 -->
                 <div class="dictionary-header-card">
@@ -732,7 +787,7 @@
                     </div>
                   </div>
                 </div>
-              </div><!-- 关闭内层可滚动容器 -->
+              </div><!-- 关闭内层可滚动容?-->
             </div>
           </aside>
         </div>
@@ -770,7 +825,7 @@
           </div>
           <div class="vocabulary-list" id="vocabulary-list">
             <div class="vocabulary-empty" id="vocabulary-empty">
-              <p>还没有学习任何单词</p>
+              <p>还没有学习任何单</p>
               <p style="font-size: 0.9rem; color: #666;">观看视频并点击单词开始建立你的词汇库</p>
             </div>
           </div>
@@ -778,7 +833,7 @@
       </div>
     </div>
 
-    <!-- 底部导航栏 -->
+    <!-- 底部导航?-->
     <nav class="bottom-nav">
       <div class="bottom-nav-container">
         <a href="#" class="nav-item active" data-tab="library">
@@ -788,12 +843,12 @@
 
         <a href="#" class="nav-item" data-tab="vocabulary">
           <div class="nav-icon" data-lx-icon="power"></div>
-          <div class="nav-label">能量站</div>
+          <div class="nav-label">能量</div>
         </a>
 
         <a href="#" class="nav-item" data-tab="practice">
           <div class="nav-icon" data-lx-icon="arena"></div>
-          <div class="nav-label">实战场</div>
+          <div class="nav-label">实战</div>
         </a>
 
         <a href="mobile-treasure.html" class="nav-item">
@@ -812,7 +867,7 @@
     <div id="vocab-detail-overlay" class="vocab-detail-overlay" hidden>
       <div class="vocab-detail-backdrop"></div>
       <div class="vocab-detail-card" role="dialog" aria-modal="true">
-        <button type="button" class="detail-close-btn" id="vocab-detail-close" aria-label="关闭">✕</button>
+        <button type="button" class="detail-close-btn" id="vocab-detail-close" aria-label="关闭"></button>
         <div class="detail-header">
           <div>
             <h2 class="detail-word" id="detail-word"></h2>
@@ -823,9 +878,9 @@
         <div id="vr-ctrl-bar" style="display:flex;align-items:center;padding:.4rem 0;border-bottom:1px solid #e2e8f0;">
           <div class="dict-lang-toggle" id="vr-dict-lang-toggle" aria-label="切换翻译语言">
             <button type="button" data-lang="en" id="vr-dict-lang-en">EN</button>
-            <button type="button" data-lang="zh" id="vr-dict-lang-zh">中</button>
+            <button type="button" data-lang="zh" id="vr-dict-lang-zh"></button>
           </div>
-          <button id="vr-tab-deep" type="button" style="margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;font-size:.8rem;font-weight:700;color:#4f46e5;background:rgba(99,102,241,.12);border:1.5px solid rgba(99,102,241,.3);border-radius:999px;padding:.32rem .9rem;cursor:pointer;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent;line-height:1.4;">✦ 深度解析</button>
+          <button id="vr-tab-deep" type="button" style="margin-left:auto;flex-shrink:0;display:inline-flex;align-items:center;font-size:.8rem;font-weight:700;color:#4f46e5;background:rgba(99,102,241,.12);border:1.5px solid rgba(99,102,241,.3);border-radius:999px;padding:.32rem .9rem;cursor:pointer;white-space:nowrap;touch-action:manipulation;-webkit-tap-highlight-color:transparent;line-height:1.4;">✕深度解</button>
         </div>
         <!-- Dict panel -->
         <div id="detail-dict-card"></div>
@@ -836,18 +891,18 @@
 
     <!-- Video Reader JavaScript Module -->
     <script src="./membership.js"></script>
-    <script src="./js/app/youtube-player.js"></script>
+    <script src="./js/app/youtube-player.js?v=2026103001"></script>
     <script src="./js/visitor-context.js?v=1"></script>
     <script src="./js/video-reader/smart-import-api.js?v=1"></script>
-    <script src="./js/video-reader/mobile-reader-layout.js?v=2"></script>
+    <script src="./js/video-reader/mobile-reader-layout.js?v=2026103001"></script>
     <script src="./js/video-reader/first-lesson-focus.js?v=20260822"></script>
     <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-    <script src="./js/video-reader/first-lesson-goal.js?v=2026102804"></script>
-    <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026102803">
-    <script src="./js/video-reader/sentence-segments.js?v=20261019"></script>
+    <script src="./js/video-reader/first-lesson-goal.js?v=2026103001"></script>
+    <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026103002">
+    <script src="./js/video-reader/sentence-segments.js?v=2026103001"></script>
     <script src="./js/video-reader/missed-words.js?v=20261015"></script>
     <script src="./js/video-reader/sentence-assist.js?v=20261015"></script>
-    <script src="./js/video-reader/first-lesson-practice.js?v=20260822"></script>
+    <script src="./js/video-reader/first-lesson-practice.js?v=2026103001"></script>
     <script src="./js/video-reader/first-lesson-readiness.js?v=20260808"></script>
     <script>
       window.LinglishFirstLessonFocus.applyDocumentState(document, window.location.search);
@@ -855,10 +910,27 @@
     <script src="./js/media-session.js"></script>
     <script src="./js/video-recommendation-client.js?v=20260925"></script>
     <script src="./js/video-reader/next-video-sheet.js?v=20260925"></script>
-    <script src="./js/video-reader/coaching-mode.js?v=20261015"></script>
-    <script src="./js/video-reader/coaching-dock.js?v=20261018-note"></script>
+    <script src="./js/video-reader/coaching-mode.js?v=2026103001"></script>
+    <script src="./js/audio-cues.js?v=2026103001"></script>
+    <script src="./js/practice/shadow-mic.js?v=2026103001"></script>
+    <script src="./js/practice/shadow-recording-cache.js?v=2026103001"></script>
+    <script src="./js/practice/voice-chat-coach.js?v=2026103001"></script>
+    <script src="./js/practice/voice-chat-bridge.js?v=2026103001"></script>
+    <script src="./js/video-reader/coaching-dock.js?v=2026103001"></script>
     <script src="./js/video-reader/voice-slot.js?v=1"></script>
-    <script src="./js/video-reader/main.js?v=2026102804"></script>
+    <script src="./js/video-reader/media-library-defaults.js?v=2026103001"></script>
+    <script src="./js/video-reader/mobile-media-library.js?v=2026103001"></script>
+    <script src="./js/study-recent.js?v=2026103001"></script>
+    <script src="./js/video-reader/main.js?v=2026103001"></script>
+    <script src="./js/video-reader/sentence-path.js?v=2026103001"></script>
+    <script src="./js/study-switch.js?v=2026103001"></script>
+    <script>
+      try {
+        if (window.LinglishMobileMediaLibrary) window.LinglishMobileMediaLibrary.init();
+      } catch (err) {
+        console.warn('[MobileMediaLibrary] init failed', err);
+      }
+    </script>
     <script>
       // Hide upload functionality for guest users
       (function() {
@@ -892,6 +964,6 @@
     </script>
     <script src="./js/page-tracker.js"></script>
   <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
-  <script src="./js/icons.js?v=1"></script>
+  <script src="./js/icons.js?v=2026103001"></script>
 </body>
 </html>

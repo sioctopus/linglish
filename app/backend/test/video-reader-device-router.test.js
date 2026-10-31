@@ -108,6 +108,32 @@ test('mobile reader redirects a wide desktop browser and preserves location data
   );
 });
 
+test('iPad portrait uses the phone reader and YouhuaPad landscape keeps the desktop reader', () => {
+  assert.equal(
+    target({
+      userAgent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
+      viewportWidth: 834,
+      maxTouchPoints: 5,
+      pointer: 'coarse',
+      hover: 'none',
+      mediaMatches: false
+    }),
+    './video-reader.html'
+  );
+
+  assert.equal(
+    target({
+      userAgent: 'Mozilla/5.0 (Linux; Android 13; YouhuaPad) AppleWebKit',
+      viewportWidth: 1280,
+      maxTouchPoints: 5,
+      pointer: 'coarse',
+      hover: 'none',
+      mediaMatches: false
+    }),
+    null
+  );
+});
+
 test('unrelated pages are never redirected', () => {
   assert.equal(
     target({

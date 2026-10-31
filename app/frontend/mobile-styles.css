@@ -4,14 +4,14 @@
 @import url('./styles/tokens.css?v=1');
 
 /* Base/Core - Variables and Reset */
-@import url('./styles/mobile/variables.css');
-@import url('./styles/mobile/reset.css');
+@import url('./styles/mobile/variables.css?v=2026103001');
+@import url('./styles/mobile/reset.css?v=2026103001');
 
 /* Components - Reusable UI Components */
-@import url('./styles/mobile/components/header.css');
-@import url('./styles/mobile/components/navigation.css');
-@import url('./styles/mobile/components/cards.css');
-@import url('./styles/mobile/components/buttons.css');
+@import url('./styles/mobile/components/header.css?v=2026103001');
+@import url('./styles/mobile/components/navigation.css?v=2026103001');
+@import url('./styles/mobile/components/cards.css?v=20261023-library3');
+@import url('./styles/mobile/components/buttons.css?v=2026103001');
 @import url('./styles/mobile/components/forms.css');
 @import url('./styles/mobile/components/modals.css?v=4');
 @import url('./styles/mobile/components/notifications.css');
@@ -21,9 +21,9 @@
 @import url('./styles/mobile/pages/vocabulary.css');
 @import url('./styles/mobile/pages/stats.css');
 @import url('./styles/mobile/pages/games.css');
-@import url('./styles/mobile/pages/auth.css');
-@import url('./styles/mobile/pages/video-library.css');
+@import url('./styles/mobile/pages/auth.css?v=2026103001');
+@import url('./styles/mobile/pages/video-library.css?v=2026103001');
 @import url('./styles/mobile/pages/more.css');
 
 /* Responsive - Media Queries and Safe Area */
-@import url('./styles/mobile/responsive.css');
+@import url('./styles/mobile/responsive.css?v=2026103001');

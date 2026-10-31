@@ -911,6 +911,19 @@
     els.themeList = $('wb-theme-list');
   }
 
+  function wireBackLink(fromSource) {
+    const back = document.querySelector('.wb-back[data-nav="back"]');
+    if (!back) return;
+    const href = window.WorkbenchImport && typeof window.WorkbenchImport.backHrefForSource === 'function'
+      ? window.WorkbenchImport.backHrefForSource(fromSource)
+      : './index-desktop.html';
+    back.setAttribute('href', href);
+    if (fromSource === 'daily-speaking') back.textContent = '返回日常用语';
+    else if (fromSource === 'practice-session') back.textContent = '返回陪练';
+    else if (fromSource === 'video-reader') back.textContent = '返回视频';
+    else back.textContent = '返回';
+  }
+
   async function boot() {
     cacheElements();
     bindEvents();
@@ -927,6 +940,7 @@
     const noteId = params.get('note');
     const share = params.get('share');
     const id = params.get('id');
+    wireBackLink(params.get('from') || '');
 
     if (mode === 'class-note' || noteId) {
       setTool('class-note', { noteId, skipHistory: true });
@@ -988,6 +1002,8 @@
     syncRoleUi();
     syncKickerInput();
     renderPreview();
+
+    wireBackLink(payload.source || params.get('from') || '');
 
     const wantAnnotate = payload.annotate !== false;
     if (wantAnnotate && readToken()) {

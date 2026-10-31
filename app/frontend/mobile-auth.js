@@ -132,6 +132,9 @@ class AuthManager {
    * 游客可以访问浏览页面，但不能上传
    */
   requireAuth() {
+    try {
+      if (new URLSearchParams(window.location.search).get('shell_preview') === '1') return true;
+    } catch (_) { }
     if (!this.isAuthenticated()) {
       // 保存当前页面，登录后返回
       this.safeSet(sessionStorage, 'returnUrl', window.location.href);
@@ -217,6 +220,10 @@ const authManager = new AuthManager();
 window.addEventListener('DOMContentLoaded', async () => {
   // 如果当前页面不是登录页面，则检查认证
   if (!window.location.href.includes('mobile-auth.html')) {
+    // Local shell preview: skip gate so layout can be checked without a session
+    try {
+      if (new URLSearchParams(window.location.search).get('shell_preview') === '1') return;
+    } catch (_) { }
     if (window.AuthManager && window.AuthManager.ready && typeof window.AuthManager.ready.then === 'function') {
       try { await window.AuthManager.ready; } catch (_) { }
     }

@@ -4,9 +4,9 @@ const { getFromCache, setInCache, deleteFromCache } = require('./translation/cac
 const dataStore = require('../data-store');
 const { translateWithOpenAI } = require('./translation/providers/openai');
 const { translateWithDeepL } = require('./translation/providers/deepl');
-const { translateWithGoogle } = require('./translation/providers/google');
+const { translateWithGoogle, translateViaGoogle } = require('./translation/providers/google');
 const { translateWithLibreTranslate } = require('./translation/providers/libretranslate');
-const { translateWithMyMemory } = require('./translation/providers/mymemory');
+const { translateWithMyMemory, translateViaMyMemory } = require('./translation/providers/mymemory');
 const rateLimiter = require('./translation/rate-limiter');
 const { postEditZh } = require('./translation/post-edit');
 const {
@@ -293,11 +293,50 @@ async function translateWord(word, options = {}) {
   // Step 3: Try FREE translation APIs (DeepL has priority, then Google, then LibreTranslate and MyMemory)
   // OpenAI is only used when user manually requests correction
   const translationAttempts = [];
+  const sentenceMode = options?.mode === 'sentence' || /\s/.test(String(word || '').trim()) || normalizedWord.length > 48;
+  const sentenceText = String(word || '').replace(/\s+/g, ' ').trim();
+
+  // Exam/caption sentence UI: prefer MyMemory first (works when Google times out),
+  // then one short Google attempt. Skip DeepL/Libre to stay inside the route budget.
+  if (sentenceMode) {
+    if (!rateLimiter.isDisabled('mymemory')) {
+      try {
+        const myMemoryResult = await translateViaMyMemory(sentenceText);
+        const cleanedMyMemory = cleanTranslation(myMemoryResult);
+        if (cleanedMyMemory && isValidTranslation(cleanedMyMemory, sentenceText)) {
+          const edited = postEditZh(word, cleanedMyMemory);
+          console.log(`[${logTs()}] [Translation Service] user=${userLabel} Sentence MyMemory Success: "${edited}"`);
+          rateLimiter.recordSuccess('mymemory');
+          await cacheTranslation(edited, 'mymemory');
+          return translationResult(edited, 'mymemory', { score: scoreTranslation(edited, sentenceText) });
+        }
+      } catch (apiErr) {
+        console.error(`[${logTs()}] [Translation Service] user=${userLabel} Sentence MyMemory failed: ${apiErr.message}`);
+        rateLimiter.recordFailure('mymemory', apiErr);
+      }
+    }
+    if (!rateLimiter.isDisabled('google')) {
+      try {
+        const googleResult = await translateViaGoogle(sentenceText, 'zh-CN', false);
+        const cleanedGoogle = cleanTranslation(googleResult);
+        if (cleanedGoogle && isValidTranslation(cleanedGoogle, sentenceText)) {
+          const edited = postEditZh(word, cleanedGoogle);
+          console.log(`[${logTs()}] [Translation Service] user=${userLabel} Sentence Google Success: "${edited}"`);
+          rateLimiter.recordSuccess('google');
+          await cacheTranslation(edited, 'google');
+          return translationResult(edited, 'google', { score: scoreTranslation(edited, sentenceText) });
+        }
+      } catch (apiErr) {
+        console.error(`[${logTs()}] [Translation Service] user=${userLabel} Sentence Google failed: ${apiErr.message}`);
+        rateLimiter.recordFailure('google', apiErr);
+      }
+    }
+  }
 
   // Try DeepL FIRST (FREE tier: 500k chars/month, high quality, lenient rate limits)
   // DeepL results remain usable for compatibility, but are explicitly marked for review.
   // Check if DeepL is temporarily disabled due to rate limiting
-  if (!rateLimiter.isDisabled('deepl')) {
+  if (!sentenceMode && !rateLimiter.isDisabled('deepl')) {
     try {
       const deeplResult = await runWithRetries(
         () => translateWithDeepL(normalizedWord, 'ZH'),
@@ -324,13 +363,13 @@ async function translateWord(word, options = {}) {
       // Record failure (especially rate limit errors)
       rateLimiter.recordFailure('deepl', apiErr);
     }
-  } else {
+  } else if (!sentenceMode) {
     console.log(`[${logTs()}] [Translation Service] user=${userLabel} DeepL is temporarily disabled due to rate limiting, skipping`);
   }
 
   // Try Google Translate SECOND (FREE, high quality) - respect rate limits via runWithRetries
   // Check if Google Translate is temporarily disabled due to rate limiting
-  if (!rateLimiter.isDisabled('google')) {
+  if (!sentenceMode && !rateLimiter.isDisabled('google')) {
     try {
       const googleResult = await runWithRetries(
         () => translateWithGoogle(normalizedWord),
@@ -374,12 +413,12 @@ async function translateWord(word, options = {}) {
       // Record failure (especially rate limit errors)
       rateLimiter.recordFailure('google', apiErr);
     }
-  } else {
+  } else if (!sentenceMode) {
     console.log(`[${logTs()}] [Translation Service] user=${userLabel} Google Translate is temporarily disabled due to rate limiting, skipping`);
   }
 
   // Try LibreTranslate as backup (FREE) - respect rate limits via runWithRetries (2 attempts, backoff)
-  if (!rateLimiter.isDisabled('libretranslate')) {
+  if (!sentenceMode && !rateLimiter.isDisabled('libretranslate')) {
     try {
       const libreResult = await runWithRetries(
         () => translateWithLibreTranslate(normalizedWord),
@@ -401,12 +440,10 @@ async function translateWord(word, options = {}) {
       console.error(`[${logTs()}] [Translation Service] user=${userLabel} LibreTranslate failed: ${apiErr.message}`);
       rateLimiter.recordFailure('libretranslate', apiErr);
     }
-  } else {
-    console.log(`[${logTs()}] [Translation Service] user=${userLabel} LibreTranslate is temporarily disabled, skipping`);
   }
 
   // Try MyMemory as backup (FREE) - but with shorter timeout and no retries due to frequent timeouts
-  if (!rateLimiter.isDisabled('mymemory')) {
+  if (!sentenceMode && !rateLimiter.isDisabled('mymemory')) {
     try {
       const myMemoryResult = await runWithRetries(
         () => translateWithMyMemory(normalizedWord),
@@ -428,7 +465,7 @@ async function translateWord(word, options = {}) {
       console.error(`[${logTs()}] [Translation Service] user=${userLabel} MyMemory failed: ${apiErr.message}`);
       rateLimiter.recordFailure('mymemory', apiErr);
     }
-  } else {
+  } else if (!sentenceMode) {
     console.log(`[${logTs()}] [Translation Service] user=${userLabel} MyMemory is temporarily disabled, skipping`);
   }
 

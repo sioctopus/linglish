@@ -10,7 +10,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
   background-color: var(--background);
   color: var(--text-primary);
-  padding-bottom: 70px; /* Space for bottom nav */
+  padding-bottom: calc(var(--bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px) + 8px);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

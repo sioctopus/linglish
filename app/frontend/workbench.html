@@ -7,11 +7,11 @@
   <meta name="description" content="粘贴英文或导入素材，AI 自动标注单词与拆句，用模板编辑后导出长图，并生成学生跟读练习链接。">
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
   <link rel="stylesheet" href="./styles/tokens.css?v=2">
-  <link rel="stylesheet" href="./styles/icons.css?v=1">
-  <link rel="stylesheet" href="./css/workbench.css?v=31">
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
+  <link rel="stylesheet" href="./css/workbench.css?v=2026103001">
+  <script src="./js/auth-manager.js?v=2026103001"></script>
   <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/icons.js?v=1"></script>
+  <script src="./js/icons.js?v=2026103001"></script>
 </head>
 <body class="wb-page">
   <nav class="wb-nav" aria-label="工作台导航">
@@ -24,9 +24,11 @@
         <button type="button" id="wb-role-teacher" class="active">老师模式</button>
         <button type="button" id="wb-role-blogger">博主模式</button>
       </div>
-      <button type="button" class="wb-btn-outline" id="wb-save-btn" data-studio-only>保存</button>
-      <button type="button" class="wb-btn-outline" id="wb-export-png" data-studio-only>导出长图</button>
-      <button type="button" class="wb-btn" id="wb-practice-btn" data-studio-only>生成练习链接</button>
+      <div class="wb-nav-tools" data-studio-only>
+        <button type="button" class="wb-btn-outline" id="wb-save-btn">保存</button>
+        <button type="button" class="wb-btn-outline" id="wb-export-png">导出长图</button>
+        <button type="button" class="wb-btn" id="wb-practice-btn">生成链接</button>
+      </div>
     </div>
   </nav>
 
@@ -56,7 +58,7 @@
   <div id="wb-studio" class="wb-mode">
     <div class="wb-shell">
       <aside class="wb-panel wb-stack" aria-label="内容输入与模板">
-        <div>
+        <div class="wb-block wb-block-input">
           <div class="wb-inline-label">
             <h2>1. 内容输入</h2>
             <label for="wb-title">标题</label>
@@ -69,35 +71,34 @@
           <p class="wb-hint">可粘贴英文，或从日常用语 / 视频字幕一键导入。</p>
           <div class="wb-row wb-actions-inline" style="margin-top:12px">
             <button type="button" class="wb-btn" id="wb-annotate-btn">AI 标注</button>
-            <button type="button" class="wb-btn-outline" id="wb-save-inline-btn" data-studio-only>保存</button>
             <button type="button" class="wb-btn-ghost" id="wb-delete-btn">删除当前</button>
           </div>
           <p class="wb-status" id="wb-status"></p>
         </div>
 
-        <div>
+        <div class="wb-block wb-block-templates">
           <h2>2. 模板库</h2>
           <div class="wb-templates" id="wb-template-list"></div>
         </div>
 
-        <div>
+        <div class="wb-block wb-block-saved">
           <div class="wb-section-head">
             <h2>已保存</h2>
-            <button type="button" class="wb-btn-outline wb-save-mini" id="wb-save-list-btn" data-studio-only>保存</button>
           </div>
           <div class="wb-saved-list" id="wb-saved-list">
-            <p class="wb-hint">登录后显示。</p>
+            <p class="wb-hint">登录后显示。点顶部「保存」即可写入列表。</p>
           </div>
         </div>
       </aside>
 
       <main class="wb-center" aria-label="预览编辑区">
+        <div class="wb-preview-label">预览</div>
         <div class="wb-preview-wrap">
           <article id="wb-canvas" class="wb-canvas" contenteditable="true" spellcheck="false" aria-label="所见即所得预览"></article>
         </div>
       </main>
 
-      <aside class="wb-panel" aria-label="样式控制">
+      <aside class="wb-panel wb-styles" aria-label="样式控制">
         <div class="wb-inline-label">
           <h2>样式</h2>
           <span class="wb-inline-tag">画幅</span>
@@ -202,9 +203,9 @@
   <div id="wb-word-pop" class="wb-word-pop" hidden></div>
 
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
-  <script src="./js/workbench/import-bridge.js?v=20261019"></script>
-  <script src="./js/workbench/templates.js?v=12"></script>
-  <script src="./js/workbench/class-note.js?v=20261019"></script>
-  <script src="./js/workbench/app.js?v=14"></script>
+  <script src="./js/workbench/import-bridge.js?v=2026103001"></script>
+  <script src="./js/workbench/templates.js?v=2026103001"></script>
+  <script src="./js/workbench/class-note.js?v=2"></script>
+  <script src="./js/workbench/app.js?v=2026103001"></script>
 </body>
 </html>

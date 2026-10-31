@@ -776,7 +776,7 @@
         // Clamp
         const finalTarget = Math.min(desiredTarget, maxPossibleEnd);
 
-        // Ensure we at least play until baseEndTime (if next sentence allows). 
+        // Ensure we at least play until baseEndTime (if next sentence allows).
         // If next sentence starts BEFORE baseEndTime (bad data), we just stop at nextStartTime.
         return Math.max(baseEndTime, finalTarget);
       }
@@ -11175,7 +11175,7 @@
                   fabBtn.classList.remove('recording');
                 }
               } else {
-                // Show FAB if "Enable Practice" is available? 
+                // Show FAB if "Enable Practice" is available?
                 // Or hide it until practice starts?
                 // Let's show it if practice arm button is visible
                 const armBtn = document.getElementById('practice-arm-btn');
@@ -11259,4 +11259,3 @@
           if (practiceArmBtn) practiceArmBtn.disabled = true;
         }
       });
-    

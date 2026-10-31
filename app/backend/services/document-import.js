@@ -6,6 +6,7 @@ const { pathToFileURL } = require('url');
 const {
   buildReadingSubtitles,
   subtitleContent,
+  decodeHtmlEntities,
   extractDocxText,
   extractEpubText,
 } = require('./reading-subtitles');
@@ -20,7 +21,7 @@ const IMAGE_EXTENSIONS = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.bm
 function detectDocumentKind(filename = '') {
   const ext = path.extname(String(filename || '')).toLowerCase();
   if (ext === '.pdf') return 'pdf';
-  if (ext === '.txt' || ext === '.text' || ext === '.md') return 'text';
+  if (ext === '.txt' || ext === '.text' || ext === '.md' || ext === '.markdown') return 'text';
   if (ext === '.docx') return 'docx';
   if (ext === '.epub') return 'epub';
   if (ext === '.html' || ext === '.htm') return 'html';
@@ -68,11 +69,40 @@ function unsupportedMessage() {
   return '可以上传英语图片、PDF、Word（docx）、电子书（epub）或 TXT。PPT 和旧版 doc 请先另存成 PDF 或 docx';
 }
 
+function normalizeImportedText(text) {
+  return decodeHtmlEntities(String(text || ''))
+    .replace(/\u0000/g, '')
+    .replace(/\r/g, '\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/[^\S\n]+/g, ' ')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function countCjk(text) {
+  return (String(text || '').match(/[\u4e00-\u9fff]/g) || []).length;
+}
+
+function readingParagraphContent(text) {
+  const normalized = normalizeImportedText(text);
+  if (!normalized) return '';
+  const blocks = normalized.split(/\n{2,}/).map((item) => item.trim()).filter(Boolean);
+  const kept = blocks.filter((block) => buildReadingSubtitles(block).length > 0);
+  if (kept.length) return kept.join('\n\n');
+  // No blank-line paragraphs: keep each spoken sentence as its own stage unit.
+  return subtitleContent(buildReadingSubtitles(normalized)).split('\n').filter(Boolean).join('\n\n');
+}
+
 function draftFromEnglish({ title, text, filename, sourceType, pdfPath, tags }) {
-  const cues = buildReadingSubtitles(text);
+  const decoded = normalizeImportedText(text);
+  const cues = buildReadingSubtitles(decoded);
   if (!cues.length) return null;
-  const content = subtitleContent(cues);
-  const difficulty = calculateDifficulty(content);
+  const cjk = countCjk(decoded);
+  // Keep bilingual source paragraphs so the reader can pair Chinese as authored translations.
+  // English-only keeps paragraph breaks for one-paragraph-at-a-time stage display.
+  const bilingual = cjk >= 40 && cues.length >= 1;
+  const content = bilingual ? decoded : readingParagraphContent(decoded);
+  const difficulty = calculateDifficulty(subtitleContent(cues));
   const fallback = filename
     ? path.basename(filename, path.extname(filename))
     : cues[0].slice(0, 40);
@@ -80,7 +110,9 @@ function draftFromEnglish({ title, text, filename, sourceType, pdfPath, tags }) 
     title: cleanTitle(title, fallback),
     content,
     level: mapToCEFRLevel(difficulty),
-    tags,
+    tags: bilingual
+      ? [...new Set([...(tags || []), 'bilingual'])]
+      : tags,
     wordCount: countWords(content),
     difficultyScore: Math.round(difficulty) / 100,
     sourceType,
@@ -90,7 +122,7 @@ function draftFromEnglish({ title, text, filename, sourceType, pdfPath, tags }) 
 }
 
 function prepareTextDocument({ title, text, filename }) {
-  const content = String(text || '').replace(/\u0000/g, '').trim();
+  const content = normalizeImportedText(text);
   if (content.length < MIN_TEXT) {
     throw reject('文档内容太短，请粘贴完整课文或上传有文字的文件');
   }
@@ -106,7 +138,7 @@ function prepareTextDocument({ title, text, filename }) {
 }
 
 function draftForText({ title, text, filename, sourceType, pdfPath, tags }) {
-  const paper = buildExamPaper(text, title || filename);
+  const paper = buildExamPaper(normalizeImportedText(text), title || filename);
   if (paper) {
     const difficulty = calculateDifficulty(paper.blocks.map((block) => block.speak || block.text || '').join(' '));
     return {

@@ -26,15 +26,15 @@
   stroke: none;
 }
 
-/* Mobile bottom nav — SVG chrome instead of emoji */
+/* Mobile bottom nav — quiet stroke icons (ui-spec-mobile) */
 .bottom-nav .nav-icon {
-  margin-bottom: 4px;
-  width: 28px;
-  height: 28px;
+  margin: 0;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.3s var(--lx-ease, cubic-bezier(0.4, 0, 0.2, 1));
+  transition: none;
 }
 
 .bottom-nav .nav-icon .lx-icon,
@@ -45,8 +45,9 @@
 }
 
 .bottom-nav .nav-item.active .nav-icon {
-  transform: translateY(-2px);
-  filter: drop-shadow(0 4px 8px rgba(15, 118, 110, 0.28));
+  transform: none;
+  filter: none;
+  color: var(--lx-primary, #0f766e);
 }
 
 .bottom-nav .nav-emoji {

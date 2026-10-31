@@ -53,9 +53,9 @@
   --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* Layout */
-  --header-height: 60px;
-  --bottom-nav-height: 70px;
+  /* Layout — content height; add safe-area in components */
+  --header-height: 56px;
+  --bottom-nav-height: 56px;
   --border-radius-sm: var(--lx-radius-sm, 8px);
   --border-radius-md: var(--lx-radius-md, 12px);
   --border-radius-lg: var(--lx-radius-lg, 16px);

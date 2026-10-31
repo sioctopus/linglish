@@ -60,7 +60,7 @@ test('desktop pages expose the install manifest and the install control', () => 
   for (const page of DESKTOP_PAGES) {
     const html = read(page);
     assert.match(html, /rel="manifest" href="\/manifest-desktop\.json"/, page);
-    assert.match(html, /src="\/js\/install-desktop\.js\?v=3"/, page);
+    assert.match(html, /src="\/js\/install-desktop\.js\?v=2026103001"/, page);
   }
 });
 
@@ -70,11 +70,19 @@ test('install control uses the browser install prompt and stays out of an instal
   assert.match(source, /beforeinstallprompt/);
   assert.match(source, /event\.preventDefault\(\)/);
   assert.match(source, /promptEvent\.prompt\(\)/);
-  assert.match(source, /serviceWorker\.register\('\/sw\.js'/);
+  assert.match(source, /serviceWorker\.register\('\/sw\.js(?:\?v=\d+)?'/);
   assert.match(source, /display-mode: standalone/);
   assert.match(source, /appinstalled/);
   assert.match(source, /安装到桌面/);
+  assert.match(source, /添加到主屏幕/);
+  assert.match(source, /installTarget/);
+  assert.match(source, /manifest\.json/);
   assert.match(source, /window\.top !== window\.self/);
   assert.match(source, /focus-mode/);
   assert.match(source, /\.transcript \.header-top/);
+  assert.match(source, /isHomeSurface/);
+  assert.match(source, /if \(isHomeSurface\(target\)\)/);
+  assert.match(source, /isMacSafari/);
+  assert.match(source, /!deferredPrompt && !isMacSafari\(\)/);
+  assert.match(source, /isDesktopComputer/);
 });

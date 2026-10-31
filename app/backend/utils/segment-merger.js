@@ -18,6 +18,10 @@ function endsWithIncompleteStructure(text) {
 
   // 常见的不完整结尾模式
   const incompletePatterns = [
+    // 口语尾巴：how about / what about / kind of …
+    /\b(?:how|what)\s+about\s*$/i,
+    /\b(?:kind|sort|type)\s+of\s*$/i,
+    /\b(?:a lot|lots|one|out|because)\s+of\s*$/i,
     // 冠词（a, an, the）后面应该有名词
     /\b(a|an|the)\s*$/i,
     // 形容词后面通常应该有名词
@@ -196,34 +200,48 @@ function mergeIncompleteSegments(segments, options = {}) {
       const nextIsNewSentence = isNewSentenceStart(text, current.text);
       const currentIncomplete = endsWithIncompleteStructure(current.text);
 
-      // 策略 1: 强制合并逻辑
-      // 如果当前句子没有结束标点，且 gap 很小，倾向于合并 (防止 audio cutoff)
-      const isShortGap = gap < 0.4; // 400ms 内的间隔通常是连贯的
-      const currentEndsWithPunctuation = /[.!?。！？]$/.test(current.text.trim());
-
-      // 策略 2: 长度偏好
-      // 如果当前片段太短（少于 15 个字符）且没有明确结束标点，尝试合并
-      const isTooShort = current.text.length < 15;
+      // Caption lines from YouTube often lack ".!?". Do NOT glue every unpunctuated
+      // cue together — that turns two on-screen captions into one practice line.
+      const isShortGap = gap < 0.35;
+      const currentEndsWithHardStop = /[.!?。！？]$/.test(current.text.trim());
+      const currentEndsWithSoftBreak = /[,;:，；：…]$/.test(current.text.trim());
+      const currentWordCount = (current.text.match(/\b[\w']+\b/g) || []).length;
+      const nextWordCount = (text.match(/\b[\w']+\b/g) || []).length;
+      const isTooShort = current.text.length < 15 || currentWordCount < 4;
+      const currentAlreadyLong = currentWordCount >= 8 || current.text.length >= 55;
+      const nextStartsContinuation = /^(and|but|or|so|because|which|who|that|with|to)\b/i.test(text);
 
       if (speakerOk) {
         if (currentIncomplete) {
           shouldMerge = true; // 语法不完整，必须合并
         } else if (numericContinuation) {
           shouldMerge = true; // 数字连续
-        } else if (!currentEndsWithPunctuation && isShortGap) {
-          shouldMerge = true; // 没有标点且间隔短，合并 (Fixes "half sentence read")
-        } else if (!currentEndsWithPunctuation && !nextIsNewSentence) {
-          shouldMerge = true; // 没有标点且下句不像新句首，合并
-        } else if (isTooShort && !currentEndsWithPunctuation && gap <= effectiveMaxGap) {
+        } else if (currentEndsWithSoftBreak && currentAlreadyLong && !currentIncomplete) {
+          // "…expressions," + "and you'll…" → keep as two practice lines
+          shouldMerge = false;
+        } else if (currentAlreadyLong && nextStartsContinuation && gap >= 0.25) {
+          shouldMerge = false;
+        } else if (currentAlreadyLong && nextWordCount >= 6 && !currentIncomplete) {
+          shouldMerge = false;
+        } else if (!currentEndsWithHardStop && isShortGap && isTooShort) {
+          shouldMerge = true; // 短半句 + 很短间隔，合并
+        } else if (isTooShort && !currentEndsWithHardStop && gap <= effectiveMaxGap) {
           shouldMerge = true; // 句子太短且无标点，合并
-        } else if (!currentComplete && !nextIsNewSentence && gap <= effectiveMaxGap) {
-          shouldMerge = true; // 原有逻辑保底
+        } else if (!currentComplete && currentIncomplete && !nextIsNewSentence && gap <= effectiveMaxGap) {
+          shouldMerge = true;
         }
       }
 
       // 最后的保护：如果合并后太长，则强制不合并 (除非是 numericContinuation)
+      // 不完整句尾允许更长一点，避免 "how about" / "you" 被拆在两行
       if (shouldMerge && !numericContinuation) {
-        if (potentialDuration > maxSegmentDuration || (current.text.length + text.length > 200)) {
+        const wordLimit = currentIncomplete ? 28 : 22;
+        const durationLimit = currentIncomplete ? Math.max(maxSegmentDuration, 14) : maxSegmentDuration;
+        if (
+          potentialDuration > durationLimit
+          || (current.text.length + text.length > 110)
+          || (currentWordCount + nextWordCount > wordLimit)
+        ) {
           shouldMerge = false;
         }
       }
@@ -240,13 +258,27 @@ function mergeIncompleteSegments(segments, options = {}) {
         current.words.push(...seg.words);
       }
     } else {
-      // 不合并，保存当前并开始新的
+      // 合并不了时，把不完整尾巴挪到下一句，避免尾巴悬在上一行末尾
+      let nextText = text;
+      if (endsWithIncompleteStructure(current.text)) {
+        const multi = current.text.match(/\s+((?:how|what)\s+about|(?:kind|sort|type)\s+of|(?:a lot|lots|one|out|because)\s+of)\s*$/i);
+        const single = current.text.match(/\s+(\S+)\s*$/);
+        const peel = multi || single;
+        if (peel && peel.index != null) {
+          const head = current.text.slice(0, peel.index).trim();
+          const tail = (multi ? multi[1] : single[1]).trim();
+          if (head && tail && (head.match(/\b[\w']+\b/g) || []).length >= 2) {
+            current.text = head;
+            nextText = `${tail} ${text}`.replace(/\s+/g, ' ').trim();
+          }
+        }
+      }
       merged.push(current);
       current = {
         index: merged.length,
         start: seg.start,
         end: seg.end,
-        text: text,
+        text: nextText,
         speaker: seg.speaker || null,
         // 保留词级别时间戳
         words: Array.isArray(seg.words) ? [...seg.words] : undefined,

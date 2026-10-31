@@ -393,11 +393,21 @@ async function handleOAuthLogin(provider, profile, options = {}) {
   let user = await findUserByOAuth(provider, profile.id);
 
   if (user) {
-    // Update last login
+    // Refresh profile photo/name on each login so WeChat avatar stays current
     await dataStore.query(
-      `UPDATE user_oauth_accounts SET last_login_at = NOW()
+      `UPDATE user_oauth_accounts
+       SET last_login_at = NOW(),
+           provider_email = COALESCE($3, provider_email),
+           provider_name = COALESCE($4, provider_name),
+           provider_avatar_url = COALESCE($5, provider_avatar_url)
        WHERE provider = $1 AND provider_user_id = $2`,
-      [provider, profile.id]
+      [
+        provider,
+        profile.id,
+        profile.email || null,
+        profile.name || null,
+        profile.picture || null,
+      ]
     );
     return { user, isNewUser: false };
   }

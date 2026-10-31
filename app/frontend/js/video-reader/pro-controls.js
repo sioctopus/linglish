@@ -88,6 +88,67 @@
     }
     try { playerEl.currentTime = v; } catch (_) { /* ignore */ }
   }
+  let seekPlayToken = 0;
+  /** Sentence jump: seek to the line, then always play. YouTube often lands paused after seek. */
+  function seekAndPlay(v) {
+    try { if (typeof bridge.stopDictAudio === 'function') bridge.stopDictAudio(); } catch (_) { /* ignore */ }
+    const target = Math.max(0, Number(v) || 0);
+    const token = ++seekPlayToken;
+
+    if (getPlayerType() === 'youtube') {
+      const yt = getYT();
+      if (!yt || typeof yt.seekTo !== 'function') return;
+      try { yt.seekTo(target); } catch (_) { /* ignore */ }
+      const kick = () => {
+        if (token !== seekPlayToken) return;
+        if (typeof yt.play === 'function') {
+          try { yt.play(); } catch (_) { /* ignore */ }
+        }
+      };
+      kick();
+      // Cold seeks frequently finish still paused — nudge play after the seek settles.
+      setTimeout(kick, 80);
+      setTimeout(() => {
+        if (token !== seekPlayToken) return;
+        if (isPaused()) kick();
+      }, 220);
+      return;
+    }
+
+    const video = playerEl;
+    if (!video) return;
+    const startPlay = () => {
+      if (token !== seekPlayToken) return;
+      try {
+        const p = video.play();
+        if (p && p.catch) p.catch(() => { /* autoplay block */ });
+      } catch (_) { /* ignore */ }
+    };
+
+    const onSeeked = () => {
+      video.removeEventListener('seeked', onSeeked);
+      startPlay();
+    };
+    video.addEventListener('seeked', onSeeked);
+    try {
+      video.currentTime = target;
+    } catch (_) {
+      video.removeEventListener('seeked', onSeeked);
+      startPlay();
+      return;
+    }
+    // If already very close, seeked may not fire — still ensure playback.
+    if (Math.abs((video.currentTime || 0) - target) < 0.08) {
+      video.removeEventListener('seeked', onSeeked);
+      startPlay();
+      return;
+    }
+    setTimeout(() => {
+      video.removeEventListener('seeked', onSeeked);
+      if (token !== seekPlayToken) return;
+      if (video.paused) startPlay();
+    }, 280);
+  }
   function getDuration() {
     const yt = getYT();
     if (getPlayerType() === 'youtube' && yt && typeof yt.getDuration === 'function') {
@@ -159,13 +220,7 @@
       if (cur < -1) cur = segs.length - 1;
     }
     const next = Math.min(segs.length - 1, Math.max(0, cur + delta));
-    const seg = segs[next];
-    if (!seg) return;
-    const start = (seg.start_sec ?? seg.start ?? seg.startTime ?? 0) + 0.01;
-    setCurrentTime(start);
-    play();
-    highlightSeg(next, true);
-    showToast(`${delta > 0 ? '⤼ Next' : '⤺ Prev'} sentence · ${next + 1}/${segs.length}`);
+    practiceSegment(next);
   }
   function jumpToBookmark(direction) {
     const vid = getCurrentVideoId();
@@ -188,8 +243,7 @@
     const seg = segs[idx];
     if (!seg) return;
     const start = (seg.start_sec ?? seg.start ?? seg.startTime ?? 0) + 0.01;
-    setCurrentTime(start);
-    play();
+    seekAndPlay(start);
     if (typeof highlightSeg === 'function') highlightSeg(idx, true);
     showToast(`★ ${direction > 0 ? 'Next' : 'Prev'} bookmark · sentence ${idx + 1}`);
   }
@@ -200,24 +254,92 @@
     const seg = segs[idx];
     if (!seg) return false;
     const start = (seg.start_sec ?? seg.start ?? seg.startTime ?? 0) + 0.01;
-    setCurrentTime(start);
-    play();
+    seekAndPlay(start);
     if (typeof highlightSeg === 'function') highlightSeg(idx, true);
     showToast(`⤳ Sentence ${idx + 1}/${segs.length}`);
     return true;
   }
-  function replayCurrentSegment() {
+  // One-shot practice: play this sentence, then pause (do not roll into the next).
+  let practiceEndSec = null;
+  let practiceSegIdx = -1;
+  function clearPracticeEnd() {
+    practiceEndSec = null;
+    practiceSegIdx = -1;
+  }
+  function armPracticeEnd(endSec, idx) {
+    const end = Number(endSec);
+    if (!Number.isFinite(end) || end <= 0) {
+      clearPracticeEnd();
+      return;
+    }
+    practiceEndSec = end;
+    practiceSegIdx = Number.isInteger(idx) ? idx : -1;
+  }
+  function practiceSegment(idx) {
     const segs = getSegments();
-    if (!segs.length) return;
-    const cur = segIdxByTime(getCurrentTime());
-    const idx = cur >= 0 ? cur : 0;
-    const seg = segs[idx];
-    if (!seg) return;
-    const start = (seg.start_sec ?? seg.start ?? seg.startTime ?? 0) + 0.01;
-    setCurrentTime(start);
-    play();
-    highlightSeg(idx, true);
-    showToast(`↻ Replay · sentence ${idx + 1}`);
+    if (!segs.length) return false;
+    const i = Math.max(0, Math.min(segs.length - 1, Number(idx)));
+    if (!Number.isFinite(i)) return false;
+    const seg = segs[i];
+    if (!seg) return false;
+    const start = Number(seg.start_sec ?? seg.start ?? seg.startTime ?? 0) + 0.01;
+    let end = Number(seg.end_sec ?? seg.end ?? seg.endTime ?? 0);
+    if (!Number.isFinite(end) || end <= start + 0.2) end = start + 4;
+    // Sentence practice overrides free continuous play for this click.
+    clearABLoop(true);
+    armPracticeEnd(end, i);
+    seekAndPlay(start);
+    if (typeof highlightSeg === 'function') highlightSeg(i, true);
+    showToast(`练这一句 · 播完会停 · ${i + 1}/${segs.length}`);
+    return true;
+  }
+  function nearestStartedSegmentIndex(t) {
+    const segs = getSegments();
+    if (!segs.length) return -1;
+    const time = Number(t) || 0;
+    let best = -1;
+    let bestStart = -Infinity;
+    for (let i = 0; i < segs.length; i++) {
+      const st = Number(segs[i].start_sec ?? segs[i].start ?? segs[i].startTime ?? 0);
+      if (st <= time + 0.1 && st >= bestStart) {
+        bestStart = st;
+        best = i;
+      }
+    }
+    return best;
+  }
+  function resolveCurrentPracticeIndex() {
+    const segs = getSegments();
+    if (!segs.length) return -1;
+    // 1) Right-panel / lyric highlight — what the learner sees as「现在这句」
+    try {
+      if (typeof bridge.getActiveSegmentIndex === 'function') {
+        const active = Number(bridge.getActiveSegmentIndex());
+        if (Number.isInteger(active) && active >= 0 && active < segs.length) return active;
+      }
+    } catch (_) { /* ignore */ }
+    // 2) Exact time match
+    const t = getCurrentTime();
+    const byTime = segIdxByTime(t);
+    if (byTime >= 0) return byTime;
+    // 3) Still armed on a practice sentence near the playhead
+    if (practiceSegIdx >= 0 && practiceSegIdx < segs.length) {
+      const seg = segs[practiceSegIdx];
+      const st = Number(seg.start_sec ?? seg.start ?? 0);
+      const en = Number(seg.end_sec ?? seg.end ?? st + 4);
+      if (t >= st - 0.5 && t <= en + 1.5) return practiceSegIdx;
+    }
+    // 4) Latest segment that already started (never jump to a future line)
+    const past = nearestStartedSegmentIndex(t);
+    return past >= 0 ? past : 0;
+  }
+  function practiceCurrentSegment() {
+    const idx = resolveCurrentPracticeIndex();
+    if (idx < 0) return false;
+    return practiceSegment(idx);
+  }
+  function replayCurrentSegment() {
+    practiceCurrentSegment();
   }
   // Echo replay: play current sentence once at 0.5x, then restore previous rate.
   // Pure UX nicety inspired by Speak / Cake's "slow replay" button.
@@ -225,8 +347,8 @@
   function startEchoReplay() {
     const segs = getSegments();
     if (!segs.length) return;
-    const cur = segIdxByTime(getCurrentTime());
-    const idx = cur >= 0 ? cur : 0;
+    const idx = resolveCurrentPracticeIndex();
+    if (idx < 0) return;
     const seg = segs[idx];
     if (!seg) return;
     const start = (seg.start_sec ?? seg.start ?? seg.startTime ?? 0) + 0.01;
@@ -664,6 +786,37 @@
   // ---------- 3. Build the playback bar ------------------------------
   const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
+  function formatSpeedLabel(rate) {
+    const n = Number(rate);
+    if (!Number.isFinite(n)) return '1x';
+    const rounded = Math.round(n * 100) / 100;
+    return `${rounded}x`;
+  }
+
+  function syncSpeedUi(rate) {
+    const applied = Number.isFinite(rate) ? rate : 1;
+    const trigger = document.getElementById('vrp-speed-trigger');
+    if (trigger) trigger.textContent = formatSpeedLabel(applied);
+    document.querySelectorAll('#vrp-speed .vrp-speed__btn').forEach((btn) => {
+      const on = Math.abs(parseFloat(btn.dataset.speed) - applied) < 0.001;
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-selected', on ? 'true' : 'false');
+    });
+  }
+
+  function setSpeedMenuOpen(open) {
+    const trigger = document.getElementById('vrp-speed-trigger');
+    const menu = document.getElementById('vrp-speed-menu');
+    const shell = document.getElementById('vrp-speed');
+    if (!trigger || !menu) return;
+    const next = Boolean(open);
+    menu.hidden = !next;
+    trigger.setAttribute('aria-expanded', next ? 'true' : 'false');
+    if (shell) shell.classList.toggle('is-open', next);
+    const dock = document.getElementById('vrp-control-dock');
+    if (dock) dock.classList.toggle('vrp-speed-open', next);
+  }
+
   function svg(d, opts) {
     opts = opts || {};
     return `<svg class="${opts.cls || 'vrp-btn__icon'}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
@@ -707,14 +860,23 @@
         <button class="vrp-btn" id="vrp-next"  type="button" title="下一句 (→)" aria-label="下一句"><span>下一句</span></button>
       </div>
 
-      <div class="vrp-bar__group" role="group" aria-label="Speed">
-        <span class="vrp-bar__label">Speed</span>
+      <div class="vrp-bar__group" role="group" aria-label="倍速">
         <div class="vrp-speed" id="vrp-speed">
-          ${SPEEDS.map(s => {
-            const full = s === 1 ? '1×' : s + '×';
-            const short = s === 1 ? '1' : String(s).replace(/^0/, '');
-            return `<button class="vrp-speed__btn" type="button" data-speed="${s}" aria-label="${full}" aria-pressed="${s === settings.rate}"><span class="vrp-speed__full">${full}</span><span class="vrp-speed__short">${short}</span></button>`;
-          }).join('')}
+          <button
+            type="button"
+            class="vrp-speed__trigger"
+            id="vrp-speed-trigger"
+            aria-haspopup="listbox"
+            aria-expanded="false"
+            aria-controls="vrp-speed-menu"
+            title="播放倍数"
+          >${formatSpeedLabel(settings.rate)}</button>
+          <div class="vrp-speed__menu" id="vrp-speed-menu" role="listbox" aria-label="选择播放倍数" hidden>
+            ${SPEEDS.map(s => {
+              const on = Math.abs(s - settings.rate) < 0.001;
+              return `<button type="button" class="vrp-speed__btn${on ? ' active' : ''}" role="option" data-speed="${s}" aria-selected="${on ? 'true' : 'false'}">${formatSpeedLabel(s)}</button>`;
+            }).join('')}
+          </div>
         </div>
       </div>
 
@@ -773,15 +935,41 @@
     bar.querySelector('#vrp-prev').addEventListener('click', () => jumpSegments(-1));
     bar.querySelector('#vrp-next').addEventListener('click', () => jumpSegments(+1));
     bar.querySelector('#vrp-replay').addEventListener('click', replayCurrentSegment);
-    bar.querySelectorAll('.vrp-speed__btn').forEach(btn => {
-      btn.addEventListener('click', () => {
+    const speedTrigger = bar.querySelector('#vrp-speed-trigger');
+    const speedMenu = bar.querySelector('#vrp-speed-menu');
+    const speedShell = bar.querySelector('#vrp-speed');
+    if (speedTrigger && speedMenu) {
+      speedTrigger.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setSpeedMenuOpen(speedMenu.hidden);
+      });
+      speedMenu.addEventListener('click', (event) => {
+        const btn = event.target.closest('.vrp-speed__btn');
+        if (!btn) return;
+        event.preventDefault();
+        event.stopPropagation();
         const r = parseFloat(btn.dataset.speed);
         const applied = setRate(r);
-        settings.rate = applied; saveSettings();
-        bar.querySelectorAll('.vrp-speed__btn').forEach(b => b.setAttribute('aria-pressed', String(parseFloat(b.dataset.speed) === applied)));
+        settings.rate = applied;
+        saveSettings();
+        syncSpeedUi(applied);
+        setSpeedMenuOpen(false);
         showToast(`Speed ${applied}×`);
       });
-    });
+      document.addEventListener('click', (event) => {
+        if (speedMenu.hidden) return;
+        if (speedShell && speedShell.contains(event.target)) return;
+        setSpeedMenuOpen(false);
+      });
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && !speedMenu.hidden) {
+          setSpeedMenuOpen(false);
+          speedTrigger.focus();
+        }
+      });
+    }
+    syncSpeedUi(settings.rate);
     bar.querySelector('#vrp-loop').addEventListener('click', cycleLoopMode);
     const apBtn = bar.querySelector('#vrp-autopause');
     apBtn.addEventListener('click', () => {
@@ -1109,6 +1297,22 @@
         }
       }
     }
+    // one-shot practice click: stop at this sentence end
+    if (practiceEndSec != null && !loopActive() && !abActive()) {
+      if (t >= practiceEndSec - 0.08) {
+        pause();
+        clearPracticeEnd();
+        showToast('这一句练完了 · 再点一句或下一句继续');
+        return;
+      }
+      // drifted far away (user scrubbed) — drop the arm
+      if (practiceSegIdx >= 0) {
+        const armed = segs[practiceSegIdx];
+        const st = armed ? Number(armed.start_sec ?? armed.start ?? armed.startTime ?? 0) : 0;
+        if (t < st - 1.2 || t > practiceEndSec + 2.5) clearPracticeEnd();
+      }
+    }
+
     // auto-pause at end of sentence: pause once on the boundary
     if (settings.autoPauseAtEnd && lastSeenIdx >= 0 && idx === -1) {
       const seg = segs[lastSeenIdx];
@@ -1617,14 +1821,12 @@
   function speedNudge(delta) {
     const next = setRate(getRate() + delta);
     settings.rate = next; saveSettings();
-    const bar = document.getElementById('vrp-bar');
-    if (bar) bar.querySelectorAll('.vrp-speed__btn').forEach(b => b.setAttribute('aria-pressed', String(parseFloat(b.dataset.speed) === next)));
+    syncSpeedUi(next);
     showToast(`Speed ${next}×`);
   }
   function speedReset() {
     setRate(1); settings.rate = 1; saveSettings();
-    const bar = document.getElementById('vrp-bar');
-    if (bar) bar.querySelectorAll('.vrp-speed__btn').forEach(b => b.setAttribute('aria-pressed', String(parseFloat(b.dataset.speed) === 1)));
+    syncSpeedUi(1);
     showToast('Speed 1×');
   }
   function copyCurrentSubtitle() {
@@ -1848,6 +2050,7 @@
     gJump.timer = setTimeout(commitGJump, 1400);
   }
 
+  // Capture phase so sentence arrows win over the host page's seek-only fallback.
   document.addEventListener('keydown', (e) => {
     if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
     if (isTypingTarget(e.target)) return;
@@ -1908,6 +2111,13 @@
     switch (e.key) {
       case ' ':
       case 'Spacebar':
+        // Desktop Hold owns Space (capture) for KTV karaoke — leave play/pause to K / click.
+        if (document.body.classList.contains('voice-chat-holding')
+          || (window.LinglishVoiceChatBridge && typeof window.LinglishVoiceChatBridge.isHolding === 'function'
+            && window.LinglishVoiceChatBridge.isHolding())
+          || document.getElementById('desk-hold')) {
+          return;
+        }
         e.preventDefault();
         if (!e.repeat) togglePlay();
         return;
@@ -2035,7 +2245,7 @@
 
   // expose for diagnostics / page-level integration
   window.VRP = {
-    play, pause, togglePlay, setRate, getRate, jumpSegments, replayCurrentSegment, toggleHelp, settings,
+    play, pause, togglePlay, setRate, getRate, seekAndPlay, jumpSegments, replayCurrentSegment, practiceSegment, practiceCurrentSegment, clearPracticeEnd, toggleHelp, settings,
     volumeNudge, savePosition, getSavedPosition, getCurrentVideoId,
     cycleLoopMode, togglePiP, copyCurrentSubtitle,
     getVisitedSet, markVisited, decorateAllVisited, resetVisitedForCurrentVideo,

@@ -246,13 +246,16 @@
     const gloss = styles.showGloss && (info.zh || info.definition)
       ? `<span class="wb-gloss-line">${escapeHtml(info.zh || info.definition)}</span>`
       : '';
+    // 词块宽度只跟单词色块走；音标/词性/释义用叠层或错开，不撑开词距
     return `<span class="wb-word-col" data-chunk="${chunkId % 6}">
-      ${phonetic}
-      <span class="wb-word wb-word-pill" data-word="${escapeHtml(token.key)}" tabindex="0">${escapeHtml(token.text)}</span>
-      ${pos}
-      <span class="wb-pos-bar ${posClass}" aria-hidden="true"></span>
+      <span class="wb-word-core">
+        ${phonetic}
+        <span class="wb-word wb-word-pill" data-word="${escapeHtml(token.key)}" tabindex="0">${escapeHtml(token.text)}</span>
+        ${pos}
+        <span class="wb-pos-bar ${posClass}" aria-hidden="true"></span>
+        ${cefr}
+      </span>
       ${gloss}
-      ${cefr}
     </span>`;
   }
 

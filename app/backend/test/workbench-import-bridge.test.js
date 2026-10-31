@@ -6,18 +6,20 @@ const vm = require('node:vm');
 const source = fs.readFileSync(path.resolve(__dirname, '../../frontend/js/workbench/import-bridge.js'), 'utf8');
 function harness(blocked = false) {
   const values = new Map();
+  const persistent = new Map();
   const navigations = [];
   const alerts = [];
   const sandbox = {
     URLSearchParams,
     sessionStorage: { setItem(k, v) { if (blocked) throw new Error('blocked'); values.set(k, v); }, getItem: k => values.get(k) || null, removeItem: k => values.delete(k) },
+    localStorage: { setItem(k, v) { persistent.set(k, v); }, getItem: k => persistent.get(k) || null, removeItem: k => persistent.delete(k) },
     location: { assign(url) { navigations.push({ sameTab: true, url }); } },
     open(url, target, features) { navigations.push({ sameTab: false, url, target, features }); },
     alert(message) { alerts.push(message); },
   };
   sandbox.window = sandbox;
   vm.runInNewContext(source, sandbox);
-  return { api: sandbox.WorkbenchImport, navigations, alerts };
+  return { api: sandbox.WorkbenchImport, navigations, alerts, persistent };
 }
 
 test('intensive-note import navigates in the same tab so its session payload survives noopener isolation', () => {
@@ -35,4 +37,12 @@ test('failed payload storage keeps the selected text on the current page and rep
   assert.equal(h.api.openIntensiveNote({ text: 'Keep this selected sentence.' }), false);
   assert.deepEqual(h.navigations, []);
   assert.equal(h.alerts.length, 1);
+});
+
+test('private note imports remain in the current tab and never persist their text across sessions', () => {
+  const h = harness();
+  assert.equal(h.api.openIntensiveNote({ text: 'A private imported lesson.', sameTab: false }), true);
+  assert.equal(h.navigations[0].sameTab, true);
+  assert.equal(h.persistent.size, 0);
+  assert.equal(h.api.consume().text, 'A private imported lesson.');
 });

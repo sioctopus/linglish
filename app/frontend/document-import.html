@@ -2,11 +2,12 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>导入学习文档 — Linglish</title>
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
   <link rel="stylesheet" href="./styles/tokens.css?v=1">
   <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
   <style>
     body {
       margin: 0;
@@ -41,36 +42,105 @@
     main {
       max-width: 1180px;
       margin: 0 auto;
-      padding: 32px 20px 48px;
+      padding: 24px 20px 40px;
+    }
+    .page-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0 0 16px;
     }
     h1 {
-      margin: 0 0 12px;
+      margin: 0;
       font-size: 32px;
       line-height: 40px;
       font-weight: 600;
     }
-    .lead {
-      margin: 0 0 20px;
-      max-width: 640px;
-      color: #64748b;
-      font-size: 16px;
-      line-height: 24px;
+    .title-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin: 14px 0 8px;
+    }
+    .title-row label {
+      margin: 0;
+    }
+    .title-row h2 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1.3;
+    }
+    .tip {
+      position: relative;
+      display: inline-flex;
+      flex: 0 0 auto;
+    }
+    .tip-btn {
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      color: #0f766e;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      box-shadow: none;
+    }
+    .tip-btn:hover,
+    .tip-btn[aria-expanded="true"] {
+      background: transparent;
+      color: #0b5f59;
+    }
+    .tip-btn .lx-icon {
+      width: 16px;
+      height: 16px;
+    }
+    .tip-panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 20;
+      width: min(320px, calc(100vw - 40px));
+      padding: 12px 14px;
+      border: 0;
+      border-radius: 12px;
+      background: #fff;
+      color: #334155;
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.55;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+      text-align: center;
+    }
+    .tip-panel[hidden] {
+      display: none !important;
+    }
+    .page-head .tip-panel {
+      left: auto;
+      right: 0;
+      transform: none;
+      text-align: center;
     }
     .workspace {
       display: grid;
       grid-template-columns: minmax(0, 1.15fr) minmax(300px, 0.85fr);
-      gap: 20px;
+      gap: 16px;
       align-items: stretch;
     }
     .card {
       background: #fff;
-      border-radius: 24px;
-      padding: 28px;
-      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
     }
     label {
       display: block;
-      margin: 16px 0 8px;
       font-size: 14px;
       font-weight: 600;
     }
@@ -78,30 +148,32 @@
       width: 100%;
       box-sizing: border-box;
       border: 1px solid #e2e8f0;
-      border-radius: 16px;
+      border-radius: 14px;
       padding: 12px 14px;
       font: inherit;
+      font-size: 16px;
       color: #0f172a;
       background: #fff;
     }
-    textarea { min-height: 120px; resize: vertical; }
-    .hint { margin: 8px 0 0; color: #64748b; font-size: 14px; line-height: 20px; }
-    .actions { margin-top: 20px; }
+    textarea { min-height: 100px; resize: vertical; }
+    .hint { margin: 0; color: #64748b; font-size: 14px; line-height: 20px; }
+    .actions { margin-top: 16px; }
     button.btn-primary {
       border: 0;
       cursor: pointer;
-      min-height: 52px;
+      min-height: 48px;
       padding: 0 22px;
       color: #fff;
       font: inherit;
       font-weight: 700;
+      border-radius: 999px;
       background: linear-gradient(135deg, #0d9488, #2dd4bf);
     }
     button.btn-primary:disabled { opacity: 0.6; cursor: wait; }
     .status {
-      margin-top: 16px;
+      margin-top: 12px;
       padding: 12px 14px;
-      border-radius: 16px;
+      border-radius: 14px;
       background: #f0fdfa;
       color: #0f172a;
     }
@@ -109,14 +181,13 @@
     .docs {
       margin: 0;
       background: #fff;
-      border-radius: 24px;
-      padding: 28px;
-      box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04);
       display: flex;
       flex-direction: column;
       min-height: 100%;
     }
-    .docs h2 { font-size: 20px; margin: 0 0 8px; }
     .workspace > .card,
     .workspace > .docs { height: 100%; box-sizing: border-box; }
     #doc-list {
@@ -124,16 +195,17 @@
       flex-direction: column;
       gap: 10px;
       overflow: auto;
-      max-height: calc(100vh - 280px);
+      max-height: calc(100vh - 240px);
+      margin-top: 12px;
     }
     .doc {
       display: flex;
       justify-content: space-between;
       gap: 12px;
       align-items: center;
-      padding: 14px 16px;
+      padding: 12px 14px;
       border: 1px solid #e2e8f0;
-      border-radius: 16px;
+      border-radius: 14px;
       color: #0f172a;
       text-decoration: none;
       background: #fff;
@@ -148,11 +220,66 @@
       font-size: 14px;
     }
     @media (max-width: 860px) {
-      .workspace { grid-template-columns: 1fr; }
+      .nav {
+        width: 100%;
+        max-width: none;
+        height: auto;
+        min-height: 56px;
+        margin: 0;
+        padding: 10px 16px;
+        padding-top: max(10px, env(safe-area-inset-top));
+        border-radius: 0;
+        box-shadow: none;
+        border-bottom: 1px solid #e2e8f0;
+      }
+      main {
+        padding: 16px 16px max(28px, env(safe-area-inset-bottom));
+      }
+      .page-head {
+        margin-bottom: 12px;
+      }
+      h1 {
+        font-size: 22px;
+        line-height: 1.3;
+      }
+      .workspace {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+      .card,
+      .docs {
+        border-radius: 16px;
+        padding: 16px;
+      }
+      .title-row {
+        margin: 12px 0 6px;
+      }
+      .title-row:first-child {
+        margin-top: 0;
+      }
+      textarea {
+        min-height: 88px;
+      }
+      #doc-list {
+        max-height: none;
+      }
+      .tip-panel {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: min(280px, calc(100vw - 48px));
+        text-align: center;
+      }
+      .page-head .tip-panel {
+        left: auto;
+        right: 0;
+        transform: none;
+      }
     }
   </style>
-  <script src="./js/auth-manager.js?v=20261019"></script>
+  <script src="./js/auth-manager.js?v=2026103001"></script>
   <script src="./js/nav-back.js?v=1"></script>
+  <script src="./js/icons.js?v=2026103001"></script>
 </head>
 <body>
   <nav class="nav">
@@ -160,31 +287,91 @@
     <a class="back" data-nav="back" href="./index-desktop.html">返回</a>
   </nav>
   <main>
-    <h1>导入学习文档</h1>
-    <p class="lead">上传课文会做成朗读字幕。上传英语试卷，或 Grok 生成的试卷网页，会做成网页版试卷，每一段和参考答案都可以点喇叭朗读。</p>
+    <div class="page-head">
+      <h1>导入学习文档</h1>
+      <div class="tip">
+        <button class="tip-btn" type="button" aria-expanded="false" aria-controls="tip-page" aria-label="查看说明">
+          <span data-lx-icon="help" data-lx-size="16"></span>
+        </button>
+        <div class="tip-panel" id="tip-page" hidden>
+          上传课文会做成朗读字幕。上传英语试卷，或 Grok 生成的试卷网页，会做成网页版试卷，每一段和参考答案都可以点喇叭朗读。
+        </div>
+      </div>
+    </div>
     <div class="workspace">
     <form class="card" id="import-form">
-      <label for="doc-title">文档名称</label>
+      <div class="title-row">
+        <label for="doc-title">文档名称</label>
+      </div>
       <input id="doc-title" name="title" type="text" placeholder="例如：三年级 Unit 2 课文">
-      <label for="doc-file">上传文件</label>
-      <input id="doc-file" name="file" type="file" accept=".pdf,.txt,.docx,.epub,.html,.htm,.png,.jpg,.jpeg,.webp">
-      <p class="hint">支持英语图片、PDF、Word（docx）、电子书（epub）、TXT，以及试卷网页（html）。PPT 或旧版 doc 请先另存成 PDF 或 docx。试卷会生成可朗读的网页版。</p>
-      <label for="doc-text">或粘贴课文</label>
-      <textarea id="doc-text" name="text" placeholder="把要朗读的课文粘贴在这里。如果已经选择了文件，会以文件为准。"></textarea>
+      <div class="title-row">
+        <label for="doc-file">上传文件</label>
+        <div class="tip">
+          <button class="tip-btn" type="button" aria-expanded="false" aria-controls="tip-file" aria-label="查看支持的文件格式">
+            <span data-lx-icon="help" data-lx-size="16"></span>
+          </button>
+          <div class="tip-panel" id="tip-file" hidden>
+            支持英语图片、PDF、Word（docx）、电子书（epub）、TXT、Markdown（.md），以及试卷网页（html）。也可以把 AI 生成的课文直接粘贴到下方。PPT 或旧版 doc 请先另存成 PDF 或 docx。试卷会生成可朗读的网页版。
+          </div>
+        </div>
+      </div>
+      <input id="doc-file" name="file" type="file" accept=".pdf,.txt,.md,.markdown,.docx,.epub,.html,.htm,.png,.jpg,.jpeg,.webp">
+      <div class="title-row">
+        <label for="doc-text">或粘贴课文 / AI 内容</label>
+      </div>
+      <textarea id="doc-text" name="text" placeholder="把课文或 AI 生成的内容粘贴在这里（支持 Markdown）。如果已经选择了文件，会以文件为准。"></textarea>
       <div class="actions">
         <button class="btn btn-primary" id="import-btn" type="submit">导入并开始上课</button>
       </div>
       <div id="status" class="status" hidden></div>
     </form>
     <section class="docs">
-      <h2>我已导入的</h2>
-      <p class="hint">点一份文档进入学习。试卷会打开网页版试卷。</p>
+      <div class="title-row">
+        <h2>我已导入的</h2>
+        <div class="tip">
+          <button class="tip-btn" type="button" aria-expanded="false" aria-controls="tip-docs" aria-label="查看列表说明">
+            <span data-lx-icon="help" data-lx-size="16"></span>
+          </button>
+          <div class="tip-panel" id="tip-docs" hidden>
+            点一份文档进入学习。试卷会打开网页版试卷。
+          </div>
+        </div>
+      </div>
       <div id="doc-list"><p class="hint">正在读取…</p></div>
     </section>
     </div>
   </main>
   <script>
     const statusEl = document.getElementById('status');
+
+    function closeTips(except) {
+      document.querySelectorAll('.tip').forEach((tip) => {
+        if (tip === except) return;
+        const btn = tip.querySelector('.tip-btn');
+        const panel = tip.querySelector('.tip-panel');
+        if (btn) btn.setAttribute('aria-expanded', 'false');
+        if (panel) panel.hidden = true;
+      });
+    }
+
+    document.querySelectorAll('.tip').forEach((tip) => {
+      const btn = tip.querySelector('.tip-btn');
+      const panel = tip.querySelector('.tip-panel');
+      if (!btn || !panel) return;
+      btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const open = panel.hidden;
+        closeTips(tip);
+        panel.hidden = !open;
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      });
+    });
+
+    document.addEventListener('click', () => closeTips());
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') closeTips();
+    });
 
     function readToken() {
       return window.AuthManager ? window.AuthManager.getToken() || '' : '';
@@ -215,6 +402,7 @@
 
     async function loadDocuments() {
       const list = document.getElementById('doc-list');
+      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') await window.AuthManager.ensureSession();
       const token = readToken();
       if (!token) {
         list.innerHTML = '<p class="hint">登录后可以查看已经导入的文档。</p>';
@@ -247,6 +435,7 @@
 
     document.getElementById('import-form').addEventListener('submit', async (event) => {
       event.preventDefault();
+      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') await window.AuthManager.ensureSession();
       const token = readToken();
       if (!token) {
         showStatus('请先登录，再导入学习文档。', true);
@@ -256,7 +445,7 @@
       const file = document.getElementById('doc-file').files[0];
       const text = document.getElementById('doc-text').value.trim();
       if (!file && !text) {
-        showStatus('请上传 PDF、TXT，或粘贴课文。', true);
+        showStatus('请上传 PDF、TXT、Markdown，或粘贴课文 / AI 内容。', true);
         return;
       }
       const button = document.getElementById('import-btn');

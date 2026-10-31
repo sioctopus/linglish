@@ -116,3 +116,15 @@ test('activation removes all previous runtime and core versions including the im
   assert.deepEqual(worker.calls.deleted.sort(), previous.sort());
   assert.equal(worker.entries.has('other-app-cache'), true);
 });
+
+for (const api of ['/vocab/review-queue', '/video-resources']) {
+  test(`cookie-only account data for ${api} always bypasses cache`, async () => {
+    const worker = serviceWorker();
+    worker.setCacheControl('no-cache');
+    assert.equal((await worker.request(api)).status, 200);
+    worker.changeAccount();
+    assert.equal((await worker.request(api)).status, 401);
+    assert.equal(worker.calls.matched, 0);
+    assert.equal(worker.entries.size, 0);
+  });
+}

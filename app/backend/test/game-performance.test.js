@@ -219,35 +219,22 @@ test('game shell asks the browser to preload the word pack', async () => {
 test('game shell invalidates the immutable pre-tracking API client cache', async () => {
   const response = await serveFrontend('game.html', '/game.html');
 
-  const reference = response.body().match(/<script src="\/js\/game\/api-client\.js\?v=(\d+)"><\/script>/);
-  assert.ok(reference, 'API client retains a numeric immutable cache key');
-  assert.ok(Number(reference[1]) >= 6, 'API client must invalidate versions before tracking support');
+  assert.match(response.body(), /<script src="\/js\/game\/api-client\.js\?v=2026103001"><\/script>/);
+  assert.doesNotMatch(response.body(), /<script src="\/js\/game\/api-client\.js\?v=8"><\/script>/);
 });
 
 test('game shell publishes interaction fixes under fresh immutable cache keys', async () => {
   const response = await serveFrontend('game.html', '/game.html');
-  const html = response.body();
-  const references = [...html.matchAll(/<(script|link)\b[^>]*\b(src|href)="([^"]+)"[^>]*>/g)].map(match => ({
-    tag: match[1], url: new URL(match[3], 'https://app.example.test'), index: match.index,
-  }));
-  function asset(pathname, minimum, tag) {
-    const reference = references.find(item => item.url.pathname === pathname && item.tag === tag);
-    assert.ok(reference, `${pathname} must remain included as a ${tag}`);
-    const version = reference.url.searchParams.get('v');
-    assert.match(version || '', /^\d+$/, `${pathname} must have an immutable version key`);
-    assert.ok(Number(version) >= minimum, `${pathname} must invalidate cache versions before ${minimum}`);
-    return reference;
-  }
-  asset('/styles/mobile/pages/game.css', 46, 'link');
-  const numberWords = asset('/js/game/number-words.js', 1, 'script');
-  const views = asset('/js/game/game-views.js', 25, 'script');
-  assert.ok(numberWords.index < views.index, 'number-word support must load before the views that use it');
-  asset('/js/game/games/quiz.js', 2, 'script');
-  asset('/js/game/games/speaking.js', 1, 'script');
-  asset('/js/game/daily-challenge.js', 1, 'script');
-  asset('/js/game/word-dex.js', 1, 'script');
-  asset('/js/game/game-app.js', 33, 'script');
-  asset('/js/game/word-packs/card-decks.json', 20, 'link');
+
+  assert.match(response.body(), /href="\/styles\/mobile\/pages\/game\.css\?v=2026103001"/);
+  assert.match(response.body(), /src="\/js\/tts-voice\.js\?v=2026103001"/);
+  assert.match(response.body(), /src="\/js\/game\/number-words\.js\?v=1"><\/script>\s*<script src="\/js\/game\/game-views\.js\?v=2026103001">/);
+  assert.match(response.body(), /src="\/js\/game\/games\/quiz\.js\?v=2"/);
+  assert.match(response.body(), /src="\/js\/game\/games\/speaking\.js\?v=1"/);
+  assert.match(response.body(), /src="\/js\/game\/daily-challenge\.js\?v=1"/);
+  assert.match(response.body(), /src="\/js\/game\/word-dex\.js\?v=1"/);
+  assert.match(response.body(), /src="\/js\/game\/game-app\.js\?v=2026103001"/);
+  assert.match(response.body(), /card-decks\.json\?v=2026103001/);
 });
 
 test('installed app home link is not the bare start url', () => {

@@ -18,11 +18,334 @@
 .player > .coach-dock { bottom: 48px; }
 .video-wrapper > .coach-dock { bottom: 8px; }
 
+/* Mobile chrome under sticky player:
+   collapsed = 1 row  (倍数 Tab + 英文/双语/上下句)
+   expanded  = 2 rows (带教功能 / 倍数 Tab + 英文/双语/上下句) */
+body.video-reader-mobile-focus .coach-dock,
+body.video-reader-mobile-focus .video-player-area > .coach-dock,
+.coach-dock[data-host="mobile"] {
+  position: relative !important;
+  left: auto !important;
+  right: auto !important;
+  top: auto !important;
+  bottom: auto !important;
+  inset: auto !important;
+  z-index: 1 !important;
+  display: flex !important;
+  flex: 0 0 auto !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 4px !important;
+  width: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  height: auto !important;
+  margin: 4px 0 0 !important;
+  overflow: visible !important;
+  padding: 2px 12px !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  pointer-events: auto !important;
+  transform: none !important;
+}
+
+body.video-reader-mobile-focus .video-wrapper > .coach-dock {
+  display: none !important;
+}
+
+body.video-reader-mobile-focus .coach-dock .coach-rows,
+body.video-reader-mobile-focus .coach-dock .coach-panel,
+.coach-dock[data-host="mobile"] .coach-rows,
+.coach-dock[data-host="mobile"] .coach-panel {
+  display: none !important;
+}
+
+body.video-reader-mobile-focus .coach-dock .coach-chrome,
+.coach-dock[data-host="mobile"] .coach-chrome {
+  position: relative;
+  display: flex !important;
+  flex: 0 0 auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+  overflow: visible !important;
+  z-index: 6;
+}
+
+body.video-reader-mobile-focus .coach-dock .coach-bar,
+.coach-dock[data-host="mobile"] .coach-bar {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0;
+  min-width: 0;
+  margin: 0;
+}
+
+body.video-reader-mobile-focus .coach-dock .coach-bar[hidden],
+.coach-dock[data-host="mobile"] .coach-bar[hidden] {
+  display: none !important;
+}
+
+/* Speed dropdown replaces the old 带教 pill: tap trigger → pick rate. */
+body.video-reader-mobile-focus .coach-dock .coach-speed-dropdown,
+.coach-dock[data-host="mobile"] .coach-speed-dropdown,
+body.video-reader-mobile-focus .coach-dock .mobile-speed-controls.coach-speed-dropdown,
+body.video-reader-mobile-focus .mobile-view-toggle > .mobile-speed-controls {
+  position: relative;
+  display: flex !important;
+  flex: 0 0 auto;
+  align-items: stretch;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+body.video-reader-mobile-focus .coach-dock .mobile-speed-trigger,
+.coach-dock[data-host="mobile"] .mobile-speed-trigger,
+body.video-reader-mobile-focus .mobile-view-toggle .mobile-speed-trigger {
+  flex: 0 0 auto;
+  min-width: 40px;
+  min-height: 34px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 999px;
+  color: #0f766e;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body.video-reader-mobile-focus .coach-dock .mobile-speed-trigger[aria-expanded="true"],
+.coach-dock[data-host="mobile"] .mobile-speed-trigger[aria-expanded="true"],
+body.video-reader-mobile-focus .mobile-view-toggle .mobile-speed-trigger[aria-expanded="true"] {
+  color: #0f766e;
+  background: rgba(15, 118, 110, 0.1);
+}
+
+body.video-reader-mobile-focus .coach-dock .mobile-speed-menu,
+.coach-dock[data-host="mobile"] .mobile-speed-menu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  z-index: 40;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 4px;
+  min-width: 112px;
+  padding: 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.16);
+}
+
+body.video-reader-mobile-focus .coach-dock .mobile-speed-menu[hidden],
+.coach-dock[data-host="mobile"] .mobile-speed-menu[hidden] {
+  display: none !important;
+}
+
+body.video-reader-mobile-focus .coach-dock .mobile-speed-menu .mobile-speed-btn,
+.coach-dock[data-host="mobile"] .mobile-speed-menu .mobile-speed-btn {
+  min-width: 0;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 10px;
+  color: #0f172a;
+  background: #f8fafc;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 800;
+  text-align: left;
+  white-space: nowrap;
+}
+
+body.video-reader-mobile-focus .coach-dock .mobile-speed-menu .mobile-speed-btn.active,
+.coach-dock[data-host="mobile"] .mobile-speed-menu .mobile-speed-btn.active {
+  color: #ffffff;
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
+}
+
+body.video-reader-mobile-focus.mobile-speed-menu-open .coach-dock,
+body.video-reader-mobile-focus.mobile-speed-menu-open .video-player-area > .coach-dock {
+  z-index: 60 !important;
+  overflow: visible !important;
+}
+
+body.video-reader-mobile-focus .coach-dock .coach-status,
+.coach-dock[data-host="mobile"] .coach-status {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+  padding: 0 !important;
+  margin: -1px !important;
+}
+
+body.video-reader-mobile-focus .coach-dock .coach-toggle,
+.coach-dock[data-host="mobile"] .coach-toggle {
+  flex: 0 0 auto;
+  min-width: 52px;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  color: #0f766e;
+  background: #f0fdfa;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+body.video-reader-mobile-focus .coach-dock[data-open="true"] .coach-toggle,
+.coach-dock[data-host="mobile"][data-open="true"] .coach-toggle {
+  color: #ffffff !important;
+  background: linear-gradient(135deg, #0d9488, #2dd4bf) !important;
+}
+
+body.video-reader-mobile-focus .coach-dock .coach-actions,
+.coach-dock[data-host="mobile"] .coach-actions {
+  display: none !important;
+}
+
+body.video-reader-mobile-focus .coach-dock[data-open="true"] .coach-actions:not([hidden]),
+.coach-dock[data-host="mobile"][data-open="true"] .coach-actions:not([hidden]) {
+  display: grid !important;
+  flex: 0 0 auto;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  min-width: 0;
+  order: -1;
+  overflow: visible !important;
+  padding: 0;
+}
+
+body.video-reader-mobile-focus .coach-dock .coach-chrome .mobile-view-toggle,
+.coach-dock[data-host="mobile"] .coach-chrome .mobile-view-toggle,
+body.video-reader-mobile-focus .coach-dock > .mobile-view-toggle,
+body.video-reader-mobile-focus .mobile-transcript-view > .mobile-view-toggle {
+  display: flex !important;
+  flex: 1 1 auto;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+}
+
+body.video-reader-mobile-focus .mobile-view-toggle > .mobile-speed-controls,
+.coach-dock[data-host="mobile"] .mobile-view-toggle > .mobile-speed-controls {
+  flex: 0 0 auto;
+}
+
+body.video-reader-mobile-focus .mobile-view-toggle > .mobile-view-btn,
+.coach-dock[data-host="mobile"] .mobile-view-toggle > .mobile-view-btn {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+body.video-reader-mobile-focus .coach-action,
+.coach-dock[data-host="mobile"] .coach-action {
+  flex: none !important;
+  width: 100%;
+  min-width: 0;
+  min-height: 36px;
+  padding: 6px 4px;
+  border-color: #e2e8f0;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #0f172a;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+body.video-reader-mobile-focus .coach-action.is-on,
+.coach-dock[data-host="mobile"] .coach-action.is-on {
+  border-color: transparent;
+  background: linear-gradient(135deg, #0d9488, #2dd4bf);
+  color: #ffffff;
+}
+
+body.video-reader-mobile-focus .study-pop,
+body.video-reader-mobile-focus .study-modal {
+  left: 10px !important;
+  right: 10px !important;
+  top: auto !important;
+  bottom: calc(12px + env(safe-area-inset-bottom)) !important;
+  width: auto !important;
+  max-height: min(38vh, 320px);
+  transform: none !important;
+  overflow: auto;
+}
+
+body.video-reader-mobile-focus .study-backdrop {
+  background: transparent;
+}
+
 .coach-bar {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
+}
+
+/* Desktop caption: no permanent 带教 tip bar / status — tools appear only after clicking a line. */
+.coach-dock[data-host="desktop"] .coach-bar,
+.caption-bar .coach-dock .coach-bar,
+.coach-dock[data-host="desktop"] .coach-chrome,
+.caption-bar .coach-dock .coach-chrome,
+.coach-dock[data-host="desktop"] .coach-actions,
+.caption-bar .coach-dock .coach-actions {
+  display: none !important;
+}
+
+/* Desktop lyric window: taller stage + larger current line. */
+.coach-dock[data-host="desktop"] .coach-rows,
+.caption-bar .coach-dock[data-host="desktop"] .coach-rows {
+  gap: 10px;
+  min-height: 132px;
+  align-content: center;
+}
+
+.coach-dock[data-host="desktop"] .coach-row.is-depth-1,
+.caption-bar .coach-dock[data-host="desktop"] .coach-row.is-depth-1 {
+  font-size: clamp(15px, 1.5vw, 18px);
+  line-height: 1.4;
+}
+
+.coach-dock[data-host="desktop"] .coach-row.is-depth-0,
+.coach-dock[data-host="desktop"] .coach-row.is-current.is-depth-0,
+.caption-bar .coach-dock[data-host="desktop"] .coach-row.is-depth-0,
+.caption-bar .coach-dock[data-host="desktop"] .coach-row.is-current.is-depth-0 {
+  font-size: clamp(22px, 2.6vw, 32px);
+  font-weight: 800;
+  line-height: 1.45;
 }
 
 .coach-toggle,
@@ -67,9 +390,11 @@
 
 .coach-rows {
   display: grid;
-  grid-template-rows: 1.35em 1.7em 1.35em;
-  gap: 2px;
-  overflow: hidden;
+  grid-template-rows: repeat(7, minmax(0, auto));
+  gap: 4px;
+  overflow: visible;
+  justify-items: center;
+  align-items: center;
 }
 
 .coach-dock[data-roll="forward"] .coach-rows,
@@ -90,6 +415,11 @@
   color: rgba(248, 250, 252, 0.62);
   font-size: 13px;
   line-height: 1.35;
+  cursor: pointer;
+}
+
+.coach-dock[data-open="true"] .coach-row:hover {
+  color: rgba(248, 250, 252, 0.88);
 }
 
 .coach-row.is-current {
@@ -98,6 +428,45 @@
   font-weight: 700;
   white-space: normal;
   line-height: 1.45;
+}
+
+/* Fisheye: edges small → center large (both above and below). */
+.coach-row.is-depth-3 {
+  font-size: 11px;
+  line-height: 1.25;
+  opacity: 0.42;
+  max-width: 68%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.coach-row.is-depth-2 {
+  font-size: 12.5px;
+  line-height: 1.3;
+  opacity: 0.58;
+  max-width: 80%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.coach-row.is-depth-1 {
+  font-size: 14px;
+  line-height: 1.35;
+  opacity: 0.78;
+  max-width: 90%;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.coach-row.is-depth-0,
+.coach-row.is-current.is-depth-0 {
+  font-size: clamp(17px, 1.7vw, 22px);
+  font-weight: 800;
+  line-height: 1.5;
+  opacity: 1;
+  max-width: 100%;
+  white-space: normal;
+}
+
+.coach-row.is-tools-open {
+  color: #ecfdf5;
 }
 
 .coach-row.is-marked { text-decoration: underline; text-decoration-color: #2dd4bf; text-underline-offset: 3px; }
@@ -144,6 +513,20 @@
   line-height: 1.55;
 }
 
+/* Desktop caption: word card under the focused line */
+.coach-dock[data-host="desktop"] .coach-panel,
+.caption-bar .coach-dock .coach-panel {
+  max-height: none;
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+  font-size: 14px;
+}
+
 .coach-panel[hidden] { display: none; }
 .coach-panel p { margin: 0 0 6px; white-space: pre-wrap; }
 .coach-panel textarea {
@@ -172,6 +555,10 @@
 .coach-panel button { border: 0; }
 
 .coach-phon { color: #5eead4; }
+
+.transcript .seg.is-tools-open {
+  box-shadow: inset 0 0 0 1px rgba(13, 148, 136, 0.28);
+}
 
 .seg-tools {
   display: flex;

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Linglish · 扩展已连接</title>
+  <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #f0fdfa, #f8fafc);
+      font-family: Manrope, "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #0f172a;
+    }
+    .card {
+      width: min(440px, calc(100vw - 32px));
+      padding: 28px 24px;
+      border-radius: 24px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 18px 40px rgba(15, 23, 42, 0.06);
+      text-align: center;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      font-weight: 600;
+    }
+    p {
+      margin: 0 0 18px;
+      color: #64748b;
+      line-height: 1.55;
+    }
+    .status {
+      margin-bottom: 18px;
+      padding: 10px 12px;
+      border-radius: 999px;
+      background: #f0fdfa;
+      color: #0f766e;
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .status.is-wait { background: #fff7ed; color: #c2410c; }
+    .status.is-error { background: #fef2f2; color: #b91c1c; }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+    }
+    .actions a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 999px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+    .actions a.primary {
+      color: #fff;
+      background: linear-gradient(135deg, #0d9488, #2dd4bf);
+    }
+    .actions a.secondary {
+      color: #0f766e;
+      background: #f0fdfa;
+      border: 1px solid #99f6e4;
+    }
+  </style>
+  <script src="/js/auth-manager.js?v=2026103001" defer></script>
+</head>
+<body>
+  <main class="card">
+    <h1>Chrome 扩展登录桥</h1>
+    <p>登录态会同步到 Linglish 浏览器扩展，之后可在 YouTube 页一键存到学习库。</p>
+    <div class="status is-wait" id="status">正在同步登录态…</div>
+    <div class="actions">
+      <a class="primary" href="./index-desktop.html">打开首页</a>
+      <a class="secondary" href="./desktop-auth.html?next=/extension-bridge.html">重新登录</a>
+    </div>
+  </main>
+  <script>
+    (function () {
+      const statusEl = document.getElementById('status');
+
+      function readToken() {
+        try {
+          if (window.AuthManager && typeof AuthManager.getToken === 'function') {
+            const t = AuthManager.getToken();
+            if (t) return String(t);
+          }
+        } catch (_) { /* ignore */ }
+        try {
+          return localStorage.getItem('authToken')
+            || localStorage.getItem('linglish_token')
+            || sessionStorage.getItem('authToken')
+            || sessionStorage.getItem('linglish_token')
+            || '';
+        } catch (_) {
+          return '';
+        }
+      }
+
+      function readEmail() {
+        try {
+          return localStorage.getItem('userEmail') || sessionStorage.getItem('userEmail') || '';
+        } catch (_) {
+          return '';
+        }
+      }
+
+      function setStatus(text, kind) {
+        statusEl.textContent = text;
+        statusEl.classList.remove('is-wait', 'is-error');
+        if (kind) statusEl.classList.add(kind);
+      }
+
+      async function sync() {
+        if (window.AuthManager && AuthManager.ready) {
+          try { await AuthManager.ready; } catch (_) { /* ignore */ }
+        }
+        const token = readToken();
+        const email = readEmail();
+        if (!token) {
+          setStatus('还没有登录。请先登录，再回到本页。', 'is-error');
+          return;
+        }
+
+        // Content script site-bridge.js also syncs; this page confirms UX.
+        const bridged = document.documentElement.dataset.linglishExtensionBridge === '1';
+        if (bridged) {
+          setStatus(email ? `已同步到扩展 · ${email}` : '已同步到扩展', null);
+          return;
+        }
+
+        setStatus(
+          '已检测到站点登录。请确认 Chrome 已加载 Linglish 扩展；打开任意 Linglish 页面后扩展会自动同步。',
+          'is-wait'
+        );
+      }
+
+      setTimeout(sync, 200);
+      setTimeout(sync, 1200);
+    })();
+  </script>
+</body>
+</html>

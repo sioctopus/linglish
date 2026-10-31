@@ -12,8 +12,10 @@
     { id: 'lookup', label: 'AI查词' },
     { id: 'explain', label: '讲解' },
     { id: 'translate', label: '翻译' },
-    { id: 'read', label: '逐句朗读' },
+    { id: 'read', label: '听原声' },
     { id: 'shadow', label: '跟读' },
+    { id: 'hear-me', label: '听自己' },
+    { id: 'compare', label: '对比' },
   ]);
 
   const ACTIVE = new Set(['active', 'on_trial', 'trialing']);
@@ -70,22 +72,52 @@
     return -1;
   }
 
-  function rollingRows(segments, index) {
+  /** Prefer an in-range cue; otherwise the nearest upcoming / previous sentence. */
+  function resolveIndex(segments, time) {
+    const list = Array.isArray(segments) ? segments : [];
+    if (!list.length) return -1;
+    const exact = indexAtTime(list, time);
+    if (exact >= 0) return exact;
+    const moment = Number(time);
+    if (!Number.isFinite(moment)) return 0;
+    let best = 0;
+    let bestDist = Infinity;
+    for (let i = 0; i < list.length; i += 1) {
+      const bounds = boundsOf(list[i]);
+      const dist = moment < bounds.start
+        ? bounds.start - moment
+        : moment > bounds.end
+          ? moment - bounds.end
+          : 0;
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
+    }
+    return best;
+  }
+
+  function rollingRows(segments, index, radius) {
     const list = Array.isArray(segments) ? segments : [];
     const current = Number.isInteger(index) ? index : -1;
-    return ['previous', 'current', 'next'].map((role, offset) => {
-      const rowIndex = current + offset - 1;
+    const span = Number.isFinite(Number(radius)) ? Math.max(1, Math.min(4, Number(radius))) : 3;
+    const rows = [];
+    for (let delta = -span; delta <= span; delta += 1) {
+      const rowIndex = current + delta;
       const segment = rowIndex >= 0 && rowIndex < list.length ? list[rowIndex] : null;
       const bounds = segment ? boundsOf(segment) : { start: 0, end: 0 };
-      return {
-        role,
+      const depth = Math.abs(delta);
+      rows.push({
+        role: delta === 0 ? 'current' : (delta < 0 ? 'previous' : 'next'),
+        depth,
         index: segment ? rowIndex : -1,
         text: segment ? textOf(segment) : '',
         translation: segment ? translationOf(segment) : '',
         start: bounds.start,
         end: bounds.end,
-      };
-    });
+      });
+    }
+    return rows;
   }
 
   function tokenize(text) {
@@ -181,6 +213,7 @@
     copyText,
     emptyRecord,
     indexAtTime,
+    resolveIndex,
     isMarked,
     noteFor,
     readRecord,
