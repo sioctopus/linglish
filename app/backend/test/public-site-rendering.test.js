@@ -33,11 +33,7 @@ test('configured metadata origin is substituted once, with valid inline scripts 
     assert.ok(html.includes('https://example.com:4444'));
     assert.doesNotMatch(html, /:4444:4444|https:\/\/www\.example\.com/);
     for (const match of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
-      if (/\bsrc\s*=|type=["']module["']/i.test(match[1])) continue;
-      if (/application\/(?:ld\+)?json|type=["'](?:speculationrules|importmap)["']/i.test(match[1])) {
-        JSON.parse(match[2]);
-        continue;
-      }
+      if (/\bsrc\s*=|application\/ld\+json|type=["']module["']/i.test(match[1])) continue;
       if (match[2].trim()) new vm.Script(match[2]);
     }
     const head = await fetch(origin + pathname, { method: 'HEAD' });

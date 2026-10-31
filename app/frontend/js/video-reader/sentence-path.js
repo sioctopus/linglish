@@ -256,9 +256,8 @@
           return;
         }
         const dock = window.LinglishCoachingDock;
-        if (dock && typeof dock.ensureOpen === 'function') dock.ensureOpen();
         if (dock && typeof dock.shadowCurrent === 'function' && dock.shadowCurrent()) return;
-        toast('带教还没就绪，稍后再跟读这一句');
+        toast('跟读还没就绪，稍后再试这一句');
       });
     }
     if (review && !review.dataset.wired) {
@@ -283,7 +282,7 @@
         dock.setStudyHint(mode === 'arena' ? '实战场：选一句，扮演着说' : 'AI陪练：听一句跟着说');
       }
     } else if (dock && typeof dock.setStudyHint === 'function') {
-      dock.setStudyHint('带教模式已就绪');
+      dock.setStudyHint('');
     }
     if (!options || options.history !== 'skip') {
       try {
@@ -307,6 +306,12 @@
     if (window.LinglishVoiceChatBridge && typeof window.LinglishVoiceChatBridge.sync === 'function') {
       window.LinglishVoiceChatBridge.sync();
     }
+    if (window.LinglishArenaDialogue && typeof window.LinglishArenaDialogue.sync === 'function') {
+      window.LinglishArenaDialogue.sync();
+    }
+    if (typeof window.syncMobileStudyLibraryChrome === 'function') {
+      window.syncMobileStudyLibraryChrome();
+    }
   }
 
   function mount() {
@@ -323,16 +328,25 @@
     const study = new URLSearchParams(window.location.search).get('study');
     if (study === 'coach' || study === 'arena') {
       switchVideoStudyMode(study, { history: 'skip' });
-      // Mobile: open library only when no video/podcast is selected yet.
+      // 无片源时回到视频学习选内容（不在 AI陪练 / 实战场里独立换片）
       if (onMobile) {
         setTimeout(() => {
           try {
+            const hasContent = window.LinglishStudySelection
+              && typeof window.LinglishStudySelection.hasContent === 'function'
+              && window.LinglishStudySelection.hasContent();
             const selected = window.LinglishVideoReaderState && window.LinglishVideoReaderState.selectedVideoId;
             const media = window.LinglishStudyMedia;
-            const hasContent = Boolean(selected)
+            const ok = hasContent
+              || Boolean(selected)
               || Boolean(media && (media.audioUrl || media.youtube_video_id || media.id));
-            if (!hasContent && typeof window.openMobileVideoLibrary === 'function') {
-              window.openMobileVideoLibrary('videos');
+            if (!ok) {
+              if (window.LinglishStudySelection && typeof window.LinglishStudySelection.openPicker === 'function') {
+                window.LinglishStudySelection.openPicker('videos');
+              } else if (typeof window.openMobileVideoLibrary === 'function') {
+                switchVideoStudyMode('video', { history: 'skip' });
+                window.openMobileVideoLibrary('videos');
+              }
             }
           } catch (_) {}
         }, 60);

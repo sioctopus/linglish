@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <script src="./js/tts-voice.js?v=2026103001"></script>
+  <script src="./js/tts-voice.js?v=3"></script>
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: data: blob:; media-src 'self' https: data: blob:; img-src 'self' https: data: blob:; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; style-src-elem 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https: data: https://fonts.gstatic.com; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com; script-src 'self' https: 'unsafe-inline' 'unsafe-eval' https://static.cloudflareinsights.com; script-src-elem 'self' https: 'unsafe-inline' https://static.cloudflareinsights.com;">
   <script>
@@ -157,33 +157,37 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Linglish">
   <link rel="stylesheet" href="/css/install-desktop.css?v=3">
-  <script src="/js/install-desktop.js?v=2026103001" defer></script>
+  <script src="/js/install-desktop.js?v=3" defer></script>
   <link rel="stylesheet" href="./styles/tokens.css?v=20261018-focus-player">
-  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
-  <script src="./js/icons.js?v=2026103001"></script>
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
+  <script src="./js/icons.js?v=1"></script>
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./shared/dictionary.css?v=20251113">
-  <script defer src="./global-ui.js?v=2026103001"></script>
-  <script defer src="./js/auth-manager.js?v=2026103001"></script>
+  <script defer src="./global-ui.js"></script>
+  <script defer src="./js/auth-manager.js?v=20261019"></script>
   <script defer src="./js/storage-helper.js"></script>
-  <script defer src="./i18n.js?v=2026103001"></script>
+  <script defer src="./i18n.js?v=20261019"></script>
   <script defer src="./guest-check.js"></script>
-  <script defer src="./auth-helpers.js?v=2026103001"></script>
+  <script defer src="./auth-helpers.js"></script>
   <script defer src="./shared/dictionary-render.js?v=1765726957"></script>
   <script defer src="./shared/dictionary-lookup.js?v=1734439600"></script>
   <script defer src="./feedback.js"></script>
   <script defer src="./video-tag-system.js?v=20251224"></script>
   <script defer src="./js/practice/transcript-processor.js?v=20260110"></script>
-  <script defer src="./js/practice/practice-utils.js?v=2026103001"></script>
+  <script defer src="./js/practice/practice-utils.js?v=20260110"></script>
   <script defer src="./js/practice/shadowing-mode.js?v=20260110"></script>
   <script src="./js/practice/original-audio-replay.js?v=20261014"></script>
-  <script src="./js/workbench/import-bridge.js?v=2026103001"></script>
-  <script src="./js/practice/pronunciation-coach-ui.js?v=20260821"></script>
-  <script src="./js/practice/pronunciation-profile-ui.js?v=2026103001"></script>
-  <link rel="stylesheet" href="./styles/practice-session-desktop.css?v=2026103001">
-  <link rel="stylesheet" href="./css/subtitle-study.css?v=2026103001">
-  <link rel="stylesheet" href="./css/study-switch.css?v=2026103001">
-  <link rel="stylesheet" href="./styles/pronunciation-coach.css?v=2026103001">
+  <script src="./js/workbench/import-bridge.js?v=20261019"></script>
+  <script src="./js/practice/pronunciation-coach-ui.js?v=20261030-weakness"></script>
+  <script src="./js/practice/pronunciation-profile-ui.js?v=20261030-weakness"></script>
+  <link rel="stylesheet" href="./styles/pronunciation-profile.css?v=20261030-weakness">
+  <link rel="stylesheet" href="./styles/video-reader-pro.css?v=20261030-speed-drop">
+  <link rel="stylesheet" href="./styles/practice-session-desktop.css?v=20261030-hold-dots">
+  <link rel="stylesheet" href="./styles/practice-voice-chat.css?v=20261030-hold-dots">
+  <link rel="stylesheet" href="./styles/practice-voice-chat-x.css?v=20261030-word-card">
+  <link rel="stylesheet" href="./css/subtitle-study.css?v=20261030-hold-only">
+  <link rel="stylesheet" href="./css/study-switch.css?v=20261017-nav">
+  <link rel="stylesheet" href="./styles/pronunciation-coach.css?v=20261030-weakness">
   <style>
     :root {
       --brand: #0ea5e9;
@@ -991,6 +995,21 @@
       gap: 12px;
     }
 
+    #dialogue-setup-container.collapsed {
+      display: none;
+    }
+
+    .role-button .role-name {
+      font-weight: 700;
+      color: #0f172a;
+      font-size: 0.92rem;
+    }
+
+    .role-button .role-meta {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
     .role-button {
       border: 1px solid rgba(148, 163, 184, 0.45);
       border-radius: 14px;
@@ -1612,8 +1631,8 @@
   }
   </script>
   <script src="./js/nav-back.js?v=1"></script>
-  <link rel="stylesheet" href="./css/learning-navigation.css?v=2026103001">
-  <script src="./js/learning-navigation.js?v=2026103001" defer></script>
+  <link rel="stylesheet" href="./css/learning-navigation.css?v=20261026-recover">
+  <script src="./js/learning-navigation.js?v=20261026-recover" defer></script>
 </head>
 
 <body>
@@ -1717,7 +1736,6 @@
   <div class="topbar">
     <div class="brand">
       <a class="learning-compact-brand" href="./index-desktop.html" aria-label="Linglish 首页">Linglish</a>
-      <h1 data-i18n="video.desktop_title">linglish · 视频学习（桌面版）</h1>
     </div>
     <div class="nav">
       <div class="daily-goal" id="daily-goal">
@@ -1788,12 +1806,14 @@
             x5-video-player-fullscreen="true" x5-playsinline></video>
           <div id="youtube-player-container"
             style="display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;"></div>
-          <div id="play-overlay"
-            style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; cursor: pointer; z-index: 10; display: flex;">
-            <div style="text-align: center; color: white;">
-              <div style="font-size: 3rem; margin-bottom: 0.5rem;">▶</div>
-              <div style="font-size: 1rem;">点击播放</div>
+          <div id="play-overlay" class="coach-empty">
+            <div class="coach-empty-icon" aria-hidden="true">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+                <path d="M15 10l4.55-2.28a.8.8 0 0 1 1.2.69v7.18a.8.8 0 0 1-1.2.69L15 14M5 18h8a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
             </div>
+            <div class="coach-empty-title" id="coach-empty-title">还没选择视频</div>
+            <div class="coach-empty-desc" id="coach-empty-desc">打开顶部「视频库」，选一个视频开始学。</div>
           </div>
           <div class="practice-progress-ring" id="practice-progress-ring">
             <div class="ring-label">
@@ -1802,6 +1822,63 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="coach-learning-stage">
+        <div class="vrp-control-dock" id="vrp-control-dock">
+          <div class="vrp-bar" id="vrp-bar" role="toolbar" aria-label="播放控制">
+            <div class="vrp-bar__group" role="group" aria-label="句子">
+              <button class="vrp-btn" id="coach-prev" type="button">上一句</button>
+              <button class="vrp-btn" id="coach-replay" type="button" title="重复播放本句" aria-label="重复播放本句">↻</button>
+              <button class="vrp-btn" id="coach-next" type="button">下一句</button>
+            </div>
+            <div class="vrp-bar__group" role="group" aria-label="倍速">
+              <div class="vrp-speed" id="coach-speed">
+                <button
+                  type="button"
+                  class="vrp-speed__trigger"
+                  id="coach-speed-trigger"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-controls="coach-speed-menu"
+                  title="播放倍数"
+                >1x</button>
+                <div class="vrp-speed__menu" id="coach-speed-menu" role="listbox" aria-label="选择播放倍数" hidden>
+                  <button type="button" class="vrp-speed__btn" role="option" data-speed="0.5" aria-selected="false">0.5x</button>
+                  <button type="button" class="vrp-speed__btn" role="option" data-speed="0.75" aria-selected="false">0.75x</button>
+                  <button type="button" class="vrp-speed__btn active" role="option" data-speed="1" aria-selected="true">1x</button>
+                  <button type="button" class="vrp-speed__btn" role="option" data-speed="1.25" aria-selected="false">1.25x</button>
+                  <button type="button" class="vrp-speed__btn" role="option" data-speed="1.5" aria-selected="false">1.5x</button>
+                  <button type="button" class="vrp-speed__btn" role="option" data-speed="2" aria-selected="false">2x</button>
+                </div>
+              </div>
+            </div>
+            <button class="vrp-toggle" id="coach-loop" type="button" aria-pressed="false"><span class="vrp-toggle__dot"></span><span>循环</span></button>
+            <button class="vrp-toggle" id="coach-autopause" type="button" aria-pressed="true"><span class="vrp-toggle__dot"></span><span>句末暂停</span></button>
+            <div class="vrp-bar__spacer"></div>
+            <div class="vrp-time" id="coach-time">
+              <span id="coach-time-cur">0:00</span>
+              <span class="vrp-time__sep">/</span>
+              <span id="coach-time-tot">--:--</span>
+            </div>
+          </div>
+        </div>
+        <div class="practice-caption-focus" id="practice-caption-focus" aria-live="polite">
+          <div class="practice-caption-en" id="practice-caption-en"></div>
+          <div class="practice-caption-zh" id="practice-caption-zh" hidden></div>
+          <div class="practice-caption-tools" role="group" aria-label="回听">
+            <button type="button" id="sentence-hear-me" disabled title="播放刚才的跟读录音">听自己</button>
+            <button type="button" id="sentence-compare" disabled title="先听原声，再听自己的跟读">对比</button>
+            <button type="button" id="sentence-extract" hidden title="提取或补拉字幕">提取字幕</button>
+          </div>
+        </div>
+        <div class="sentence-path" id="sentence-path" hidden>
+          <button type="button" id="sentence-listen">听原声</button>
+          <button type="button" id="sentence-shadow">跟读这一句</button>
+          <button type="button" id="sentence-review" title="循环播放当前句，再点一次停止">重复播放</button>
+          <button type="button" id="sentence-study-toggle" aria-pressed="false" title="拆句学习">拆句学</button>
+        </div>
+        <div class="voice-chat" id="voice-chat-coach" hidden aria-label="跟读"></div>
       </div>
 
       <div id="subtitle-study-host"></div>
@@ -2284,6 +2361,14 @@
           Enable practice mode to auto-pause before each line.
         </div>
 
+        <aside class="pronunciation-feedback-panel" id="pronunciation-feedback-panel" hidden aria-label="课后发音反馈">
+          <div class="pronunciation-feedback-body" id="pronunciation-feedback-body"></div>
+          <div class="pronunciation-weakness-actions" id="pronunciation-weakness-actions" hidden>
+            <button type="button" class="pronunciation-weakness-btn" id="pronunciation-weakness-retry">课后弱点练习 · 再练这一句</button>
+            <button type="button" class="pronunciation-weakness-link" id="pronunciation-weakness-next" hidden>下一项弱点</button>
+          </div>
+        </aside>
+
         <div class="practice-score-panel" id="practice-score-panel" hidden>
           <div class="practice-score-header">
             <span>实时评分反馈</span>
@@ -2335,12 +2420,17 @@
     <div class="guide-spotlight" id="guide-spotlight"></div>
     <div class="guide-bubble" id="guide-bubble">
       <div class="guide-title">第一次练习？</div>
-      <div class="guide-text">点击麦克风开始录音</div>
+      <div class="guide-text">按住下方 Hold to record 跟读；它就是开麦录音。</div>
       <button class="guide-btn" id="guide-dismiss">知道了</button>
     </div>
   </div>
 
-  <script src="./js/pages/practice-session-desktop-app.js?v=2026103001"></script>
+  <script src="./js/audio-cues.js?v=1"></script>
+  <script src="./js/video-reader/sentence-segments.js?v=20261030-source-sync"></script>
+  <script src="./js/app/youtube-player.js?v=20261029-yt-seek"></script>
+  <script src="./js/practice/shadow-mic.js?v=20261029-desk-xhold"></script>
+  <script src="./js/practice/voice-chat-coach.js?v=20261030-word-card"></script>
+  <script src="./js/pages/practice-session-desktop-app.js?v=20261031-shared-media"></script>
 
   <!-- 页面加载动画控制 -->
   <script>
@@ -2378,8 +2468,9 @@
     });
   </script>
   <script src="./js/page-tracker.js"></script>
-  <script src="./js/study-switch.js?v=2026103001"></script>
-  <script src="./js/subtitle-study.js?v=2026103001"></script>
+  <script src="./js/study-recent.js?v=20261029-pod-open"></script>
+  <script src="./js/study-switch.js?v=20261031-shared-media"></script>
+  <script src="./js/subtitle-study.js?v=20261030-hold-only"></script>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
       if (window.GuestCheck && GuestCheck.isGuest()) GuestCheck.showGuestBanner();
@@ -2410,6 +2501,7 @@
     </div>
   </div>
 
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"129320643cd548dd92038c4e1e9cf253","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 
 </html>

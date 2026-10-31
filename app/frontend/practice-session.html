@@ -2,10 +2,39 @@
 <html lang="zh-CN">
 
 <head>
-  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <script src="./js/auth-manager.js?v=20261019"></script>
 <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/tts-voice.js?v=2026103001"></script>
+  <script src="./js/tts-voice.js?v=3"></script>
   <meta charset="UTF-8">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <script>
+    // Pick content via video/channel/podcast library — never show the old picker modal.
+    // Mobile 实战场 uses video-reader so the player matches 视频学习 (16:9 + Hold).
+    (function () {
+      try {
+        var params = new URLSearchParams(window.location.search || '');
+        var mode = params.get('mode') || '';
+        var arena = mode === 'dialogue' || mode === 'arena';
+        var ua = navigator.userAgent || '';
+        var mobile = window.innerWidth <= 768 || /Mobi|Android|iPhone|iPad/i.test(ua);
+        if (mobile && arena) {
+          var arenaNext = new URLSearchParams();
+          arenaNext.set('study', 'arena');
+          if (params.get('videoId')) arenaNext.set('videoId', params.get('videoId'));
+          if (params.get('yt')) arenaNext.set('yt', params.get('yt'));
+          if (params.get('from')) arenaNext.set('from', params.get('from'));
+          window.location.replace('./video-reader.html?' + arenaNext.toString());
+          return;
+        }
+        if (params.get('videoId') || params.get('source') === 'external') return;
+        var study = arena ? 'arena' : 'coach';
+        var next = new URLSearchParams();
+        next.set('study', study);
+        if (params.get('from')) next.set('from', params.get('from'));
+        window.location.replace((mobile ? './video-reader.html' : './video-reader-desktop.html') + '?' + next.toString());
+      } catch (e) {}
+    })();
+  </script>
   <meta http-equiv="Content-Security-Policy"
     content="default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https: wss: data: blob:; media-src 'self' https: data: blob:; img-src 'self' https: data: blob:; frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;">
   <script>
@@ -131,11 +160,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>跟读与对话练习 - Linglish</title>
   <script src="./js/practice/original-audio-replay.js?v=20261014"></script>
-  <link rel="stylesheet" href="./mobile-styles.css?v=2026103001">
-  <script src="./mobile-auth.js?v=2026103001"></script>
-  <script src="./i18n.js?v=2026103001"></script>
+  <link rel="stylesheet" href="./mobile-styles.css">
+  <script src="./mobile-auth.js?v=20261019"></script>
+  <script src="./i18n.js?v=20261019"></script>
   <script src="./guest-check.js"></script>
-  <script src="./auth-helpers.js?v=2026103001"></script>
+  <script src="./auth-helpers.js"></script>
   <script src="./feedback.js"></script>
   <style>
     /* Practice Session Specific Styles */
@@ -218,11 +247,7 @@
         }
 
           , (_, i) => ({
-            speaker: `Speaker $ {
-          i+1
-        }
-
-        `, lines: []
+            speaker: `Speaker ${i + 1}`, lines: []
           }));
         const offset = Math.abs(state.roleRotation) % k;
         let curRole = offset;
@@ -326,41 +351,64 @@
 
     /* Practice Mode Selector Styles */
     .practice-mode-selector {
-      background: rgba(255, 255, 255, 0.96);
-      padding: 12px 14px 10px;
-      border-bottom: 1px solid #e0e0e0;
+      --mode-pad-x: 16px;
+      --arena-player-h: calc(100vw * 9 / 16);
+      background: #fff;
+      padding: 14px var(--mode-pad-x) calc(14px + env(safe-area-inset-bottom, 0px));
+      border-bottom: 1px solid #e8edf2;
       position: sticky;
-      top: 220px;  /* 移动端视频容器高度 max-height: 220px */
+      top: var(--arena-player-h);
       z-index: 20;
-      backdrop-filter: blur(8px);
-      margin-top: 220px;  /* 为固定定位的视频容器留出空间 */
+      margin-top: var(--arena-player-h);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-height: calc(100dvh - var(--arena-player-h));
+      box-sizing: border-box;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
     }
 
     .mode-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 8px;
+      gap: 10px;
+      margin-bottom: 0;
+      flex: 0 0 auto;
+      min-width: 0;
+      width: 100%;
+      box-sizing: border-box;
     }
 
     .mode-title {
-      font-size: 13px;
-      font-weight: 700;
-      color: #111827;
+      font-size: 15px;
+      font-weight: 750;
+      letter-spacing: 0.01em;
+      color: #0f172a;
       margin: 0;
+      flex: 1 1 auto;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .mode-toggle-btn {
+      flex: 0 0 auto;
       border: 1px solid #e2e8f0;
       background: #f8fafc;
       color: #475569;
       border-radius: 999px;
-      padding: 6px 10px;
+      padding: 6px 12px;
       font-size: 12px;
-      font-weight: 600;
+      font-weight: 650;
+      line-height: 1.2;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+      white-space: nowrap;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .mode-toggle-btn:active {
@@ -370,61 +418,86 @@
     .mode-header-actions {
       display: flex;
       align-items: center;
+      justify-content: flex-end;
       gap: 8px;
+      flex: 0 0 auto;
+      min-width: 0;
     }
 
+    /* Single-icon theme chip — no overlapping sun/moon + knob */
     .theme-toggle {
       position: relative;
-      width: 40px;
-      height: 24px;
+      flex: 0 0 auto;
+      width: 34px;
+      height: 34px;
       border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.4);
+      border: 1px solid #e2e8f0;
       background: #f8fafc;
-      color: #1f2937;
+      color: #0f172a;
       cursor: pointer;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 6px;
-      transition: all 0.2s ease;
+      justify-content: center;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+      transition: background 0.15s ease, border-color 0.15s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .theme-toggle::after {
+      content: none;
+      display: none;
     }
 
     .theme-toggle .icon-sun,
     .theme-toggle .icon-moon {
-      font-size: 11px;
-      opacity: 0.8;
+      font-size: 15px;
+      line-height: 1;
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transform: scale(0.85);
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      pointer-events: none;
     }
 
-    .theme-toggle::after {
-      content: '';
-      position: absolute;
-      top: 3px;
-      left: 3px;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #0ea5e9;
-      transition: all 0.2s ease;
-      box-shadow: 0 4px 10px rgba(14, 165, 233, 0.35);
+    .theme-toggle .icon-sun {
+      opacity: 1;
+      transform: scale(1);
     }
 
     [data-theme="dark"] .theme-toggle {
-      background: rgba(30, 41, 59, 0.9);
-      border-color: rgba(148, 163, 184, 0.2);
-      color: #e2e8f0;
+      background: #1e293b;
+      border-color: #334155;
+      color: #f8fafc;
+    }
+
+    [data-theme="dark"] .theme-toggle .icon-sun {
+      opacity: 0;
+      transform: scale(0.85);
+    }
+
+    [data-theme="dark"] .theme-toggle .icon-moon {
+      opacity: 1;
+      transform: scale(1);
     }
 
     [data-theme="dark"] .theme-toggle::after {
-      transform: translateX(16px);
-      background: #f59e0b;
-      box-shadow: 0 4px 10px rgba(245, 158, 11, 0.35);
+      content: none;
+      display: none;
     }
 
     .practice-mode-selector.collapsed {
       display: flex;
+      flex-direction: row;
       align-items: center;
       gap: 10px;
       padding: 8px 12px;
+      min-height: 0;
     }
 
     .practice-mode-selector.collapsed .mode-header {
@@ -440,9 +513,11 @@
       margin-bottom: 0;
     }
 
+    .practice-mode-selector.collapsed .mode-body,
     .practice-mode-selector.collapsed .mode-hint,
     .practice-mode-selector.collapsed .mode-description,
     .practice-mode-selector.collapsed .onboarding-visual,
+    .practice-mode-selector.collapsed .mode-actions,
     .practice-mode-selector.collapsed .start-practice-btn,
     .practice-mode-selector.collapsed .free-trial-link {
       display: none;
@@ -452,25 +527,26 @@
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 0;
+      flex: 0 0 auto;
     }
 
     .mode-tab {
-      background: #f5f5f5;
-      border: 2px solid transparent;
-      border-radius: 12px;
-      padding: 10px 8px;
-      font-size: 13px;
-      font-weight: 600;
-      color: #666;
+      background: #f1f5f9;
+      border: 1.5px solid transparent;
+      border-radius: 14px;
+      padding: 12px 10px;
+      font-size: 14px;
+      font-weight: 650;
+      color: #64748b;
       cursor: pointer;
-      transition: all 0.2s ease;
+      transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
       display: flex;
       flex-direction: row;
       align-items: center;
       justify-content: center;
-      gap: 6px;
-      min-height: 44px;
+      gap: 8px;
+      min-height: 48px;
     }
 
     .mode-tab:active {
@@ -478,10 +554,10 @@
     }
 
     .mode-tab.active {
-      background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
-      border-color: #0ea5e9;
-      color: #0f5e52;
-      box-shadow: 0 2px 4px rgba(14, 165, 233, 0.1);
+      background: #e0f2fe;
+      border-color: #0284c7;
+      color: #0c4a6e;
+      box-shadow: none;
     }
 
     .mode-panel {
@@ -502,31 +578,46 @@
     }
 
     .mode-icon {
-      font-size: 18px;
+      font-size: 16px;
+      line-height: 1;
     }
 
     .mode-label {
-      font-size: 12px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .mode-body {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 0;
     }
 
     .mode-description {
-      text-align: center;
-      font-size: 12px;
-      color: #666;
-      padding: 8px;
-      background: #f9f9f9;
-      border-radius: 8px;
-      margin-bottom: 12px;
+      display: none;
     }
 
     .mode-hint {
       text-align: center;
-      font-size: 12px;
+      font-size: 13px;
+      line-height: 1.45;
       color: #475569;
-      padding: 6px 10px;
-      background: #f1f5f9;
-      border-radius: 999px;
-      margin-bottom: 10px;
+      padding: 0 4px;
+      background: transparent;
+      border-radius: 0;
+      margin: 0;
+    }
+
+    .mode-actions {
+      flex: 0 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 10px;
+      margin-top: auto;
+      padding-top: 8px;
     }
 
     [data-theme="dark"] body {
@@ -556,10 +647,18 @@
       border-color: rgba(14, 165, 233, 0.6);
     }
 
-    [data-theme="dark"] .mode-hint,
-    [data-theme="dark"] .mode-description {
-      background: rgba(30, 41, 59, 0.85);
+    [data-theme="dark"] .mode-hint {
       color: #94a3b8;
+    }
+
+    [data-theme="dark"] .onboarding-visual {
+      background: rgba(30, 41, 59, 0.85);
+      border-color: rgba(148, 163, 184, 0.2);
+    }
+
+    [data-theme="dark"] .step-icon-circle {
+      background: rgba(15, 23, 42, 0.9);
+      border-color: rgba(148, 163, 184, 0.25);
     }
 
 
@@ -636,33 +735,33 @@
 
     .start-practice-btn {
       width: 100%;
-      padding: 14px 16px;
-      background: linear-gradient(135deg, #0284c7 0%, #0f5e52 100%);
+      padding: 15px 16px;
+      background: linear-gradient(135deg, #0284c7 0%, #0f766e 100%);
       border: none;
-      border-radius: 12px;
+      border-radius: 14px;
       color: white;
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 750;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-      transition: all 0.2s ease;
+      box-shadow: 0 8px 20px rgba(2, 132, 199, 0.28);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
     }
 
     .start-practice-btn:active {
       transform: scale(0.98);
-      box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+      box-shadow: 0 4px 12px rgba(2, 132, 199, 0.22);
     }
 
     .start-practice-btn .btn-icon {
-      font-size: 20px;
+      font-size: 18px;
     }
 
     .start-practice-btn .btn-text {
-      font-size: 15px;
+      font-size: 16px;
     }
 
     /* Speed Selector Styles */
@@ -895,23 +994,27 @@
     }
 
     .video-player-container {
+      --arena-player-h: calc(100vw * 9 / 16);
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
       width: 100%;
-      height: 30vh;
-      max-height: 220px;
-      background: #000;
+      height: var(--arena-player-h);
+      max-height: var(--arena-player-h);
+      min-height: var(--arena-player-h);
+      aspect-ratio: 16 / 9;
+      background: #0f172a;
       overflow: hidden;
       z-index: 1000;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      box-shadow: none;
     }
 
     .video-player-container video {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+      background: #0f172a;
       display: block;
     }
 
@@ -959,6 +1062,7 @@
     }
 
     .practice-controls {
+      --arena-player-h: calc(100vw * 9 / 16);
       background: white;
       padding: 12px 16px;
       border-bottom: 1px solid #e0e0e0;
@@ -968,9 +1072,7 @@
       /* Initially hidden until user starts practice */
       flex-direction: column;
       /* Ensure content is not hidden behind fixed video */
-      margin-top: 220px;
-      /* Fallback for older browsers */
-      margin-top: min(30vh, 220px);
+      margin-top: var(--arena-player-h);
     }
 
     /* When practice-controls is visible, ensure flex layout */
@@ -992,12 +1094,6 @@
 
     .practice-controls .control-modes-panel {
       order: 3;
-    }
-
-    @media (min-height: 715px) {
-      .practice-controls {
-        margin-top: 220px;
-      }
     }
 
     .enable-practice-btn {
@@ -1534,9 +1630,11 @@
 
     .practice-mode-selector.dialogue-practicing .mode-title,
     .practice-mode-selector.dialogue-practicing .mode-tabs,
+    .practice-mode-selector.dialogue-practicing .mode-body,
     .practice-mode-selector.dialogue-practicing .mode-hint,
     .practice-mode-selector.dialogue-practicing .mode-description,
     .practice-mode-selector.dialogue-practicing .onboarding-visual,
+    .practice-mode-selector.dialogue-practicing .mode-actions,
     .practice-mode-selector.dialogue-practicing .start-practice-btn,
     .practice-mode-selector.dialogue-practicing .free-trial-link {
       display: none !important;
@@ -1566,9 +1664,11 @@
 
     .practice-mode-selector.shadowing-practicing .mode-title,
     .practice-mode-selector.shadowing-practicing .mode-tabs,
+    .practice-mode-selector.shadowing-practicing .mode-body,
     .practice-mode-selector.shadowing-practicing .mode-hint,
     .practice-mode-selector.shadowing-practicing .mode-description,
     .practice-mode-selector.shadowing-practicing .onboarding-visual,
+    .practice-mode-selector.shadowing-practicing .mode-actions,
     .practice-mode-selector.shadowing-practicing .start-practice-btn,
     .practice-mode-selector.shadowing-practicing .free-trial-link {
       display: none !important;
@@ -1891,6 +1991,16 @@
       font-weight: 600;
       text-align: center;
       word-break: break-word;
+    }
+
+    .role-count {
+      font-size: 12px;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+
+    .role-button.selected .role-count {
+      color: rgba(255, 255, 255, 0.9);
     }
 
     .role-hint {
@@ -3357,6 +3467,12 @@
         border-bottom: 1px solid #e5e7eb;
         z-index: 1;
         box-shadow: none;
+        min-height: 0;
+        gap: 14px;
+      }
+
+      .mode-actions {
+        margin-top: 4px;
       }
 
       /* 左侧：视频区域 */
@@ -3718,157 +3834,109 @@
     .onboarding-visual {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin: 16px 0;
-      padding: 12px;
+      justify-content: space-between;
+      gap: 6px;
+      margin: 0;
+      padding: 12px 10px;
       background: #f8fafc;
-      border-radius: 12px;
+      border: 1px solid #eef2f7;
+      border-radius: 14px;
     }
 
     .flow-step {
+      flex: 1 1 0;
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 4px;
+      gap: 6px;
       position: relative;
+      min-width: 0;
     }
 
     .step-icon-circle {
-      width: 40px;
-      height: 40px;
-      background: white;
+      width: 36px;
+      height: 36px;
+      background: #fff;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      font-size: 16px;
+      box-shadow: none;
       border: 1px solid #e2e8f0;
-      transition: all 0.3s ease;
+      transition: background 0.2s ease, border-color 0.2s ease;
     }
 
     .step-label {
-      font-size: 11px;
+      font-size: 12px;
       color: #64748b;
-      font-weight: 600;
+      font-weight: 650;
+      white-space: nowrap;
     }
 
     .flow-arrow {
+      flex: 0 0 auto;
       color: #cbd5e1;
-      font-size: 14px;
-      margin-top: -14px;
-      /* Align with circles */
+      font-size: 13px;
+      margin-top: -16px;
+      line-height: 1;
     }
 
     /* Animation: Pulse active step */
     @keyframes pulse-ring {
       0% {
-        box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.4);
+        box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.35);
       }
 
       70% {
-        box-shadow: 0 0 0 8px rgba(14, 165, 233, 0);
+        box-shadow: 0 0 0 7px rgba(2, 132, 199, 0);
       }
 
       100% {
-        box-shadow: 0 0 0 0 rgba(14, 165, 233, 0);
+        box-shadow: 0 0 0 0 rgba(2, 132, 199, 0);
       }
     }
 
     .flow-step.active .step-icon-circle {
-      background: #0ea5e9;
+      background: #0284c7;
       color: white;
-      border-color: #0ea5e9;
+      border-color: #0284c7;
       animation: pulse-ring 2s infinite;
     }
 
     .flow-step.active .step-label {
-      color: #0ea5e9;
+      color: #0369a1;
     }
 
     /* Free Trial Link */
     .free-trial-link {
       display: block;
-      margin-top: 12px;
+      margin-top: 0;
       text-align: center;
       font-size: 13px;
       color: #64748b;
-      text-decoration: underline;
+      text-decoration: none;
       cursor: pointer;
-      opacity: 0.8;
-      transition: opacity 0.2s;
+      opacity: 0.9;
+      transition: color 0.15s;
+      padding: 4px 0 2px;
     }
 
     .free-trial-link:hover {
       opacity: 1;
-      color: #475569;
+      color: #0369a1;
+      text-decoration: underline;
     }
   </style>
   <script src="./js/media-session.js"></script>
-  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
 </head>
 
 <body>
-  <!-- Video Selection Modal -->
-  <div id="video-select-modal"
-    style="position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-    <div
-      style="background: white; border-radius: 16px; max-width: 600px; width: 100%; max-height: 80vh; overflow: hidden; display: flex; flex-direction: column;">
-      <div style="padding: 20px; border-bottom: 1px solid #e0e0e0;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-          <h2 style="margin: 0; font-size: 20px; display: flex; align-items: center; gap: 8px;">
-            🎬 <span id="video-select-title">选择学习视频</span>
-          </h2>
-          <div style="display:flex; gap:0.5rem; align-items:center;">
-            <!-- Translation Toggle (Desktop) -->
-            <button id="translation-toggle-btn" class="translation-toggle-btn" style="display: none;">
-              <span class="icon">文</span>
-              <span class="text">译</span>
-            </button>
-
-            <a href="./index-desktop.html"
-              style="display:inline-flex; align-items:center; gap:6px; padding:0.45rem 0.75rem; border:1px solid #e5e7eb; border-radius:10px; text-decoration:none; color:#111827; font-size:0.9rem; background:#f8fafc;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M3 12l9-9 9 9" />
-                <path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" />
-              </svg>
-              <span data-i18n="nav.home">主页</span>
-            </a>
-          </div>
-          <!-- 语言选择器 -->
-          <div class="lang-selector" style="position: relative; display: inline-block;">
-            <button id="lang-btn-practice"
-              style="padding: 0.4rem 0.8rem; background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.4rem; font-size: 0.85rem;">
-              <span>🌐</span>
-              <span id="current-lang-practice">中文</span>
-            </button>
-            <div id="lang-dropdown-practice"
-              style="position: absolute; top: calc(100% + 0.5rem); right: 0; background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 0.5rem; min-width: 120px; display: none; z-index: 10000; box-shadow: 0 10px 30px rgba(0,0,0,0.15);">
-              <div class="lang-option active" data-lang="zh"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">
-                <span>🇨🇳</span>
-                <span>中文</span>
-              </div>
-              <div class="lang-option" data-lang="en"
-                style="padding: 0.6rem 0.8rem; border-radius: 6px; cursor: pointer; transition: all 0.2s ease;">
-                <span>🇺🇸</span>
-                <span>English</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        <p style="margin: 0; color: #666; font-size: 14px;">精选视频可直接学习，点一个就开始。</p>
-      </div>
-      <div id="video-list-container" style="flex: 1; overflow-y: auto; padding: 16px;">
-        <div style="text-align: center; padding: 40px; color: #999;">
-          <div style="font-size: 24px; margin-bottom: 8px;">⏳</div>
-          <div data-i18n="common.loading">正在加载视频列表...</div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <!-- video-select-modal removed: use video-reader library (视频/频道/播客) -->
+  <div id="video-select-modal" hidden style="display:none!important"></div>
+  <div id="video-list-container" hidden style="display:none!important"></div>
+  <button id="translation-toggle-btn" class="translation-toggle-btn" type="button" hidden style="display:none!important"></button>
 
   <!-- Back Header -->
   <div class="back-header">
@@ -4330,70 +4398,71 @@
     <div class="mode-header">
       <div class="mode-title">练习模式</div>
       <div class="mode-header-actions">
-        <button class="theme-toggle" id="theme-toggle" title="切换主题">
-          <span class="icon-sun">☀️</span>
-          <span class="icon-moon">🌙</span>
+        <button class="theme-toggle" id="theme-toggle" type="button" title="切换主题" aria-label="切换主题">
+          <span class="icon-sun" aria-hidden="true">☀️</span>
+          <span class="icon-moon" aria-hidden="true">🌙</span>
         </button>
-        <button class="mode-toggle-btn" id="mode-toggle-btn" type="button">收起</button>
+        <button class="mode-toggle-btn" id="mode-toggle-btn" type="button" aria-expanded="true">收起</button>
       </div>
     </div>
     <div class="mode-tabs">
-      <button class="mode-tab active" data-mode="shadowing" title="跟读：跟随视频朗读，提升语音语调">
+      <button class="mode-tab active" data-mode="shadowing" title="跟读：听原声，再跟着说">
         <span class="mode-icon">👥</span>
         <span class="mode-label">跟读</span>
       </button>
-      <button class="mode-tab" data-mode="dialogue" title="对话：扮演角色，系统在你的台词前停顿">
+      <button class="mode-tab" data-mode="dialogue" title="对话：选角色，对方播完轮到你按住说">
         <span class="mode-icon">🎭</span>
         <span class="mode-label">对话</span>
       </button>
     </div>
-    <div class="mode-hint" id="mode-hint">跟读：跟随视频朗读，提升语音语调</div>
 
-    <!-- Visual Onboarding Flow (Shadowing) -->
-    <div class="onboarding-visual" id="onboarding-shadowing">
-      <div class="flow-step active" style="animation-delay: 0s;">
-        <div class="step-icon-circle">👂</div>
-        <span class="step-label">1.跟读</span>
+    <div class="mode-body">
+      <p class="mode-hint" id="mode-hint">听一句，停一下，再跟着说</p>
+
+      <!-- Visual Onboarding Flow (Shadowing) -->
+      <div class="onboarding-visual" id="onboarding-shadowing" aria-label="跟读三步">
+        <div class="flow-step active">
+          <div class="step-icon-circle">👂</div>
+          <span class="step-label">听原声</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">→</div>
+        <div class="flow-step">
+          <div class="step-icon-circle">⏸</div>
+          <span class="step-label">自动停</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">→</div>
+        <div class="flow-step">
+          <div class="step-icon-circle">💬</div>
+          <span class="step-label">跟着说</span>
+        </div>
       </div>
-      <div class="flow-arrow">➜</div>
-      <div class="flow-step" style="animation-delay: 1s;">
-        <div class="step-icon-circle">⏸️</div>
-        <span class="step-label">2.暂停</span>
-      </div>
-      <div class="flow-arrow">➜</div>
-      <div class="flow-step" style="animation-delay: 2s;">
-        <div class="step-icon-circle">🎙️</div>
-        <span class="step-label">3.你读</span>
+
+      <!-- Visual Onboarding Flow (Dialogue) -->
+      <div class="onboarding-visual" id="onboarding-dialogue" style="display: none;" aria-label="对话三步">
+        <div class="flow-step">
+          <div class="step-icon-circle">👤</div>
+          <span class="step-label">选角色</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">→</div>
+        <div class="flow-step">
+          <div class="step-icon-circle">🔊</div>
+          <span class="step-label">听对方</span>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">→</div>
+        <div class="flow-step">
+          <div class="step-icon-circle">💬</div>
+          <span class="step-label">按住说</span>
+        </div>
       </div>
     </div>
 
-    <!-- Visual Onboarding Flow (Dialogue) - Hidden by default -->
-    <div class="onboarding-visual" id="onboarding-dialogue" style="display: none;">
-      <div class="flow-step">
-        <div class="step-icon-circle">👤</div>
-        <span class="step-label">1.选角</span>
-      </div>
-      <div class="flow-arrow">➜</div>
-      <div class="flow-step">
-        <div class="step-icon-circle">🔊</div>
-        <span class="step-label">2.原声</span>
-      </div>
-      <div class="flow-arrow">➜</div>
-      <div class="flow-step">
-        <div class="step-icon-circle">🎤</div>
-        <span class="step-label">3.你回</span>
-      </div>
+    <div class="mode-actions">
+      <button class="start-practice-btn" id="start-practice-btn" type="button">
+        <span class="btn-icon">🚀</span>
+        <span class="btn-text">开始练习</span>
+      </button>
+      <a class="free-trial-link" id="free-trial-link">试玩一句</a>
     </div>
-
-    <div class="mode-description" id="mode-description"
-      style="text-align: center; color: #64748b; font-size: 13px; margin-bottom: 16px;">
-      1. Listen & Shadow → 2. Auto Pause → 3. Speak
-    </div>
-    <button class="start-practice-btn" id="start-practice-btn">
-      <span class="btn-icon">🚀</span>
-      <span class="btn-text">开始练习</span>
-    </button>
-    <a class="free-trial-link" id="free-trial-link">试玩一句 (Free Trial)</a>
   </div>
 
   <!-- Video Player -->
@@ -4665,10 +4734,11 @@
       </a>
     </nav>
 
-    <script src="./js/pages/practice-session-app.js?v=2026103001"></script>
+    <script src="./js/pages/practice-session-app.js?v=20261031-mode-header"></script>
     <script src="./js/page-tracker.js"></script>
 
-  <script src="./js/icons.js?v=2026103001"></script>
+  <script src="./js/icons.js?v=1"></script>
+<script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"129320643cd548dd92038c4e1e9cf253","r":1,"spa":2}' crossorigin="anonymous"></script>
 </body>
 
 </html>

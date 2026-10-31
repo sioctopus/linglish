@@ -127,15 +127,15 @@ test('frontend html is served with the shared device adaptation', async () => {
   const url = new URL('http://127.0.0.1/router.html');
   const served = await registerStaticRoutes(url.pathname, request, response, url);
   assert.equal(served, true);
-  assert.match(response.body(), /\/js\/device-adapt\.js\?v=2026103001/);
-  assert.match(response.body(), /\/styles\/device-adapt\.css\?v=2026103001/);
+  assert.match(response.body(), /\/js\/device-adapt\.js\?v=3/);
+  assert.match(response.body(), /\/styles\/device-adapt\.css\?v=3/);
   assert.equal(response.body().split('data-lx-device-adapt').length - 1, 2);
   assert.doesNotMatch(response.body(), /install-desktop\.js/);
 
   const mobile = injectDeviceAdapt('<head><title>x</title></head><body></body>', 'mobile-today.html');
   assert.match(mobile, /apple-touch-icon/);
   assert.match(mobile, /apple-mobile-web-app-capable/);
-  assert.match(mobile, /\/js\/install-desktop\.js\?v=2026103001/);
+  assert.match(mobile, /\/js\/install-desktop\.js\?v=6/);
   assert.equal(injectDeviceAdapt(mobile, 'mobile-today.html'), mobile);
 });
 

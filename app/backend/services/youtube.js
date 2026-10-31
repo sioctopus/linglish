@@ -450,12 +450,52 @@ function withTimeout(promise, ms, label) {
 }
 
 function httpsGetText(url, timeoutMs = 8000) {
-  // Mirror-provided track URLs and redirects must use the same public-address
-  // validation and resource limits as user-supplied media URLs.
-  return require('./media-library').fetchText(url, {
-    maxBytes: 1536 * 1024,
-    timeoutMs,
-    redirects: 3,
+  const https = require('https');
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      try { req.destroy(); } catch (_) {}
+      reject(new Error('Request timeout'));
+    }, timeoutMs);
+    const req = https.get(url, {
+      timeout: timeoutMs,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+        Accept: 'application/json, text/vtt, text/plain, */*',
+      },
+      agent: agent || undefined,
+    }, (res) => {
+      if (res.statusCode && res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
+        clearTimeout(timer);
+        settled = true;
+        httpsGetText(res.headers.location, timeoutMs).then(resolve, reject);
+        res.resume();
+        return;
+      }
+      if (res.statusCode !== 200) {
+        clearTimeout(timer);
+        settled = true;
+        reject(new Error(`HTTP ${res.statusCode}`));
+        res.resume();
+        return;
+      }
+      const chunks = [];
+      res.on('data', (c) => chunks.push(c));
+      res.on('end', () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve(Buffer.concat(chunks).toString('utf8'));
+      });
+    });
+    req.on('error', (err) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(err);
+    });
   });
 }
 
@@ -649,22 +689,20 @@ async function getTranscriptInner(url, language = 'en') {
       );
       return result;
     } catch (innertubeError) {
-      console.log('[YouTube] Innertube API failed:', innertubeError.message);
+      console.log('[YouTube] Innertube API failed, trying mirror captions:', innertubeError.message);
     }
   }
 
-  // Sending a video ID to third-party caption mirrors requires operator opt-in.
-  if (process.env.YOUTUBE_ENABLE_MIRRORS === '1') {
-    try {
-      const result = await withTimeout(
-        getTranscriptViaMirrors(videoId, language),
-        12000,
-        'mirror transcript'
-      );
-      return result;
-    } catch (mirrorError) {
-      console.log('[YouTube] Mirror caption fetch failed, falling back to web scraping:', mirrorError.message);
-    }
+  // Invidious / Piped mirrors (helps when youtube.com is blocked but mirrors work).
+  try {
+    const result = await withTimeout(
+      getTranscriptViaMirrors(videoId, language),
+      12000,
+      'mirror transcript'
+    );
+    return result;
+  } catch (mirrorError) {
+    console.log('[YouTube] Mirror caption fetch failed, falling back to web scraping:', mirrorError.message);
   }
 
   // Use web scraping method directly

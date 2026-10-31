@@ -60,7 +60,7 @@ test('desktop pages expose the install manifest and the install control', () => 
   for (const page of DESKTOP_PAGES) {
     const html = read(page);
     assert.match(html, /rel="manifest" href="\/manifest-desktop\.json"/, page);
-    assert.match(html, /src="\/js\/install-desktop\.js\?v=2026103001"/, page);
+    assert.match(html, /src="\/js\/install-desktop\.js\?v=6"/, page);
   }
 });
 
@@ -70,7 +70,7 @@ test('install control uses the browser install prompt and stays out of an instal
   assert.match(source, /beforeinstallprompt/);
   assert.match(source, /event\.preventDefault\(\)/);
   assert.match(source, /promptEvent\.prompt\(\)/);
-  assert.match(source, /serviceWorker\.register\('\/sw\.js(?:\?v=\d+)?'/);
+  assert.match(source, /serviceWorker\.register\('\/sw\.js'/);
   assert.match(source, /display-mode: standalone/);
   assert.match(source, /appinstalled/);
   assert.match(source, /安装到桌面/);

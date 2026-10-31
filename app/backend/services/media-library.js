@@ -1,44 +1,29 @@
 const fs = require('fs');
 const http = require('http');
 const https = require('https');
-const dns = require('dns');
-const net = require('net');
-const zlib = require('zlib');
 const os = require('os');
 const path = require('path');
+const { execFileSync } = require('child_process');
 const { URL } = require('url');
+const { HttpsProxyAgent } = require('https-proxy-agent');
 
 const PRIVATE_HOSTS = new Set(['localhost', 'localhost.localdomain', '0.0.0.0', '::', '::1']);
 
 function isPrivateHostname(hostname) {
   const host = String(hostname || '').toLowerCase().replace(/^\[|\]$/g, '');
-  if (!host || PRIVATE_HOSTS.has(host) || host.endsWith('.localhost')
-      || host.endsWith('.local') || host.endsWith('.internal')) return true;
-  const family = net.isIP(host);
-  if (family === 4) {
-    const [a, b, c] = host.split('.').map(Number);
-    return a === 0 || a === 10 || a === 127 || a >= 224
-      || (a === 100 && b >= 64 && b <= 127)
-      || (a === 169 && b === 254)
-      || (a === 172 && b >= 16 && b <= 31)
-      || (a === 192 && b === 168)
-      || (a === 192 && b === 0 && (c === 0 || c === 2))
-      || (a === 192 && b === 88 && c === 99)
-      || (a === 198 && (b === 18 || b === 19))
-      || (a === 198 && b === 51 && c === 100)
-      || (a === 203 && b === 0 && c === 113);
-  }
-  if (family === 6) {
-    // Only global unicast is eligible. This excludes IPv4-mapped and NAT64
-    // addresses as well as loopback, link-local, unique-local and multicast.
-    const first = Number.parseInt(host.split(':')[0] || '0', 16);
-    const second = Number.parseInt(host.split(':')[1] || '0', 16);
-    return first < 0x2000 || first > 0x3fff
-      || (first === 0x2001 && (second <= 0x1ff || second === 0xdb8))
-      || first === 0x2002
-      || (first === 0x3fff && second <= 0x0fff);
-  }
-  return host.includes(':') || /^[\d.]+$/.test(host);
+  if (!host || PRIVATE_HOSTS.has(host) || host.endsWith('.local') || host.endsWith('.internal')) return true;
+  if (host.startsWith('fe80:') || host.startsWith('fc') || host.startsWith('fd')) return true;
+  const ipv4 = host.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (!ipv4) return false;
+  const parts = ipv4.slice(1).map(Number);
+  if (parts.some((n) => n > 255)) return true;
+  const [a, b] = parts;
+  if (a === 10 || a === 127 || a === 0) return true;
+  if (a === 169 && b === 254) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 100 && b >= 64 && b <= 127) return true;
+  return false;
 }
 
 function assertPublicHttpUrl(raw) {
@@ -51,7 +36,6 @@ function assertPublicHttpUrl(raw) {
   if (url.protocol !== 'http:' && url.protocol !== 'https:') {
     throw new Error('只支持 http 或 https 链接');
   }
-  if (url.username || url.password) throw new Error('链接不能包含凭据');
   if (isPrivateHostname(url.hostname)) {
     throw new Error('不能访问内网地址');
   }
@@ -494,151 +478,123 @@ function normalizeProxyServer(value) {
   return server;
 }
 
-async function fetchBytes(rawUrl, options = {}) {
-  const maxBytes = Math.min(options.maxBytes || 2000000, 40 * 1024 * 1024);
-  const timeoutMs = Math.min(options.timeoutMs || 20000, 120000);
+function readWindowsProxy() {
+  if (process.platform !== 'win32') return '';
+  try {
+    const buf = execFileSync(
+      'reg',
+      ['query', 'HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings'],
+      { timeout: 3000 }
+    );
+    let out = buf.toString('utf8');
+    if (out.includes('\u0000')) out = buf.toString('utf16le');
+    const enabled = /ProxyEnable\s+REG_DWORD\s+0x([0-9a-f]+)/i.exec(out);
+    if (!enabled || Number.parseInt(enabled[1], 16) !== 1) return '';
+    const server = /ProxyServer\s+REG_SZ\s+(\S+)/i.exec(out);
+    return server ? normalizeProxyServer(server[1]) : '';
+  } catch (_) {
+    return '';
+  }
+}
+
+let cachedProxy = null;
+let cachedAgent = null;
+
+function outboundAgent() {
+  const fromEnv = process.env.HTTPS_PROXY || process.env.https_proxy
+    || process.env.ALL_PROXY || process.env.all_proxy
+    || process.env.HTTP_PROXY || process.env.http_proxy
+    || '';
+  const proxy = normalizeProxyServer(fromEnv) || readWindowsProxy();
+  if (!proxy) return undefined;
+  if (cachedProxy !== proxy) {
+    cachedProxy = proxy;
+    cachedAgent = new HttpsProxyAgent(proxy);
+  }
+  return cachedAgent;
+}
+
+function fetchBytes(rawUrl, options = {}) {
+  const maxBytes = options.maxBytes || 2000000;
+  const timeoutMs = options.timeoutMs || 20000;
   const redirects = options.redirects == null ? 3 : options.redirects;
-  const deadline = options.deadline || Date.now() + timeoutMs;
+  const agent = options.agent === undefined ? outboundAgent() : (options.agent || undefined);
+  const asText = options.asText === true;
   const url = assertPublicHttpUrl(rawUrl);
-  const hostname = url.hostname.replace(/^\[|\]$/g, '');
-  let records;
-  if (net.isIP(hostname)) {
-    records = [{ address: hostname, family: net.isIP(hostname) }];
-  } else {
-    let dnsTimer;
-    try {
-      records = await Promise.race([
-        dns.promises.lookup(hostname, { all: true, verbatim: true }),
-        new Promise((_, reject) => {
-          dnsTimer = setTimeout(() => reject(new Error('请求超时')), Math.max(1, deadline - Date.now()));
-        }),
-      ]);
-    } catch (error) {
-      if (error.message === '请求超时') throw error;
-      throw new Error('网络请求失败');
-    } finally {
-      clearTimeout(dnsTimer);
-    }
-  }
-  if (!records.length || records.some(record => !net.isIP(record.address) || isPrivateHostname(record.address))) {
-    throw new Error('不能访问内网地址');
-  }
-  const address = records.find(record => record.family === 4) || records[0];
-  const remaining = deadline - Date.now();
-  if (remaining <= 0) throw new Error('请求超时');
   return new Promise((resolve, reject) => {
     let settled = false;
-    let totalTimer;
     const finish = (handler, value) => {
       if (settled) return;
       settled = true;
-      clearTimeout(totalTimer);
       handler(value);
     };
     const lib = url.protocol === 'https:' ? https : http;
     const req = lib.get(url, {
-      // A proxy can resolve the destination independently and bypass the DNS
-      // check. Connect directly, using only the already-validated address.
-      agent: false,
-      family: address.family,
-      autoSelectFamily: false,
-      lookup(_host, lookupOptions, callback) {
-        if (lookupOptions && lookupOptions.all) {
-          callback(null, [address]);
-        } else {
-          callback(null, address.address, address.family);
-        }
-      },
+      agent,
       headers: {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
         Accept: '*/*',
-        'Accept-Encoding': 'gzip, deflate, br',
       },
-      timeout: remaining,
+      timeout: timeoutMs,
     }, (res) => {
       const status = res.statusCode || 0;
       if ([301, 302, 303, 307, 308].includes(status) && res.headers.location) {
-        res.destroy();
+        res.resume();
         if (redirects <= 0) {
           finish(reject, new Error('重定向过多'));
           return;
         }
-        let next;
-        try {
-          next = new URL(res.headers.location, url).toString();
-        } catch (_) {
-          finish(reject, new Error('链接无效'));
-          return;
-        }
-        finish(resolve, fetchBytes(next, { maxBytes, timeoutMs, redirects: redirects - 1, deadline }));
+        const next = new URL(res.headers.location, url).toString();
+        finish(resolve, fetchBytes(next, { maxBytes, timeoutMs, redirects: redirects - 1, agent, asText }));
         return;
       }
       if (status < 200 || status >= 300) {
-        res.destroy();
+        res.resume();
         finish(reject, new Error(`拉取失败 (${status})`));
         return;
       }
       const chunks = [];
       let size = 0;
-      let decodedSize = 0;
-      const encoding = String(res.headers['content-encoding'] || 'identity').toLowerCase();
-      const decoder = encoding === 'gzip' ? zlib.createGunzip()
-        : encoding === 'deflate' ? zlib.createInflate()
-          : encoding === 'br' ? zlib.createBrotliDecompress() : null;
-      if (!decoder && encoding !== 'identity') {
-        finish(reject, new Error('不支持的内容编码'));
-        req.destroy();
-        res.destroy();
-        return;
-      }
-      const body = decoder || res;
-      const stop = (message) => {
-        finish(reject, new Error(message));
-        req.destroy();
-        res.destroy();
-        if (decoder) decoder.destroy();
-      };
-      if (Number(res.headers['content-length']) > maxBytes) {
-        finish(reject, new Error('内容过大'));
-        req.destroy();
-        return;
-      }
       res.on('data', (chunk) => {
-        if (settled) return;
         size += chunk.length;
         if (size > maxBytes) {
-          stop('内容过大');
-        }
-      });
-      body.on('data', (chunk) => {
-        if (settled) return;
-        decodedSize += chunk.length;
-        if (decodedSize > maxBytes) {
-          stop('内容过大');
+          req.destroy();
+          finish(reject, new Error('内容过大'));
           return;
         }
         chunks.push(chunk);
       });
-      body.on('end', () => finish(resolve, Buffer.concat(chunks)));
-      if (decoder) {
-        decoder.on('error', () => stop('内容解码失败'));
-        res.pipe(decoder);
-      }
-      res.on('error', () => finish(reject, new Error('网络请求失败')));
-      res.on('aborted', () => finish(reject, new Error('网络请求失败')));
+      res.on('end', () => {
+        const buf = Buffer.concat(chunks);
+        finish(resolve, asText ? buf.toString('utf8') : buf);
+      });
     });
-    req.on('error', () => finish(reject, new Error('网络请求失败')));
-    const timeout = () => {
-      finish(reject, new Error('请求超时'));
-      req.destroy();
+    const fail = (error) => {
+      if (settled) return;
+      if (agent && !options.directFallback) {
+        settled = true;
+        resolve(fetchBytes(rawUrl, {
+          maxBytes,
+          timeoutMs,
+          redirects,
+          agent: false,
+          directFallback: true,
+          asText,
+        }));
+        return;
+      }
+      finish(reject, error);
     };
-    req.on('timeout', timeout);
-    totalTimer = setTimeout(timeout, remaining);
+    req.on('error', () => fail(new Error('网络请求失败')));
+    req.on('timeout', () => {
+      req.destroy();
+      fail(new Error('请求超时'));
+    });
   });
 }
 
 function fetchText(rawUrl, options = {}) {
-  return fetchBytes(rawUrl, options).then(buffer => buffer.toString('utf8'));
+  return fetchBytes(rawUrl, { ...options, asText: true });
 }
 
 function guessAudioExt(url, contentType) {
@@ -680,28 +636,20 @@ function setFluentFfmpegPath(ffmpeg) {
 
 async function transcribePodcastBuffer(buf, options = {}) {
   if (!buf || !buf.length) throw new Error('音频文件是空的');
-  const maxBytes = Math.min(options.maxBytes || (40 * 1024 * 1024), 40 * 1024 * 1024);
+  const maxBytes = options.maxBytes || (40 * 1024 * 1024);
   if (buf.length > maxBytes) throw new Error('这一集音频太大，暂时无法生成字幕');
-  const ext = String(options.ext || '.mp3').toLowerCase();
-  if (!['.mp3', '.m4a', '.wav', '.ogg', '.webm', '.opus', '.mp4'].includes(ext)) {
-    throw new Error('不支持的音频格式');
-  }
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'linglish-pod-'));
-  const tmp = path.join(tmpDir, `input${ext}`);
+  const ext = String(options.ext || '.mp3').startsWith('.') ? String(options.ext) : `.${options.ext || 'mp3'}`;
+  const tmp = path.join(os.tmpdir(), `linglish-pod-${Date.now()}-${Math.random().toString(16).slice(2)}${ext}`);
+  fs.writeFileSync(tmp, buf);
   let workPath = tmp;
   let compressed = '';
   try {
-    fs.writeFileSync(tmp, buf);
     if (buf.length > 24 * 1024 * 1024) {
       const ffmpeg = require('fluent-ffmpeg');
       setFluentFfmpegPath(ffmpeg);
-      compressed = path.join(tmpDir, 'compressed.mp3');
+      compressed = path.join(os.tmpdir(), `linglish-pod-c-${Date.now()}.mp3`);
       await new Promise((resolve, reject) => {
         ffmpeg(tmp)
-          .inputOptions([
-            '-protocol_whitelist file,pipe',
-            '-format_whitelist mp3,mov,wav,ogg,matroska,webm,flac,aac',
-          ])
           .audioChannels(1)
           .audioBitrate('64k')
           .format('mp3')
@@ -727,7 +675,6 @@ async function transcribePodcastBuffer(buf, options = {}) {
     if (!cues.length) throw new Error('生成字幕失败，没有识别到内容');
     return cues;
   } catch (error) {
-    if (error?.code === 'LOCAL_WHISPER_BUSY') throw error;
     const message = error && error.message ? error.message : '生成字幕失败';
     if (/API.?[Kk]ey|not configured/i.test(message)) {
       throw new Error('字幕生成服务未配置，暂时无法为无文稿播客生成字幕');
@@ -743,7 +690,10 @@ async function transcribePodcastBuffer(buf, options = {}) {
     }
     throw new Error(message);
   } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    try { fs.unlinkSync(tmp); } catch (_) {}
+    if (compressed) {
+      try { fs.unlinkSync(compressed); } catch (_) {}
+    }
   }
 }
 
@@ -772,8 +722,7 @@ async function cuesFromYoutubeVideoId(videoId, language = 'en') {
   const id = String(videoId || '').trim();
   if (!id) return [];
   const youtube = require('./youtube');
-  const transcript = await youtube.getTranscript(id, language);
-  const segs = Array.isArray(transcript) ? transcript : transcript && transcript.segments;
+  const segs = await youtube.getTranscript(id, language);
   return (Array.isArray(segs) ? segs : []).map((seg) => ({
     start: Number(seg.start) || 0,
     end: Number(seg.end != null ? seg.end : (Number(seg.start) || 0) + 2),
@@ -783,43 +732,47 @@ async function cuesFromYoutubeVideoId(videoId, language = 'en') {
 
 async function transcribeYoutubeAudio(videoId, options = {}) {
   const id = String(videoId || '').trim();
-  if (!/^[a-zA-Z0-9_-]{11}$/.test(id)) throw new Error('无效的 YouTube 视频编号');
+  if (!id) throw new Error('缺少 YouTube 视频编号');
   const { execFile } = require('child_process');
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'linglish-yt-'));
-  const outBase = path.join(tmpDir, 'audio');
+  const outBase = path.join(os.tmpdir(), `linglish-yt-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  const outTemplate = `${outBase}.%(ext)s`;
+  await new Promise((resolve, reject) => {
+    execFile(
+      'yt-dlp',
+      [
+        '-f', 'bestaudio/best',
+        '-x', '--audio-format', 'mp3',
+        '--audio-quality', '5',
+        '-o', outTemplate,
+        '--no-playlist',
+        `https://www.youtube.com/watch?v=${id}`,
+      ],
+      { timeout: 180000, windowsHide: true },
+      (error, _stdout, stderr) => {
+        if (error) reject(new Error(stderr?.trim() || error.message || '下载音频失败'));
+        else resolve();
+      }
+    );
+  });
+  const candidates = [
+    `${outBase}.mp3`,
+    `${outBase}.m4a`,
+    `${outBase}.webm`,
+    `${outBase}.opus`,
+  ];
+  const audioPath = candidates.find((p) => fs.existsSync(p));
+  if (!audioPath) throw new Error('下载音频失败');
   try {
-    await new Promise((resolve, reject) => {
-      execFile(
-        'yt-dlp',
-        [
-          '-f', 'bestaudio/best',
-          '-x', '--audio-format', 'mp3',
-          '--audio-quality', '5',
-          '-o', `${outBase}.%(ext)s`,
-          '--no-playlist',
-          '--max-filesize', '40M',
-          '--match-filters', 'duration <= 7200',
-          `https://www.youtube.com/watch?v=${id}`,
-        ],
-        { timeout: 180000, windowsHide: true },
-        (error, _stdout, stderr) => {
-          if (error) reject(new Error(stderr?.trim() || error.message || '下载音频失败'));
-          else resolve();
-        }
-      );
-    });
-    const candidates = ['.mp3', '.m4a', '.webm', '.opus'].map(ext => `${outBase}${ext}`);
-    const audioPath = candidates.find(candidate => fs.existsSync(candidate));
-    if (!audioPath) throw new Error('下载音频失败');
-    if (fs.statSync(audioPath).size > 40 * 1024 * 1024) throw new Error('这一集音频太大，暂时无法生成字幕');
     const buf = fs.readFileSync(audioPath);
-    return await transcribePodcastBuffer(buf, {
+    return transcribePodcastBuffer(buf, {
       language: options.language || 'en',
       ext: path.extname(audioPath) || '.mp3',
       provider: options.provider,
     });
   } finally {
-    fs.rmSync(tmpDir, { recursive: true, force: true });
+    candidates.forEach((p) => {
+      try { fs.unlinkSync(p); } catch (_) {}
+    });
   }
 }
 
@@ -852,7 +805,7 @@ async function resolveMediaCues(input = {}) {
     }
     if (input.allowAudioStt !== false) {
       try {
-        const cues = await transcribeYoutubeAudio(youtubeId, { language, provider: input.provider });
+        const cues = await transcribeYoutubeAudio(youtubeId, { language });
         if (cues.length) return { cues, source: 'youtube-stt', youtubeVideoId: youtubeId };
       } catch (err) {
         errors.push(err && err.message ? err.message : 'YouTube 音频识别失败');
@@ -872,7 +825,7 @@ async function resolveMediaCues(input = {}) {
         }
         if (input.allowAudioStt !== false) {
           try {
-            const cues = await transcribeYoutubeAudio(foundId, { language, provider: input.provider });
+            const cues = await transcribeYoutubeAudio(foundId, { language });
             if (cues.length) return { cues, source: 'youtube-search-stt', youtubeVideoId: foundId };
           } catch (err) {
             errors.push(err && err.message ? err.message : '标题匹配音频识别失败');
@@ -884,7 +837,7 @@ async function resolveMediaCues(input = {}) {
     }
   }
 
-  if (input.allowAudioStt !== false && input.audioBuffer && input.audioBuffer.length) {
+  if (input.audioBuffer && input.audioBuffer.length) {
     const cues = await transcribePodcastBuffer(input.audioBuffer, {
       language,
       ext: input.ext || '.mp3',
@@ -893,7 +846,7 @@ async function resolveMediaCues(input = {}) {
     return { cues, source: 'audio-stt' };
   }
 
-  if (input.allowAudioStt !== false && input.audioUrl) {
+  if (input.audioUrl) {
     const cues = await transcribePodcastAudio(input.audioUrl, {
       language,
       provider: input.provider,
@@ -1300,7 +1253,6 @@ module.exports = {
   resolveCoverImage,
   resolveCoverImages,
   fetchBytes,
-  fetchText,
   cuesFromTranscriptResult,
   guessAudioExt,
   transcribePodcastBuffer,

@@ -7,7 +7,7 @@
 console.log('[Main.js] Loading version 20251126010 - API_BASE detection fixed');
 
 import { state, debugLog, API_BASE } from './state.js';
-import { readStoredToken, readStoredEmail, clearAuthSession, persistAuthSession } from './auth.js?v=2026103001';
+import { readStoredToken, readStoredEmail, clearAuthSession, persistAuthSession } from './auth.js';
 import { apiFetch, recordEvent } from './api.js';
 import { wireShadowing } from './shadow-practice.js';
 import { wireDictogloss } from './dictogloss.js';

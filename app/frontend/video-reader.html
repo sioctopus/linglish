@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <script src="./js/auth-manager.js?v=3"></script>
 <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/tts-voice.js?v=2026103001"></script>
+  <script src="./js/tts-voice.js?v=3"></script>
   <script>
     // Filter noisy extension JSON.parse('undefined') errors (does not affect app logic)
     // IMPORTANT: This must be the first script to catch extension errors
@@ -220,7 +220,7 @@
             /跨源请求.*cloudflare/i,
             /同源策略.*cloudflare/i,
             /integrity.*sha512/i,
-            /增强型跟踪保护/i,
+            /增强型跟踪保?i,
             /www-widgetapi\.js/i,
             /postMessage.*target origin/i,
             /postMessage.*DOMWindow/i,
@@ -322,9 +322,9 @@
     <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
 
     <!-- Preload critical resources for video playback -->
-    <link rel="preload" href="./js/video-reader/main.js?v=2026103003" as="script">
-    <link rel="preload" href="./js/app/youtube-player.js?v=2026103001" as="script">
-    <link rel="preload" href="./css/video-reader/components.css?v=2026103001" as="style">
+    <link rel="preload" href="./js/video-reader/main.js?v=120-shared-media-m" as="script">
+    <link rel="preload" href="./js/app/youtube-player.js?v=20261029-hide-cc" as="script">
+    <link rel="preload" href="./css/video-reader/components.css?v=22" as="style">
     <link rel="preconnect" href="https://www.youtube.com">
     <link rel="preconnect" href="https://i.ytimg.com">
 
@@ -341,18 +341,74 @@
     <!-- Video Reader CSS Modules -->
     <link rel="stylesheet" href="./css/video-reader/variables.css?v=1" />
     <link rel="stylesheet" href="./css/video-reader/animations.css?v=1" />
-    <link rel="stylesheet" href="./css/video-reader/components.css?v=2026103001" />
-    <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=2026103001" />
-    <link rel="stylesheet" href="./styles/practice-voice-chat.css?v=2026103001" />
-    <link rel="stylesheet" href="./styles/practice-voice-chat-x.css?v=2026103001" />
-    <link rel="stylesheet" href="./styles/mobile/pages/video-reader-focus.css?v=2026103001" />
+    <link rel="stylesheet" href="./css/video-reader/components.css?v=22" />
+    <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=20261031-speed-left" />
+    <link rel="stylesheet" href="./styles/practice-voice-chat.css?v=20261030-arena-real" />
+    <link rel="stylesheet" href="./styles/practice-voice-chat-x.css?v=20261031-dict-fix" />
+    <link rel="stylesheet" href="./styles/mobile/pages/video-reader-focus.css?v=20261031-arena-layout" />
+    <style id="vr-nav-above-hold">
+      /* 带教按钮从 DOM/样式双删，避免缓存顶掉 */
+      body.video-reader-mobile-focus .coach-dock .coach-bar,
+      body.video-reader-mobile-focus .coach-dock .coach-toggle,
+      body.video-reader-mobile-focus .coach-dock .coach-status,
+      body.video-reader-mobile-focus .coach-dock .coach-panel,
+      body.video-reader-mobile-focus .coach-dock .coach-actions,
+      body.video-reader-mobile-focus .coach-dock .coach-rows,
+      .coach-dock .coach-toggle {
+        display: none !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+      }
+      body.video-reader-mobile-focus .coach-dock .coach-chrome {
+        justify-content: space-between !important;
+      }
+      body.video-reader-mobile-focus .coach-dock .coach-chrome > .mobile-speed-controls {
+        order: 0 !important;
+        margin-right: auto !important;
+      }
+      body.video-reader-mobile-focus .coach-dock .coach-chrome .mobile-view-toggle {
+        margin-left: auto !important;
+      }
+      body.video-reader-mobile-focus .mobile-view-toggle > .mobile-speed-controls {
+        display: none !important;
+      }
+      body.video-reader-mobile-focus .mobile-view-toggle > [data-mode="prev"],
+      body.video-reader-mobile-focus .mobile-view-toggle > [data-mode="next"] {
+        display: none !important;
+      }
+      body.video-reader-mobile-focus .mobile-speak-stack {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 8px !important;
+        width: 100% !important;
+      }
+      body.video-reader-mobile-focus .mobile-sentence-nav {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        gap: 10px !important;
+        width: 100% !important;
+      }
+      body.video-reader-mobile-focus .mobile-sentence-nav .mobile-sentence-btn {
+        flex: 1 1 0 !important;
+        min-height: 40px !important;
+        padding: 0 14px !important;
+        border: 0 !important;
+        border-radius: 999px !important;
+        color: #0f766e !important;
+        background: #f0fdfa !important;
+        font-size: 14px !important;
+        font-weight: 700 !important;
+      }
+    </style>
     <link rel="stylesheet" href="./styles/mobile/components/modals.css?v=4" />
-    <link rel="stylesheet" href="./css/study-switch.css?v=2026103001" />
+    <link rel="stylesheet" href="./css/study-switch.css?v=20261027-mobile" />
 
     <script src="./guest-check.js?v=1"></script>
-    <script src="./auth-helpers.js?v=2026103001"></script>
-    <script src="./i18n.js?v=2026103001"></script>
-    <script src="./global-ui.js?v=2026103001"></script>
+    <script src="./auth-helpers.js?v=2"></script>
+    <script src="./i18n.js?v=1"></script>
+    <script src="./global-ui.js?v=20250108"></script>
     <script src="./feedback.js?v=1"></script>
     <script src="./js/app/lazy-loader.js?v=1"></script>
     <link rel="stylesheet" href="./shared/dictionary.css?v=20260224f" />
@@ -360,9 +416,9 @@
     <script src="./shared/dictionary-lookup.js?v=1734439600"></script>
     <script src="./shared/deep-analysis.js?v=20260224f"></script>
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-    <script src="./js/video-reader/device-router.js?v=2026103001"></script>
+    <script src="./js/video-reader/device-router.js?v=1"></script>
     <script>window.VideoReaderDeviceRouter && window.VideoReaderDeviceRouter.redirectIfNeeded(window);</script>
-    <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
+    <link rel="stylesheet" href="./styles/icons.css?v=1">
 </head>
   <body class="video-reader-mobile-focus">
     <header class="mobile-reader-header">
@@ -558,12 +614,6 @@
                 </div>
               </div>
             </div>
-            <a class="guided-lesson-entry" id="guided-lesson-entry" hidden>
-              <span>跟读小课堂</span><span>练 3 句英语</span>
-            </a>
-            <section id="first-lesson-goal" hidden aria-label="今日跟读小目标"></section>
-            <details class="guided-reader-tools" id="guided-reader-tools" open>
-              <summary>字幕、查词与播放设置</summary>
             <div class="mobile-transcript-view" id="mobile-transcript" aria-live="polite">
               <div class="mobile-view-toggle" id="mobile-view-toggle" role="group" aria-label="字幕控制">
                 <div class="mobile-speed-controls coach-speed-dropdown" id="mobile-speed-controls">
@@ -585,8 +635,6 @@
                 </div>
                 <button class="mobile-view-btn active" data-mode="english">英文</button>
                 <button class="mobile-view-btn" data-mode="bilingual">双语</button>
-                <button class="mobile-view-btn" data-mode="prev" id="mobile-subtitle-prev">上一句</button>
-                <button class="mobile-view-btn" data-mode="next" id="mobile-subtitle-next">下一句</button>
               </div>
               <div class="mobile-transcript-list-wrapper">
                 <button class="mobile-transcript-nav prev" id="mobile-prev-segment" aria-label="上一句">‹</button>
@@ -594,6 +642,7 @@
                 <button class="mobile-transcript-nav next" id="mobile-next-segment" aria-label="下一句">›</button>
               </div>
             </div>
+            <section id="first-lesson-goal" hidden aria-label="今日跟读小目标"></section>
             <div class="mobile-player-controls" id="mobile-player-controls">
               <div id="first-lesson-progress" role="status" aria-live="polite" hidden>已练 0/0 · 0%</div>
               <div class="mobile-progress-row" hidden aria-hidden="true">
@@ -608,16 +657,35 @@
                   aria-hidden="true"
                 />
               </div>
-              <div class="mobile-speak-dock is-x-compose" role="group" aria-label="播放与跟读">
-                <button class="mobile-replay-btn" id="mobile-replay" type="button" aria-label="重新播放本句" title="重新播放">↻</button>
-                <button class="mobile-play-btn" id="mobile-play" type="button" aria-label="播放或暂停" title="播放 / 暂停">▶</button>
-                <button type="button" class="mobile-hold-btn" id="mobile-hold" aria-label="按住跟读">
-                  <span class="mobile-hold-main" data-hold-label>Hold to record</span>
-                </button>
-                <span id="mobile-current-time" hidden>00:00</span>
-                <span id="mobile-duration" hidden>00:00</span>
-                <button class="mobile-continue-btn" id="mobile-continue" type="button" aria-label="跟读回听" title="跟读回听">⋯</button>
-                <span class="mobile-play-hold-label" id="mobile-play-hold-label" hidden aria-hidden="true"></span>
+              <section id="arena-dock" class="arena-dock" hidden aria-label="实战场">
+                <div class="arena-dock-top">
+                  <p class="arena-dock-status" data-arena-status>选角色，对方自动播，轮到你再按住说</p>
+                  <div class="arena-dock-meta">
+                    <p class="arena-dock-progress" data-arena-progress hidden></p>
+                    <button type="button" class="arena-stop-btn" data-arena-stop hidden>结束</button>
+                  </div>
+                </div>
+                <div class="arena-dock-setup">
+                  <div class="arena-roles" data-arena-roles role="group" aria-label="选择角色"></div>
+                  <button type="button" class="arena-start-btn" data-arena-start>开始</button>
+                </div>
+              </section>
+              <div class="mobile-speak-stack" data-layout="nav-above-hold">
+                <div class="mobile-sentence-nav" role="group" aria-label="句子切换">
+                  <button type="button" class="mobile-sentence-btn" data-mode="prev" id="mobile-subtitle-prev">上一句</button>
+                  <button type="button" class="mobile-sentence-btn" data-mode="next" id="mobile-subtitle-next">下一句</button>
+                </div>
+                <div class="mobile-speak-dock is-x-compose" role="group" aria-label="播放与跟读">
+                  <button class="mobile-replay-btn" id="mobile-replay" type="button" aria-label="重新播放本句" title="重新播放">↻</button>
+                  <button class="mobile-play-btn" id="mobile-play" type="button" aria-label="播放或暂停" title="播放 / 暂停">▶</button>
+                  <button type="button" class="mobile-hold-btn" id="mobile-hold" aria-label="按住跟读">
+                    <span class="mobile-hold-main" data-hold-label>Hold to record</span>
+                  </button>
+                  <span id="mobile-current-time" hidden>00:00</span>
+                  <span id="mobile-duration" hidden>00:00</span>
+                  <button class="mobile-continue-btn" id="mobile-continue" type="button" aria-label="跟读回听" title="跟读回听">⋯</button>
+                  <span class="mobile-play-hold-label" id="mobile-play-hold-label" hidden aria-hidden="true"></span>
+                </div>
               </div>
               <div class="mobile-speak-tools" role="group" aria-label="回听">
                 <button type="button" class="mobile-speak-tool is-integrated-off" id="mobile-shadow-btn" aria-hidden="true" tabindex="-1">跟读</button>
@@ -672,7 +740,6 @@
                 <button type="button" class="mobile-feature-cancel" id="mobile-mic-cancel">取消</button>
               </div>
             </div>
-            </details>
             <div class="transcript-panel">
               <div class="transcript-header">
                 <h3 style="margin: 0; font-size: 0.9rem;">Transcript</h3>
@@ -722,7 +789,7 @@
                 <select id="practice-speaker-right" class="practice-speaker-select"></select>
               </div>
 
-              <!-- 当前行显示（独立） -->
+              <!-- 当前行显示（独立->
               <div class="practice-current-line-right" id="practice-current-line-right" hidden></div>
 
               <!-- 台词列表（独立） -->
@@ -891,18 +958,18 @@
 
     <!-- Video Reader JavaScript Module -->
     <script src="./membership.js"></script>
-    <script src="./js/app/youtube-player.js?v=2026103001"></script>
+    <script src="./js/app/youtube-player.js?v=20261029-hide-cc"></script>
     <script src="./js/visitor-context.js?v=1"></script>
     <script src="./js/video-reader/smart-import-api.js?v=1"></script>
-    <script src="./js/video-reader/mobile-reader-layout.js?v=2026103003"></script>
+    <script src="./js/video-reader/mobile-reader-layout.js?v=4-library"></script>
     <script src="./js/video-reader/first-lesson-focus.js?v=20260822"></script>
     <script src="./js/video-reader/first-lesson-progress.js?v=20260822"></script>
-    <script src="./js/video-reader/first-lesson-goal.js?v=2026103001"></script>
-    <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=2026103003">
-    <script src="./js/video-reader/sentence-segments.js?v=2026103001"></script>
+    <script src="./js/video-reader/first-lesson-goal.js?v=20261015"></script>
+    <link rel="stylesheet" href="./styles/first-lesson-goal.css?v=20260922">
+    <script src="./js/video-reader/sentence-segments.js?v=20261030-source-sync"></script>
     <script src="./js/video-reader/missed-words.js?v=20261015"></script>
     <script src="./js/video-reader/sentence-assist.js?v=20261015"></script>
-    <script src="./js/video-reader/first-lesson-practice.js?v=2026103001"></script>
+    <script src="./js/video-reader/first-lesson-practice.js?v=20261024-mic-ding"></script>
     <script src="./js/video-reader/first-lesson-readiness.js?v=20260808"></script>
     <script>
       window.LinglishFirstLessonFocus.applyDocumentState(document, window.location.search);
@@ -910,20 +977,21 @@
     <script src="./js/media-session.js"></script>
     <script src="./js/video-recommendation-client.js?v=20260925"></script>
     <script src="./js/video-reader/next-video-sheet.js?v=20260925"></script>
-    <script src="./js/video-reader/coaching-mode.js?v=2026103001"></script>
-    <script src="./js/audio-cues.js?v=2026103001"></script>
-    <script src="./js/practice/shadow-mic.js?v=2026103001"></script>
-    <script src="./js/practice/shadow-recording-cache.js?v=2026103001"></script>
-    <script src="./js/practice/voice-chat-coach.js?v=2026103001"></script>
-    <script src="./js/practice/voice-chat-bridge.js?v=2026103001"></script>
-    <script src="./js/video-reader/coaching-dock.js?v=2026103001"></script>
+    <script src="./js/video-reader/coaching-mode.js?v=20261028-mic"></script>
+    <script src="./js/audio-cues.js?v=1"></script>
+    <script src="./js/practice/shadow-mic.js?v=20261029-wx-60"></script>
+    <script src="./js/practice/shadow-recording-cache.js?v=20261030-ttl7"></script>
+    <script src="./js/practice/voice-chat-coach.js?v=20261031-dict-fix"></script>
+    <script src="./js/practice/voice-chat-bridge.js?v=20261031-arena-turn"></script>
+    <script src="./js/video-reader/coaching-dock.js?v=20261031-speed-left"></script>
     <script src="./js/video-reader/voice-slot.js?v=1"></script>
-    <script src="./js/video-reader/media-library-defaults.js?v=2026103001"></script>
-    <script src="./js/video-reader/mobile-media-library.js?v=2026103001"></script>
-    <script src="./js/study-recent.js?v=2026103001"></script>
-    <script src="./js/video-reader/main.js?v=2026103003"></script>
-    <script src="./js/video-reader/sentence-path.js?v=2026103001"></script>
-    <script src="./js/study-switch.js?v=2026103001"></script>
+    <script src="./js/video-reader/media-library-defaults.js?v=20261031a"></script>
+    <script src="./js/video-reader/mobile-media-library.js?v=7-open-fix"></script>
+    <script src="./js/study-recent.js?v=20261029-pod-open"></script>
+    <script src="./js/video-reader/main.js?v=120-shared-media-m"></script>
+    <script src="./js/video-reader/arena-dialogue.js?v=20261031-arena-layout"></script>
+    <script src="./js/video-reader/sentence-path.js?v=20261031-shared-media-m"></script>
+    <script src="./js/study-switch.js?v=20261031-shared-media"></script>
     <script>
       try {
         if (window.LinglishMobileMediaLibrary) window.LinglishMobileMediaLibrary.init();
@@ -964,6 +1032,6 @@
     </script>
     <script src="./js/page-tracker.js"></script>
   <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
-  <script src="./js/icons.js?v=2026103001"></script>
+  <script src="./js/icons.js?v=1"></script>
 </body>
 </html>

@@ -1,5 +1,4 @@
 const fs = require('fs/promises');
-const { randomUUID } = require('crypto');
 const os = require('os');
 const path = require('path');
 const { pathToFileURL } = require('url');
@@ -187,11 +186,11 @@ async function defaultQuery(sql, params) {
   return dataStore.pool.query(sql, params);
 }
 
-async function insertArticle(draft, query, ownerUserId) {
+async function insertArticle(draft, query) {
   const { rows } = await query(
     `INSERT INTO articles
-     (title, content, level, tags, word_count, difficulty_score, status, source_type, pdf_path, created_at, updated_at, published_at, owner_user_id, visibility)
-     VALUES ($1, $2, $3, $4, $5, $6, 'published', $7, $8, NOW(), NOW(), NOW(), $9, 'private')
+     (title, content, level, tags, word_count, difficulty_score, status, source_type, pdf_path, created_at, updated_at, published_at)
+     VALUES ($1, $2, $3, $4, $5, $6, 'published', $7, $8, NOW(), NOW(), NOW())
      RETURNING id, title, word_count, level, source_type, pdf_path`,
     [
       draft.title,
@@ -202,13 +201,12 @@ async function insertArticle(draft, query, ownerUserId) {
       draft.difficultyScore,
       draft.sourceType,
       draft.pdfPath,
-      ownerUserId,
     ]
   );
   return rows[0];
 }
 
-async function updateArticleReading(id, draft, query, user) {
+async function updateArticleReading(id, draft, query) {
   const { rows } = await query(
     `UPDATE articles
      SET content = $2,
@@ -217,7 +215,7 @@ async function updateArticleReading(id, draft, query, user) {
          word_count = $5,
          difficulty_score = $6,
          updated_at = NOW()
-     WHERE id = $1 AND (owner_user_id = $7 OR $8::boolean)
+     WHERE id = $1
      RETURNING id, title, word_count, level, source_type, pdf_path`,
     [
       id,
@@ -226,8 +224,6 @@ async function updateArticleReading(id, draft, query, user) {
       draft.tags,
       draft.wordCount,
       draft.difficultyScore,
-      user.id,
-      user.is_admin === true,
     ]
   );
   return rows[0] || null;
@@ -296,7 +292,7 @@ async function readSourceText(file, kind, deps) {
 }
 
 async function importPdf(file, title, deps) {
-  const savedFilename = `${randomUUID()}-${sanitizeFilename(file.originalFilename)}`;
+  const savedFilename = `${Date.now()}-${sanitizeFilename(file.originalFilename)}`;
   const savedPath = path.join(PDFS_DIR, savedFilename);
   const relativePdfPath = `/pdfs/${savedFilename}`;
   await deps.mkdir(PDFS_DIR, { recursive: true });
@@ -349,7 +345,7 @@ async function importPdf(file, title, deps) {
   }
 
   try {
-    const row = await insertArticle(draft, deps.query, deps.ownerUserId);
+    const row = await insertArticle(draft, deps.query);
     return present(row, {
       scanned: scanned && !draft.cueCount && !draft.exam,
       cueCount: draft.cueCount,
@@ -363,17 +359,10 @@ async function importPdf(file, title, deps) {
 }
 
 async function importLearningDocument(input = {}, deps = {}) {
-  const ownerUserId = Number(input.ownerUserId);
-  if (!Number.isSafeInteger(ownerUserId) || ownerUserId <= 0) {
-    const err = reject('请先登录');
-    err.statusCode = 401;
-    throw err;
-  }
   const query = deps.query || defaultQuery;
   const file = input.file || null;
   const tools = {
     query,
-    ownerUserId,
     copyFile: deps.copyFile || fs.copyFile,
     readFile: deps.readFile || fs.readFile,
     mkdir: deps.mkdir || fs.mkdir,
@@ -405,7 +394,7 @@ async function importLearningDocument(input = {}, deps = {}) {
       tags: ['imported', 'document', kind, 'subtitles'],
     });
     if (!draft) throw reject('没有提取到可朗读的英语句子');
-    return present(await insertArticle(draft, query, ownerUserId), {
+    return present(await insertArticle(draft, query), {
       cueCount: draft.cueCount,
       hasSubtitles: draft.cueCount > 0 && !draft.exam,
       exam: Boolean(draft.exam),
@@ -414,19 +403,13 @@ async function importLearningDocument(input = {}, deps = {}) {
 
   if (String(input.text || '').trim()) {
     const draft = prepareTextDocument({ title: input.title, text: input.text });
-    return present(await insertArticle(draft, query, ownerUserId), { cueCount: draft.cueCount, hasSubtitles: true });
+    return present(await insertArticle(draft, query), { cueCount: draft.cueCount, hasSubtitles: true });
   }
 
   throw reject('请上传英语图片、PDF、Word、电子书，或粘贴课文');
 }
 
 async function rebuildReadingSubtitles(article, deps = {}) {
-  const user = deps.user;
-  if (!user || (user.is_admin !== true && Number(article?.owner_user_id) !== Number(user.id))) {
-    const err = reject('没有权限修改这份文档');
-    err.statusCode = 403;
-    throw err;
-  }
   if (!article?.pdf_path) throw reject('这份文档没有原文件，无法提取朗读字幕');
   const filename = path.basename(String(article.pdf_path));
   if (!filename || filename !== path.basename(filename)) throw reject('文档路径无效');
@@ -462,7 +445,7 @@ async function rebuildReadingSubtitles(article, deps = {}) {
     });
   }
   if (!draft) throw reject('没有提取到可朗读的英语句子');
-  const row = await updateArticleReading(article.id, draft, tools.query, user);
+  const row = await updateArticleReading(article.id, draft, tools.query);
   if (!row) throw reject('找不到这份文档');
   return present(row, {
     cueCount: draft.cueCount,

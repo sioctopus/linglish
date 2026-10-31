@@ -6,7 +6,7 @@
   <title>日常用语 — Linglish</title>
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
   <link rel="stylesheet" href="./styles/tokens.css?v=2">
-  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
   <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
   <style>
     html, body {
@@ -42,13 +42,34 @@
       border-radius: 999px;
       box-shadow: 0 4px 90px rgba(0, 0, 0, 0.04);
     }
+    .nav-brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
     .brand {
       color: #0f172a;
-      font-weight: 700;
+      font-weight: 800;
       text-decoration: none;
       font-size: 18px;
+      line-height: 1;
+      white-space: nowrap;
     }
-    .nav-actions { display: flex; align-items: center; gap: 8px; }
+    .nav-btn.back {
+      height: 32px;
+      padding: 0 12px;
+      border-color: #e2e8f0;
+      background: #fff;
+      color: #0f766e;
+    }
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-left: auto;
+    }
     .nav-btn {
       display: inline-flex;
       align-items: center;
@@ -61,9 +82,9 @@
       font-size: 14px;
       font-weight: 700;
       text-decoration: none;
+      cursor: pointer;
     }
-    .nav-btn.home {
-      flex: none;
+    .nav-btn.materials {
       border-color: #0f766e;
       background: #0f766e;
       color: #fff;
@@ -108,24 +129,14 @@
       gap: 8px;
       margin: 0;
       min-width: 0;
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
-    .pack {
-      border: 1px solid #e2e8f0;
-      background: #fff;
-      color: #0f172a;
-      border-radius: 999px;
-      min-height: 40px;
-      padding: 0 16px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    .pack.active { background: #0f766e; color: #fff; border-color: #0f766e; }
-    .packs .method-select.pack-method {
-      flex: 0 0 auto;
+    .packs .method-select.pack-method,
+    .packs .pack-select {
+      flex: 0 1 auto;
       width: auto;
-      max-width: min(148px, 42vw);
+      min-width: 0;
+      max-width: min(168px, 46vw);
       min-height: 40px;
       padding: 0 12px;
       border: 1px solid #0f766e;
@@ -134,6 +145,17 @@
       color: #0f766e;
       font-size: 14px;
       font-weight: 800;
+      cursor: pointer;
+    }
+    .packs .pack-select {
+      border-color: #cbd5e1;
+      color: #0f172a;
+      font-weight: 700;
+    }
+    .packs .pack-select:focus {
+      outline: none;
+      border-color: #0f766e;
+      color: #0f766e;
     }
     .words {
       display: flex;
@@ -449,7 +471,12 @@
       display: block !important;
       font-weight: 700;
     }
-    .now.caption .now-zh { font-weight: 650; color: #334155; }
+    .now.caption .now-zh {
+      font-weight: 500;
+      color: #64748b;
+      font-size: 16px;
+      line-height: 24px;
+    }
     .method, .review-btn {
       border: 0;
       background: transparent;
@@ -469,6 +496,8 @@
     }
     .now {
       --speak-stage-h: var(--lx-focus-player-max-h, min(68dvh, 680px, calc(100dvh - 210px)));
+      --stage-type-scale: 1;
+      position: relative;
       flex: 0 0 auto;
       width: min(100%, var(--lx-focus-player-width, calc(var(--speak-stage-h) * 16 / 9)));
       max-width: 100%;
@@ -507,6 +536,52 @@
       overflow-x: hidden;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
+      zoom: var(--stage-type-scale, 1);
+    }
+    @supports not (zoom: 1) {
+      .now-body {
+        transform: scale(var(--stage-type-scale, 1));
+        transform-origin: top center;
+      }
+    }
+    .stage-type-size {
+      display: none;
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      z-index: 4;
+      align-items: center;
+      gap: 0;
+      padding: 2px;
+      border: 1px solid #e2e8f0;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.08);
+    }
+    body.has-stage-type-size .stage-type-size {
+      display: inline-flex;
+    }
+    .stage-type-size button {
+      width: 34px;
+      height: 32px;
+      margin: 0;
+      border: 0;
+      border-radius: 10px;
+      background: transparent;
+      color: #334155;
+      font: inherit;
+      font-size: 18px;
+      font-weight: 700;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .stage-type-size button:hover {
+      background: #f1f5f9;
+      color: #0f766e;
+    }
+    .stage-type-size button:disabled {
+      opacity: 0.35;
+      cursor: default;
     }
     /* 电脑版：中间字幕画幅固定，麦克风/上一句/重复播放不随内容高低跳动 */
     @media (min-width: 981px) {
@@ -548,13 +623,13 @@
         margin-bottom: 4px;
       }
     }
-    .now-who { margin: 0; color: var(--lx-primary); font-size: 13px; font-weight: 800; }
+    .now-who { margin: 0; color: var(--lx-primary); font-size: 16px; font-weight: 800; }
     .now-en {
       margin: 0;
       max-width: 100%;
       color: var(--lx-ink-900);
-      font-size: 28px;
-      line-height: 40px;
+      font-size: 36px;
+      line-height: 48px;
       font-weight: 700;
       overflow-wrap: anywhere;
       word-break: break-word;
@@ -564,23 +639,30 @@
     .now-zh {
       margin: 0 0 2px;
       max-width: 100%;
-      color: var(--lx-ink-900);
-      font-size: 28px;
-      line-height: 36px;
-      font-weight: 800;
+      color: var(--lx-ink-600, #475569);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      font-size: 17px;
+      line-height: 24px;
+      font-weight: 500;
+      letter-spacing: 0;
       overflow-wrap: anywhere;
       word-break: break-word;
       order: -1;
     }
     .now-body > .now-who { order: -2; }
     .now-zh[hidden] { display: none; }
-    .now-zh.pending { color: var(--lx-ink-500); font-weight: 650; font-size: 22px; }
-    .now-zh.prompt { color: var(--lx-ink-900); font-size: 28px; line-height: 38px; font-weight: 800; }
+    .now-zh.pending { color: var(--lx-ink-500); font-weight: 500; font-size: 15px; line-height: 22px; }
+    .now-zh.prompt {
+      color: var(--lx-ink-700, #334155);
+      font-size: 18px;
+      line-height: 26px;
+      font-weight: 600;
+    }
     .now-zh.is-secondary {
       color: var(--lx-primary);
-      font-size: 17px;
-      line-height: 26px;
-      font-weight: 700;
+      font-size: 15px;
+      line-height: 22px;
+      font-weight: 500;
       order: 2;
     }
     .choice-zh { display: block; margin-top: 2px; color: var(--lx-primary); font-size: 14px; font-weight: 700; line-height: 20px; }
@@ -590,12 +672,11 @@
       flex-wrap: wrap;
       justify-content: center;
       align-items: flex-start;
-      gap: 6px 0;
+      gap: 6px 8px;
       width: 100%;
       max-width: 100%;
       min-width: 0;
       box-sizing: border-box;
-      column-gap: 0;
     }
     .gloss-row[hidden] { display: none; }
     .gloss-chunk {
@@ -610,7 +691,7 @@
     }
     .gloss-word {
       display: grid;
-      grid-template-rows: 16px 12px auto 14px minmax(0, auto);
+      grid-template-rows: 22px 18px auto 18px minmax(0, auto);
       justify-items: center;
       align-items: center;
       row-gap: 0;
@@ -626,15 +707,15 @@
       cursor: pointer;
     }
     .gloss-role {
-      min-height: 16px;
-      height: 16px;
-      padding: 0 6px;
+      min-height: 22px;
+      height: 22px;
+      padding: 0 8px;
       border-radius: 999px;
       background: #e2e8f0;
       color: #475569;
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 800;
-      line-height: 16px;
+      line-height: 22px;
       white-space: nowrap;
       overflow: hidden;
     }
@@ -650,26 +731,26 @@
     .gloss-role.role-object { background: #ffedd5; color: #c2410c; }
     .gloss-role.role-other { background: #f1f5f9; color: #64748b; }
     .gloss-ipa {
-      min-height: 12px;
-      height: 12px;
+      min-height: 18px;
+      height: 18px;
       padding: 0;
       border-radius: 6px;
       background: transparent;
       color: var(--lx-ink-400);
-      font-size: 9px;
+      font-size: 13px;
       font-weight: 650;
-      line-height: 12px;
+      line-height: 18px;
       white-space: nowrap;
       overflow: hidden;
     }
     .gloss-ipa:empty { background: transparent; }
     .gloss-en {
       min-height: 0;
-      padding: 1px 1px;
+      padding: 2px 2px;
       background: var(--lx-line);
       color: var(--lx-ink-900);
-      font-size: 18px;
-      line-height: 24px;
+      font-size: 32px;
+      line-height: 42px;
       font-weight: 800;
       white-space: nowrap;
     }
@@ -687,11 +768,11 @@
       display: none;
     }
     .gloss-zh {
-      min-height: 14px;
-      height: 14px;
+      min-height: 18px;
+      height: 18px;
       color: var(--lx-ink-500);
-      font-size: 11px;
-      line-height: 14px;
+      font-size: 14px;
+      line-height: 18px;
       white-space: nowrap;
       overflow: hidden;
     }
@@ -895,13 +976,13 @@
     .line-tip {
       display: inline-flex;
       align-items: center;
-      min-height: 28px;
-      padding: 0 10px;
+      min-height: 32px;
+      padding: 0 12px;
       border: 0;
       border-radius: 999px;
       background: #f1f5f9;
       color: #475569;
-      font-size: 12px;
+      font-size: 14px;
       font-weight: 700;
       line-height: 1.2;
     }
@@ -919,7 +1000,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 0;
       width: 100%;
       max-width: 520px;
     }
@@ -938,8 +1019,9 @@
       box-shadow: var(--lx-shadow-brand, 0 8px 24px rgba(15, 118, 110, 0.18));
     }
     .mic.speak-cta {
-      width: auto;
-      min-width: min(100%, 320px);
+      width: 100%;
+      min-width: 0;
+      max-width: 100%;
       height: 48px;
       padding: 0 18px;
       border-radius: 999px;
@@ -952,6 +1034,7 @@
       font-size: 15px;
       font-weight: 800;
       letter-spacing: 0.01em;
+      box-sizing: border-box;
     }
     .mic.speak-cta .speak-cta-text {
       white-space: nowrap;
@@ -961,25 +1044,11 @@
       box-shadow: 0 8px 24px rgba(239, 68, 68, 0.22);
     }
     .mic svg { width: 22px; height: 22px; display: block; flex: none; }
-    .type-btn {
-      width: 44px;
-      height: 44px;
-      border: 1px solid #e2e8f0;
-      border-radius: 14px;
-      background: #fff;
+    .stage-dock .type-btn.is-active,
+    .dock-btn.type-btn.is-active {
+      background: #ecfdf5;
       color: #0f766e;
-      display: grid;
-      place-items: center;
-      cursor: pointer;
-      flex: none;
-      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
     }
-    .type-btn:hover,
-    .type-btn.is-active {
-      border-color: #99f6e4;
-      background: #f0fdfa;
-    }
-    .type-btn svg { width: 20px; height: 20px; display: block; }
     .mic-hint {
       margin: 0;
       color: var(--lx-ink-500, #64748b);
@@ -991,32 +1060,39 @@
     .stage-dock {
       display: flex;
       align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: fit-content;
+      justify-content: space-between;
+      gap: 4px;
+      width: min(100%, 320px);
       max-width: 100%;
-      margin: 4px auto 0;
-      padding: 6px 10px;
+      margin: 8px auto 0;
+      padding: 6px 8px;
       border: 1px solid #e2e8f0;
       border-radius: 999px;
       background: #fff;
       box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06);
+      box-sizing: border-box;
     }
     .dock-btn {
-      width: 40px;
-      height: 40px;
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
       border: 0;
-      border-radius: 12px;
+      border-radius: 14px;
       background: transparent;
       color: #475569;
       display: grid;
       place-items: center;
       cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
     }
     .dock-btn:hover { background: #f1f5f9; color: #0f766e; }
     .dock-btn-primary {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
       background: #0f766e;
       color: #fff;
+      box-shadow: 0 6px 14px rgba(15, 118, 110, 0.28);
     }
     .dock-btn-primary:hover { background: #0d9488; color: #fff; }
     .dock-btn.is-on {
@@ -1024,15 +1100,19 @@
       color: #0f766e;
     }
     .dock-btn svg { width: 20px; height: 20px; display: block; }
+    .dock-btn-primary svg { width: 22px; height: 22px; }
     .dock-more {
       position: relative;
-      width: 40px;
-      height: 40px;
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
       display: grid;
       place-items: center;
       color: #475569;
       cursor: pointer;
+      border-radius: 14px;
     }
+    .dock-more:hover { background: #f1f5f9; color: #0f766e; }
     .dock-more svg { width: 20px; height: 20px; pointer-events: none; }
     .dock-more .more-action-select {
       position: absolute;
@@ -1498,15 +1578,14 @@
       cursor: pointer;
     }
     .nav-btn.materials {
-      border-color: #99f6e4;
-      background: #f0fdfa;
-      color: #0f766e;
       cursor: pointer;
       font: inherit;
       font-size: 14px;
       font-weight: 700;
     }
-    .nav-btn.materials.active { background: #0f766e; color: #fff; }
+    .nav-btn.materials.active {
+      filter: brightness(0.95);
+    }
     .materials-modal {
       position: fixed;
       inset: 0;
@@ -1644,9 +1723,9 @@
         border-radius: 24px;
         padding: 8px 12px;
       }
-      .packs { order: 3; width: 100%; justify-content: flex-start; }
-      .nav-actions { margin-left: auto; }
-      .nav-btn.home { flex: none; }
+      .packs { order: 3; width: 100%; justify-content: stretch; }
+      .nav-brand { order: 1; }
+      .nav-actions { order: 2; margin-left: auto; }
     }
     @media (max-width: 980px) {
       html, body {
@@ -1673,32 +1752,44 @@
         border-radius: 20px;
         overflow: hidden;
       }
+      .nav-brand {
+        order: 1;
+        flex: 1 1 auto;
+        min-width: 0;
+      }
       .brand { flex: 0 0 auto; font-size: 16px; }
+      .nav-btn.back {
+        height: 30px;
+        padding: 0 10px;
+        font-size: 13px;
+      }
       .packs {
         flex: 1 1 100%;
         order: 3;
         width: 100%;
         max-width: 100%;
         min-width: 0;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-        gap: 6px;
+        justify-content: stretch;
+        flex-wrap: nowrap;
+        gap: 8px;
       }
-      .pack { min-height: 32px; padding: 0 10px; font-size: 13px; }
+      .packs .method-select.pack-method,
+      .packs .pack-select {
+        flex: 1 1 0;
+        max-width: none;
+        min-height: 36px;
+        font-size: 13px;
+        padding: 0 10px;
+      }
       .nav-actions {
-        flex: 1 1 auto;
-        flex-wrap: wrap;
+        order: 2;
+        flex: 0 0 auto;
         justify-content: flex-end;
         gap: 6px;
-        min-width: 0;
-        max-width: 100%;
+        margin-left: auto;
       }
       .nav-btn { height: 32px; padding: 0 10px; font-size: 13px; white-space: nowrap; }
-      .nav-btn.materials { padding: 0 8px; }
-      .nav-btn.home {
-        padding: 0 12px;
-        font-weight: 800;
-      }
+      .nav-btn.materials { padding: 0 12px; }
       main {
         display: block;
         height: auto;
@@ -1762,7 +1853,8 @@
         font-size: 13px;
         padding: 0 6px;
       }
-      .packs .method-select.pack-method {
+      .packs .method-select.pack-method,
+      .packs .pack-select {
         min-height: 36px;
         font-size: 13px;
         touch-action: manipulation;
@@ -1906,36 +1998,71 @@
         text-overflow: ellipsis;
       }
       .speak-cta-row {
-        gap: 8px;
+        gap: 0;
         padding: 0 4px;
       }
-      .type-btn {
-        width: 42px;
-        height: 42px;
-      }
       .stage-dock {
-        gap: 4px;
-        padding: 4px 8px;
+        width: min(100%, 300px);
+        gap: 2px;
+        padding: 4px 6px;
       }
       .dock-btn,
       .dock-more {
-        width: 38px;
-        height: 38px;
+        width: 40px;
+        height: 40px;
+      }
+      .dock-btn-primary {
+        width: 46px;
+        height: 46px;
       }
       .mic svg { width: 20px; height: 20px; }
       .mic-hint { font-size: 11px; }
       .now-zh:not(.is-secondary) {
-        font-size: 22px;
-        line-height: 30px;
+        font-size: 15px;
+        line-height: 22px;
+        font-weight: 500;
       }
+      .now-zh.prompt {
+        font-size: 16px;
+        line-height: 24px;
+      }
+      .now-who { font-size: 13px; }
       .now-en { font-size: 22px; line-height: 32px; }
+      .gloss-word {
+        grid-template-rows: 16px 12px auto 14px minmax(0, auto);
+      }
+      .gloss-role {
+        min-height: 16px;
+        height: 16px;
+        padding: 0 6px;
+        font-size: 10px;
+        line-height: 16px;
+      }
+      .gloss-ipa {
+        min-height: 12px;
+        height: 12px;
+        font-size: 9px;
+        line-height: 12px;
+      }
       .gloss-en {
         max-width: 100%;
         box-sizing: border-box;
         overflow-wrap: anywhere;
         white-space: normal;
-        padding-left: 1px;
-        padding-right: 1px;
+        padding: 1px;
+        font-size: 18px;
+        line-height: 24px;
+      }
+      .gloss-zh {
+        min-height: 14px;
+        height: 14px;
+        font-size: 11px;
+        line-height: 14px;
+      }
+      .line-tip {
+        min-height: 28px;
+        padding: 0 10px;
+        font-size: 12px;
       }
       .gloss-chunk {
         margin: 0;
@@ -1985,8 +2112,9 @@
       .method-tools {
         max-width: min(200px, 52%);
       }
-      .packs .method-select.pack-method {
-        max-width: min(120px, 38vw);
+      .packs .method-select.pack-method,
+      .packs .pack-select {
+        max-width: none;
         min-height: 36px;
         font-size: 13px;
         padding: 0 10px;
@@ -2049,21 +2177,25 @@
       .method-tools {
         max-width: min(240px, 42%);
       }
-      .packs .method-select.pack-method {
-        min-width: 128px;
-        max-width: 160px;
+      .packs .method-select.pack-method,
+      .packs .pack-select {
+        min-width: 0;
+        max-width: none;
+        flex: 1 1 0;
       }
       .card.stage.is-dictation-mode .now {
         --speak-stage-h: min(calc(100vw * 9 / 16), 48dvh, calc(100dvh - 300px));
       }
     }
   </style>
-  <script src="./js/auth-manager.js?v=2026103001"></script>
   <script src="./js/nav-back.js?v=1"></script>
 </head>
 <body>
   <nav class="nav">
-    <a class="brand" href="./index-desktop.html" title="返回首页">Linglish</a>
+    <div class="nav-brand">
+      <a class="nav-btn back" id="nav-back" data-nav="back" href="./index-desktop.html">返回</a>
+      <a class="brand" href="./index-desktop.html" data-nav="home" title="Linglish 首页">Linglish</a>
+    </div>
     <div class="packs" id="packs">
       <select class="method-select pack-method" id="method-select" aria-label="练法">
         <option value="listen" selected>先听再跟</option>
@@ -2071,17 +2203,17 @@
         <option value="dictation">精听听写</option>
         <option value="field">实景五段</option>
       </select>
-      <button class="pack active" type="button" data-pack="daily">日常用语</button>
-      <button class="pack" type="button" data-pack="daylife">一日口语</button>
-      <button class="pack" type="button" data-pack="travel">旅游口语</button>
-      <button class="pack" type="button" data-pack="kids">儿童口语</button>
-      <button class="pack" type="button" data-pack="core">850句</button>
-      <button class="pack" type="button" data-pack="medical">医学词汇</button>
+      <select class="pack-select" id="pack-select" aria-label="词库">
+        <option value="daily" selected>日常用语</option>
+        <option value="daylife">一日口语</option>
+        <option value="travel">旅游口语</option>
+        <option value="kids">儿童口语</option>
+        <option value="core">850句</option>
+        <option value="medical">医学词汇</option>
+      </select>
     </div>
     <div class="nav-actions">
       <button class="nav-btn materials" id="materials-btn" type="button">我的教材</button>
-      <a class="nav-btn" id="nav-back" data-nav="back" href="./index-desktop.html">返回</a>
-      <a class="nav-btn home" data-nav="home" href="./index-desktop.html">首页</a>
     </div>
   </nav>
   <div class="materials-modal" id="materials-modal" hidden>
@@ -2151,6 +2283,10 @@
             <div class="line-tips" id="line-tips" hidden></div>
             <div class="exam-sheet" id="exam-sheet" hidden></div>
           </div>
+          <div class="stage-type-size" id="stage-type-size" hidden>
+            <button type="button" data-stage-type="-1" aria-label="字号缩小" title="缩小上方字号（-）">−</button>
+            <button type="button" data-stage-type="1" aria-label="字号放大" title="放大上方字号（+）">+</button>
+          </div>
           <div class="split-row" id="split-row" hidden></div>
         </div>
         <div class="mic-dock" id="mic-dock" hidden>
@@ -2159,11 +2295,8 @@
               <span data-lx-icon="mic" data-lx-class="lx-icon--md"></span>
               <span class="speak-cta-text" id="mic-cta-text">口语训练 · 点击或按住空格</span>
             </button>
-            <button class="type-btn" id="type-btn" type="button" aria-label="打字填词" title="打字填词">
-              <span data-lx-icon="keyboard" data-lx-class="lx-icon--md"></span>
-            </button>
           </div>
-          <p class="mic-hint" id="mic-hint">可语音也可打字</p>
+          <p class="mic-hint" id="mic-hint">按住空格说话；打字点底栏键盘</p>
         </div>
         <div class="review" id="review" hidden></div>
         <div class="transport">
@@ -2177,11 +2310,8 @@
             <button class="dock-btn dock-btn-primary" id="play-btn" type="button" title="听原声（P）" aria-label="听原声">
               <span data-lx-icon="volume" data-lx-class="lx-icon--md"></span>
             </button>
-            <button class="dock-btn" id="eye-btn" type="button" title="显隐释义" aria-label="显隐释义" aria-pressed="false">
-              <span data-lx-icon="eye" data-lx-class="lx-icon--md"></span>
-            </button>
-            <button class="dock-btn" id="star-btn" type="button" title="带走三句" aria-label="带走三句">
-              <span data-lx-icon="star" data-lx-class="lx-icon--md"></span>
+            <button class="dock-btn type-btn" id="type-btn" type="button" title="打字填词" aria-label="打字填词">
+              <span data-lx-icon="keyboard" data-lx-class="lx-icon--md"></span>
             </button>
             <label class="dock-more" title="更多操作">
               <span data-lx-icon="more" data-lx-class="lx-icon--md" aria-hidden="true"></span>
@@ -2191,6 +2321,7 @@
                 <option value="read">朗读整段</option>
                 <option value="note-line">本句精读</option>
                 <option value="note-scene">整段精读</option>
+                <option value="eye">显隐释义</option>
                 <option value="review">带走三句</option>
                 <option value="mine">听我的录音</option>
               </select>
@@ -2229,9 +2360,9 @@
     </div>
   </main>
   <div class="gloss-pop" id="gloss-pop" hidden></div>
-  <script src="./js/icons.js?v=2026103001"></script>
-  <script src="./js/workbench/import-bridge.js?v=2026103001"></script>
-  <script src="./js/tts-voice.js?v=2026103001"></script>
+  <script src="./js/icons.js?v=1"></script>
+  <script src="./js/workbench/import-bridge.js?v=2"></script>
+  <script src="./js/tts-voice.js?v=3"></script>
   <script src="./data/core-850.js?v=1"></script>
   <script src="./data/day-life.js?v=1"></script>
   <script src="./data/travel-speak.js?v=4"></script>
@@ -3052,8 +3183,23 @@
     let dictationHeard = false;
     let captionOn = false;
     let translateOn = false;
+    const STAGE_TYPE_SCALE_KEY = 'linglish_stage_type_scale';
+    const STAGE_TYPE_SCALE_MIN = 0.7;
+    const STAGE_TYPE_SCALE_MAX = 1.8;
+    const STAGE_TYPE_SCALE_STEP = 0.1;
+    let stageTypeScale = 1;
     try { captionOn = localStorage.getItem('linglish_caption') === '1'; } catch (_) {}
     try { translateOn = localStorage.getItem('linglish_line_translate') === '1'; } catch (_) {}
+    try {
+      const savedScale = parseFloat(localStorage.getItem(STAGE_TYPE_SCALE_KEY) || '');
+      if (Number.isFinite(savedScale)) {
+        stageTypeScale = Math.min(STAGE_TYPE_SCALE_MAX, Math.max(STAGE_TYPE_SCALE_MIN, Math.round(savedScale * 10) / 10));
+      }
+    } catch (_) {}
+    try {
+      const nowEl = document.getElementById('now');
+      if (nowEl) nowEl.style.setProperty('--stage-type-scale', String(stageTypeScale));
+    } catch (_) {}
     const sentenceTranslations = new Map();
     const translatePending = new Set();
     const translateFailed = new Set();
@@ -3127,7 +3273,14 @@
     const AUX_WORD = new Set(['am', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'can', 'could', 'will', 'would', 'should', 'may', 'might', 'must']);
 
     function readToken() {
-      return window.AuthManager ? window.AuthManager.getToken() || '' : '';
+      const keys = ['linglish_token', 'authToken'];
+      for (const key of keys) {
+        try {
+          const value = localStorage.getItem(key) || sessionStorage.getItem(key);
+          if (value && value !== 'null' && value !== 'undefined') return value;
+        } catch (_) {}
+      }
+      return '';
     }
 
     function savedAccent() {
@@ -3460,10 +3613,15 @@
         const key = spokenLabel(word).toLowerCase();
         const pos = resolvePosKey(key, index, parts);
         if (index > 0) {
+          const prevRaw = String(parts[index - 1] || '');
+          const sentenceBreak = /[.!?…]["')\]]*$/.test(prevRaw);
           const phraseStart = (PHRASE_START.has(key) || WH_WORD.has(key)) && !(infinitive && key !== 'every' && key !== 'each' && !['in', 'on', 'at', 'for', 'with', 'from', 'after', 'before', 'about', 'into', 'over', 'under', 'without', 'during', 'through'].includes(key) && key !== 'to');
           const startsAdverbial = key === 'every' || key === 'each' || (PHRASE_START.has(key) && key !== 'to');
           if (infinitive && startsAdverbial) infinitive = false;
-          if (key === 'to' && (rawPoses(spokenLabel(parts[index + 1] || '').toLowerCase()).includes('verb') || AUX_WORD.has(spokenLabel(parts[index + 1] || '').toLowerCase()))) {
+          if (sentenceBreak) {
+            infinitive = false;
+            id += 1;
+          } else if (key === 'to' && (rawPoses(spokenLabel(parts[index + 1] || '').toLowerCase()).includes('verb') || AUX_WORD.has(spokenLabel(parts[index + 1] || '').toLowerCase()))) {
             infinitive = true;
             id += 1;
           } else if (startsAdverbial || WH_WORD.has(key) || pos === 'interjection' || prevPos === 'interjection') {
@@ -3653,11 +3811,83 @@
       host.hidden = false;
     }
 
+    function isIpadLike() {
+      const ua = navigator.userAgent || '';
+      if (/iPad/i.test(ua)) return true;
+      try {
+        if (navigator.platform === 'MacIntel' && Number(navigator.maxTouchPoints || 0) > 1) return true;
+      } catch (_) {}
+      return false;
+    }
+
+    function stageTypeSizeEnabled() {
+      try {
+        if (window.matchMedia && window.matchMedia('(min-width: 981px)').matches) return true;
+      } catch (_) {}
+      return isIpadLike();
+    }
+
+    function clearInlineStageFonts() {
+      const row = document.getElementById('gloss-row');
+      if (row) {
+        row.querySelectorAll('.gloss-en').forEach((el) => {
+          el.style.fontSize = '';
+          el.style.lineHeight = '';
+          el.style.padding = '';
+        });
+      }
+      const en = document.getElementById('now-en');
+      const zh = document.getElementById('now-zh');
+      if (en) {
+        en.style.fontSize = '';
+        en.style.lineHeight = '';
+      }
+      if (zh) {
+        zh.style.fontSize = '';
+        zh.style.lineHeight = '';
+      }
+    }
+
+    function syncStageTypeSizeUi() {
+      const enabled = stageTypeSizeEnabled();
+      document.body.classList.toggle('has-stage-type-size', enabled);
+      const host = document.getElementById('stage-type-size');
+      if (host) host.hidden = !enabled;
+      const now = document.getElementById('now');
+      if (now) now.style.setProperty('--stage-type-scale', String(stageTypeScale));
+      if (host) {
+        const down = host.querySelector('[data-stage-type="-1"]');
+        const up = host.querySelector('[data-stage-type="1"]');
+        if (down) down.disabled = stageTypeScale <= STAGE_TYPE_SCALE_MIN + 0.001;
+        if (up) up.disabled = stageTypeScale >= STAGE_TYPE_SCALE_MAX - 0.001;
+      }
+    }
+
+    function saveStageTypeScale() {
+      try { localStorage.setItem(STAGE_TYPE_SCALE_KEY, String(stageTypeScale)); } catch (_) {}
+    }
+
+    function nudgeStageTypeScale(delta) {
+      if (!stageTypeSizeEnabled()) return;
+      const next = Math.round((stageTypeScale + delta * STAGE_TYPE_SCALE_STEP) * 10) / 10;
+      stageTypeScale = Math.min(STAGE_TYPE_SCALE_MAX, Math.max(STAGE_TYPE_SCALE_MIN, next));
+      saveStageTypeScale();
+      syncStageTypeSizeUi();
+      clearInlineStageFonts();
+      fitSubtitle();
+    }
+
     function fitSubtitle() {
       const now = document.getElementById('now');
       if (!now) return;
       // 题目+选项场景不压字号，避免题目比选项还小、内容被 16:9 裁切
       if (now.classList.contains('is-exam')) return;
+      // 电脑 / iPad：字号由用户 ± 固定，换词不自动变大变小
+      if (stageTypeSizeEnabled()) {
+        clearInlineStageFonts();
+        now.style.setProperty('--stage-type-scale', String(stageTypeScale));
+        return;
+      }
       const row = document.getElementById('gloss-row');
       const words = row && !row.hidden ? row.querySelectorAll('.gloss-en') : null;
       if (words && words.length) {
@@ -4552,7 +4782,7 @@
         translateToggle.classList.toggle('on', translateOn);
         translateToggle.setAttribute('aria-pressed', translateOn ? 'true' : 'false');
       }
-      if (!captionOn || now.classList.contains('is-exam')) {
+      if (!captionOn || now.classList.contains('is-exam') || stageTypeSizeEnabled()) {
         en.style.fontSize = '';
         en.style.lineHeight = '';
         zh.style.fontSize = '';
@@ -4782,12 +5012,6 @@
       }
       const typeBtn = document.getElementById('type-btn');
       if (typeBtn) typeBtn.classList.toggle('is-active', Boolean(splitListen));
-      const eyeBtn = document.getElementById('eye-btn');
-      if (eyeBtn) {
-        eyeBtn.classList.toggle('is-on', Boolean(translateOn));
-        eyeBtn.setAttribute('aria-pressed', translateOn ? 'true' : 'false');
-        setDockIcon(eyeBtn, translateOn ? 'eye' : 'eye-off', translateOn ? '隐藏释义' : '显示释义');
-      }
       if (micHint) {
         if (hearRecordBusy) {
           micHint.textContent = '识别中…';
@@ -4801,8 +5025,8 @@
           micHint.textContent = '可打字；要点语音再点绿色按钮';
         } else {
           micHint.textContent = isWeChatBrowser()
-            ? '点我说英文，也可打字'
-            : '按住空格说话，松开结束；也可点按钮或打字';
+            ? '点我说英文；打字点底栏键盘'
+            : '按住空格说话；打字点底栏键盘';
         }
       }
       paintHearLine();
@@ -6184,13 +6408,21 @@
     }
 
     function packLabel(id) {
-      if (id === 'core') return '850 词';
+      if (id === 'core') return '850句';
       if (id === 'medical') return '医学词汇';
       if (id === 'daylife') return '一日口语';
       if (id === 'travel') return '旅游口语';
       if (id === 'kids') return '儿童口语';
       if (id === 'field') return '实景五段';
-      return '日常场景';
+      if (id === 'material') return '我的教材';
+      return '日常用语';
+    }
+
+    function syncPackSelect() {
+      const select = document.getElementById('pack-select');
+      if (!select) return;
+      const known = ['daily', 'daylife', 'travel', 'kids', 'core', 'medical'];
+      if (known.includes(packId)) select.value = packId;
     }
 
     async function switchPack(nextPack, options = {}) {
@@ -6271,9 +6503,7 @@
         lineIndex = 0;
       }
       if (isDictation()) resetDictationForScene(1);
-      document.querySelectorAll('.pack').forEach((el) => {
-        el.classList.toggle('active', el.dataset.pack === nextPack);
-      });
+      syncPackSelect();
       document.getElementById('review').hidden = true;
       stopSpeech();
       render();
@@ -6304,22 +6534,25 @@
       return true;
     }
 
-    document.getElementById('packs').addEventListener('click', async (event) => {
-      const button = event.target.closest('[data-pack]');
-      if (!button) return;
-      const nextPack = button.dataset.pack;
-      const saved = nextPack !== packId
-        ? findSpeakingProgress((item) => item.id === 'pack:' + nextPack)
-        : null;
-      await switchPack(nextPack, saved
-        ? {
-          scene: Number(saved.sceneIndex) || 0,
-          line: Number(saved.lineIndex) || 0,
-          quiet: true,
-          resumeNote: `继续学习「${packLabel(nextPack)}」· ${saved.place || ''}。`,
-        }
-        : {});
-    });
+    const packSelect = document.getElementById('pack-select');
+    if (packSelect) {
+      packSelect.addEventListener('change', async () => {
+        const nextPack = packSelect.value;
+        if (!nextPack) return;
+        const saved = nextPack !== packId
+          ? findSpeakingProgress((item) => item.id === 'pack:' + nextPack)
+          : null;
+        const ok = await switchPack(nextPack, saved
+          ? {
+            scene: Number(saved.sceneIndex) || 0,
+            line: Number(saved.lineIndex) || 0,
+            quiet: true,
+            resumeNote: `继续学习「${packLabel(nextPack)}」· ${saved.place || ''}。`,
+          }
+          : {});
+        if (!ok) syncPackSelect();
+      });
+    }
 
     document.getElementById('exam-sheet').addEventListener('click', (event) => {
       const toggle = event.target.closest('[data-answer]');
@@ -6421,7 +6654,23 @@
       playCurrent();
     });
 
-    window.addEventListener('resize', () => fitSubtitle());
+    window.addEventListener('resize', () => {
+      syncStageTypeSizeUi();
+      fitSubtitle();
+    });
+
+    const stageTypeSize = document.getElementById('stage-type-size');
+    if (stageTypeSize) {
+      stageTypeSize.addEventListener('click', (event) => {
+        const btn = event.target.closest('[data-stage-type]');
+        if (!btn) return;
+        const delta = Number(btn.getAttribute('data-stage-type')) || 0;
+        if (!delta) return;
+        event.preventDefault();
+        nudgeStageTypeScale(delta);
+      });
+    }
+    syncStageTypeSizeUi();
     document.getElementById('caption-switch').addEventListener('click', () => {
       captionOn = !captionOn;
       try { localStorage.setItem('linglish_caption', captionOn ? '1' : '0'); } catch (_) {}
@@ -6467,7 +6716,7 @@
           sceneIndex = 0;
           lineIndex = 0;
           if (location.search.includes('material=')) history.replaceState(null, '', './daily-speaking.html');
-          document.querySelectorAll('.pack').forEach((el) => el.classList.toggle('active', el.dataset.pack === packId));
+          syncPackSelect();
           document.getElementById('review').hidden = true;
           render();
           syncMethodButtons();
@@ -6484,7 +6733,7 @@
         lineIndex = 0;
         if (value === 'dictation') resetDictationForScene(1);
         if (location.search.includes('material=')) history.replaceState(null, '', './daily-speaking.html');
-        document.querySelectorAll('.pack').forEach((el) => el.classList.toggle('active', el.dataset.pack === packId));
+        syncPackSelect();
         document.getElementById('review').hidden = true;
         render();
         syncMethodButtons();
@@ -6751,6 +7000,8 @@
         document.getElementById('note-line-btn')?.click();
       } else if (value === 'note-scene') {
         document.getElementById('note-scene-btn')?.click();
+      } else if (value === 'eye') {
+        setTranslateOn(!translateOn);
       } else if (value === 'review') {
         document.getElementById('review-btn')?.click();
       } else if (value === 'mine') {
@@ -6785,22 +7036,6 @@
         openKeyboardHear().catch((err) => console.warn('[daily-speaking] type hear failed', err));
       });
     }
-    const eyeBtnEl = document.getElementById('eye-btn');
-    if (eyeBtnEl) {
-      eyeBtnEl.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        setTranslateOn(!translateOn);
-      });
-    }
-    const starBtnEl = document.getElementById('star-btn');
-    if (starBtnEl) {
-      starBtnEl.addEventListener('click', () => {
-        const reviewBtn = document.getElementById('review-btn');
-        if (reviewBtn) reviewBtn.click();
-      });
-    }
-
     async function openKeyboardHear() {
       const parts = sentenceWords(current()[1]);
       if (!parts.length) {
@@ -6913,7 +7148,14 @@
     }
 
     function readAuthToken() {
-      return window.AuthManager ? window.AuthManager.getToken() || '' : '';
+      const keys = ['linglish_token', 'authToken'];
+      for (const key of keys) {
+        try {
+          const value = localStorage.getItem(key) || sessionStorage.getItem(key);
+          if (value && value !== 'null' && value !== 'undefined') return value;
+        } catch (_) {}
+      }
+      return '';
     }
 
     function englishEnough(line) {
@@ -7137,14 +7379,12 @@
         setStatus('先结束跟读，再打开教材。');
         return;
       }
-      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') await window.AuthManager.ensureSession();
       const token = readAuthToken();
       closeMaterialsModal();
       setStatus('正在打开教材…');
       try {
         const response = await fetch('/articles/' + encodeURIComponent(id), {
           headers: token ? { Authorization: 'Bearer ' + token } : {},
-          cache: 'no-store',
         });
         const article = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(article.message || '打不开这份教材');
@@ -7170,7 +7410,7 @@
         sceneIndex = Math.max(0, Math.min(nextScene, scenes.length - 1));
         const maxLine = Math.max(((scenes[sceneIndex].turns && scenes[sceneIndex].turns.length) || 1) - 1, 0);
         lineIndex = Math.max(0, Math.min(nextLine, maxLine));
-        document.querySelectorAll('.pack').forEach((el) => el.classList.remove('active'));
+        syncPackSelect();
         document.getElementById('review').hidden = true;
         stopSpeech();
         render();
@@ -7199,14 +7439,13 @@
       if (!modal || !list) return;
       modal.hidden = false;
       list.innerHTML = '<p class="hint">正在读取…</p>';
-      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') await window.AuthManager.ensureSession();
       const token = readAuthToken();
       if (!token) {
         list.innerHTML = '<p class="hint">登录后才能查看已导入的教材。也可以先去导入页。</p>';
         return;
       }
       try {
-        const response = await fetch('/articles', { headers: { Authorization: 'Bearer ' + token }, cache: 'no-store' });
+        const response = await fetch('/articles', { headers: { Authorization: 'Bearer ' + token } });
         const data = await response.json().catch(() => ({}));
         const kinds = new Set(['pdf', 'text', 'txt', 'md', 'docx', 'epub', 'image', 'html']);
         const items = (data.items || []).filter((article) =>
@@ -7290,6 +7529,19 @@
       }
 
       if (isTypingTarget(event.target)) return;
+
+      if (stageTypeSizeEnabled()
+        && (key === '+' || key === '=' || key === 'Add' || key === 'NumpadAdd')) {
+        event.preventDefault();
+        nudgeStageTypeScale(1);
+        return;
+      }
+      if (stageTypeSizeEnabled()
+        && (key === '-' || key === '_' || key === 'Subtract' || key === 'NumpadSubtract')) {
+        event.preventDefault();
+        nudgeStageTypeScale(-1);
+        return;
+      }
 
       if (key === 'ArrowLeft') {
         event.preventDefault();
@@ -7478,6 +7730,7 @@
         return;
       }
 
+      syncPackSelect();
       render();
     }
 

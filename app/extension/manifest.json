@@ -1,6 +1,5 @@
 {
   "manifest_version": 3,
-  "minimum_chrome_version": "102",
   "name": "Linglish",
   "version": "1.0.0",
   "description": "从浏览器打开 Linglish，并在 YouTube 上一键存到英语学习库。",

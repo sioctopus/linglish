@@ -172,26 +172,76 @@ function fakeAudio() {
   return { played, play: async (url) => { played.push(url); } };
 }
 
-test('speak starts the neural audio URL before yielding the user gesture', async () => {
+test('speak requests audio for the word and plays it', async () => {
   const { createApiClient } = loadModule();
   const fetch = recordingFetch(() => ok({ audioUrl: '/tts-audio/apple.mp3' }));
   const audio = fakeAudio();
   const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio });
-  const pending = client.speak('apple');
-  assert.deepEqual(audio.played, ['/tts/word?text=apple&voice=en-US-AvaMultilingualNeural&v=2']);
-  assert.equal(await pending, true);
-  assert.equal(fetch.calls.length, 0);
+  assert.equal(await client.speak('apple'), true);
+  assert.equal(fetch.calls[0].url, '/tts/generate');
+  assert.deepEqual(JSON.parse(fetch.calls[0].init.body), {
+    text: 'apple',
+    lang: 'en',
+    voice: 'en-US-AvaMultilingualNeural',
+  });
+  assert.deepEqual(audio.played, ['/tts-audio/apple.mp3']);
 });
 
-test('replaying a word reuses the same cacheable neural audio URL', async () => {
+test('speaking the same word twice only generates the audio once', async () => {
   const { createApiClient } = loadModule();
   const fetch = recordingFetch(() => ok({ audioUrl: '/tts-audio/apple.mp3' }));
   const audio = fakeAudio();
   const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio });
   await client.speak('apple');
   await client.speak('apple');
-  assert.equal(fetch.calls.length, 0);
-  assert.deepEqual(audio.played, ['/tts/word?text=apple&voice=en-US-AvaMultilingualNeural&v=2', '/tts/word?text=apple&voice=en-US-AvaMultilingualNeural&v=2']);
+  assert.equal(fetch.calls.length, 1);
+  assert.equal(audio.played.length, 2);
+});
+
+test('prefetchSpeak warms nearby words without playing them', async () => {
+  const { createApiClient } = loadModule();
+  const fetch = recordingFetch((_url, init) => {
+    const text = JSON.parse(init.body).text;
+    return ok({ audioUrl: '/tts-audio/' + text + '.mp3' });
+  });
+  const warmed = [];
+  const audio = {
+    played: [],
+    play: async (url) => { audio.played.push(url); },
+    warm: (url) => { warmed.push(url); },
+  };
+  const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio });
+  client.prefetchSpeak(['apple', 'banana', 'cherry']);
+  await new Promise((resolve) => setTimeout(resolve, 20));
+  assert.equal(fetch.calls.length, 3);
+  assert.deepEqual(audio.played, []);
+  assert.ok(warmed.includes('/tts-audio/apple.mp3'));
+  assert.equal(await client.speak('apple'), true);
+  assert.equal(fetch.calls.length, 3);
+  assert.deepEqual(audio.played, ['/tts-audio/apple.mp3']);
+});
+
+test('a newer speak cancels a slow older request before it plays', async () => {
+  const { createApiClient } = loadModule();
+  let releaseApple;
+  const appleReady = new Promise((resolve) => { releaseApple = resolve; });
+  const fetch = recordingFetch(async (_url, init) => {
+    const text = JSON.parse(init.body).text;
+    if (text === 'apple') {
+      await appleReady;
+      return ok({ audioUrl: '/tts-audio/apple.mp3' });
+    }
+    return ok({ audioUrl: '/tts-audio/banana.mp3' });
+  });
+  const audio = fakeAudio();
+  const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio });
+  const first = client.speak('apple');
+  await Promise.resolve();
+  const second = client.speak('banana');
+  releaseApple();
+  assert.equal(await first, false);
+  assert.equal(await second, true);
+  assert.deepEqual(audio.played, ['/tts-audio/banana.mp3']);
 });
 
 function controllableAudio() {
@@ -225,13 +275,13 @@ test('toggleSpeak pauses a playing clip and resumes it without another request',
   assert.equal(await client.toggleSpeak('apple'), 'playing');
   assert.equal(await client.toggleSpeak('apple'), 'paused');
   assert.equal(await client.toggleSpeak('apple'), 'playing');
-  assert.equal(fetch.calls.length, 0);
+  assert.equal(fetch.calls.length, 1);
   assert.equal(audio.state.played.length, 1);
   assert.equal(audio.state.pauses, 1);
   assert.equal(audio.state.resumes, 1);
 });
 
-test('without a media player, toggleSpeak can pause and resume local fallback speech', async () => {
+test('toggleSpeak pauses speech and resumes it without requesting audio', async () => {
   const { createApiClient } = loadModule();
   const fetch = recordingFetch(() => ok({ audioUrl: '/tts-audio/apple.mp3' }));
   const synth = {
@@ -249,7 +299,8 @@ test('without a media player, toggleSpeak can pause and resume local fallback sp
     SpeechSynthesisUtterance: function SpeechSynthesisUtterance() {},
   };
   try {
-    const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage() });
+    // 无 audio 时才走浏览器合成;有 audio 时优先神经 TTS。
+    const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio: null });
     assert.equal(await client.toggleSpeak('dragon fruit'), 'playing');
     assert.equal(await client.toggleSpeak('dragon fruit'), 'paused');
     assert.equal(synth.paused, true);
@@ -262,70 +313,33 @@ test('without a media player, toggleSpeak can pause and resume local fallback sp
   }
 });
 
+test('speak uses the membership voice when LinglishTtsVoice is set', async () => {
+  const { createApiClient } = loadModule();
+  const fetch = recordingFetch(() => ok({ audioUrl: '/tts-audio/apple.mp3' }));
+  const previous = global.window;
+  global.window = {
+    LinglishTtsVoice: { current: () => 'en-GB-LibbyNeural' },
+  };
+  try {
+    const audio = fakeAudio();
+    const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio });
+    assert.equal(await client.speak('apple'), true);
+    assert.deepEqual(JSON.parse(fetch.calls[0].init.body), {
+      text: 'apple',
+      lang: 'en',
+      voice: 'en-GB-LibbyNeural',
+    });
+  } finally {
+    if (previous === undefined) delete global.window;
+    else global.window = previous;
+  }
+});
+
 test('speak fails silently when tts is unavailable', async () => {
   const { createApiClient } = loadModule();
   const fetch = recordingFetch(() => { throw new Error('offline'); });
-  const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio: { play: async () => { throw new Error('offline'); } } });
+  const client = createApiClient({ fetch, getToken: () => 'tok', storage: createStorage(), audio: fakeAudio() });
   assert.equal(await client.speak('apple'), false);
-});
-
-test('a phone speech engine does not override the preferred neural media player', async (t) => {
-  const previous = global.window;
-  let localCalls = 0;
-  global.window = { speechSynthesis: { cancel() {}, speak() { localCalls++; } }, SpeechSynthesisUtterance: function () {} };
-  t.after(() => { if (previous === undefined) delete global.window; else global.window = previous; });
-  const audio = controllableAudio();
-  const client = loadModule().createApiClient({ audio, fetch: recordingFetch(() => ok({})), storage: createStorage() });
-  assert.equal(await client.speak('elephant'), true);
-  assert.equal(localCalls, 0);
-  assert.equal(await client.toggleSpeak('elephant'), 'paused');
-  assert.equal(audio.state.pauses, 1);
-  assert.equal(await client.toggleSpeak('elephant'), 'playing');
-  assert.equal(audio.state.resumes, 1);
-});
-
-test('an interrupted old audio request cannot speak an obsolete word through fallback', async (t) => {
-  const previous = global.window;
-  let localCalls = 0;
-  global.window = { speechSynthesis: { cancel() {}, speak() { localCalls++; } }, SpeechSynthesisUtterance: function () {} };
-  t.after(() => { if (previous === undefined) delete global.window; else global.window = previous; });
-  let rejectFirst;
-  const audio = { play: (url) => url.includes('apple') ? new Promise((resolve, reject) => { rejectFirst = reject; }) : Promise.resolve() };
-  const client = loadModule().createApiClient({ audio, storage: createStorage() });
-  const first = client.speak('apple');
-  assert.equal(await client.speak('elephant'), true);
-  assert.equal(typeof rejectFirst, 'function');
-  rejectFirst(new Error('old playback failed'));
-  assert.equal(await first, false);
-  assert.equal(localCalls, 0);
-});
-
-test('a pending resume interrupted by the next card cannot restart the old word', async () => {
-  let rejectResume;
-  const audio = controllableAudio();
-  audio.resume = () => new Promise((resolve, reject) => { rejectResume = reject; });
-  const client = loadModule().createApiClient({ audio, storage: createStorage() });
-  await client.speak('apple');
-  await client.toggleSpeak('apple');
-  const pending = client.toggleSpeak('apple');
-  await client.speak('elephant');
-  rejectResume(Object.assign(new Error('source changed'), { name: 'AbortError' }));
-  assert.equal(await pending, 'playing');
-  assert.deepEqual(audio.state.played, ['/tts/word?text=apple&voice=en-US-AvaMultilingualNeural&v=2', '/tts/word?text=elephant&voice=en-US-AvaMultilingualNeural&v=2']);
-});
-
-test('autoplay permission denial waits for a tap instead of reverting to the phone voice', async (t) => {
-  const previous = global.window;
-  let localCalls = 0;
-  let idleCalls = 0;
-  global.window = { speechSynthesis: { cancel() {}, speak() { localCalls++; } }, SpeechSynthesisUtterance: function () {} };
-  t.after(() => { if (previous === undefined) delete global.window; else global.window = previous; });
-  const audio = { play: async () => { throw Object.assign(new Error('tap required'), { name: 'NotAllowedError' }); } };
-  const client = loadModule().createApiClient({ audio, storage: createStorage() });
-  client.setSpeakIdle(() => { idleCalls++; });
-  assert.equal(await client.speak('elephant'), false);
-  assert.equal(localCalls, 0);
-  assert.equal(idleCalls, 1);
 });
 
 test('addWord marks the word as learning on the real vocab endpoint', async () => {

@@ -4,8 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
 
-const { readPage } = require('./helpers/page-source');
-function read(page) { return readPage(page); }
+function read(page) { return fs.readFileSync(path.resolve(__dirname, '../../frontend', page), 'utf8'); }
 function extract(source, name) {
   const match = source.match(new RegExp(`(^[ \\t]*)(?:async )?function ${name}\\([^\\n]*\\) \\{[\\s\\S]*?^\\1\\}`, 'm'));
   assert.ok(match, name);

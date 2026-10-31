@@ -477,7 +477,7 @@ export async function handleRecordingFailed(state, updateAutoStatus, startAutoRe
 
         if (!state.isPaused) {
           // Import moveToNextLine dynamically to avoid circular dependency
-          const { moveToNextLine } = await import('./controls.js?v=2026103001');
+          const { moveToNextLine } = await import('./controls.js');
           setTimeout(() => {
             // This will be handled by the caller
             playOriginalThenNext();

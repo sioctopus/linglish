@@ -1,4 +1,18 @@
-const API_BASE = '';
+const API_BASE = (() => {
+  try {
+    if (typeof window !== 'undefined' && typeof window.LINGLISH_API_BASE === 'string' && window.LINGLISH_API_BASE) {
+      return window.LINGLISH_API_BASE;
+    }
+    const { protocol, hostname, port } = window.location;
+    if (protocol === 'file:') return 'http://localhost:4000';
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      if (port === '4000' || port === '8000' || !port) return '';
+      return `${protocol}//${hostname}:4000`;
+    }
+  } catch (_) {}
+  return '';
+})();
+try { if (typeof window !== 'undefined') window.API_BASE = API_BASE; } catch (_) {}
 const LINGLISH_ENV = window.__LINGLISH_ENV__ || {};
 const parseEnvBool = (value, fallback) => {
   if (value === undefined || value === null || value === '') return fallback;
@@ -540,11 +554,6 @@ let firstLessonGoal = null;
 let firstLessonGoalBusy = false;
 const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.getElementById('first-lesson-goal'), {
   mobile: true,
-  getSentence: (index) => {
-    const line = state.currentSegments[index];
-    return line && { index, text: line.text, translation: line.translation || line.cn || line.zh || line.text_cn || '' };
-  },
-  pauseOriginal: () => { pauseLearningVideoNow(); stopDictSpeech(); },
   listen: (index) => {
     if (!firstLessonSession.isActive() || firstLessonGoalBusy) return;
     const line = selectMobileGoalLine(index);
@@ -564,22 +573,13 @@ const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.g
     startPracticeRecording();
   },
   next: () => {
-    const index = firstLessonGoal && !firstLessonGoal.complete ? firstLessonGoal.nextIndex : (state.practiceIndex ?? 0) + 1;
+    const index = (state.practiceIndex ?? 0) + 1;
     if (!selectMobileGoalLine(index)) {
       location.href = './mobile-today.html#learning-details';
       return;
     }
     firstLessonGoalCard.update(firstLessonGoal);
   },
-});
-const guidedReaderTools = window.MobileReaderLayout.configureGuidedTools(
-  document.getElementById('guided-reader-tools'), firstLessonSession.isActive()
-);
-const guidedLessonEntry = document.getElementById('guided-lesson-entry');
-if (guidedLessonEntry) guidedLessonEntry.addEventListener('click', (event) => {
-  const href = window.LinglishFirstLessonGoal.resumeHref({ videoId: String(state.selectedVideoId || '') }, true, 'reader_guided_practice');
-  if (!href) { event.preventDefault(); return; }
-  guidedLessonEntry.href = href;
 });
 
 function selectMobileGoalLine(index) {
@@ -605,7 +605,6 @@ function clearMobileFirstLessonState() {
   firstLessonGoal = null;
   firstLessonGoalBusy = false;
   firstLessonGoalCard.hide();
-  window.MobileReaderLayout.configureGuidedTools(guidedReaderTools, false);
   const progress = document.getElementById('first-lesson-progress');
   if (progress) {
     progress.hidden = true;
@@ -692,8 +691,7 @@ function createMobileAssessmentContext(line) {
 
 function isMobileAssessmentContextCurrent(captured) {
   if (!captured || !firstLessonSession.isActive()) return false;
-  const displayIndex = state.practiceIndex;
-  const segment = state.currentSegments[displayIndex];
+  const segment = state.currentSegments[captured.displayIndex];
   if (!segment || !state.selectedVideoId) return false;
   const current = window.LinglishFirstLessonPractice.createAssessmentContext({
     subject: resolveMobileFirstLessonSubject(),
@@ -701,11 +699,11 @@ function isMobileAssessmentContextCurrent(captured) {
     stableSegmentId: window.LinglishFirstLessonProgress.stableSegmentId(
       state.selectedVideoId,
       segment,
-      displayIndex,
+      captured.displayIndex,
     ),
     sourceIndices: segment.source_indices,
     selectionGeneration: videoSelectionGeneration,
-    displayIndex,
+    displayIndex: captured.displayIndex,
   });
   return window.LinglishFirstLessonPractice.assessmentContextMatches(captured, current);
 }
@@ -733,14 +731,9 @@ function markPracticedMobileFirstLesson(context, result, assessmentId, evidenceK
 }
 
 function markFirstLessonReadyForCommittedTranscript(video, segments) {
-  if (!video || !Array.isArray(segments) || segments.length === 0) return;
-  if (String(state.selectedVideoId) !== String(video.id) || state.currentSegments !== segments) return;
-  if (guidedLessonEntry) {
-    const href = window.LinglishFirstLessonGoal.resumeHref({ videoId: String(video.id) }, true, 'reader_guided_practice');
-    guidedLessonEntry.hidden = firstLessonSession.isActive() || !href;
-    if (href) guidedLessonEntry.href = href;
-  }
   if (!firstLessonSession.isActive()) return;
+  if (!video || !Array.isArray(segments) || segments.length === 0) return;
+  if (state.selectedVideoId !== video.id || state.currentSegments !== segments) return;
   const readiness = firstLessonReadiness.markReady({
     videoId: video.id,
     segmentCount: segments.length,
@@ -2322,7 +2315,7 @@ const mobileSpeakHint = document.getElementById('mobile-speak-hint');
 const mobileShadowBtn = document.getElementById('mobile-shadow-btn');
 const mobileHearMeBtn = document.getElementById('mobile-hear-me-btn');
 const mobileBackBtn = document.getElementById('mobile-back-btn');
-const mobileViewBtns = document.querySelectorAll('.mobile-view-btn');
+const mobileViewBtns = document.querySelectorAll('.mobile-view-btn, .mobile-sentence-btn');
 const mobilePlayerControls = document.getElementById('mobile-player-controls');
 let mobileSegmentPosition = null;
 let isMobileProgressDragging = false;
@@ -4143,6 +4136,14 @@ function applyTranscriptCues(rawCues, video) {
     // Persist RAW cues only — never overwrite with display rewrite.
     video.transcript_segments = raw;
   }
+  try {
+    if (window.LinglishArenaDialogue && typeof window.LinglishArenaDialogue.sync === 'function') {
+      window.LinglishArenaDialogue.sync();
+    }
+  } catch (_) {}
+  try {
+    window.dispatchEvent(new CustomEvent('linglish:segments-ready'));
+  } catch (_) {}
   return state.currentSegments;
 }
 
@@ -4229,13 +4230,13 @@ function renderTranscript(video) {
       () => {
         if (video._waveformSegmentationPromise !== refinementPromise) return;
         delete video._waveformSegmentationPromise;
-        if (String(state.selectedVideoId) === String(video.id)) renderTranscript(video);
+        if (state.selectedVideoId === video.id) renderTranscript(video);
       },
       (error) => {
         if (video._waveformSegmentationPromise !== refinementPromise) return;
         delete video._waveformSegmentationPromise;
         console.warn('Unable to refine transcript segments:', error);
-        if (String(state.selectedVideoId) === String(video.id)) renderTranscript(video);
+        if (state.selectedVideoId === video.id) renderTranscript(video);
       },
     );
   }
@@ -5178,6 +5179,9 @@ async function selectVideo(idOrVideo) {
     } else if (videoSidebar) {
       videoSidebar.classList.add('hidden');
       renderToggleSidebarControl(false, '打开视频库');
+    }
+    if (typeof syncMobileStudyLibraryChrome === 'function') {
+      syncMobileStudyLibraryChrome();
     }
   }
 
@@ -7771,9 +7775,6 @@ function renderPracticeCurrentLine() {
   }
 
   const key = line && line.index != null ? line.index : state.practiceIndex;
-  if (firstLessonSession.isActive()) firstLessonGoalCard.setSentence({
-    index: key, text: line.text, translation: line.translation || line.cn || line.zh || line.text_cn || '',
-  });
   const lineStatus = state.practiceLineResults[key] || null;
   const isSuccessful = lineStatus === 'success';
   const storedMatches = state.practiceLineWordResults[key] || {};
@@ -8082,7 +8083,6 @@ async function submitPracticeRecording(blob, line, assessmentContext = null) {
   if (!token || !state.selectedVideoId) return;
   // Save the recording blob for comparison / self-preview
   rememberLastRecording(blob, line && Number.isFinite(line.index) ? line.index : mobileSegmentPosition);
-  if (assessmentContext && isMobileAssessmentContextCurrent(assessmentContext)) firstLessonGoalCard.setRecording(blob);
   try {
     let result = null;
     if (assessmentContext) {
@@ -8150,9 +8150,7 @@ function handlePracticeResult(result, line, assessmentContext = null) {
       state.segmentPlaybackEnd = null;
       state.segmentPlaybackCallback = null;
     }
-    firstLessonGoalCard.settle(window.LinglishFirstLessonGoal.sentenceResult(success === true, wordMatches.missingWords), {
-      success: success === true, recognizedText, missedWords: wordMatches.missingWords,
-    });
+    firstLessonGoalCard.settle(window.LinglishFirstLessonGoal.sentenceResult(success === true, wordMatches.missingWords));
     updatePracticeButtons(false, false, false);
     return true;
   }
@@ -9055,17 +9053,35 @@ const videoSidebar = document.getElementById('video-sidebar');
 const mobileLibraryBackdrop = document.getElementById('mobile-library-backdrop');
 const mobileSidebarLayout = window.MobileReaderLayout;
 
+function currentMobileStudyMode() {
+  const mode = document.body.dataset.studyMode || '';
+  if (mode === 'coach' || mode === 'arena' || mode === 'video') return mode;
+  if (document.body.classList.contains('study-mode-coach')) return 'coach';
+  if (document.body.classList.contains('study-mode-arena')) return 'arena';
+  return 'video';
+}
+
+function mobileLibraryClosedLabel(mode) {
+  return (mode === 'coach' || mode === 'arena') ? '换片' : '视频库';
+}
+
 function renderToggleSidebarControl(isExpanded, label) {
   const btn = document.getElementById('toggle-sidebar-btn');
   if (!btn) return;
-  const accessibleLabel = label || (isExpanded ? '关闭视频库' : '打开视频库');
+  const mode = currentMobileStudyMode();
+  const closedText = mobileLibraryClosedLabel(mode);
+  const accessibleLabel = label
+    || (isExpanded ? '关闭视频库' : ((mode === 'coach' || mode === 'arena') ? '回视频学习换内容' : '打开视频库'));
   btn.setAttribute('aria-expanded', String(Boolean(isExpanded)));
   btn.setAttribute('aria-label', accessibleLabel);
-  btn.title = isExpanded ? accessibleLabel : '视频库';
+  btn.title = isExpanded
+    ? accessibleLabel
+    : ((mode === 'coach' || mode === 'arena') ? '换内容请到视频学习' : '视频库');
   btn.classList.toggle('is-library-open', Boolean(isExpanded));
+  btn.classList.toggle('is-change-media', !isExpanded && (mode === 'coach' || mode === 'arena'));
 
   if (document.body.classList.contains('video-reader-mobile-focus')) {
-    const text = isExpanded ? '关闭' : '视频库';
+    const text = isExpanded ? '关闭' : closedText;
     let labelEl = btn.querySelector('.mobile-reader-lib-label');
     if (!labelEl) {
       btn.innerHTML = '<span class="mobile-reader-lib-label"></span>';
@@ -9078,6 +9094,74 @@ function renderToggleSidebarControl(isExpanded, label) {
   btn.textContent = isExpanded ? '✕' : '☰';
 }
 
+function syncMobileStudyLibraryChrome() {
+  if (!document.body.classList.contains('video-reader-mobile-focus')) return;
+  const expanded = document.body.classList.contains('mobile-library-open');
+  renderToggleSidebarControl(expanded, expanded ? '关闭视频库' : undefined);
+  syncMobileSharedMediaBanner();
+}
+window.syncMobileStudyLibraryChrome = syncMobileStudyLibraryChrome;
+
+function readMobileSharedMediaTitle() {
+  try {
+    const sel = window.LinglishStudySelection && typeof window.LinglishStudySelection.read === 'function'
+      ? window.LinglishStudySelection.read()
+      : null;
+    if (sel && (sel.title || sel.original_filename)) return String(sel.title || sel.original_filename);
+  } catch (_) {}
+  try {
+    const current = state.videos && state.videos.find((item) => String(item.id) === String(state.selectedVideoId));
+    if (current) return String(current.title || current.original_filename || '').trim();
+  } catch (_) {}
+  try {
+    if (window.LinglishStudyMedia && window.LinglishStudyMedia.title) {
+      return String(window.LinglishStudyMedia.title);
+    }
+  } catch (_) {}
+  return '';
+}
+
+function syncMobileSharedMediaBanner() {
+  if (!document.body.classList.contains('video-reader-mobile-focus')) return;
+  const mode = currentMobileStudyMode();
+  const header = document.querySelector('.mobile-reader-header');
+  if (!header) return;
+  let banner = document.getElementById('mobile-shared-media-banner');
+  if (mode !== 'coach' && mode !== 'arena') {
+    if (banner) banner.hidden = true;
+    document.body.classList.remove('has-shared-media-banner');
+    return;
+  }
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'mobile-shared-media-banner';
+    banner.className = 'mobile-shared-media-banner';
+    banner.setAttribute('role', 'status');
+    header.insertAdjacentElement('afterend', banner);
+  }
+  const title = readMobileSharedMediaTitle();
+  const hasContent = Boolean(title)
+    || Boolean(state.selectedVideoId)
+    || (window.LinglishStudySelection && typeof window.LinglishStudySelection.hasContent === 'function'
+      && window.LinglishStudySelection.hasContent());
+  banner.hidden = false;
+  document.body.classList.add('has-shared-media-banner');
+  banner.innerHTML = hasContent
+    ? `<span class="mobile-shared-media-lock">跟视频学习同一内容</span><strong class="mobile-shared-media-title">${escapeHtml(title || '已选内容')}</strong>`
+    : `<span class="mobile-shared-media-lock">还没选内容</span><button type="button" class="mobile-shared-media-pick" data-shared-pick>去视频学习选</button>`;
+  const pick = banner.querySelector('[data-shared-pick]');
+  if (pick && !pick.dataset.wired) {
+    pick.dataset.wired = '1';
+    pick.addEventListener('click', () => {
+      if (window.LinglishStudySelection && typeof window.LinglishStudySelection.openPicker === 'function') {
+        window.LinglishStudySelection.openPicker('videos');
+      } else {
+        openMobileVideoLibrary('videos');
+      }
+    });
+  }
+}
+
 function openMobileVideoLibrary(libSrc) {
   if (
     !document.body.classList.contains('video-reader-mobile-focus') ||
@@ -9086,6 +9170,19 @@ function openMobileVideoLibrary(libSrc) {
     !videoSidebar
   ) {
     return;
+  }
+  // AI陪练 / 实战场不独立换片：先回到视频学习再选
+  const studyMode = currentMobileStudyMode();
+  if (studyMode === 'coach' || studyMode === 'arena') {
+    if (typeof window.switchVideoStudyMode === 'function') {
+      window.switchVideoStudyMode('video');
+    } else {
+      document.body.dataset.studyMode = 'video';
+      document.body.classList.remove('study-mode-coach', 'study-mode-arena');
+    }
+    try {
+      setMobileSpeakHint('换内容请在「视频学习」里选；选好后再去 AI陪练 / 实战场', { toast: true });
+    } catch (_) {}
   }
   // Voice DM is fullscreen above the library — close it so picks stay tappable.
   try {
@@ -9098,6 +9195,7 @@ function openMobileVideoLibrary(libSrc) {
   applyMobileVideoLibraryState(mobileSidebarLayout.openSidebarState
     ? mobileSidebarLayout.openSidebarState()
     : mobileSidebarLayout.nextSidebarState(true));
+  syncMobileStudyLibraryChrome();
   if (libSrc) {
     const tab = document.querySelector(`[data-lib-src="${libSrc}"]`);
     if (tab) tab.click();
@@ -9215,6 +9313,7 @@ function closeMobileVideoLibrary() {
     return;
   }
   applyMobileVideoLibraryState(mobileSidebarLayout.closedSidebarState());
+  syncMobileStudyLibraryChrome();
 }
 window.closeMobileVideoLibrary = closeMobileVideoLibrary;
 
@@ -9229,12 +9328,12 @@ if (toggleSidebarBtn && videoSidebar) {
 
   toggleSidebarBtn.addEventListener('click', function () {
     if (document.body.classList.contains('video-reader-mobile-focus') && mobileSidebarLayout) {
-      if (firstLessonSession.isActive() && videoSidebar.classList.contains('hidden')) {
-        firstLessonSession.deactivate('library-open');
+      // 打开库必须走 openMobileVideoLibrary，陪练/实战场会先回视频学习
+      if (videoSidebar.classList.contains('hidden')) {
+        openMobileVideoLibrary();
+        return;
       }
-      applyMobileVideoLibraryState(
-        mobileSidebarLayout.nextSidebarState(videoSidebar.classList.contains('hidden'))
-      );
+      closeMobileVideoLibrary();
       return;
     }
     videoSidebar.classList.toggle('hidden');
@@ -9815,9 +9914,7 @@ function runMobileFeature(feature) {
     return;
   }
   if (feature === 'coach') {
-    const toggle = document.querySelector('#coach-dock .coach-toggle, .coach-dock .coach-toggle');
-    if (toggle) toggle.click();
-    else setMobileSpeakHint('带教入口暂不可用');
+    setMobileSpeakHint('带教功能已关闭');
   }
 }
 
@@ -9871,6 +9968,20 @@ function syncMobilePlayButtonVoiceHold(active, warming) {
   }
 }
 window.syncMobilePlayButtonVoiceHold = syncMobilePlayButtonVoiceHold;
+
+window.LinglishMobilePlayback = {
+  playSegmentBounds: (segment) => playSegmentBoundsForShadow(segment),
+  pause: () => {
+    try { pauseLearningVideoNow(); } catch (_) {}
+  },
+  setIndex: (index) => {
+    const i = Number(index);
+    if (!Number.isFinite(i) || i < 0) return;
+    mobileSegmentPosition = i;
+    try { renderMobileTranscriptWindow(i); } catch (_) {}
+  },
+  getIndex: () => mobileSegmentPosition,
+};
 
 function clearMobileCueKaraoke() {
   if (!mobileTranscriptList) return;
@@ -11157,3 +11268,11 @@ loadUser(); // Load user info for ownership checks
 })();
 
 refreshReviewQueue();
+
+try {
+  if (document.body.classList.contains('video-reader-mobile-focus')) {
+    setTimeout(() => {
+      if (typeof syncMobileStudyLibraryChrome === 'function') syncMobileStudyLibraryChrome();
+    }, 80);
+  }
+} catch (_) {}

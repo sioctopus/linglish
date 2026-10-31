@@ -255,9 +255,6 @@ async function handleRequest(req, res) {
   } else if (pathname.startsWith('/tts/')) {
     rateLimitPassed = ttsRateLimiter(req, res);
   } else if (
-    pathname === '/media/transcribe' ||
-    pathname === '/media/resolve-cues' ||
-    pathname === '/youtube/transcript' ||
     pathname.startsWith('/ai/') ||
     pathname.startsWith('/ai-roleplay/') ||
     pathname.match(/^\/video-resources\/\d+\/(retranscribe|reprocess-segments|import-transcript)$/)
@@ -325,7 +322,7 @@ async function handleRequest(req, res) {
     if (await registerTagRoutes(pathname, req, res, url)) return;
     if (await registerDocumentRoutes(pathname, req, res)) return;
     if (await registerWorkbenchRoutes(pathname, req, res)) return;
-    if (pathname === '/ocr/extract') {
+    if (pathname.startsWith('/pdf/') || pathname === '/ocr/extract') {
       const { registerPdfRoutes } = require('./routes/pdf');
       if (await registerPdfRoutes(pathname, req, res, url)) return;
     }

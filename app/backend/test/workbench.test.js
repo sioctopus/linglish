@@ -2,7 +2,6 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { readPage } = require('./helpers/page-source');
 const {
   annotateText,
   createDocument,
@@ -124,7 +123,7 @@ test('create/update/list/delete workbench document with injected query', async (
   assert.equal(created.document.role, 'teacher');
   assert.equal(created.document.templateId, 'homework');
   assert.match(created.document.openUrl, /workbench\.html\?id=/);
-  assert.equal(created.document.shareToken, null);
+  assert.ok(created.document.shareToken);
 
   const updated = await updateDocument(created.document.id, {
     title: 'Cafe dialogue v2',
@@ -242,17 +241,18 @@ test('frontend entry and route wiring stay connected', () => {
   const importBridge = fs.readFileSync(path.join(root, 'frontend/js/workbench/import-bridge.js'), 'utf8');
   assert.match(importBridge, /openIntensiveNote/);
   assert.match(importBridge, /linglish-workbench-import/);
-  assert.match(importBridge, /sessionStorage/);
-  assert.doesNotMatch(importBridge, /localStorage\.setItem/);
+  assert.match(importBridge, /localStorage/);
+  assert.match(importBridge, /sameTab/);
   assert.match(importBridge, /backHrefForSource/);
   assert.match(app, /wireBackLink/);
   const dailySpeaking = fs.readFileSync(path.join(root, 'frontend/daily-speaking.html'), 'utf8');
   assert.match(dailySpeaking, /note-scene-btn|整段精读/);
   assert.match(dailySpeaking, /WorkbenchImport/);
   assert.match(dailySpeaking, /sameTab:\s*true/);
-  const practicePage = readPage('practice-session-desktop.html');
+  const practicePage = fs.readFileSync(path.join(root, 'frontend/practice-session-desktop.html'), 'utf8');
   assert.match(practicePage, /practice-intensive-note/);
   assert.match(practicePage, /WorkbenchImport/);
+  assert.match(practicePage, /sameTab:\s*true/);
   assert.match(templates, /wb-block/);
   assert.match(templates, /wb-card-head-hero/);
   assert.match(templates, /wb-task-card/);

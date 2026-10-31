@@ -7,11 +7,11 @@
   <meta name="description" content="粘贴英文或导入素材，AI 自动标注单词与拆句，用模板编辑后导出长图，并生成学生跟读练习链接。">
   <link rel="icon" href="/linglish-favicon.svg?v=4" type="image/svg+xml">
   <link rel="stylesheet" href="./styles/tokens.css?v=2">
-  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
-  <link rel="stylesheet" href="./css/workbench.css?v=2026103001">
-  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <link rel="stylesheet" href="./styles/icons.css?v=1">
+  <link rel="stylesheet" href="./css/workbench.css?v=40">
+  <script src="./js/auth-manager.js?v=2"></script>
   <script src="./js/nav-back.js?v=1"></script>
-  <script src="./js/icons.js?v=2026103001"></script>
+  <script src="./js/icons.js?v=1"></script>
 </head>
 <body class="wb-page">
   <nav class="wb-nav" aria-label="工作台导航">
@@ -179,7 +179,7 @@
               <input id="wb-cn-photo" name="file" type="file" accept="image/png,image/jpeg,image/webp" hidden>
             </div>
           </div>
-          <div class="wb-cn-lines-head">课堂练习句子</div>
+          <div class="wb-cn-lines-head">发给家长的句子</div>
           <div id="wb-cn-line-fields" class="wb-cn-lines"></div>
           <div class="wb-cn-actions">
             <p class="wb-status" id="wb-cn-status" hidden></p>
@@ -190,7 +190,7 @@
       <section id="wb-cn-viewer" hidden>
         <article class="wb-cn-note-card" id="wb-cn-note"></article>
         <div class="wb-row" id="wb-cn-share-actions" hidden style="margin-top:16px">
-          <button class="wb-btn" id="wb-cn-copy-btn" type="button">复制私有链接</button>
+          <button class="wb-btn" id="wb-cn-copy-btn" type="button">复制链接，发到微信群</button>
           <button class="wb-btn-outline" id="wb-cn-edit-btn" type="button">返回修改</button>
           <button class="wb-btn-outline" id="wb-cn-another-btn" type="button">再做一条</button>
         </div>
@@ -203,9 +203,9 @@
   <div id="wb-word-pop" class="wb-word-pop" hidden></div>
 
   <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js" defer></script>
-  <script src="./js/workbench/import-bridge.js?v=2026103001"></script>
-  <script src="./js/workbench/templates.js?v=2026103001"></script>
+  <script src="./js/workbench/import-bridge.js?v=2"></script>
+  <script src="./js/workbench/templates.js?v=13"></script>
   <script src="./js/workbench/class-note.js?v=2"></script>
-  <script src="./js/workbench/app.js?v=2026103001"></script>
+  <script src="./js/workbench/app.js?v=15"></script>
 </body>
 </html>
