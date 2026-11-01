@@ -1622,6 +1622,135 @@
         position: static;
       }
     }
+    /* Account area: an avatar initial stays visible everywhere; on phones the
+       topbar keeps the brand and a compact, quiet account / login control. */
+    .account-avatar {
+      display: inline-grid;
+      flex: 0 0 auto;
+      width: 32px;
+      height: 32px;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #14b8a6, #0d9488);
+      color: #ffffff;
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .account-name {
+      overflow: hidden;
+      min-width: 0;
+      max-width: 180px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .account-logout-short {
+      display: none;
+    }
+
+    @media (max-width: 1150px) {
+      .topbar {
+        padding: 0 8px 0 14px;
+        gap: 10px;
+      }
+
+      .brand {
+        flex: 0 0 auto;
+        font-size: 18px;
+      }
+
+      .brand-mark {
+        width: 30px;
+        height: 30px;
+        border-radius: 10px;
+      }
+
+      .nav-actions {
+        flex: 1 1 0%;
+        min-width: 0;
+        justify-content: flex-end;
+      }
+
+      .nav-actions .nav-link {
+        display: none;
+      }
+
+      .topbar #btn-login {
+        min-height: 38px;
+        padding: 0 18px;
+        border: 1px solid rgba(13, 148, 136, 0.35);
+        border-radius: 999px;
+        color: #0f766e;
+        background: #f0fdfa;
+        box-shadow: none;
+        font-size: 14px;
+        font-weight: 800;
+      }
+
+      .account-chip {
+        min-width: 0;
+        max-width: 100%;
+        gap: 6px;
+        margin-left: 0;
+        padding: 3px 4px 3px 3px;
+        border-radius: 999px;
+        background: #f1f5f9;
+      }
+
+      .account-badge {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        min-height: 26px;
+        padding: 0 9px;
+        font-size: 12px;
+      }
+
+      .account-name {
+        flex: 1 1 auto;
+        max-width: 96px;
+        color: #334155;
+        font-size: 13px;
+      }
+
+      .topbar #account-logout,
+      .topbar #account-logout:hover {
+        flex: 0 0 auto;
+        white-space: nowrap;
+        min-height: 30px;
+        padding: 0 10px;
+        border: 0;
+        border-radius: 999px;
+        color: #64748b;
+        background: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+      }
+    }
+
+    @media (max-width: 767px) {
+      .topbar {
+        position: sticky;
+        top: 0;
+        left: 0;
+        width: 100%;
+        transform: none;
+      }
+    }
+
+    @media (max-width: 360px) {
+      .account-name {
+        display: none;
+      }
+
+      .account-logout-full {
+        display: none;
+      }
+
+      .account-logout-short {
+        display: inline;
+      }
+    }
   </style>
 </head>
 <body>
@@ -1640,10 +1769,11 @@
       <a class="nav-link" href="./pricing.html?from=landing_nav&intent=team#team-demo" data-track="nav_team">团队</a>
       <a class="nav-link" href="/download" data-track="nav_app_download">下载 App</a>
       <button class="btn btn-secondary" id="btn-login" type="button" data-track="login_cta">登录</button>
-      <div id="account-chip" class="account-chip" hidden>
+      <div id="account-chip" class="account-chip" role="group" aria-label="当前登录账号" hidden>
         <a id="account-badge" class="account-badge" href="./membership.html" hidden>会员</a>
+        <span id="account-avatar" class="account-avatar" aria-hidden="true"></span>
         <span id="account-name" class="account-name"></span>
-        <button id="account-logout" class="btn account-logout" type="button">退出登录</button>
+        <button id="account-logout" class="btn account-logout" type="button" aria-label="退出登录"><span class="account-logout-full">退出登录</span><span class="account-logout-short" aria-hidden="true">退出</span></button>
       </div>
     </nav>
   </header>
@@ -2230,7 +2360,14 @@
           accountBadge.hidden = true;
         }
       }
-      if (accountName) accountName.textContent = user?.username || user?.email || '用户';
+      const displayName = user?.username || user?.email || '用户';
+      if (accountChip) accountChip.setAttribute('aria-label', `当前账号：${displayName}`);
+      if (accountName) {
+        accountName.textContent = displayName;
+        accountName.title = displayName;
+      }
+      const accountAvatar = document.getElementById('account-avatar');
+      if (accountAvatar) accountAvatar.textContent = Array.from(String(displayName).trim())[0]?.toUpperCase() || 'L';
       if (loginBtn) loginBtn.hidden = true;
       if (accountChip) accountChip.hidden = false;
     }
