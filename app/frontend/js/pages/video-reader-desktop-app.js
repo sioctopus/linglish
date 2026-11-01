@@ -2332,8 +2332,12 @@
           mediaDefaults.buildPodcastDefaults(),
           'feedUrl'
         );
+        let storedChannels = readStore(CHANNEL_STORE_KEY);
+        if (version !== mediaDefaults.VERSION && typeof mediaDefaults.reconcileChannelDefaults === 'function') {
+          storedChannels = mediaDefaults.reconcileChannelDefaults(storedChannels);
+        }
         let channels = mediaDefaults.mergeDefaults(
-          readStore(CHANNEL_STORE_KEY),
+          storedChannels,
           mediaDefaults.buildChannelDefaults(),
           'channelId'
         );

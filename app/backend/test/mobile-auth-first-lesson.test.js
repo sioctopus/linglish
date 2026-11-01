@@ -119,7 +119,7 @@ for (const action of ['login', 'register', 'guest']) {
   for (const [next, expected] of [
     ['/pricing.html?intent=plans#plans', '/pricing.html?intent=plans#plans'],
     ['/game.html?chapter=2', '/game.html?chapter=2'],
-    ['https://untrusted.example/', action === 'register' ? 'welcome.html?from=register' : `mobile-today.html?from=${action}`],
+    ['https://untrusted.example/', action === 'register' ? 'welcome.html?from=register' : `/?from=${action}`],
   ]) {
     test(`${action} preserves safe return paths and rejects external redirects: ${next}`, async () => {
       const page = loadPage(`?next=${encodeURIComponent(next)}`);

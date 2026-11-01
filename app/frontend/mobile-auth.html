@@ -836,10 +836,10 @@
   <section class="auth-context-card" aria-label="登录后去向">
     <div class="auth-context-top">
       <div>
-        <strong id="auth-context-title">登录后回到今日训练</strong>
-        <span id="auth-context-copy">完成账号操作后直接进入移动端 Today，不再回到泛首页。</span>
+        <strong id="auth-context-title">登录后回到首页</strong>
+        <span id="auth-context-copy">完成账号操作后回到 Linglish 首页，再选择想学的内容。</span>
       </div>
-      <div class="auth-context-badge" id="auth-context-badge">Next: Today</div>
+      <div class="auth-context-badge" id="auth-context-badge">Next: Home</div>
     </div>
     <div class="auth-context-steps">
       <div class="auth-context-step"><b>输入</b>真实视频</div>
@@ -851,7 +851,7 @@
   <!-- Auth Forms -->
   <main class="auth-main">
     <div class="form-intent">
-      <strong id="form-intent-title">继续今日训练</strong>
+      <strong id="form-intent-title">登录 Linglish</strong>
       <span id="form-intent-copy">登录后会保存等级、目标和训练记录，并回到刚才的页面。</span>
     </div>
 
@@ -900,7 +900,7 @@
         <a href="./reset-password.html?from=mobile_auth" class="forgot-link" data-i18n="auth.forgot_password">忘记密码？</a>
       </div>
       <button type="submit" class="auth-btn" data-i18n="auth.login_submit">立即登录</button>
-      <div class="form-note" id="login-note">登录后自动回到移动端 Today。</div>
+      <div class="form-note" id="login-note">登录后自动回到首页。</div>
       <div class="auth-divider">
         <span data-i18n="auth.or">或者</span>
       </div>
@@ -1194,13 +1194,22 @@
       }
     }
 
+    // Signing in returns to the homepage (which shows the account); learners pick
+    // today's practice from there instead of being sent to the practice list.
     function getDefaultAuthNext(source = 'auth') {
       if (source === 'login' || source === 'guest' || source === 'auth_cached') {
-        return `mobile-today.html?from=${encodeURIComponent(source)}`;
+        return `/?from=${encodeURIComponent(source)}`;
       }
       return hasCompletedOnboarding()
-        ? `mobile-today.html?from=${encodeURIComponent(source)}`
+        ? `/?from=${encodeURIComponent(source)}`
         : `welcome.html?from=${encodeURIComponent(source)}`;
+    }
+
+    // Replace, not push: going back from the destination must not land on this
+    // page again, which would immediately redirect forward a second time.
+    function leaveAuthPage(target) {
+      if (typeof location.replace === 'function') location.replace(target);
+      else location.href = target;
     }
 
     function getVisitorId() {
@@ -1284,12 +1293,12 @@
       }
       return {
         target,
-        label: '今日训练',
-        badge: 'Next: Today',
-        title: '登录后回到今日训练',
-        copy: '完成账号操作后直接进入移动端 Today，不再回到泛首页。',
-        intentTitle: '继续今日训练',
-        intentCopy: '登录后会保存等级、目标和训练记录，并回到今天的训练闭环。'
+        label: '首页',
+        badge: 'Next: Home',
+        title: '登录后回到首页',
+        copy: '完成账号操作后回到 Linglish 首页，再选择想学的内容。',
+        intentTitle: '登录 Linglish',
+        intentCopy: '登录后会保存等级、目标和学习记录，并回到首页。'
       };
     }
 
@@ -1452,8 +1461,11 @@
           } else {
             await fetch('/auth/media-session', { method: 'DELETE', credentials: 'include' }).catch(() => {});
           }
+          // Only forget this page's old copy. Revoking here would send the session the
+          // server just issued (already captured by AuthManager) to /auth/logout, and the
+          // next request would then fail with "登录已过期" and loop back to login.
           if (window.AuthManager) {
-            await window.AuthManager.clearToken({ skipMediaSession: true });
+            await window.AuthManager.clearToken({ skipRevoke: true, skipMediaSession: true });
           } else {
             safeStorage.clearAuth({ skipMediaSession: true });
           }
@@ -1467,7 +1479,9 @@
           // Save new token using AuthManager (with robust fallback: localStorage → Cookies → Memory)
           console.log('[Login] Saving token with AuthManager, remember=' + rememberMe);
           if (window.AuthManager) {
-            await window.AuthManager.setToken(token, rememberMe);
+            // saveLogin keeps the refresh credential and device id so the session can renew.
+            if (typeof window.AuthManager.saveLogin === 'function') await window.AuthManager.saveLogin(data, rememberMe);
+            else await window.AuthManager.setToken(token, rememberMe);
           } else {
             // Fallback if AuthManager not available
             const storage = rememberMe ? localStorage : sessionStorage;
@@ -1495,7 +1509,7 @@
           // Redirect to explore page
           console.log('[Login] Redirecting after login in 500ms...');
           setTimeout(() => {
-            window.location.href = getSafeNext(getDefaultAuthNext('login'));
+            leaveAuthPage(getSafeNext(getDefaultAuthNext('login')));
           }, 500);
         } else {
           // If authentication failed with 401, clear any stale tokens
@@ -1584,8 +1598,10 @@
           const token = data.access_token || data.token;
           if (token && typeof token === 'string') {
             if (window.AuthManager) {
-              await window.AuthManager.clearToken();
-              await window.AuthManager.setToken(token, true);
+              // Keep the session the server just issued (see the login handler).
+              await window.AuthManager.clearToken({ skipRevoke: true });
+              if (typeof window.AuthManager.saveLogin === 'function') await window.AuthManager.saveLogin(data, true);
+              else await window.AuthManager.setToken(token, true);
             } else {
               safeStorage.clearAuth();
               safeStorage.set(localStorage, 'authToken', token);
@@ -1610,7 +1626,7 @@
               email_verification_delivery_configured: data.email_verification?.delivery_configured === true
             });
             setTimeout(() => {
-              window.location.href = getSafeNext(getDefaultAuthNext('register'));
+              leaveAuthPage(getSafeNext(getDefaultAuthNext('register')));
             }, 500);
             return;
           }
@@ -1709,7 +1725,7 @@
         : (safeStorage.get(localStorage, 'authToken') || safeStorage.get(sessionStorage, 'authToken'));
       if (token && typeof token === 'string' && token !== 'undefined' && token !== 'null' && token.split('.').length === 3) {
         // Token valid and unexpired, redirect to main app
-        window.location.href = getSafeNext(getDefaultAuthNext('auth_cached'));
+        leaveAuthPage(getSafeNext(getDefaultAuthNext('auth_cached')));
       } else if (token) {
         // Token exists but is invalid, clear it
         console.warn('[Auth] Invalid token detected on page load, clearing...');
