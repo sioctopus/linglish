@@ -554,9 +554,28 @@ let firstLessonGoal = null;
 let firstLessonGoalBusy = false;
 const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.getElementById('first-lesson-goal'), {
   mobile: true,
+  lookupCard: document.getElementById('sentence-assist'),
   getSentence: (index) => {
     const line = state.currentSegments[index];
     return line && { index, text: line.text, translation: line.translation || line.cn || line.zh || line.text_cn || '' };
+  },
+  lookupWord: (word, sentence) => {
+    if (!firstLessonSession.isActive() || firstLessonGoalBusy) return;
+    const line = state.currentSegments[sentence.index];
+    if (!line) return;
+    state.lastLookupContext = {
+      segmentIndex: sentence.index,
+      startSec: Number(line.start ?? line.start_sec),
+      endSec: Number(line.end ?? line.end_sec),
+      sentence: sentence.text,
+    };
+    metrics.logInteraction('lookup', word, {
+      segmentIndex: sentence.index,
+      startSec: state.lastLookupContext.startSec,
+      endSec: state.lastLookupContext.endSec,
+    });
+    lookupWord(word);
+    updateStats('words');
   },
   pauseOriginal: () => { pauseLearningVideoNow(); stopDictSpeech(); },
   listen: (index) => {
@@ -6552,11 +6571,13 @@ let wasPlayingBeforeLookupMobile = false;
 
 // Track current dictionary polling to stop it when looking up a new word
 let currentDictPollingStop = null;
+let sentenceAssistRequest = 0;
 
 async function showSentenceAssist(word) {
   const card = document.getElementById('sentence-assist');
   const assist = window.LinglishSentenceAssist;
   if (!card || !assist) return false;
+  const request = ++sentenceAssistRequest;
   const sentence = (state.lastLookupContext && state.lastLookupContext.sentence) || '';
   const paint = (gloss, phonetic) => {
     card.hidden = false;
@@ -6566,6 +6587,10 @@ async function showSentenceAssist(word) {
     if (closeBtn) closeBtn.addEventListener('click', () => { card.hidden = true; });
     if (sayBtn) sayBtn.addEventListener('click', () => {
       card.hidden = true;
+      if (firstLessonSession.isActive()) {
+        firstLessonGoalCard.recordSentence();
+        return;
+      }
       const record = document.getElementById('practice-start');
       if (record) record.click();
     });
@@ -6583,7 +6608,7 @@ async function showSentenceAssist(word) {
     if (res.ok) entry = (await res.json()).entry || null;
   } catch (_) { }
   finally { clearTimeout(timer); }
-  if (card.hidden) return true;
+  if (card.hidden || request !== sentenceAssistRequest) return true;
   paint(assist.shortGloss(entry), assist.phoneticOf(entry));
   return true;
 }
