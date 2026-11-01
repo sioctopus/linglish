@@ -9,5 +9,6 @@ regexes = [
   '''^linglish\.vrp\.position\.v1$''',
   '''^linglish\.vrp\.repeats\.v1$''',
   '''^linglish_acquisition_v1$''',
+  '''^linglish_podcasts_v1$''',
   '''^scoped\-secret\-0123456789abcdef0123456789abcdef$''',
 ]

@@ -11,12 +11,14 @@
     segmentSpeakerMap: {},
     running: false,
     awaitingHold: false,
+    partnerFailed: false,
     index: 0,
     epoch: 0,
     wired: false,
   };
 
   function isArena() {
+    if (document.body.dataset.studyMode) return document.body.dataset.studyMode === 'arena';
     return document.body.classList.contains('study-mode-arena')
       || document.body.dataset.studyMode === 'arena'
       || new URLSearchParams(root.location.search).get('study') === 'arena';
@@ -130,6 +132,11 @@
         if (el && !el.paused) el.pause();
       } catch (_) {}
     }
+  }
+
+  function cancelPlayback() {
+    const api = playback();
+    if (api && typeof api.cancelSegmentPlayback === 'function') api.cancelSegmentPlayback();
   }
 
   function playSegment(index) {
@@ -249,12 +256,12 @@
     }).join('');
     const setup = document.querySelector('.arena-dock-setup');
     if (startBtn) {
-      startBtn.disabled = !state.selectedSpeaker || state.running;
+      startBtn.disabled = !state.selectedSpeaker || (state.running && !state.partnerFailed);
       startBtn.hidden = false;
-      startBtn.textContent = '开始';
+      startBtn.textContent = state.partnerFailed ? '重试本句' : '开始';
     }
     if (stopBtn) stopBtn.hidden = !state.running;
-    if (setup) setup.hidden = state.running;
+    if (setup) setup.hidden = state.running && !state.partnerFailed;
     box.hidden = false;
     updateProgress();
   }
@@ -272,6 +279,8 @@
     state.epoch += 1;
     state.running = false;
     state.awaitingHold = false;
+    state.partnerFailed = false;
+    cancelPlayback();
     pauseNow();
     renderRoles();
     syncHoldUi();
@@ -299,6 +308,7 @@
       return;
     }
     const epoch = state.epoch;
+    state.partnerFailed = false;
     setIndex(index);
     updateProgress();
     if (isMyLine(index)) {
@@ -310,10 +320,13 @@
     state.awaitingHold = false;
     syncHoldUi();
     setStatus('对方在说…听完自动到你');
-    const result = await playSegment(index);
+    let result;
+    try { result = await playSegment(index); } catch (_) { result = 'error'; }
     if (epoch !== state.epoch || !state.running) return;
-    if (result === 'missing') {
-      setStatus('这一句播不了，点下一句或结束重来');
+    if (result !== 'ok') {
+      state.partnerFailed = true;
+      renderRoles();
+      setStatus('这一句没播完，点「重试本句」或结束重来');
       return;
     }
     advanceAfterPartner();
@@ -332,6 +345,15 @@
 
   function start() {
     if (!isArena()) return;
+    if (state.running) {
+      if (state.partnerFailed) {
+        state.epoch += 1;
+        state.partnerFailed = false;
+        renderRoles();
+        runFrom(state.index);
+      }
+      return;
+    }
     if (!state.selectedSpeaker) {
       setStatus('先选一个角色');
       return;
@@ -341,6 +363,7 @@
       return;
     }
     buildSpeakers();
+    cancelPlayback();
     state.epoch += 1;
     state.running = true;
     state.awaitingHold = false;
@@ -351,6 +374,7 @@
 
   function onHoldComplete(detail) {
     if (!isArena() || !state.running || !state.awaitingHold) return;
+    if (!detail || detail.runToken !== state.epoch) return;
     const idx = detail && Number.isFinite(Number(detail.index)) ? Number(detail.index) : state.index;
     if (idx !== state.index) return;
     advanceAfterMyTake();
@@ -387,7 +411,7 @@
     document.body.classList.toggle('arena-dialogue-on', on);
     if (dock) dock.hidden = !on;
     if (!on) {
-      stop(true);
+      if (state.running) stop(true);
       syncHoldUi();
       return;
     }
@@ -411,6 +435,8 @@
     canBeginHold,
     isAwaitingHold: () => state.awaitingHold,
     isRunning: () => state.running,
+    getCurrentIndex: () => isArena() && state.running ? state.index : null,
+    getRunToken: () => isArena() && state.running ? state.epoch : null,
     isMyLine,
     selectRole,
   };
@@ -419,7 +445,10 @@
     wire();
     sync();
     root.addEventListener('linglish:segments-ready', () => { if (isArena()) sync(); });
-    root.addEventListener('linglish:video-selected', () => { if (isArena()) sync(); });
+    root.addEventListener('linglish:video-selected', () => {
+      if (state.running) stop(true);
+      if (isArena()) sync();
+    });
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);

@@ -105,25 +105,59 @@
   // 视频学习选中内容 = AI陪练 / 实战场的唯一片源（不用 StudyRecent 另起炉灶）
   const LAST_STUDY_MEDIA_KEY = 'linglish.last_study_media.v1';
 
+  function normalizeStudyCues(source) {
+    if (typeof source === 'string') {
+      try { source = JSON.parse(source); } catch (_) { return []; }
+    }
+    if (!Array.isArray(source)) return [];
+    return source.map((cue, index) => {
+      const text = String(cue?.text ?? cue?.transcript ?? cue?.line ?? '').trim();
+      const start = Number(cue?.start_sec ?? cue?.start ?? cue?.startTime);
+      const end = Number(cue?.end_sec ?? cue?.end ?? cue?.endTime);
+      return { index: cue?.index ?? index, text, start, end };
+    }).filter((cue) => cue.text && Number.isFinite(cue.start) && Number.isFinite(cue.end) && cue.end >= cue.start);
+  }
+
+  function studyMediaSnapshot(current) {
+    const id = String(current.id);
+    const previous = window.LinglishStudyMedia && String(window.LinglishStudyMedia.id) === id
+      ? window.LinglishStudyMedia : null;
+    // Reader transcript data is freshest; retain hydration only for this same content ID.
+    let cues = [];
+    for (const source of [current.transcript_segments, current.cues, previous?.transcript_segments, previous?.cues]) {
+      cues = normalizeStudyCues(source);
+      if (cues.length) break;
+    }
+    return {
+      id,
+      title: current.title || current.original_filename || previous?.title || '',
+      youtube_video_id: current.youtube_video_id || previous?.youtube_video_id || '',
+      audioUrl: current.audioUrl || previous?.audioUrl || '',
+      videoUrl: current.videoUrl || previous?.videoUrl || '',
+      url: current.url || previous?.url || '',
+      transcriptUrl: current.transcriptUrl || previous?.transcriptUrl || '',
+      external_podcast: Boolean(current.external_podcast || previous?.external_podcast),
+      external_youtube: Boolean(current.external_youtube || current.youtube_video_id || previous?.external_youtube),
+      thumbnail_path: current.thumbnail_path || previous?.thumbnail_path || '',
+      collection_name: current.collection_name || previous?.collection_name || '',
+      image: current.image || previous?.image || '',
+      notes: current.notes || previous?.notes || '',
+      cues,
+    };
+  }
+
   function readCanonicalStudyMedia() {
     try {
       const reader = window.LinglishVideoReaderState;
       if (reader && reader.currentVideo && reader.currentVideo.id != null) {
-        return {
-          id: String(reader.currentVideo.id),
-          title: reader.currentVideo.title || reader.currentVideo.original_filename || '',
-          youtube_video_id: reader.currentVideo.youtube_video_id || '',
-          audioUrl: reader.currentVideo.audioUrl || '',
-          transcriptUrl: reader.currentVideo.transcriptUrl || '',
-          thumbnail_path: reader.currentVideo.thumbnail_path || '',
-        };
+        return studyMediaSnapshot(reader.currentVideo);
       }
       if (reader && reader.selectedVideoId != null && String(reader.selectedVideoId) !== '') {
-        return { id: String(reader.selectedVideoId) };
+        return studyMediaSnapshot({ id: reader.selectedVideoId });
       }
     } catch (_) {}
     try {
-      if (window.LinglishStudyMedia && window.LinglishStudyMedia.id) return window.LinglishStudyMedia;
+      if (window.LinglishStudyMedia && window.LinglishStudyMedia.id) return studyMediaSnapshot(window.LinglishStudyMedia);
     } catch (_) {}
     try {
       if (window.LinglishStudyVideoId && /^\d+$/.test(String(window.LinglishStudyVideoId))) {
@@ -133,7 +167,7 @@
     try {
       const raw = localStorage.getItem(LAST_STUDY_MEDIA_KEY);
       const data = raw ? JSON.parse(raw) : null;
-      if (data && data.id != null) return data;
+      if (data && data.id != null) return studyMediaSnapshot(data);
     } catch (_) {}
     const fromUrl = params.get('videoId') || '';
     if (fromUrl) return { id: String(fromUrl), youtube_video_id: params.get('yt') || '' };
@@ -244,6 +278,7 @@
           audioUrl: (current && current.audioUrl) || (canonical && canonical.audioUrl) || '',
           transcriptUrl: (current && current.transcriptUrl) || (canonical && canonical.transcriptUrl) || '',
           thumbnail_path: (current && current.thumbnail_path) || (canonical && canonical.thumbnail_path) || '',
+          cues: normalizeStudyCues(canonical && canonical.cues),
         };
       }
     }
@@ -315,19 +350,10 @@
       if (!current || current.id == null) return;
       if (/^\d+$/.test(String(current.id))) {
         window.LinglishStudyVideoId = String(current.id);
+        window.LinglishStudyMedia = null;
         return;
       }
-      window.LinglishStudyMedia = {
-        id: String(current.id),
-        title: current.title || current.original_filename || '',
-        youtube_video_id: current.youtube_video_id || '',
-        audioUrl: current.audioUrl || '',
-        transcriptUrl: current.transcriptUrl || '',
-        external_podcast: Boolean(current.external_podcast),
-        external_youtube: Boolean(current.external_youtube || current.youtube_video_id),
-        thumbnail_path: current.thumbnail_path || '',
-        collection_name: current.collection_name || '',
-      };
+      window.LinglishStudyMedia = studyMediaSnapshot(current);
     } catch (_) {}
   }
 

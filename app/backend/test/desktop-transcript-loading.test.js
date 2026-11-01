@@ -1,12 +1,9 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-
-const desktopHtml = path.resolve(__dirname, '../../frontend/video-reader-desktop.html');
+const { readPage } = require('./helpers/page-source');
 
 function read() {
-  return fs.readFileSync(desktopHtml, 'utf8');
+  return readPage('video-reader-desktop.html');
 }
 
 test('desktop video reader shows transcript loading and starts fetch in parallel with player', () => {
@@ -33,5 +30,5 @@ test('desktop avoids stacking bilingual placeholders on every transcript row', (
   const source = read();
   assert.match(source, /Only paint Chinese when ready/);
   assert.match(source, /showTransLine = state\.showBilingual && hasZh/);
-  assert.match(source, /Fast path: show cues once ASAP/);
+  assert.match(source, /if \(!firstLessonSession\.isActive\(\)\) \{[\s\S]*splitSegmentsByWaveformSilence[\s\S]*if \(!isExpectedVideo\(\)\) return;[\s\S]*applyTranscriptCues\(rawForSync, \{ persistOnVideo: true \}\)/);
 });

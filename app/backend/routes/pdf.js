@@ -1,8 +1,6 @@
 const dataStore = require('../data-store');
-const pdfImportService = require('../services/pdf-import');
 const ocrService = require('../services/ocr');
 const { handleFileUpload, cleanupFile } = require('../upload-handler');
-const { parseBody } = require('../utils/parsers');
 const { sendJson, sendError, mapErrorToStatus } = require('../middleware/error-handler');
 const { authenticate } = require('../middleware/auth');
 
@@ -15,71 +13,7 @@ const { authenticate } = require('../middleware/auth');
  * @returns {Promise<boolean>} True if route was handled, false otherwise
  */
 async function registerPdfRoutes(pathname, req, res, url) {
-  // POST /pdf/upload
-  if (pathname === '/pdf/upload' && req.method === 'POST') {
-    try {
-      const user = await authenticate(req);
-      const { files, fields } = await handleFileUpload(req);
-
-      if (!files.pdf) {
-        return sendError(res, 400, 'PDF file is required');
-      }
-
-      const pdfFile = files.pdf;
-
-      try {
-        const options = {
-          title: fields.title || 'Imported PDF Content',
-          tags: fields.tags ? JSON.parse(fields.tags) : ['imported', 'pdf'],
-          splitBySections: fields.splitBySections === 'true',
-          createSingleArticle: fields.createSingleArticle === 'true',
-          originalFilename: pdfFile.originalFilename || 'imported.pdf',
-        };
-
-        const result = await pdfImportService.importPDFAsArticles(pdfFile.path, options);
-
-        // Clean up uploaded file
-        await cleanupFile(pdfFile.path);
-
-        return sendJson(res, 201, result);
-      } catch (err) {
-        // Clean up on error
-        await cleanupFile(pdfFile.path);
-        throw err;
-      }
-    } catch (err) {
-      console.error('PDF upload error:', err);
-      const status = mapErrorToStatus(err, 400);
-      return sendError(res, status, err.message);
-    }
-  }
-
-  // POST /pdf/import
-  if (pathname === '/pdf/import' && req.method === 'POST') {
-    try {
-      const user = await authenticate(req);
-      const body = await parseBody(req);
-
-      if (!body.pdfPath) {
-        return sendError(res, 400, 'pdfPath is required');
-      }
-
-      const options = {
-        title: body.title || 'Imported PDF Content',
-        tags: body.tags || ['imported', 'pdf'],
-        splitBySections: body.splitBySections !== false,
-        createSingleArticle: body.createSingleArticle === true,
-      };
-
-      const result = await pdfImportService.importPDFAsArticles(body.pdfPath, options);
-      return sendJson(res, 201, result);
-    } catch (err) {
-      console.error('PDF import error:', err);
-      const status = mapErrorToStatus(err, 400);
-      return sendError(res, status, err.message);
-    }
-  }
-
+  // Legacy PDF import routes remain disabled; use the scoped document importer.
   // POST /ocr/extract
   if (pathname === '/ocr/extract' && req.method === 'POST') {
     try {

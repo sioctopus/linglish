@@ -69,7 +69,7 @@ test('epub xhtml numeric entities become readable bilingual content', async () =
   assert.match(extracted, /facts\.\n\n我遍览史籍/);
 
   const recorder = [];
-  const result = await importLearningDocument({
+  const result = await importLearningDocument({ ownerUserId: 7,
     title: 'Elon bilingual',
     file: { path: '/tmp/elon.epub', originalFilename: 'elon.en_zh-CN.epub', size: epub.length },
   }, {
@@ -103,7 +103,7 @@ test('english-only paragraphs stay as stage units instead of one sentence per li
     'Read the first paragraph aloud. Then answer the questions.',
   ].join('\n');
   const recorder = [];
-  await importLearningDocument({
+  await importLearningDocument({ ownerUserId: 7,
     title: 'Paragraph lesson',
     text,
   }, {

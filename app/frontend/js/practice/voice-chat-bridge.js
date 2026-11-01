@@ -7,6 +7,39 @@
 
   let chat = null;
   let lastIndex = -1;
+  let holdContext = null;
+  let selectionGeneration = 0;
+  let selectionVideoId = '';
+
+  function recordingContext() {
+    const videoId = resolveVideoId();
+    const segments = readerState().currentSegments;
+    if (videoId !== selectionVideoId) {
+      selectionVideoId = videoId;
+      selectionGeneration += 1;
+      root.__lastShadowBlob = null;
+      root.__lastShadowUrl = '';
+      root.__lastShadowIndex = -1;
+      const state = readerState();
+      if (state.lastRecordingUrl) { try { URL.revokeObjectURL(state.lastRecordingUrl); } catch (_) {} }
+      state.lastRecordingBlob = null;
+      state.lastRecordingUrl = '';
+      state.lastRecordingSegmentIndex = -1;
+      markHearEnabled(false);
+    }
+    return { videoId, generation: selectionGeneration, segments };
+  }
+
+  function isRecordingContextCurrent(context, requireSegments = false) {
+    const current = recordingContext();
+    return Boolean(context && context.videoId === current.videoId && context.generation === current.generation && (!requireSegments || context.segments === current.segments));
+  }
+
+  function captureHoldContext() {
+    const arena = root.LinglishArenaDialogue;
+    const arenaRunToken = arena && typeof arena.getRunToken === 'function' ? arena.getRunToken() : null;
+    return { ...recordingContext(), arena, arenaRunToken };
+  }
 
   function readerState() {
     try {
@@ -37,11 +70,11 @@
     }
   }
 
-  async function persistShadowRecording(blob, index) {
+  async function persistShadowRecording(blob, index, context = recordingContext()) {
     const cache = recordingCache();
     if (!cache || typeof cache.save !== 'function' || !blob) return null;
-    const videoId = resolveVideoId();
-    if (!videoId || !Number.isFinite(Number(index))) return null;
+    const videoId = context.videoId;
+    if (!isRecordingContextCurrent(context, true) || !videoId || !Number.isFinite(Number(index))) return null;
     try {
       return await cache.save({
         videoId,
@@ -55,10 +88,11 @@
   }
 
   async function hydrateShadowRecording(videoId, preferredIndex) {
+    const context = recordingContext();
     const cache = recordingCache();
     if (!cache) return false;
     const id = videoId != null && String(videoId) !== '' ? String(videoId) : resolveVideoId();
-    if (!id) return false;
+    if (!id || id !== context.videoId) return false;
     let record = null;
     try {
       const prefer = Number.isFinite(Number(preferredIndex))
@@ -73,7 +107,7 @@
     } catch (_) {
       return false;
     }
-    if (!record || !record.blob) return false;
+    if (!record || !record.blob || !isRecordingContextCurrent(context)) return false;
     const st = readerState();
     if (typeof cache.applyToState === 'function') {
       cache.applyToState(st, record);
@@ -97,6 +131,7 @@
   }
 
   async function resolvePlayableShadowUrl(preferredIndex) {
+    const context = recordingContext();
     const st = readerState();
     const videoId = resolveVideoId();
     const prefer = Number.isFinite(Number(preferredIndex))
@@ -110,6 +145,7 @@
           record = await cache.get({ videoId, segmentIndex: prefer });
         }
         if (!record) record = await cache.getLatestForVideo(videoId);
+        if (!isRecordingContextCurrent(context)) return '';
         if (record && record.blob) {
           cache.applyToState(st, record);
           root.__lastShadowBlob = record.blob;
@@ -120,6 +156,7 @@
         }
       } catch (_) {}
     }
+    if (!isRecordingContextCurrent(context)) return '';
     return root.__lastShadowUrl
       || st.lastRecordingUrl
       || (st.lastRecordingBlob ? URL.createObjectURL(st.lastRecordingBlob) : '');
@@ -188,12 +225,6 @@
 
   function currentSegmentIndex() {
     const st = readerState();
-    if (Number.isFinite(Number(st.activeSegmentIndex))) return Number(st.activeSegmentIndex);
-    if (Number.isFinite(Number(st.currentSegmentIndex))) return Number(st.currentSegmentIndex);
-    if (Number.isFinite(Number(st.mobileSegmentPosition))) return Number(st.mobileSegmentPosition);
-    if (typeof root.mobileSegmentPosition === 'number' && root.mobileSegmentPosition >= 0) {
-      return root.mobileSegmentPosition;
-    }
     if (isDesktopReader()) {
       try {
         const vrp = root.__vrdPro;
@@ -214,6 +245,12 @@
         const n = Number(active.getAttribute('data-index'));
         if (Number.isInteger(n) && n >= 0) return n;
       }
+    }
+    if (Number.isFinite(Number(st.activeSegmentIndex))) return Number(st.activeSegmentIndex);
+    if (Number.isFinite(Number(st.currentSegmentIndex))) return Number(st.currentSegmentIndex);
+    if (Number.isFinite(Number(st.mobileSegmentPosition))) return Number(st.mobileSegmentPosition);
+    if (typeof root.mobileSegmentPosition === 'number' && root.mobileSegmentPosition >= 0) {
+      return root.mobileSegmentPosition;
     }
     return Math.max(0, lastIndex);
   }
@@ -498,6 +535,7 @@
       },
       // Player Hold and X DM Hold share one session — keep both UIs in sync.
       onHoldStart: ({ index } = {}) => {
+        holdContext = captureHoldContext();
         document.body.classList.add('voice-chat-holding');
         try {
           if (typeof root.syncMobilePlayButtonVoiceHold === 'function') {
@@ -536,6 +574,8 @@
         } catch (_) {}
       },
       onRecorded: async ({ blob, url, index, durationLabel }) => {
+        const context = holdContext;
+        if (!isRecordingContextCurrent(context, true)) return null;
         try {
           root.__lastShadowBlob = blob;
           root.__lastShadowUrl = url || (blob ? URL.createObjectURL(blob) : '');
@@ -554,14 +594,16 @@
             st.lastRecordingSegmentIndex = index;
           }
           markHearEnabled(true);
-          await persistShadowRecording(blob, index);
+          await persistShadowRecording(blob, index, context);
         } catch (_) {}
+        if (!isRecordingContextCurrent(context, true)) return null;
         // Hold only records — do not auto-open the DM sheet. User opens via @linglish.
         if (sessionIsOpen()) seedChatWindow();
         try {
           const arena = root.LinglishArenaDialogue;
-          if (arena && typeof arena.onHoldComplete === 'function') {
-            arena.onHoldComplete({ index });
+          if (arena && arena === context.arena && context.arenaRunToken != null
+            && typeof arena.onHoldComplete === 'function') {
+            arena.onHoldComplete({ index, runToken: context.arenaRunToken });
           }
         } catch (_) {}
         return null;
@@ -583,6 +625,7 @@
 
   function sync() {
     if (!isVideoReaderPage()) return;
+    recordingContext();
     if (!chat) mount();
     if (!chat) return;
     const host = document.getElementById('voice-chat-coach');

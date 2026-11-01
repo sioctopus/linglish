@@ -48,6 +48,31 @@
     return true;
   }
 
+  function synthesisLang() {
+    return current().indexOf('en-GB') === 0 ? 'en-GB' : 'en-US';
+  }
+
+  // 从系统音色里挑一个尽量接近所选神经音色的：先按同名匹配，再按口音，最后任意英语。
+  function findSystemVoice(voices) {
+    if (!voices || !voices.length) return null;
+    var info = meta();
+    var lang = synthesisLang();
+    function langOf(v) {
+      return String((v && v.lang) || '').replace('_', '-');
+    }
+    var byName = new RegExp(info.name, 'i');
+    for (var i = 0; i < voices.length; i++) {
+      if (langOf(voices[i]).indexOf(lang) === 0 && byName.test(voices[i].name || '')) return voices[i];
+    }
+    for (var j = 0; j < voices.length; j++) {
+      if (langOf(voices[j]).indexOf(lang) === 0) return voices[j];
+    }
+    for (var k = 0; k < voices.length; k++) {
+      if (/^en/i.test(langOf(voices[k]))) return voices[k];
+    }
+    return null;
+  }
+
   global.LinglishTtsVoice = {
     KEY: KEY,
     ACCENT_KEY: ACCENT_KEY,
@@ -57,6 +82,8 @@
     current: current,
     set: set,
     meta: meta,
-    accentCode: accentCode
+    accentCode: accentCode,
+    synthesisLang: synthesisLang,
+    findSystemVoice: findSystemVoice
   };
 })(window);

@@ -10,17 +10,16 @@
   };
 
   function writeStore(payload) {
-    const raw = JSON.stringify(payload);
     try {
-      global.localStorage.setItem(STORAGE_KEY, raw);
-    } catch (_) {}
-    try {
-      global.sessionStorage.setItem(STORAGE_KEY, raw);
-    } catch (_) {}
+      global.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
+      return true;
+    } catch (_) {
+      return false;
+    }
   }
 
   function readStore() {
-    const keys = ['sessionStorage', 'localStorage'];
+    const keys = ['sessionStorage'];
     for (const name of keys) {
       try {
         const raw = global[name].getItem(STORAGE_KEY);
@@ -57,7 +56,10 @@
       ts: Date.now(),
     };
 
-    writeStore(payload);
+    if (!writeStore(payload)) {
+      if (typeof global.alert === 'function') global.alert('暂时无法保存选中的内容，请允许浏览器存储后重试。');
+      return false;
+    }
 
     const query = new URLSearchParams({ import: '1' });
     if (payload.orient) query.set('orient', payload.orient);
@@ -65,10 +67,8 @@
     if (payload.source) query.set('from', payload.source);
     const url = `./workbench.html?${query.toString()}`;
 
-    // 默认同页打开，这样顶部「返回」能回到上一页；需要新标签时传 sameTab: false
-    const sameTab = options.sameTab !== false;
-    if (sameTab) global.location.assign(url);
-    else global.open(url, '_blank', 'noopener');
+    // Keep the private session payload in the same tab; noopener tabs cannot inherit it.
+    global.location.assign(url);
     return true;
   }
 

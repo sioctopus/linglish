@@ -222,9 +222,7 @@ async function getVideoInfo(req, res) {
  */
 async function getTranscript(req, res) {
   try {
-    // Prefer auth when present, but allow public caption reads so learning pages
-    // can still recover subtitles for library YouTube rows.
-    try { await authenticate(req); } catch (_) { /* optional */ }
+    await authenticate(req);
     const body = await parseBody(req);
     const { url, language = 'en' } = body;
 

@@ -54,16 +54,22 @@
     try {
       if (typeof input === 'string') return input;
       if (input && typeof input.url === 'string') return input.url;
+      if (input && typeof input.href === 'string') return input.href;
     } catch (_) { }
     return '';
   }
-  function isAuthPage() {
-    const path = String(location.pathname || '').toLowerCase();
-    return /\/(?:desktop-auth|mobile-auth|reset-password|verify-email)\.html$/.test(path);
+  function isSameOrigin(input) {
+    const url = requestUrl(input);
+    if (input && !url) return false;
+    try { return new URL(url, window.location.href).origin === new URL(window.location.href).origin; }
+    catch (_) { return !url || (/^(?:\/(?!\/)|\.\.?\/)/.test(url) && !url.includes('\\')); }
   }
   function ignoresSessionExpiry(url) {
-    return /\/auth\/(?:login|register|guest|refresh|logout|password-reset|email-verification|oauth)(?:\/|\?|$)/.test(url)
-      || /\/track\/event(?:\?|$)/.test(url);
+    let pathname;
+    try { pathname = new URL(url, window.location.href).pathname; }
+    catch (_) { pathname = String(url || '').split('?')[0]; }
+    return /\/auth\/(?:login|register|guest|refresh|logout|password-reset|email-verification|oauth)(?:\/|$)/.test(pathname)
+      || pathname === '/track/event';
   }
 
   let _authHandlerTriggered = false;
@@ -84,7 +90,8 @@
   }
 
   async function recoverSession(res, input, init) {
-    if (!res || (res.status !== 401 && res.status !== 403)) return null;
+    if (!res || (res.status !== 401 && res.status !== 403) || !isSameOrigin(input)) return null;
+    if (res.status === 401 && ignoresSessionExpiry(requestUrl(input))) return null;
 
     // Layout preview / guest: stay on page even when APIs return 401
     if (isShellPreview()) return null;
@@ -114,12 +121,16 @@
         const expired = !window.AuthManager.isTokenExpired || window.AuthManager.isTokenExpired(renewed);
         if (renewed && !expired && !(init && init.__linglishAuthRetried)) {
           _authHandlerTriggered = false;
-          const headers = new Headers((init && init.headers) || undefined);
+          const headers = new Headers((init && init.headers) || (input && input.headers) || undefined);
           headers.set('Authorization', 'Bearer ' + renewed);
           const retryInit = Object.assign({}, init, { headers: headers, __linglishAuthRetried: true });
-          return originalFetch(input, retryInit);
+          const retried = await originalFetch(input, retryInit);
+          if (retried.status === 401 || retried.status === 403) {
+            await recoverSession(retried, input, retryInit);
+          }
+          return retried;
         }
-        if (window.AuthManager.isLoggedIn && window.AuthManager.isLoggedIn()) {
+        if (!(init && init.__linglishAuthRetried) && window.AuthManager.isLoggedIn && window.AuthManager.isLoggedIn()) {
           _authHandlerTriggered = false;
           return null;
         }
@@ -140,10 +151,12 @@
   const originalFetch = window.fetch ? window.fetch.bind(window) : null;
   if (!originalFetch) return;
   window.fetch = function authWrappedFetch(input, init) {
+    let retryInput = input;
+    try { if (input && typeof input.clone === 'function') retryInput = input.clone(); } catch (_) {}
     return originalFetch(input, init).then(async (res) => {
       try {
-        if (!ignoresSessionExpiry(requestUrl(input)) && !isAuthPage()) {
-          const recovered = await recoverSession(res, input, init);
+        if (res.status === 403 || !ignoresSessionExpiry(requestUrl(input))) {
+          const recovered = await recoverSession(res, retryInput, init);
           if (recovered) return recovered;
         }
       } catch (_) { }

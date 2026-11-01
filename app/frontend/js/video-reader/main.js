@@ -554,6 +554,11 @@ let firstLessonGoal = null;
 let firstLessonGoalBusy = false;
 const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.getElementById('first-lesson-goal'), {
   mobile: true,
+  getSentence: (index) => {
+    const line = state.currentSegments[index];
+    return line && { index, text: line.text, translation: line.translation || line.cn || line.zh || line.text_cn || '' };
+  },
+  pauseOriginal: () => { pauseLearningVideoNow(); stopDictSpeech(); },
   listen: (index) => {
     if (!firstLessonSession.isActive() || firstLessonGoalBusy) return;
     const line = selectMobileGoalLine(index);
@@ -573,13 +578,22 @@ const firstLessonGoalCard = window.LinglishFirstLessonGoal.createCard(document.g
     startPracticeRecording();
   },
   next: () => {
-    const index = (state.practiceIndex ?? 0) + 1;
+    const index = firstLessonGoal && !firstLessonGoal.complete ? firstLessonGoal.nextIndex : (state.practiceIndex ?? 0) + 1;
     if (!selectMobileGoalLine(index)) {
       location.href = './mobile-today.html#learning-details';
       return;
     }
     firstLessonGoalCard.update(firstLessonGoal);
   },
+});
+const guidedReaderTools = window.MobileReaderLayout.configureGuidedTools(
+  document.getElementById('guided-reader-tools'), firstLessonSession.isActive()
+);
+const guidedLessonEntry = document.getElementById('guided-lesson-entry');
+if (guidedLessonEntry) guidedLessonEntry.addEventListener('click', (event) => {
+  const href = window.LinglishFirstLessonGoal.resumeHref({ videoId: String(state.selectedVideoId || '') }, true, 'reader_guided_practice');
+  if (!href) { event.preventDefault(); return; }
+  guidedLessonEntry.href = href;
 });
 
 function selectMobileGoalLine(index) {
@@ -605,6 +619,7 @@ function clearMobileFirstLessonState() {
   firstLessonGoal = null;
   firstLessonGoalBusy = false;
   firstLessonGoalCard.hide();
+  window.MobileReaderLayout.configureGuidedTools(guidedReaderTools, false);
   const progress = document.getElementById('first-lesson-progress');
   if (progress) {
     progress.hidden = true;
@@ -691,7 +706,8 @@ function createMobileAssessmentContext(line) {
 
 function isMobileAssessmentContextCurrent(captured) {
   if (!captured || !firstLessonSession.isActive()) return false;
-  const segment = state.currentSegments[captured.displayIndex];
+  const displayIndex = state.practiceIndex;
+  const segment = state.currentSegments[displayIndex];
   if (!segment || !state.selectedVideoId) return false;
   const current = window.LinglishFirstLessonPractice.createAssessmentContext({
     subject: resolveMobileFirstLessonSubject(),
@@ -699,11 +715,11 @@ function isMobileAssessmentContextCurrent(captured) {
     stableSegmentId: window.LinglishFirstLessonProgress.stableSegmentId(
       state.selectedVideoId,
       segment,
-      captured.displayIndex,
+      displayIndex,
     ),
     sourceIndices: segment.source_indices,
     selectionGeneration: videoSelectionGeneration,
-    displayIndex: captured.displayIndex,
+    displayIndex,
   });
   return window.LinglishFirstLessonPractice.assessmentContextMatches(captured, current);
 }
@@ -731,9 +747,14 @@ function markPracticedMobileFirstLesson(context, result, assessmentId, evidenceK
 }
 
 function markFirstLessonReadyForCommittedTranscript(video, segments) {
-  if (!firstLessonSession.isActive()) return;
   if (!video || !Array.isArray(segments) || segments.length === 0) return;
-  if (state.selectedVideoId !== video.id || state.currentSegments !== segments) return;
+  if (String(state.selectedVideoId) !== String(video.id) || state.currentSegments !== segments) return;
+  if (guidedLessonEntry) {
+    const href = window.LinglishFirstLessonGoal.resumeHref({ videoId: String(video.id) }, true, 'reader_guided_practice');
+    guidedLessonEntry.hidden = firstLessonSession.isActive() || !href;
+    if (href) guidedLessonEntry.href = href;
+  }
+  if (!firstLessonSession.isActive()) return;
   const readiness = firstLessonReadiness.markReady({
     videoId: video.id,
     segmentCount: segments.length,
@@ -2440,6 +2461,8 @@ function resolveMobileSegmentIndexAtTime(t) {
 function getMobileShadowSegment() {
   const segments = Array.isArray(state.currentSegments) ? state.currentSegments : [];
   if (!segments.length) return null;
+  const arena = window.LinglishArenaDialogue;
+  const arenaIndex = arena && typeof arena.getCurrentIndex === 'function' ? arena.getCurrentIndex() : null;
   let now = 0;
   try {
     const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
@@ -2449,8 +2472,9 @@ function getMobileShadowSegment() {
   } catch (_) {
     now = videoPlayer ? Number(videoPlayer.currentTime) || 0 : 0;
   }
-  // 重放 / 跟读：优先播放头所在句（正在讲的这一句），再回退到字幕窗口位置
-  let index = resolveMobileSegmentIndexAtTime(now);
+  // 实战场跟随所选台词；普通重放 / 跟读优先播放头所在句，再回退到字幕窗口位置。
+  let index = Number.isInteger(arenaIndex) && arenaIndex >= 0 && arenaIndex < segments.length
+    ? arenaIndex : resolveMobileSegmentIndexAtTime(now);
   if (index < 0 && Number.isFinite(mobileSegmentPosition)) index = mobileSegmentPosition;
   if (index < 0 && Number.isFinite(lastSegmentIndex) && lastSegmentIndex >= 0) index = lastSegmentIndex;
   if (index < 0) index = 0;
@@ -2468,7 +2492,14 @@ function getMobileShadowSegment() {
   };
 }
 
+let mobileSegmentPlayback = null;
+
+function cancelMobileSegmentPlayback() {
+  if (mobileSegmentPlayback) mobileSegmentPlayback.cancel();
+}
+
 async function playSegmentBoundsForShadow(segment) {
+  cancelMobileSegmentPlayback();
   if (!segment) return 'missing';
   const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
   if (!transport && !videoPlayer) return 'missing';
@@ -2482,6 +2513,8 @@ async function playSegmentBoundsForShadow(segment) {
   return new Promise((resolve) => {
     let settled = false;
     let pollTimer = 0;
+    const lease = { cancel: () => finish('cancelled') };
+    const onEnded = () => finish('ok');
     const finish = (result) => {
       if (settled) return;
       settled = true;
@@ -2489,21 +2522,30 @@ async function playSegmentBoundsForShadow(segment) {
         try { window.clearInterval(pollTimer); } catch (_) {}
         pollTimer = 0;
       }
-      state.segmentPlaybackCallback = null;
-      state.segmentPlaybackEnd = null;
-      try { pauseLearningVideoNow(); } catch (_) {}
-      try { syncMobilePlayButton(); } catch (_) {}
-      if (Number.isInteger(segment.index)) {
-        mobileSegmentPosition = segment.index;
-        try { renderMobileTranscriptWindow(segment.index); } catch (_) {}
+      if (mobileSegmentPlayback === lease) {
+        mobileSegmentPlayback = null;
+        if (state.segmentPlaybackCallback === onEnded) {
+          state.segmentPlaybackCallback = null;
+          state.segmentPlaybackEnd = null;
+        }
+        // Cancellation releases ownership before a new mode, video, or replay starts.
+        if (result !== 'cancelled') {
+          try { pauseLearningVideoNow(); } catch (_) {}
+          try { syncMobilePlayButton(); } catch (_) {}
+          if (Number.isInteger(segment.index)) {
+            mobileSegmentPosition = segment.index;
+            try { renderMobileTranscriptWindow(segment.index); } catch (_) {}
+          }
+        }
       }
       resolve(result);
     };
+    mobileSegmentPlayback = lease;
 
     try { pauseLearningVideoNow(); } catch (_) {}
 
     state.segmentPlaybackEnd = segment.end;
-    state.segmentPlaybackCallback = () => finish('ok');
+    state.segmentPlaybackCallback = onEnded;
 
     try {
       if (transport && typeof transport.seek === 'function') {
@@ -2522,8 +2564,8 @@ async function playSegmentBoundsForShadow(segment) {
       return;
     }
 
-    const started = Date.now();
-    const limit = Math.min(15000, Math.max(2500, (segment.end - segment.start) * 1000 + 1200));
+    let lastProgressAt = Date.now();
+    let lastMediaTime = segment.start;
     pollTimer = window.setInterval(() => {
       let now = 0;
       try {
@@ -2537,7 +2579,18 @@ async function playSegmentBoundsForShadow(segment) {
         finish('ok');
         return;
       }
-      if (Date.now() - started > limit) finish('timeout');
+      if (now > lastMediaTime + 0.02) {
+        lastMediaTime = now;
+        lastProgressAt = Date.now();
+      }
+      let rate = 1;
+      try {
+        rate = Number(transport && typeof transport.getPlaybackRate === 'function'
+          ? transport.getPlaybackRate() : videoPlayer && videoPlayer.playbackRate) || 1;
+      } catch (_) {}
+      // Expire stalled media, not a slowly playing or unusually long cue.
+      const stallLimit = Math.max(2500, 1200 / Math.max(0.1, rate));
+      if (Date.now() - lastProgressAt > stallLimit) finish('timeout');
     }, 80);
   });
 }
@@ -2918,7 +2971,11 @@ async function startMobileSentenceShadow() {
   syncMobilePlayHoldLabel('听原句…');
   setMobileSpeakHint('先听这一句…', { toast: true });
   try {
-    await playSegmentBoundsForShadow(segment);
+    const result = await playSegmentBoundsForShadow(segment);
+    if (result === 'cancelled') {
+      resetMobileShadowUi();
+      return;
+    }
   } catch (_) { /* still offer hold-to-talk */ }
 
   try { pauseLearningVideoNow(); } catch (_) {}
@@ -4230,13 +4287,13 @@ function renderTranscript(video) {
       () => {
         if (video._waveformSegmentationPromise !== refinementPromise) return;
         delete video._waveformSegmentationPromise;
-        if (state.selectedVideoId === video.id) renderTranscript(video);
+        if (String(state.selectedVideoId) === String(video.id)) renderTranscript(video);
       },
       (error) => {
         if (video._waveformSegmentationPromise !== refinementPromise) return;
         delete video._waveformSegmentationPromise;
         console.warn('Unable to refine transcript segments:', error);
-        if (state.selectedVideoId === video.id) renderTranscript(video);
+        if (String(state.selectedVideoId) === String(video.id)) renderTranscript(video);
       },
     );
   }
@@ -4911,6 +4968,9 @@ async function ensurePodcastSubtitles(video, options = {}) {
 }
 
 async function selectVideo(idOrVideo) {
+  cancelMobileSegmentPlayback();
+  const arena = window.LinglishArenaDialogue;
+  if (arena && typeof arena.isRunning === 'function' && arena.isRunning() && typeof arena.stop === 'function') arena.stop(true);
   teardownMobileFirstLessonRecording('video-selection');
   firstLessonGoal = null;
   firstLessonGoalCard.hide();
@@ -6068,6 +6128,7 @@ function coachingTransport() {
   if (useYouTube) {
     return {
       getCurrentTime() { try { return Number(youtubePlayer.getCurrentTime()) || 0; } catch (_) { return 0; } },
+      getPlaybackRate() { try { return Number(youtubePlayer.getPlaybackRate()) || 1; } catch (_) { return 1; } },
       seek(seconds) { try { youtubePlayer.seekTo(seconds, true); } catch (_) {} },
       play() { try { if (typeof youtubePlayer.play === 'function') youtubePlayer.play(); else youtubePlayer.playVideo(); } catch (_) {} },
       pause() { try { if (typeof youtubePlayer.pause === 'function') youtubePlayer.pause(); else youtubePlayer.pauseVideo(); } catch (_) {} },
@@ -6085,6 +6146,7 @@ function coachingTransport() {
   }
   return {
     getCurrentTime() { return videoPlayer ? Number(videoPlayer.currentTime) || 0 : 0; },
+    getPlaybackRate() { return videoPlayer ? Number(videoPlayer.playbackRate) || 1 : 1; },
     seek(seconds) { if (videoPlayer) { try { videoPlayer.currentTime = seconds; } catch (_) {} } },
     play() {
       if (!videoPlayer) return;
@@ -7775,6 +7837,9 @@ function renderPracticeCurrentLine() {
   }
 
   const key = line && line.index != null ? line.index : state.practiceIndex;
+  if (firstLessonSession.isActive()) firstLessonGoalCard.setSentence({
+    index: key, text: line.text, translation: line.translation || line.cn || line.zh || line.text_cn || '',
+  });
   const lineStatus = state.practiceLineResults[key] || null;
   const isSuccessful = lineStatus === 'success';
   const storedMatches = state.practiceLineWordResults[key] || {};
@@ -8083,6 +8148,7 @@ async function submitPracticeRecording(blob, line, assessmentContext = null) {
   if (!token || !state.selectedVideoId) return;
   // Save the recording blob for comparison / self-preview
   rememberLastRecording(blob, line && Number.isFinite(line.index) ? line.index : mobileSegmentPosition);
+  if (assessmentContext && isMobileAssessmentContextCurrent(assessmentContext)) firstLessonGoalCard.setRecording(blob);
   try {
     let result = null;
     if (assessmentContext) {
@@ -8150,7 +8216,9 @@ function handlePracticeResult(result, line, assessmentContext = null) {
       state.segmentPlaybackEnd = null;
       state.segmentPlaybackCallback = null;
     }
-    firstLessonGoalCard.settle(window.LinglishFirstLessonGoal.sentenceResult(success === true, wordMatches.missingWords));
+    firstLessonGoalCard.settle(window.LinglishFirstLessonGoal.sentenceResult(success === true, wordMatches.missingWords), {
+      success: success === true, recognizedText, missedWords: wordMatches.missingWords,
+    });
     updatePracticeButtons(false, false, false);
     return true;
   }
@@ -9744,6 +9812,7 @@ function syncMobilePlayButton() {
 }
 
 function replayMobileCurrentClip() {
+  cancelMobileSegmentPlayback();
   const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
   const segment = getMobileShadowSegment();
   let seekTo = 0;
@@ -9927,6 +9996,7 @@ if (mobileReplayBtn) {
 }
 
 function toggleMobilePlayPause() {
+  cancelMobileSegmentPlayback();
   let playing = false;
   try {
     const transport = typeof coachingTransport === 'function' ? coachingTransport() : null;
@@ -9971,6 +10041,7 @@ window.syncMobilePlayButtonVoiceHold = syncMobilePlayButtonVoiceHold;
 
 window.LinglishMobilePlayback = {
   playSegmentBounds: (segment) => playSegmentBoundsForShadow(segment),
+  cancelSegmentPlayback: cancelMobileSegmentPlayback,
   pause: () => {
     try { pauseLearningVideoNow(); } catch (_) {}
   },
@@ -9978,6 +10049,7 @@ window.LinglishMobilePlayback = {
     const i = Number(index);
     if (!Number.isFinite(i) || i < 0) return;
     mobileSegmentPosition = i;
+    state.activeSegmentIndex = i;
     try { renderMobileTranscriptWindow(i); } catch (_) {}
   },
   getIndex: () => mobileSegmentPosition,

@@ -62,8 +62,8 @@ function isFrontendHtml(filePath) {
 function injectDeviceAdapt(html, filePath) {
   const source = String(html || '');
   if (source.includes('data-lx-device-adapt')) return source;
-  const script = '<script src="/js/device-adapt.js?v=3" data-lx-device-adapt></script>';
-  const style = '<link rel="stylesheet" href="/styles/device-adapt.css?v=3" data-lx-device-adapt>';
+  const script = '<script src="/js/device-adapt.js?v=2026103001" data-lx-device-adapt></script>';
+  const style = '<link rel="stylesheet" href="/styles/device-adapt.css?v=2026103001" data-lx-device-adapt>';
   let out = source;
   if (/<head[^>]*>/i.test(out)) out = out.replace(/<head[^>]*>/i, (match) => `${match}\n${script}`);
   else out = `${script}\n${out}`;
@@ -73,6 +73,10 @@ function injectDeviceAdapt(html, filePath) {
 
   const base = filePath ? path.basename(filePath).toLowerCase() : '';
   if (!base || base === 'router.html') return out;
+  if (!/<link\b[^>]*\brel=["']canonical["']/i.test(out)) {
+    const relativePath = path.relative(FRONTEND_DIR, filePath).split(path.sep).map(encodeURIComponent).join('/');
+    out = out.replace(/<head[^>]*>/i, (match) => `${match}\n<link rel="canonical" href="${PUBLIC_SITE_URL}/${relativePath}">`);
+  }
   if (!/apple-touch-icon/i.test(out) && /<head[^>]*>/i.test(out)) {
     out = out.replace(/<head[^>]*>/i, (match) => `${match}\n<link rel="apple-touch-icon" href="/apple-touch-icon.png" data-lx-device-adapt>`);
   }
@@ -85,7 +89,7 @@ function injectDeviceAdapt(html, filePath) {
     out = out.replace(/<head[^>]*>/i, (match) => `${match}\n${meta}`);
   }
   if (!/install-desktop\.js/i.test(out) && /<\/body>/i.test(out)) {
-    out = out.replace(/<\/body>/i, '<script src="/js/install-desktop.js?v=6" defer data-lx-device-adapt></script>\n</body>');
+    out = out.replace(/<\/body>/i, '<script src="/js/install-desktop.js?v=2026103001" defer data-lx-device-adapt></script>\n</body>');
   }
   return out;
 }
@@ -427,7 +431,11 @@ async function registerStaticRoutes(pathname, req, res, url) {
   // GET /static/*
   if ((req.method === 'GET' || req.method === 'HEAD') && pathname.startsWith('/static/')) {
     const relPath = pathname.replace(/^\/static\//, '');
-    const target = path.join(STATIC_DIR, relPath);
+    const target = path.resolve(STATIC_DIR, relPath);
+    if (!target.startsWith(`${STATIC_DIR}${path.sep}`)) return sendError(res, 404, 'Not Found');
+    // Protected media must use its authenticated route, never an alternate static URL.
+    const topDirectory = path.relative(STATIC_DIR, target).split(path.sep)[0];
+    if (['videos', 'recordings'].includes(topDirectory)) return sendError(res, 404, 'Not Found');
     const served = await serveStatic(res, target, req);
     if (!served) {
       return sendError(res, 404, 'Not Found');
@@ -660,8 +668,9 @@ async function registerStaticRoutes(pathname, req, res, url) {
     return true;
   }
 
-  // GET /note-images/* (public class-note pictures for parent links)
-  if (pathname.startsWith('/note-images/') && req.method === 'GET') {
+  // Uploaded class-note images are private and use the same owner checks as their article.
+  if (pathname.startsWith('/note-images/') && (req.method === 'GET' || req.method === 'HEAD')) {
+    res.setHeader('Cache-Control', 'private, no-store');
     const raw = pathname.replace(/^\/note-images\//, '');
     let filename = raw;
     try { filename = decodeURIComponent(raw); } catch (_) { filename = ''; }
@@ -669,17 +678,26 @@ async function registerStaticRoutes(pathname, req, res, url) {
       return sendError(res, 404, 'Not Found');
     }
     const ext = path.extname(filename).toLowerCase();
-    if (!['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(ext)) {
-      return sendError(res, 404, 'Not Found');
+    if (!['.png', '.jpg', '.jpeg', '.webp', '.gif'].includes(ext)) return sendError(res, 404, 'Not Found');
+    try {
+      const access = await authorizeMediaRequest(req, url, async () => false);
+      if (!access.mode) return sendError(res, access.deniedShare ? 403 : 401, 'Unauthorized');
+      const articles = await dataStore.getArticles(access.user);
+      if (!articles.some(article => article.note_image_path === `/note-images/${filename}`)) {
+        return sendError(res, 404, 'Not Found');
+      }
+      const filePath = path.join(__dirname, '../note-images', filename);
+      const served = await serveStatic(res, filePath, req, { cacheControl: 'private, no-store' });
+      if (!served) return sendError(res, 404, 'Not Found');
+      return true;
+    } catch (err) {
+      const status = err?.status === 503 ? 503 : 401;
+      return sendError(res, status, status === 503 ? 'Service unavailable' : 'Unauthorized');
     }
-    const filePath = path.join(__dirname, '../note-images', filename);
-    const served = await serveStatic(res, filePath, req, { cacheControl: 'public, max-age=86400' });
-    if (!served) return sendError(res, 404, 'Not Found');
-    return true;
   }
 
   // GET /pdfs/* (PDF file serving)
-  if (pathname.startsWith('/pdfs/') && req.method === 'GET') {
+  if (pathname.startsWith('/pdfs/') && (req.method === 'GET' || req.method === 'HEAD')) {
     res.setHeader('Cache-Control', 'private, no-store');
     try {
       const access = await authorizeMediaRequest(req, url, async () => false);
@@ -691,7 +709,7 @@ async function registerStaticRoutes(pathname, req, res, url) {
       }
 
       // Verify PDF exists in database (security check)
-      const articles = await dataStore.getArticles();
+      const articles = await dataStore.getArticles(access.user);
       const pdfExists = articles.some(article =>
         article.pdf_path && article.pdf_path === `/pdfs/${filename}`
       );
@@ -719,7 +737,8 @@ async function registerStaticRoutes(pathname, req, res, url) {
   if (req.method === 'GET' || req.method === 'HEAD') {
     // Normalize to prevent absolute path from escaping FRONTEND_DIR
     const rel = pathname === '/' ? 'landing.html' : pathname.replace(/^\/+/, '');
-    const filePath = path.join(FRONTEND_DIR, rel);
+    const filePath = path.resolve(FRONTEND_DIR, rel);
+    if (!filePath.startsWith(`${FRONTEND_DIR}${path.sep}`)) return sendError(res, 404, 'Not Found');
     if (rel.toLowerCase().endsWith('.html') && !INDEXABLE_FRONTEND_PAGES.has(rel)) {
       res.setHeader('X-Robots-Tag', 'noindex, follow');
     }

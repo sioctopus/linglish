@@ -25,6 +25,10 @@ html[data-learning-focus="first-lesson"] #upload-toggle-btn {
   display: none !important;
 }
 
+html[data-learning-focus="first-lesson"] body.video-reader-mobile-focus #guided-reader-tools > .mobile-player-controls {
+  position: static;
+}
+
 html[data-learning-focus="first-lesson"] #first-lesson-progress {
   display: block;
   margin: 0.4rem auto;
@@ -2162,7 +2166,7 @@ body.video-reader-mobile-focus .arena-dock-setup {
   width: 100%;
 }
 
-body.video-reader-mobile-focus.arena-running .arena-dock-setup {
+body.video-reader-mobile-focus .arena-dock-setup[hidden] {
   display: none !important;
 }
 

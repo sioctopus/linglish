@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 
 <head>
-  <script src="./js/auth-manager.js?v=2"></script>
+  <script src="./js/auth-manager.js?v=2026103101"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <meta charset="UTF-8">
   <script>
@@ -105,15 +105,15 @@
   </script>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#ffffff">
-  <title>linglish - 能量站</title>
-  <link rel="preload" href="./mobile-styles.css?v=20261028-shell2" as="style">
+  <title>linglish - 能量站/title>
+  <link rel="preload" href="./mobile-styles.css?v=2026103001" as="style">
   <link rel="preload" href="./shared/dictionary.css?v=20260224f" as="style">
-  <link rel="preload" href="./i18n.js?v=20250114e" as="script">
-  <link rel="preload" href="./global-ui.js?v=20250108" as="script">
-  <link rel="preload" href="./js/mobile-power-app.js?v=20260802" as="script">
-  <link rel="stylesheet" href="./mobile-styles.css?v=20261028-shell2">
+  <link rel="preload" href="./i18n.js?v=2026103001" as="script">
+  <link rel="preload" href="./global-ui.js?v=2026103001" as="script">
+  <link rel="preload" href="./js/mobile-power-app.js?v=2026103001" as="script">
+  <link rel="stylesheet" href="./mobile-styles.css?v=2026103001">
   <link rel="stylesheet" href="./shared/dictionary.css?v=20260224f">
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="./manifest.json?v=2026103001">
   <style>
     body {
       margin: 0;
@@ -130,18 +130,18 @@
     }
 
   </style>
-  <script src="./mobile-auth.js?v=3"></script>
-  <script src="./auth-helpers.js?v=2"></script>
+  <script src="./mobile-auth.js?v=2026103001"></script>
+  <script src="./auth-helpers.js?v=2026103001"></script>
   <script src="./guest-check.js?v=1"></script>
-  <script src="./i18n.js?v=20250114e"></script>
-  <script src="./global-ui.js?v=20250108"></script>
+  <script src="./i18n.js?v=2026103001"></script>
+  <script src="./global-ui.js?v=2026103001"></script>
   <script src="./feedback.js?v=1"></script>
   <script src="./shared/dictionary-render.js?v=1765726958"></script>
   <script src="./shared/dictionary-lookup.js?v=1734439600"></script>
   <script src="./shared/dictionary-util.js?v=1"></script>
   <script src="./shared/deep-analysis.js?v=20260224f"></script>
   <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
-  <link rel="stylesheet" href="./styles/icons.css?v=20261028-shell2">
+  <link rel="stylesheet" href="./styles/icons.css?v=2026103001">
 </head>
 
 <body>
@@ -219,9 +219,9 @@
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />
         </svg>
-        <input type="text" id="vocab-search-input" class="vocab-search-input" placeholder="搜索单词或翻?.."
+        <input type="text" id="vocab-search-input" class="vocab-search-input" placeholder="搜索单词或翻译…"
           autocomplete="off" autocapitalize="off" spellcheck="false" />
-        <button class="search-clear-btn" id="search-clear-btn" style="display: none;"></button>
+        <button class="search-clear-btn" id="search-clear-btn" style="display: none;" aria-label="清除搜索">×</button>
       </div>
       <div class="search-results-info" id="search-results-info" style="display: none;">
         <span data-i18n="mobile.power.search.results">找到</span> <span id="search-results-count">0</span> <span
@@ -350,7 +350,7 @@
         <!-- Dictionary Language Toggle (unified with video-reader) -->
         <div class="dict-lang-toggle" id="mp-dict-lang-toggle" aria-label="切换翻译语言" style="margin-left:auto;">
           <button type="button" data-lang="en" id="dict-lang-en">EN</button>
-          <button type="button" data-lang="zh" id="dict-lang-zh"></button>
+          <button type="button" data-lang="zh" id="dict-lang-zh">中</button>
         </div>
       </div>
       <div id="detail-dict-card"></div>
@@ -379,14 +379,14 @@
       </div>
 
       <!-- Close Button -->
-      <button type="button" class="review-close-btn" id="review-close" aria-label="关闭"></button>
+      <button type="button" class="review-close-btn" id="review-close" aria-label="关闭">×</button>
 
       <!-- Flashcard Container with 3D Flip -->
       <div class="flashcard-wrapper" id="flashcard-wrapper">
         <div class="flashcard" id="flashcard">
           <!-- Front Side (Question) -->
           <div class="flashcard-front">
-            <div class="card-hint">🤔 请回忆这个单词的意</div>
+            <div class="card-hint">🤔 请回忆这个单词的意思</div>
             <div class="card-word" id="review-word-front"></div>
             <div class="card-phonetic" id="review-phonetic"></div>
             <button class="card-speak-btn" id="review-speak-front" aria-label="播放发音">
@@ -1333,8 +1333,8 @@
     }
   </style>
 
-  <script src="./js/tts-voice.js?v=3"></script>
-  <script src="./js/mobile-power-app.js?v=20260802"></script>
+  <script src="./js/tts-voice.js?v=2026103001"></script>
+  <script src="./js/mobile-power-app.js?v=2026103001"></script>
 
   <script>
     // Initialize i18n
@@ -1353,7 +1353,7 @@
   </script>
   <script src="./js/page-tracker.js?v=1"></script>
 <link rel="stylesheet" href="./styles/speak-ui.css?v=3">
-  <script src="./js/icons.js?v=1"></script>
+  <script src="./js/icons.js?v=2026103001"></script>
 </body>
 
 </html>

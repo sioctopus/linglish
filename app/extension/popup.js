@@ -23,7 +23,7 @@ function send(type, payload = {}) {
 
 async function refreshSession() {
   const session = await send('GET_SESSION');
-  const loggedIn = Boolean(session.token);
+  const loggedIn = Boolean(session.loggedIn);
   if (loggedIn) {
     statusEl.textContent = session.email ? `已登录 · ${session.email}` : '已登录';
     authBtn.textContent = '退出扩展登录';

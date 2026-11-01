@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const slot = require(path.resolve(__dirname, '../../frontend/js/video-reader/voice-slot.js'));
+const { readPage } = require('./helpers/page-source');
 
 test('only the latest speak claim stays current', () => {
   let now = 1000;
@@ -29,7 +30,7 @@ test('a second click on the same text restarts after the coalesce window', () =>
 
 test('video learning wires dictionary speech and video playback to one slot', () => {
   const frontend = path.resolve(__dirname, '../../frontend');
-  const desktop = fs.readFileSync(path.join(frontend, 'video-reader-desktop.html'), 'utf8');
+  const desktop = readPage('video-reader-desktop.html');
   const mobile = fs.readFileSync(path.join(frontend, 'video-reader.html'), 'utf8');
   const main = fs.readFileSync(path.join(frontend, 'js/video-reader/main.js'), 'utf8');
   const controls = fs.readFileSync(path.join(frontend, 'js/video-reader/pro-controls.js'), 'utf8');

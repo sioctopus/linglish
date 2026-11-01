@@ -19,6 +19,7 @@ const PROJECT_ROOT = path.join(__dirname, '..');
 const CACHE_DIR = path.join(PROJECT_ROOT, 'tts_cache');
 // 尝试多个可能的 edge-tts 路径
 const EDGE_PATHS = [
+  '/opt/linglish-edge-tts/bin/edge-tts',
   '/usr/local/bin/edge-tts',
   '/usr/local/bin/edge-tts-safe',
   '/Library/Frameworks/Python.framework/Versions/3.14/bin/edge-tts',
@@ -32,7 +33,7 @@ const DEFAULT_VOICE = 'en-US-JennyNeural';
 const GOOGLE_LANG = 'en';
 const EDGE_TIMEOUT_MS = 15000;  // 默认15秒，单词发音够用
 const EDGE_SHORT_TIMEOUT_MS = 8000;  // 短文本（<50字符）用8秒
-const MAX_CACHE_SIZE = 500;  // 增加缓存数量
+const MAX_CACHE_SIZE = 2000;  // 多音色场景按 voice+text 分别缓存，太小会频繁逐出导致重复合成
 
 // Edge TTS failure tracking
 const EDGE_TTS_STATS = {
@@ -56,8 +57,7 @@ const TTS_CONFIG = {
   host: 'https://translate.google.com',
   enableCache: true,
   cacheSize: 100,
-  edgeVoice: 'en-US-AvaMultilingualNeural', // Conversational podcast-like default
-  edgeRate: '-6%', // Slightly slower reads feel less mechanical
+  edgeVoice: 'en-US-AvaMultilingualNeural', // Default Edge TTS voice,与路由层词卡/练习默认音色保持一致
 };
 
 // ====== Utility Functions ======
@@ -112,7 +112,7 @@ function sleep(ms) {
  * Also clears all proxy variables to avoid 403 errors
  * @param {number} timeoutMs - Timeout in milliseconds (defaults to EDGE_TIMEOUT_MS)
  */
-async function edgeSynthesizeToFile(text, voice, outFile, timeoutMs = EDGE_TIMEOUT_MS, rate = TTS_CONFIG.edgeRate) {
+async function edgeSynthesizeToFile(text, voice, outFile, timeoutMs = EDGE_TIMEOUT_MS) {
   ensureDir(path.dirname(outFile));
 
   // Prepare environment: no proxy + webcrypto
@@ -132,13 +132,11 @@ async function edgeSynthesizeToFile(text, voice, outFile, timeoutMs = EDGE_TIMEO
   // Each attempt writes to a unique temp file, validates, then renames atomically —
   // a killed/late process can never leave a corrupted file at the cache path.
   const maxTries = 2;
-  const speechRate = rate || TTS_CONFIG.edgeRate || '+0%';
   for (let i = 0; i < maxTries; i++) {
     const tmpFile = makeTempPath(outFile);
     const args = [
       '-t', text,
       '-v', voice,
-      '--rate', speechRate,
       '--write-media', tmpFile,
     ];
     try {
@@ -230,6 +228,23 @@ async function googleFallbackToFile(text, outFile, lang = GOOGLE_LANG) {
 }
 
 // ====== Main TTS Function ======
+// 并发去重:同一 voice+text 的并发请求共用一次合成(edge-tts 是子进程,重复 spawn 纯浪费)。
+const inflightSyntheses = new Map();
+
+// 缓存清理是全目录 readdir+stat,2000 个文件时每次合成都跑一遍太重,节流到最多 10 分钟一次。
+const CLEANUP_MIN_INTERVAL_MS = 10 * 60 * 1000;
+let lastCleanupAt = 0;
+
+async function maybeCleanupCache() {
+  if (!TTS_CONFIG.enableCache) return;
+  const now = Date.now();
+  if (now - lastCleanupAt < CLEANUP_MIN_INTERVAL_MS) return;
+  lastCleanupAt = now;
+  try {
+    await cleanupCache();
+  } catch (_) { /* cleanupCache 自身已吞错 */ }
+}
+
 /**
  * Generate/return cached TTS mp3 file
  * @param {string} text - Text to synthesize
@@ -243,7 +258,6 @@ async function textToSpeech(text, options = {}) {
     format = 'mp3',
     provider = TTS_CONFIG.provider,
     voice = TTS_CONFIG.edgeVoice,
-    rate = TTS_CONFIG.edgeRate,
   } = options;
 
   // Limit text length
@@ -253,8 +267,7 @@ async function textToSpeech(text, options = {}) {
   }
 
   // Provider-scoped cache keys: Google fallback audio never poisons an Edge key
-  const speechRate = rate || TTS_CONFIG.edgeRate || '+0%';
-  const edgeKey = md5(`edge\n${voice}\n${speechRate}\n${text}`);
+  const edgeKey = md5(`edge\n${voice}\n${text}`);
   const googleKey = md5(`google\n${lang}\n${text}`);
   const edgeFile = path.join(CACHE_DIR, `${edgeKey}.${format}`);
   const googleFile = path.join(CACHE_DIR, `${googleKey}.${format}`);
@@ -272,6 +285,20 @@ async function textToSpeech(text, options = {}) {
     }
   }
 
+  const inflightKey = provider === 'edge' ? edgeFile : googleFile;
+  let job = inflightSyntheses.get(inflightKey);
+  if (job) {
+    console.log(`TTS inflight dedup: ${path.basename(inflightKey)}`);
+    return job;
+  }
+  job = synthesizeUncached(text, {
+    lang, provider, voice, edgeFile, googleFile, allowFallback: options.allowFallback,
+  }).finally(function () { inflightSyntheses.delete(inflightKey); });
+  inflightSyntheses.set(inflightKey, job);
+  return job;
+}
+
+async function synthesizeUncached(text, { lang, provider, voice, edgeFile, googleFile, allowFallback }) {
   console.log(`Generating TTS for text (${text.length} chars) using ${provider}...`);
 
   // Check if Edge TTS should be temporarily disabled due to failures
@@ -302,21 +329,18 @@ async function textToSpeech(text, options = {}) {
     EDGE_TTS_STATS.attempts++;
 
     try {
-      await edgeSynthesizeToFile(text, voice, edgeFile, timeout, speechRate);
+      await edgeSynthesizeToFile(text, voice, edgeFile, timeout);
 
       // Edge TTS succeeded
       EDGE_TTS_STATS.consecutiveFailures = 0;
       const successRate = (
         ((EDGE_TTS_STATS.attempts - EDGE_TTS_STATS.failures) /
-          EDGE_TTS_STATS.attempts) *
+        EDGE_TTS_STATS.attempts) *
         100
       ).toFixed(1);
       console.log(`Edge TTS generated: ${edgeFile} (Success rate: ${successRate}%)`);
 
-      // Clean up old cache if needed
-      if (TTS_CONFIG.enableCache) {
-        await cleanupCache();
-      }
+      await maybeCleanupCache();
 
       return edgeFile;
     } catch (e) {
@@ -333,6 +357,12 @@ async function textToSpeech(text, options = {}) {
     }
   }
 
+  if (provider === 'edge' && allowFallback === false) {
+    const error = new Error('Neural speech is temporarily unavailable');
+    error.statusCode = 503;
+    throw error;
+  }
+
   // Fallback to Google TTS — writes under its own cache key, never the edge key
   if (TTS_CONFIG.enableCache && isValidAudioFile(googleFile)) {
     console.log(`TTS cache hit (google fallback): ${path.basename(googleFile)}`);
@@ -342,10 +372,7 @@ async function textToSpeech(text, options = {}) {
   const gOut = await googleFallbackToFile(text, googleFile, lang);
   console.log(`Google TTS generated: ${gOut}`);
 
-  // Clean up old cache if needed
-  if (TTS_CONFIG.enableCache) {
-    await cleanupCache();
-  }
+  await maybeCleanupCache();
 
   return gOut;
 }

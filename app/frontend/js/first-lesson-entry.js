@@ -233,9 +233,9 @@
       return error;
     }
 
-    function accountLoginUrl(mobile) {
-      const isPhone = mobile === undefined ? isMobile(environment) : Boolean(mobile);
-      return isPhone ? './mobile-auth.html?mode=register' : './index-desktop.html?auth=register';
+    function anonymousStarterUrl(source) {
+      const params = new URLSearchParams({ from: source, starter: '1' });
+      return `./today.html?${params.toString()}`;
     }
 
     async function ensureToken() {
@@ -308,11 +308,11 @@
           return destination;
         } catch (error) {
           if (error && error.code === 'LOGIN_REQUIRED') {
-            const loginUrl = accountLoginUrl(config.mobile);
-            postEvent('first_lesson_login_required', { source });
-            environment.location.assign(loginUrl);
+            const destination = anonymousStarterUrl(source);
+            postEvent('first_lesson_starter_ready', { source });
+            environment.location.assign(destination);
             inFlight = null;
-            return loginUrl;
+            return destination;
           }
           setTriggerState(trigger, error && error.code === 'FIRST_LESSON_VIDEO_UNAVAILABLE' ? 'no-video' : 'error', {
             quietFailure: config.quietFailure === true,

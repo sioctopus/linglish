@@ -10,7 +10,12 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const DECKS = path.resolve(__dirname, '../../frontend/js/game/word-packs/card-decks.json');
-const PHOTO = (slug, v) => '/images/game/photos/' + slug + '.jpg?v=' + (v || 1);
+const SOURCES = require('../../frontend/images/game/photos/THEME_PHOTO_SOURCES.json');
+const FALLBACK_FILES = new Set(SOURCES.emojiFallbacks.map(item => item.removedFile));
+const REVIEWED_FILES = new Set(SOURCES.images.map(item => item.file));
+const LEGACY_PHOTO_VERSIONS = { cup: 3, towel: 3, student: 3 };
+const PHOTO = (slug, v) => FALLBACK_FILES.has(slug + '.jpg') ? '' :
+  '/images/game/photos/' + slug + '.jpg?v=' + (v || (REVIEWED_FILES.has(slug + '.jpg') ? 2026103101 : (LEGACY_PHOTO_VERSIONS[slug] || 1)));
 
 function w(lemma, zh, ipa, emoji, slug) {
   return {
@@ -186,8 +191,8 @@ const SCENE_EXTRA = [
   w('dining room', '餐厅', '/ˈdaɪnɪŋ ruːm/', '🍽️', 'dining-room'),
 ];
 
-function main() {
-  const pack = JSON.parse(fs.readFileSync(DECKS, 'utf8'));
+function main(decksPath = DECKS) {
+  const pack = JSON.parse(fs.readFileSync(decksPath, 'utf8'));
   const decks = pack.decks;
   const byId = new Map(decks.map((d) => [d.id, d]));
 
@@ -220,9 +225,10 @@ function main() {
   if (!next.some((d) => d.id === 'home')) next.push(HOME, JOBS, FAMILY);
 
   pack.decks = next;
-  fs.writeFileSync(DECKS, JSON.stringify(pack, null, 2) + '\n');
+  fs.writeFileSync(decksPath, JSON.stringify(pack, null, 2) + '\n');
   console.log('decks:', pack.decks.map((d) => d.id).join(', '));
   console.log('home', HOME.words.length, 'jobs', JOBS.words.length, 'family', FAMILY.words.length);
 }
 
-main();
+if (require.main === module) main();
+module.exports = { HOME, JOBS, FAMILY, main };

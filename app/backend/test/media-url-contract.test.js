@@ -5,7 +5,9 @@ const path = require('node:path');
 const vm = require('node:vm');
 
 const FRONTEND = path.resolve(__dirname, '../../frontend');
-const read = relativePath => fs.readFileSync(path.join(FRONTEND, relativePath), 'utf8');
+const { readPage } = require('./helpers/page-source');
+const bigPages = new Set(['video-reader-desktop.html', 'practice-session.html', 'practice-session-desktop.html', 'daily-speaking.html']);
+const read = relativePath => bigPages.has(relativePath) ? readPage(relativePath) : fs.readFileSync(path.join(FRONTEND, relativePath), 'utf8');
 
 const protectedMediaConsumers = [
   'js/video-reader/main.js',
@@ -219,14 +221,19 @@ test('both readers guard source assignment and follow-up effects with the curren
   );
 
   const desktop = read('video-reader-desktop.html');
+  const select = desktop.match(/    async function selectVideo\(v\) \{[\s\S]*?\n    \}/)?.[0];
+  assert.ok(select);
+  const transcriptStart = select.indexOf('beginTranscriptLoad(v, selectionToken)');
+  const mediaAuthorization = select.indexOf('await setProtectedMediaSource(');
+  assert.ok(transcriptStart >= 0 && transcriptStart < mediaAuthorization, 'subtitle loading begins before media authorization can block');
   assert.match(desktop, /authorizeElementSource\([\s\S]{0,220}\bisCurrent,\s*\n/);
   assert.match(
     desktop,
-    /await setProtectedMediaSource\(playerEl,\s*localUrl,\s*isCurrentSelection\)[\s\S]{0,160}!isCurrentSelection\(\)[\s\S]{0,800}loadCurrentTranscript/,
+    /await setProtectedMediaSource\(playerEl,\s*localUrl,\s*isCurrentSelection\)[\s\S]{0,160}!isCurrentSelection\(\)/,
   );
   assert.match(
     desktop,
-    /await setProtectedMediaSource\(playerEl,\s*url,\s*isCurrentSelection\)[\s\S]{0,160}!isCurrentSelection\(\)[\s\S]{0,1800}loadCurrentTranscript/,
+    /await setProtectedMediaSource\(playerEl,\s*url,\s*isCurrentSelection\)[\s\S]{0,160}!isCurrentSelection\(\)/,
   );
   assert.match(
     desktop,
@@ -236,7 +243,7 @@ test('both readers guard source assignment and follow-up effects with the curren
 
 test('the service worker source keeps protected routes ahead of every cache branch', () => {
   const source = read('sw.js');
-  assert.match(source, /\[['"]\/pdfs\/['"],\s*['"]\/videos\/['"],\s*['"]\/recordings\/['"]\]/);
+  assert.match(source, /\[['"]\/pdfs\/['"],\s*['"]\/videos\/['"],\s*['"]\/recordings\/['"],\s*['"]\/note-images\/['"]\]/);
   const fetchHandler = source.indexOf("self.addEventListener('fetch'");
   const protectedBranch = source.indexOf('PROTECTED_PATH_PREFIXES.some', fetchHandler);
   const firstCacheBranch = source.indexOf('caches.open', fetchHandler);
@@ -247,4 +254,72 @@ test('the service worker source keeps protected routes ahead of every cache bran
   assert.doesNotMatch(source, /const VERSION = ['"]v1\.0\.5-20260822001['"]/);
   assert.match(source, /caches\.delete/);
   assert.match(source, /LEGACY_PROTECTED_MEDIA_CACHES[\s\S]*rt-v1\.0\.5-20260822001/);
+});
+
+test('a stale desktop media authorization failure cannot clear or retry the newly selected video session', async () => {
+  const { createVideoSelectionGuard } = require('../../frontend/js/video-reader/video-selection-guard');
+  const pageSource = read('video-reader-desktop.html');
+  const beginSource = pageSource.match(/    function beginTranscriptLoad\(v, selectionToken\) \{[\s\S]*?\n    \}/)?.[0];
+  assert.ok(beginSource, 'the actual shared transcript loader must be exercised');
+  const source = pageSource.match(/    async function selectVideo\(v\) \{[\s\S]*?\n    \}/)?.[0];
+  assert.ok(source, 'the real desktop selection function must be exercised');
+  let rejectOld;
+  const oldAuthorization = new Promise((_resolve, reject) => { rejectOld = reject; });
+  const authorizations = [];
+  const transcriptStarts = [];
+  const transcripts = [];
+  let finishOldTranscript;
+  const oldTranscript = new Promise(resolve => { finishOldTranscript = resolve; });
+  let clears = 0;
+  const noop = () => {};
+  const sandbox = {
+    URL, Promise,
+    window: { LinglishMediaSession: { async clear() { clears += 1; sandbox.window.LinglishStudyMedia = null; } } },
+    location: { href: 'https://app.example.test/video-reader-desktop.html' },
+    state: { currentVideo: null, currentSegments: [] },
+    videoSelectionGuard: createVideoSelectionGuard(),
+    leaveForCoach: () => false, rememberStudyVideo: noop,
+    transcriptFetchKey: '', transcriptFetchPromise: null,
+    clearTranscriptCues: noop, renderTranscript: noop, renderActiveSubtitle: noop, syncActive: noop,
+    teardownFirstLessonRecording: noop, firstLessonGoal: null, firstLessonGoalCard: { hide: noop },
+    firstLessonSession: { isActive: () => false },
+    currentDesktopSelectionToken: null, pendingSeek: null,
+    renderVideoList: noop, setPlayerOverlay: noop, tOverlay: (_key, fallback) => fallback,
+    document: { querySelector: () => null, getElementById: () => null },
+    playerEl: { style: {}, load: noop }, youtubePlayerEl: { style: {} }, youtubePlayer: null,
+    fetch: async () => ({ ok: true }), API_BASE: '', headers: () => ({}),
+    _lastActiveIdx: -1, _lastActiveElement: null, localStorage: { setItem: noop },
+    currentTitleEl: {}, renderVideoIntro: noop, updateVideoMeta: noop, updateVideoProgress: noop,
+    progressSaveState: {}, setExtractButtonState: noop, stopWatchTimer: noop,
+    currentPlayerType: null, activeLocalSelectionToken: null,
+    async setProtectedMediaSource(_element, url, isCurrent) {
+      authorizations.push(url);
+      if (url === '/videos/1.mp4') return oldAuthorization;
+      if (!isCurrent()) return null;
+      sandbox.window.LinglishStudyMedia = { videoId: 2 };
+      return url;
+    },
+    getToken: () => 'account-token', playerOverlayRetryBtn: {},
+    applyPendingSeekToLocal: noop, openSourceBtn: {}, importWordsBtn: {},
+    async loadCurrentTranscript(video, selectionToken) {
+      transcriptStarts.push(video.id);
+      if (video.id === 1) await oldTranscript;
+      if (sandbox.videoSelectionGuard.isCurrent(selectionToken, video.id)) transcripts.push(video.id);
+    },
+    autoImportVocabulary: async () => {}, updateNextVideoCard: noop,
+    debugLog: noop, console: { log: noop, error: noop },
+  };
+  vm.runInNewContext(`${beginSource}; ${source}; this.selectVideo = selectVideo;`, sandbox);
+  const oldSelection = sandbox.selectVideo({ id: 1, video_path: '/videos/1.mp4' });
+  const oldTranscriptRequest = sandbox.transcriptFetchPromise;
+  await sandbox.selectVideo({ id: 2, video_path: '/videos/2.mp4' });
+  rejectOld(new Error('old session rejected late'));
+  await oldSelection;
+  finishOldTranscript();
+  await oldTranscriptRequest;
+  assert.deepEqual(transcriptStarts, [1, 2], 'each selection starts subtitles immediately');
+  assert.equal(clears, 0, 'a stale failure must not revoke the current media session');
+  assert.equal(sandbox.window.LinglishStudyMedia.videoId, 2);
+  assert.deepEqual(authorizations, ['/videos/1.mp4', '/videos/2.mp4']);
+  assert.deepEqual(transcripts, [2]);
 });

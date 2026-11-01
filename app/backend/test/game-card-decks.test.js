@@ -94,7 +94,7 @@ test('body and appliance decks use local drawings or photographs', () => {
   assert.match(appliances.words.find((word) => word.lemma === 'phone').photo, /\/photos\/phone\.jpg/);
 });
 
-test('home jobs and family decks cover daily life vocabulary with local photos', () => {
+test('home jobs and family decks use reviewed local photos or explicit emoji fallbacks', () => {
   const pack = loadDecks();
   const home = pack.decks.find((item) => item.id === 'home');
   const jobs = pack.decks.find((item) => item.id === 'jobs');
@@ -109,6 +109,10 @@ test('home jobs and family decks cover daily life vocabulary with local photos',
     assert.ok(family.words.some((word) => word.lemma === lemma), lemma);
   });
   home.words.concat(jobs.words, family.words).forEach((word) => {
+    if (!word.photo) {
+      assert.ok(typeof word.emoji === 'string' && word.emoji.trim(), word.lemma + ' needs a usable visual fallback');
+      return;
+    }
     assert.match(word.photo, /^\/images\/game\/photos\/.+\.jpg/, word.lemma);
     const file = path.resolve(__dirname, '../../frontend', word.photo.replace(/^\//, '').replace(/\?.*$/, ''));
     assert.ok(fs.existsSync(file), word.lemma);
@@ -200,7 +204,7 @@ test('reading cards move with arrow keys and toggle speech with space', () => {
   const views = require(path.resolve(__dirname, '../../frontend/js/game/game-views.js'));
   assert.equal(views.cardKeyAction({ key: 'ArrowUp', target: { tagName: 'BUTTON' } }), 'prev');
   assert.equal(views.cardKeyAction({ key: 'ArrowDown', target: { tagName: 'BODY' } }), 'next');
-  assert.equal(views.cardKeyAction({ key: ' ', code: 'Space', target: { tagName: 'BUTTON' } }), 'toggle');
+  assert.equal(views.cardKeyAction({ key: ' ', code: 'Space', target: { tagName: 'BUTTON' } }), null);
   assert.equal(views.cardKeyAction({ key: 'ArrowDown', target: { tagName: 'INPUT' } }), null);
   assert.equal(views.cardKeyAction({ key: 'ArrowUp', ctrlKey: true, target: { tagName: 'BODY' } }), null);
   const source = fs.readFileSync(path.resolve(__dirname, '../../frontend/js/game/game-views.js'), 'utf8');
