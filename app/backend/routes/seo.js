@@ -705,6 +705,7 @@ async function handleSitemapIndex(res) {
 async function handleSitemapMain(res) {
   const staticUrls = [
     { loc: `${BASE_URL}/`, priority: '1.0', changefreq: 'weekly' },
+    { loc: `${BASE_URL}/download`, priority: '0.8', changefreq: 'weekly' },
     { loc: `${BASE_URL}/interview`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${BASE_URL}/workplace`, priority: '0.8', changefreq: 'monthly' },
     { loc: `${BASE_URL}/shadowing`, priority: '0.8', changefreq: 'monthly' },

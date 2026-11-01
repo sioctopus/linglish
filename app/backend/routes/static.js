@@ -20,11 +20,13 @@ const { getSupportEmail } = require('../utils/support-email');
 const SUPPORT_EMAIL = getSupportEmail();
 const INDEXABLE_FRONTEND_PAGES = new Set([
   'landing.html',
+  'download.html',
   'pricing.html',
   'privacy.html',
   'terms.html',
 ]);
 const CLEAN_PUBLIC_PAGES = new Map([
+  ['/download', 'download.html'],
   ['/interview', 'interview.html'],
   ['/workplace', 'workplace.html'],
   ['/shadowing', 'shadowing.html'],
@@ -88,7 +90,7 @@ function injectDeviceAdapt(html, filePath) {
     ].join('\n');
     out = out.replace(/<head[^>]*>/i, (match) => `${match}\n${meta}`);
   }
-  if (!/install-desktop\.js/i.test(out) && /<\/body>/i.test(out)) {
+  if (base !== 'download.html' && !/install-desktop\.js/i.test(out) && /<\/body>/i.test(out)) {
     out = out.replace(/<\/body>/i, '<script src="/js/install-desktop.js?v=2026103001" defer data-lx-device-adapt></script>\n</body>');
   }
   return out;
@@ -454,6 +456,7 @@ async function registerStaticRoutes(pathname, req, res, url) {
   const legacyRedirects = new Map([
     ['/landing.html', '/'],
     ['/index.html', '/'],
+    ['/download.html', '/download'],
     ['/interview.html', '/interview'],
     ['/workplace.html', '/workplace'],
     ['/shadowing.html', '/shadowing'],
