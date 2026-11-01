@@ -6,7 +6,7 @@
   'use strict';
 
   // 图一 + 图二 → 播客默认；图三及以后 → 频道库默认。
-  const VERSION = '20261028a';
+  const VERSION = '20261101a';
 
   const PODCASTS = [
     {
@@ -80,7 +80,7 @@
     {
       id: 'miss-honey-yt',
       title: 'Miss Honey',
-      handle: 'MissHoneyEnglish',
+      handle: 'Slow_English_Podcast',
       editorNote: '慢速清晰的生活英语。跟着主持人日常说话练听力，适合初级（A2）水平。',
     },
     { id: 'bob-the-canadian', title: 'Learn English with Bob the Canadian', handle: 'LearnEnglishWithBobTheCanadian' },
@@ -255,6 +255,8 @@
         description: def.editorNote || item.description || '',
         videos: handleChanged || seeded ? [] : (item.videos || []),
         seeded: handleChanged || seeded ? true : !!item.seeded,
+        hydrateFailed: false,
+        hydrateError: '',
       };
     });
   }
