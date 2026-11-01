@@ -1642,6 +1642,34 @@ span.game-word-art {
   -webkit-touch-callout: none;
   pointer-events: none;
 }
+.game-card-host .game-theme-card .game-word-photo.is-loading {
+  opacity: 0;
+  transition: opacity 0.18s ease;
+}
+.game-card-host .game-theme-card .game-word-photo:not(.is-loading) {
+  opacity: 1;
+}
+.game-card-host .game-theme-card .game-word-stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.12) 48%, transparent 66%),
+    #134e4a;
+  background-size: 220% 100%, auto;
+  opacity: 0;
+  transition: opacity 0.16s ease;
+}
+.game-card-host .game-theme-card .game-word-stage:has(.game-word-photo.is-loading)::after {
+  opacity: 1;
+  animation: gamePhotoShimmer 1.1s linear infinite;
+}
+@keyframes gamePhotoShimmer {
+  0% { background-position: 120% 0, 0 0; }
+  100% { background-position: -120% 0, 0 0; }
+}
 .game-card-save {
   position: absolute;
   top: 12px;

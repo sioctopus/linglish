@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-  <script src="./js/auth-manager.js?v=2026103001"></script>
+  <script src="./js/auth-manager.js?v=2026103101"></script>
 <script src="./js/nav-back.js?v=1"></script>
   <script src="./js/tts-voice.js?v=2026103001"></script>
   <script>
@@ -322,7 +322,7 @@
     <link rel="alternate icon" href="/linglish-favicon.png?v=1" type="image/png">
 
     <!-- Preload critical resources for video playback -->
-    <link rel="preload" href="./js/video-reader/main.js?v=2026103003" as="script">
+    <link rel="preload" href="./js/video-reader/main.js?v=2026103101" as="script">
     <link rel="preload" href="./js/app/youtube-player.js?v=2026103001" as="script">
     <link rel="preload" href="./css/video-reader/components.css?v=2026103001" as="style">
     <link rel="preconnect" href="https://www.youtube.com">
@@ -342,10 +342,10 @@
     <link rel="stylesheet" href="./css/video-reader/variables.css?v=1" />
     <link rel="stylesheet" href="./css/video-reader/animations.css?v=1" />
     <link rel="stylesheet" href="./css/video-reader/components.css?v=2026103001" />
-    <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=2026103001" />
+    <link rel="stylesheet" href="./css/video-reader/coaching-dock.css?v=2026103101" />
     <link rel="stylesheet" href="./styles/practice-voice-chat.css?v=2026103001" />
-    <link rel="stylesheet" href="./styles/practice-voice-chat-x.css?v=2026103001" />
-    <link rel="stylesheet" href="./styles/mobile/pages/video-reader-focus.css?v=2026103001" />
+    <link rel="stylesheet" href="./styles/practice-voice-chat-x.css?v=2026103101" />
+    <link rel="stylesheet" href="./styles/mobile/pages/video-reader-focus.css?v=2026103101" />
     <link rel="stylesheet" href="./styles/mobile/components/modals.css?v=4" />
     <link rel="stylesheet" href="./css/study-switch.css?v=2026103001" />
 
@@ -585,8 +585,6 @@
                 </div>
                 <button class="mobile-view-btn active" data-mode="english">英文</button>
                 <button class="mobile-view-btn" data-mode="bilingual">双语</button>
-                <button class="mobile-view-btn" data-mode="prev" id="mobile-subtitle-prev">上一句</button>
-                <button class="mobile-view-btn" data-mode="next" id="mobile-subtitle-next">下一句</button>
               </div>
               <div class="mobile-transcript-list-wrapper">
                 <button class="mobile-transcript-nav prev" id="mobile-prev-segment" aria-label="上一句">‹</button>
@@ -608,16 +606,35 @@
                   aria-hidden="true"
                 />
               </div>
-              <div class="mobile-speak-dock is-x-compose" role="group" aria-label="播放与跟读">
-                <button class="mobile-replay-btn" id="mobile-replay" type="button" aria-label="重新播放本句" title="重新播放">↻</button>
-                <button class="mobile-play-btn" id="mobile-play" type="button" aria-label="播放或暂停" title="播放 / 暂停">▶</button>
-                <button type="button" class="mobile-hold-btn" id="mobile-hold" aria-label="按住跟读">
-                  <span class="mobile-hold-main" data-hold-label>Hold to record</span>
-                </button>
-                <span id="mobile-current-time" hidden>00:00</span>
-                <span id="mobile-duration" hidden>00:00</span>
-                <button class="mobile-continue-btn" id="mobile-continue" type="button" aria-label="跟读回听" title="跟读回听">⋯</button>
-                <span class="mobile-play-hold-label" id="mobile-play-hold-label" hidden aria-hidden="true"></span>
+              <section id="arena-dock" class="arena-dock" hidden aria-label="实战场">
+                <div class="arena-dock-top">
+                  <p class="arena-dock-status" data-arena-status>选角色，对方自动播，轮到你再按住说</p>
+                  <div class="arena-dock-meta">
+                    <p class="arena-dock-progress" data-arena-progress hidden></p>
+                    <button type="button" class="arena-stop-btn" data-arena-stop hidden>结束</button>
+                  </div>
+                </div>
+                <div class="arena-dock-setup">
+                  <div class="arena-roles" data-arena-roles role="group" aria-label="选择角色"></div>
+                  <button type="button" class="arena-start-btn" data-arena-start>开始</button>
+                </div>
+              </section>
+              <div class="mobile-speak-stack" data-layout="nav-above-hold">
+                <div class="mobile-sentence-nav" role="group" aria-label="句子切换">
+                  <button type="button" class="mobile-sentence-btn" data-mode="prev" id="mobile-subtitle-prev">上一句</button>
+                  <button type="button" class="mobile-sentence-btn" data-mode="next" id="mobile-subtitle-next">下一句</button>
+                </div>
+                <div class="mobile-speak-dock is-x-compose" role="group" aria-label="播放与跟读">
+                  <button class="mobile-replay-btn" id="mobile-replay" type="button" aria-label="重新播放本句" title="重新播放">↻</button>
+                  <button class="mobile-play-btn" id="mobile-play" type="button" aria-label="播放或暂停" title="播放 / 暂停">▶</button>
+                  <button type="button" class="mobile-hold-btn" id="mobile-hold" aria-label="按住跟读">
+                    <span class="mobile-hold-main" data-hold-label>Hold to record</span>
+                  </button>
+                  <span id="mobile-current-time" hidden>00:00</span>
+                  <span id="mobile-duration" hidden>00:00</span>
+                  <button class="mobile-continue-btn" id="mobile-continue" type="button" aria-label="跟读回听" title="跟读回听">⋯</button>
+                  <span class="mobile-play-hold-label" id="mobile-play-hold-label" hidden aria-hidden="true"></span>
+                </div>
               </div>
               <div class="mobile-speak-tools" role="group" aria-label="回听">
                 <button type="button" class="mobile-speak-tool is-integrated-off" id="mobile-shadow-btn" aria-hidden="true" tabindex="-1">跟读</button>
@@ -914,16 +931,17 @@
     <script src="./js/audio-cues.js?v=2026103001"></script>
     <script src="./js/practice/shadow-mic.js?v=2026103001"></script>
     <script src="./js/practice/shadow-recording-cache.js?v=2026103001"></script>
-    <script src="./js/practice/voice-chat-coach.js?v=2026103001"></script>
-    <script src="./js/practice/voice-chat-bridge.js?v=2026103001"></script>
-    <script src="./js/video-reader/coaching-dock.js?v=2026103001"></script>
+    <script src="./js/practice/voice-chat-coach.js?v=2026103101"></script>
+    <script src="./js/practice/voice-chat-bridge.js?v=2026103101"></script>
+    <script src="./js/video-reader/coaching-dock.js?v=2026103101"></script>
     <script src="./js/video-reader/voice-slot.js?v=1"></script>
     <script src="./js/video-reader/media-library-defaults.js?v=2026103001"></script>
-    <script src="./js/video-reader/mobile-media-library.js?v=2026103001"></script>
+    <script src="./js/video-reader/mobile-media-library.js?v=2026103101"></script>
     <script src="./js/study-recent.js?v=2026103001"></script>
-    <script src="./js/video-reader/main.js?v=2026103003"></script>
-    <script src="./js/video-reader/sentence-path.js?v=2026103001"></script>
-    <script src="./js/study-switch.js?v=2026103001"></script>
+    <script src="./js/video-reader/arena-dialogue.js?v=2026103101"></script>
+    <script src="./js/video-reader/main.js?v=2026103101"></script>
+    <script src="./js/video-reader/sentence-path.js?v=2026103101"></script>
+    <script src="./js/study-switch.js?v=2026103101"></script>
     <script>
       try {
         if (window.LinglishMobileMediaLibrary) window.LinglishMobileMediaLibrary.init();

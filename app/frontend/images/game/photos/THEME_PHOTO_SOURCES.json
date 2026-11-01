@@ -1,0 +1,2125 @@
+{
+  "version": 1,
+  "images": [
+    {
+      "file": "actor.jpg",
+      "author": "Unknown photographer",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Chaplin_The_Kid_edit.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Chaplin_The_Kid_edit.jpg",
+      "title": "File:Chaplin The Kid edit.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/ea/Chaplin_The_Kid_edit.jpg",
+      "sourceSha1": "d272cd2d866b7147b9c938f88f9806f8cfd33978",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "095bcc43050bf0f89ac4c4d041e3219696b9f551f3def1dcae08458014ab80ed"
+    },
+    {
+      "file": "architect.jpg",
+      "author": "Rob Bogaerts for Anefo",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Architecte_Luzia_Hartsuyker-Curjel_achter_de_tekentafel,_Bestanddeelnr_934-0259.jpg",
+      "title": "File:Architecte Luzia Hartsuyker-Curjel achter de tekentafel, Bestanddeelnr 934-0259.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/26/Architecte_Luzia_Hartsuyker-Curjel_achter_de_tekentafel%2C_Bestanddeelnr_934-0259.jpg",
+      "sourceSha1": "0913911d2b321e33730961a56a00799d89f6fbb5",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "58db984dc746952660a22e92e5289b182d59b25e2c1d981b1f95104e89053c5c"
+    },
+    {
+      "file": "armchair.jpg",
+      "author": "Unknown author (not supplied by Commons)",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Armchair_LACMA_50.28.11.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Armchair_LACMA_50.28.11.jpg",
+      "title": "File:Armchair LACMA 50.28.11.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/45/Armchair_LACMA_50.28.11.jpg",
+      "sourceSha1": "15dc29420ccf5e91a105dc2d27e58e744a640b71",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "cea8f66e629f9a0cc989de5ad5d7d253d21cfc3e95181bb149d93c743256e166"
+    },
+    {
+      "file": "astronaut.jpg",
+      "author": "NASA",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Bruce_McCandless_II_during_EVA_in_1984.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bruce_McCandless_II_during_EVA_in_1984.jpg",
+      "title": "File:Bruce McCandless II during EVA in 1984.jpg",
+      "restrictions": "personality",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/91/Bruce_McCandless_II_during_EVA_in_1984.jpg",
+      "sourceSha1": "ec6117b394f57085822f53e302fc1c45433be5bb",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "4b15c696dc3d59dd5a8270f1b373a82d0ea4428bf6adbd2fdaf1df3782fe66d4"
+    },
+    {
+      "file": "baby.jpg",
+      "author": "Avsar Aras",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Baby_Face.JPG",
+      "title": "File:Baby Face.JPG",
+      "restrictions": "personality",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e1/Baby_Face.JPG",
+      "sourceSha1": "160c0a39166899ddc9175511e59971a17b85970d",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "94203ef5d43f9e0dca1917eed077975bf7c75b5828dfd526bb7cc9342755c3b7"
+    },
+    {
+      "file": "baker.jpg",
+      "author": "Haneef33",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_bread_baker.jpg",
+      "title": "File:A bread baker.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/dc/A_bread_baker.jpg",
+      "sourceSha1": "98a00719e7584d288eaeef5bc351fbc4f29428dc",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "8337b6d8a5a439b040b8a80f8e78732789b7cb178e8f1acf806caafec3acb028"
+    },
+    {
+      "file": "balcony.jpg",
+      "author": "DimiTalen",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Apartment_balconies,_Kanalv%C3%A4gen_and_Floragatan,_%C3%96rebro.jpg",
+      "title": "File:Apartment balconies, Kanalvägen and Floragatan, Örebro.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/23/Apartment_balconies%2C_Kanalv%C3%A4gen_and_Floragatan%2C_%C3%96rebro.jpg",
+      "sourceSha1": "cf643937c0b8af6954c968d961168d9f02caf485",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "scenes"
+      ],
+      "sha256": "a410c2b473f0d42495b23e6a08354c26d82aa0e3bf1e966206cf0c1d3ec1a115"
+    },
+    {
+      "file": "barber.jpg",
+      "author": "Gaurav Dhwaj Khadka",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Barber_at_Work_in_Dubai.jpg",
+      "title": "File:Barber at Work in Dubai.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6b/Barber_at_Work_in_Dubai.jpg",
+      "sourceSha1": "0875e92121ecf88038934b25e5afc764902e71d8",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "c01cd22137a207710dfaa9464f177f039da1569a62c2dbe84cca672ae5a5ea0e"
+    },
+    {
+      "file": "bathtub.jpg",
+      "author": "Bruno Rijsman",
+      "attribution": "",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_bathroom_with_a_bathtub_and_shower_in_Mexico_City.jpg",
+      "title": "File:A bathroom with a bathtub and shower in Mexico City.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b4/A_bathroom_with_a_bathtub_and_shower_in_Mexico_City.jpg",
+      "sourceSha1": "a1240c17afa33e34d41ffa1ca768318244843df3",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "943c80aafed051189ef5bac1425a913a5a7c2ac3837b1ab7f2613a0467c69d3e"
+    },
+    {
+      "file": "bed.jpg",
+      "author": "Basile Morin",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Canopy_bed_of_Amantaka_Suite_in_Amantaka_luxury_Resort_%26_Hotel_in_Luang_Prabang_Laos.jpg",
+      "title": "File:Canopy bed of Amantaka Suite in Amantaka luxury Resort & Hotel in Luang Prabang Laos.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/42/Canopy_bed_of_Amantaka_Suite_in_Amantaka_luxury_Resort_%26_Hotel_in_Luang_Prabang_Laos.jpg",
+      "sourceSha1": "c01daf220c25dd7955d441a8220d2dc93a7cd714",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "52549b0b8e4a7f829091dfa51e8bbfd285ed749ea06f23f7fa90efc9dcf9738c"
+    },
+    {
+      "file": "blender.jpg",
+      "author": "Bajinra",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Electrical_blender_juicer_illustration_-_colored.png",
+      "title": "File:Electrical blender juicer illustration - colored.png",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1a/Electrical_blender_juicer_illustration_-_colored.png",
+      "sourceSha1": "e0dde47ee62bf378d27e92ce995e171b1fde3dc2",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "appliances"
+      ],
+      "sha256": "91fbfc115b5d6572e21c8678ba86f2b7b76f11e1ad2ead19e438a5dff1924c77"
+    },
+    {
+      "file": "bookshelf.jpg",
+      "author": "Roman Eisele",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Part_of_a_bookshelf_containing_books_by_Aristotle_(1).jpg",
+      "title": "File:Part of a bookshelf containing books by Aristotle (1).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c5/Part_of_a_bookshelf_containing_books_by_Aristotle_%281%29.jpg",
+      "sourceSha1": "2736c2c5fad3ee92eb671d49e7f86dfc97bc42b9",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "25f502efc97bbeb9971f0658152cab7385c8272398441c8eafc6c958c5cab069"
+    },
+    {
+      "file": "bowl.jpg",
+      "author": "Daderot",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Bowl_with_floret_design_and_marks_of_a_bureau_of_the_Royal_Kitchen,_buncheong_ware,_Korea,_Joseon_dynasty,_c._1400-1500,_stoneware_-_Asian_Art_Museum_-_San_Francisco,_CA_-_DSC07409.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bowl_with_floret_design_and_marks_of_a_bureau_of_the_Royal_Kitchen,_buncheong_ware,_Korea,_Joseon_dynasty,_c._1400-1500,_stoneware_-_Asian_Art_Museum_-_San_Francisco,_CA_-_DSC07409.jpg",
+      "title": "File:Bowl with floret design and marks of a bureau of the Royal Kitchen, buncheong ware, Korea, Joseon dynasty, c. 1400-1500, stoneware - Asian Art Museum - San Francisco, CA - DSC07409.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d5/Bowl_with_floret_design_and_marks_of_a_bureau_of_the_Royal_Kitchen%2C_buncheong_ware%2C_Korea%2C_Joseon_dynasty%2C_c._1400-1500%2C_stoneware_-_Asian_Art_Museum_-_San_Francisco%2C_CA_-_DSC07409.jpg",
+      "sourceSha1": "7fd61a0b0deb6e035498f92c442c891aac92d2a2",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "0484d7325457fd3972fcd0ac217ac34a2ab7feb06f3f987b6fcb307535b843e0"
+    },
+    {
+      "file": "broom.jpg",
+      "author": "CEphoto, Uwe Aranas",
+      "attribution": "Photo by CEphoto, Uwe Aranas or alternatively © CEphoto, Uwe Aranas",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hue_Vietnam_Broom-in-C%C3%A0n-Th%C3%A0nh-Palace-01.jpg",
+      "title": "File:Hue Vietnam Broom-in-Càn-Thành-Palace-01.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Hue_Vietnam_Broom-in-C%C3%A0n-Th%C3%A0nh-Palace-01.jpg",
+      "sourceSha1": "5e021e5dde3d94b4f0b4f39b1bffe06ff9530845",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "546b1dd618d66bbc07c5c3e054d894fce8eb47e4d37e8dbbd679833b4f0f6a09"
+    },
+    {
+      "file": "carpenter.jpg",
+      "author": "Terasaface",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_Woodworker_Whittling_in_Front_of_a_Wood_Stove.jpg",
+      "title": "File:A Woodworker Whittling in Front of a Wood Stove.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/23/A_Woodworker_Whittling_in_Front_of_a_Wood_Stove.jpg",
+      "sourceSha1": "1e1b07f67a606a60b139df008cede867ceff7b13",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "b6376aab91ec177ddde331d5f95d16eaaa7600a4d87ec2bc176e99a5589fe4f2"
+    },
+    {
+      "file": "carpet.jpg",
+      "author": "Newspaper \"Number One\" (photographer Petr Sanzhiev)",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Carpet_with_geometric_patterns_on_the_floor_in_kindergarten._Buryatia,_Russia.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Carpet_with_geometric_patterns_on_the_floor_in_kindergarten._Buryatia,_Russia.jpg",
+      "title": "File:Carpet with geometric patterns on the floor in kindergarten. Buryatia, Russia.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ae/Carpet_with_geometric_patterns_on_the_floor_in_kindergarten._Buryatia%2C_Russia.jpg",
+      "sourceSha1": "7baa5d2e8b805be0512da252205f0193f726e07e",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "0d1cddadfae782a2e47249764c90d1c4877b36bc4834428eaf5506ab6504d67e"
+    },
+    {
+      "file": "cashier.jpg",
+      "author": "Wolfmann",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Extra_Coop_supermarket,_Bergen_Storsenter,_Norway_2017-11-01_cashier_checkout_a.jpg",
+      "title": "File:Extra Coop supermarket, Bergen Storsenter, Norway 2017-11-01 cashier checkout a.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/02/Extra_Coop_supermarket%2C_Bergen_Storsenter%2C_Norway_2017-11-01_cashier_checkout_a.jpg",
+      "sourceSha1": "af0e8af4f50dc4eddd2446617fb761c3c62d4091",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "04300363e56f9ff0becd0e2e49ae2dddc0d2998968f040cb56085330da680de4"
+    },
+    {
+      "file": "chef.jpg",
+      "author": "Shixart1985",
+      "attribution": "",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_skilled_chef_in_gloves_focuses_on_cooking_at_an_outdoor_gathering,_surrounded_by_fresh_ingredients_and_kitchen_tools.jpg",
+      "title": "File:A skilled chef in gloves focuses on cooking at an outdoor gathering, surrounded by fresh ingredients and kitchen tools.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e2/A_skilled_chef_in_gloves_focuses_on_cooking_at_an_outdoor_gathering%2C_surrounded_by_fresh_ingredients_and_kitchen_tools.jpg",
+      "sourceSha1": "896d710b72d2d8e86f24cde4b21f11e6f5ec8718",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "321b13ba8d1f4f4a07c7916b145f003d966ca09fcfd100f2ace570e439661600"
+    },
+    {
+      "file": "chopsticks.jpg",
+      "author": "Marcosticks",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Finger_placement_chopsticks-Ishida_3-point-support_chopsticks.jpg",
+      "title": "File:Finger placement chopsticks-Ishida 3-point-support chopsticks.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/93/Finger_placement_chopsticks-Ishida_3-point-support_chopsticks.jpg",
+      "sourceSha1": "34d642ce52b24ee4b95bf29d318d0e6d9375e7d5",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "56b3115e2645300f9f91f293f7684b3bb04066dccdaf9c0e942bee6603091981"
+    },
+    {
+      "file": "civil-engineer.jpg",
+      "author": "U.S. Air National Guard photo by Staff Sgt. Brandon Keys",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:134_Civil_Engineer_Airmen_Conduct_Site_Surveys_in_Korea_(9741411).jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:134_Civil_Engineer_Airmen_Conduct_Site_Surveys_in_Korea_(9741411).jpg",
+      "title": "File:134 Civil Engineer Airmen Conduct Site Surveys in Korea (9741411).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f7/134_Civil_Engineer_Airmen_Conduct_Site_Surveys_in_Korea_%289741411%29.jpg",
+      "sourceSha1": "c320e2af841124a47b179099ca8862e0487d7add",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "99279846bfdebc548261f5cbc27602a7397edba8d46f78bd045b43062154c621"
+    },
+    {
+      "file": "cleaner.jpg",
+      "author": "LeoBlanchette",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:0591-vector-orange-man-mopping.jpg",
+      "title": "File:0591-vector-orange-man-mopping.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/5f/0591-vector-orange-man-mopping.jpg",
+      "sourceSha1": "32aa223b3e9147faec3c7330723897eea914eac6",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "e63de21ae5ec8cd425e2aed1bdecefce28ccfec9958108af2e3d105d6b7ec15c"
+    },
+    {
+      "file": "coach.jpg",
+      "author": "Staff Sergeant Jeremy T. Lock, USAF",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:DF-SD-01-07095.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:DF-SD-01-07095.jpg",
+      "title": "File:DF-SD-01-07095.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4f/DF-SD-01-07095.jpg",
+      "sourceSha1": "a24c35a04b13896e6f559efaedbe4d2bb6ca6873",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "60772c99748a960c094825553c7f88f72ec71d91b433fcac9d6c4d49421a974a"
+    },
+    {
+      "file": "coffee-maker.jpg",
+      "author": "Austin Calhoon",
+      "attribution": "",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Braun_Coffee_Maker.jpg",
+      "title": "File:Braun Coffee Maker.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/66/Braun_Coffee_Maker.jpg",
+      "sourceSha1": "41a3aadd6ae0fef45ebbdecda97158aafd172d28",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "appliances"
+      ],
+      "sha256": "c548286910879407649472b0a9ff2746a681cf09c8b9c8d124d3f4bdfcd1899d"
+    },
+    {
+      "file": "coffee-table.jpg",
+      "author": "Pepperfry Cx",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Carleson_Solid_Wood_Coffee_Table_In_Provincial_Tea_(264060733).jpeg",
+      "title": "File:Carleson Solid Wood Coffee Table In Provincial Tea (264060733).jpeg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a0/Carleson_Solid_Wood_Coffee_Table_In_Provincial_Tea_%28264060733%29.jpeg",
+      "sourceSha1": "ad047441edff8618c0fe814cfc468fe1a31d29b9",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "22459d9bef1ff15db93d85d3ee4123375aac519daa0842f8640f2f5731e37562"
+    },
+    {
+      "file": "curtain.jpg",
+      "author": "TriviaKing ( talk )DWS-Montag Zen",
+      "attribution": "TriviaKing at English Wikipedia",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Blue_curtains_with_violet_sheer_curtains.JPG",
+      "title": "File:Blue curtains with violet sheer curtains.JPG",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/30/Blue_curtains_with_violet_sheer_curtains.JPG",
+      "sourceSha1": "8d709dd04a6dc2abcb33df5c966dbaa73163c9df",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "9e01c40611e5e932e4c5e857e9f3a51f9ffa81e10843c0c277871239bad8633b"
+    },
+    {
+      "file": "cushion.jpg",
+      "author": "Scrumshus",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Throw_Pillow.JPG#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Throw_Pillow.JPG",
+      "title": "File:Throw Pillow.JPG",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Throw_Pillow.JPG",
+      "sourceSha1": "596e948e01f7fc4c669ce9c789ea44cb4a2c4c03",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "e605ff01c4d4835f44146935fa8c04fa686096000de99606ffb87de4404d6723"
+    },
+    {
+      "file": "cutting-board.jpg",
+      "author": "Datariumrex",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:11._place_vegetables_on_cutting_board.jpg",
+      "title": "File:11. place vegetables on cutting board.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/eb/11._place_vegetables_on_cutting_board.jpg",
+      "sourceSha1": "6b33a3c5ab7095f204e049c2f3b3f4f9bf475a90",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "6431cbf44b06d4c0087624e617d88bc09d7e8fa02f9b2674955799d0877eb7e8"
+    },
+    {
+      "file": "dad.jpg",
+      "author": "NJCE - Sibel Energie",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dad_with_daughter_at_home.jpg",
+      "title": "File:Dad with daughter at home.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3a/Dad_with_daughter_at_home.jpg",
+      "sourceSha1": "a27848641391c5185fb3ddfb36954c41e08bc55e",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "fd178555fac2cdfc0922b54c8b90ccc91fa6e8a8c882f0e4500b39631aede196"
+    },
+    {
+      "file": "dancer.jpg",
+      "author": "Stano Novak",
+      "attribution": "",
+      "license": "CC BY 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.5",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ballet-dancer_01.jpg",
+      "title": "File:Ballet-dancer 01.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f6/Ballet-dancer_01.jpg",
+      "sourceSha1": "b6c5ec835154364fa71b8166c3774e10b0c6a1bf",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "b537226ecc58c4e36a3484ad9fb00e010fe973a79332c4e82b3a776d08f60bfc"
+    },
+    {
+      "file": "daughter.jpg",
+      "author": "C.E Ebhonu",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Father_and_daughter_moment.jpg",
+      "title": "File:Father and daughter moment.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Father_and_daughter_moment.jpg",
+      "sourceSha1": "4020b28270c28b1ee9c837a6d13c547a183456b3",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "92d50bd6a45a2fd18e9f729a76c9f52d10429aa55f51bd250ad6bf1c4132f1ee"
+    },
+    {
+      "file": "dentist.jpg",
+      "author": "Official U.S. Navy Page",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:A_Navy_dentist_exames_a_patient_at_sea.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_Navy_dentist_exames_a_patient_at_sea.jpg",
+      "title": "File:A Navy dentist exames a patient at sea.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d8/A_Navy_dentist_exames_a_patient_at_sea.jpg",
+      "sourceSha1": "702f3ff78e21364443aa365bf872f91070a3313a",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "e317a7bcad2ac12a2db38331d097b0851204057bc7036d28127b3cb213e9a942"
+    },
+    {
+      "file": "dining-room.jpg",
+      "author": "ZemplinTemplar",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Vihorlat_Museum_in_Humenn%C3%A9_-_History_and_art_history_permanent_exhibition_-_Kitchen_and_dining_hall_furniture_exhibit_room_-_Candlesticks_on_the_wall_behund_dining_table_with_porcelain_tableware_and_chairs_(September_2026)_02.jpg",
+      "title": "File:Vihorlat Museum in Humenné - History and art history permanent exhibition - Kitchen and dining hall furniture exhibit room - Candlesticks on the wall behund dining table with porcelain tableware and chairs (September 2026) 02.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Vihorlat_Museum_in_Humenn%C3%A9_-_History_and_art_history_permanent_exhibition_-_Kitchen_and_dining_hall_furniture_exhibit_room_-_Candlesticks_on_the_wall_behund_dining_table_with_porcelain_tableware_and_chairs_%28September_2026%29_02.jpg",
+      "sourceSha1": "ae6158b596aae551916caa5b36bac04e2d30cf8e",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "scenes"
+      ],
+      "sha256": "4e0239fd2a09227c92a5e644dea8c0215d1a39b5adc9804aaf1183576468f3dd"
+    },
+    {
+      "file": "doctor.jpg",
+      "author": "Shixart1985",
+      "attribution": "",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Doctor_smiles_while_entering_a_hospital_room.jpg",
+      "title": "File:Doctor smiles while entering a hospital room.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Doctor_smiles_while_entering_a_hospital_room.jpg",
+      "sourceSha1": "e0177fd75b1d66ac1978426eb0af21552362090c",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "d48c467b5fc87d57068230ddf2cac565d561fa4469dfbf713c973659de2ac497"
+    },
+    {
+      "file": "drawer.jpg",
+      "author": "Adam",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bedside_Table_Drawer.jpg",
+      "title": "File:Bedside Table Drawer.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/ac/Bedside_Table_Drawer.jpg",
+      "sourceSha1": "de5766e90302f3dcc981f2119bc674ebf9a02175",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "6a97d2ce25c96441143be8fd836eead55c1c4406bfe890bf15ca5b3e53a23f82"
+    },
+    {
+      "file": "driver.jpg",
+      "author": "David Stanley from Nanaimo, Canada",
+      "attribution": "",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bus_Driver_(7185450748).jpg",
+      "title": "File:Bus Driver (7185450748).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1d/Bus_Driver_%287185450748%29.jpg",
+      "sourceSha1": "d688413a1bd799392285dd33975fea966c51d908",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "446508fc922e572bf1f6de6fe5f043bc5024210c13ec66fd7f6f4136ebfa2490"
+    },
+    {
+      "file": "dryer.jpg",
+      "author": "Sweetie candykim",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Tumble_Dryer.JPG",
+      "title": "File:Tumble Dryer.JPG",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f1/Tumble_Dryer.JPG",
+      "sourceSha1": "84ab1dd3240ff93d66ac0762f4a0b059b5526896",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "appliances"
+      ],
+      "sha256": "0396826228ecaa6d62994ec3292397374b3087f1d8e4ee63b9225d7d6e9af802"
+    },
+    {
+      "file": "electrician.jpg",
+      "author": "Garry Knight from London, England",
+      "attribution": "",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Electrician_-_Flickr_-_garryknight.jpg",
+      "title": "File:Electrician - Flickr - garryknight.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4a/Electrician_-_Flickr_-_garryknight.jpg",
+      "sourceSha1": "cbce4beaf322b3bb5b9b81555561a88880f4c73f",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "2707be9bd654990ff80f449d2064370e819c7bcaa9d654638d1da3d3e4204ea1"
+    },
+    {
+      "file": "engineer.jpg",
+      "author": "U.S. Army 343MPAD by Sgt. 1st Class andrew guffey",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Exercise_Cartwheel_2022_Engineer_Project_-_Completion_(7431481).jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Exercise_Cartwheel_2022_Engineer_Project_-_Completion_(7431481).jpg",
+      "title": "File:Exercise Cartwheel 2022 Engineer Project - Completion (7431481).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/40/Exercise_Cartwheel_2022_Engineer_Project_-_Completion_%287431481%29.jpg",
+      "sourceSha1": "bfbd16f5fbe4ec57e83b3376d174b72544976d66",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "c4a042a5b18f72af535e29bc8d8a36ff2a496addd2b5a8e0460b562433e7f2c9"
+    },
+    {
+      "file": "family.jpg",
+      "author": "Edward S. Curtis",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Inupiat_Family_from_Noatak,_Alaska,_1929,_Edward_S._Curtis_(restored).jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Inupiat_Family_from_Noatak,_Alaska,_1929,_Edward_S._Curtis_(restored).jpg",
+      "title": "File:Inupiat Family from Noatak, Alaska, 1929, Edward S. Curtis (restored).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Inupiat_Family_from_Noatak%2C_Alaska%2C_1929%2C_Edward_S._Curtis_%28restored%29.jpg",
+      "sourceSha1": "c914db7ad03d765d8f16ca8a99e0981d7a8748c3",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "93e827ca764cf638851ec9f1db760778495db4b513dfba4ad800d7cbc675f47a"
+    },
+    {
+      "file": "farmer.jpg",
+      "author": "Unknown photographer",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:A-farmer-is-busy-in-his-field-in-Algeria-142461617808.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A-farmer-is-busy-in-his-field-in-Algeria-142461617808.jpg",
+      "title": "File:A-farmer-is-busy-in-his-field-in-Algeria-142461617808.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/33/A-farmer-is-busy-in-his-field-in-Algeria-142461617808.jpg",
+      "sourceSha1": "06ed57c19f2e106532d58bc3de2dc98529fa10e4",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "3cfd45ec3975c07ff78058231514af313a0d70cdf20132adc6532fade55c6868"
+    },
+    {
+      "file": "father.jpg",
+      "author": "C.E Ebhonu",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Father_and_daughter_moment.jpg",
+      "title": "File:Father and daughter moment.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Father_and_daughter_moment.jpg",
+      "sourceSha1": "4020b28270c28b1ee9c837a6d13c547a183456b3",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "92d50bd6a45a2fd18e9f729a76c9f52d10429aa55f51bd250ad6bf1c4132f1ee"
+    },
+    {
+      "file": "faucet.jpg",
+      "author": "Charles & Hudson",
+      "attribution": "",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Delta_Faucet_-_Brizo_-_4886774425.jpg",
+      "title": "File:Delta Faucet - Brizo - 4886774425.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/67/Delta_Faucet_-_Brizo_-_4886774425.jpg",
+      "sourceSha1": "db44131568664c7f638f81e8dd22a16cb56a7d7f",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "6f1f683d58198e9786c8cf78e00d9b71be8b092f690014069bb4d80965b67d40"
+    },
+    {
+      "file": "firefighter.jpg",
+      "author": "U.S. Air Force photo/Tech. Sgt. Rey Ramon",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Air_Force_Fire_Training.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Air_Force_Fire_Training.jpg",
+      "title": "File:Air Force Fire Training.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2d/Air_Force_Fire_Training.jpg",
+      "sourceSha1": "b0ce6388db38accb6ccde98dbe832bf62121d202",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "3dc42840d5da32230770f97846fba95ff29bb0997de799625069102022e41550"
+    },
+    {
+      "file": "fisherman.jpg",
+      "author": "Buiobuione",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Buiobuione_Fisherman_cleans_the_fish_on_a_fishing_boat_at_the_Maafushi_pier.jpg",
+      "title": "File:Buiobuione Fisherman cleans the fish on a fishing boat at the Maafushi pier.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/92/Buiobuione_Fisherman_cleans_the_fish_on_a_fishing_boat_at_the_Maafushi_pier.jpg",
+      "sourceSha1": "92eb43d4053a8f0c0397f58ae1343a5a45be460c",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "d7f8b35f518644ba442c3b09f61628a5cec4ba8c9cffe8e97faef603abd1ec48"
+    },
+    {
+      "file": "fork.jpg",
+      "author": "Andreas Franzkowiak ( User:Bullenwächter )",
+      "attribution": "",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Feldbesteck_Bundeswehr_TSR_81.jpg",
+      "title": "File:Feldbesteck Bundeswehr TSR 81.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/c6/Feldbesteck_Bundeswehr_TSR_81.jpg",
+      "sourceSha1": "72851cbd996f6bcea74518fcd5c087fd09d2ca41",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "2999c15bfb2ba0f1163478034739c25417243969e275a425f4d2b588f40f0109"
+    },
+    {
+      "file": "grandfather.jpg",
+      "author": "CEphoto, Uwe Aranas",
+      "attribution": "Photo by CEphoto, Uwe Aranas or alternatively © CEphoto, Uwe Aranas",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bratan_Bali_Indonesia_Grandfather-and-grandson-after-Puja-01.jpg",
+      "title": "File:Bratan Bali Indonesia Grandfather-and-grandson-after-Puja-01.jpg",
+      "restrictions": "personality",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/63/Bratan_Bali_Indonesia_Grandfather-and-grandson-after-Puja-01.jpg",
+      "sourceSha1": "00efc8b648a9991a7b8f40a909dacaf3d8805379",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "d53633464bfecd8750b974b364ccbeead71d1001ce29e31d9cd457c53e394f75"
+    },
+    {
+      "file": "grandma.jpg",
+      "author": "Felix Schlesinger",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Felix_Schlesinger_-_Bei_Gro%C3%9Fmutter.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Felix_Schlesinger_-_Bei_Gro%C3%9Fmutter.jpg",
+      "title": "File:Felix Schlesinger - Bei Großmutter.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Felix_Schlesinger_-_Bei_Gro%C3%9Fmutter.jpg",
+      "sourceSha1": "fdaf09f2bfd21293475f3e7eda3fd28d0c63c984",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "91a5be96f070f0fb1321ec58e76cf8cef3789fdff6e1229ded51a81421a39814"
+    },
+    {
+      "file": "grandmother.jpg",
+      "author": "AnikaMeyer",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_woman_and_her_grandson_with_a_developmental_disability.jpg",
+      "title": "File:A woman and her grandson with a developmental disability.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b3/A_woman_and_her_grandson_with_a_developmental_disability.jpg",
+      "sourceSha1": "f5d9cb751e2c419ea68232eff45a928a862e3eec",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "117aa62a2f4f2ad17cbc3c3e8c3adab8744cb19abbf516aa1d4675f8f99f1fd4"
+    },
+    {
+      "file": "grandpa.jpg",
+      "author": "CEphoto, Uwe Aranas",
+      "attribution": "Photo by CEphoto, Uwe Aranas or alternatively © CEphoto, Uwe Aranas",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bratan_Bali_Indonesia_Grandfather-and-grandson-after-Puja-01.jpg",
+      "title": "File:Bratan Bali Indonesia Grandfather-and-grandson-after-Puja-01.jpg",
+      "restrictions": "personality",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/63/Bratan_Bali_Indonesia_Grandfather-and-grandson-after-Puja-01.jpg",
+      "sourceSha1": "00efc8b648a9991a7b8f40a909dacaf3d8805379",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "d53633464bfecd8750b974b364ccbeead71d1001ce29e31d9cd457c53e394f75"
+    },
+    {
+      "file": "hairdresser.jpg",
+      "author": "Wilfredor",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hairdresser_cutting_hair.jpg",
+      "title": "File:Hairdresser cutting hair.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/ce/Hairdresser_cutting_hair.jpg",
+      "sourceSha1": "05694d2c1ad78888e3bf5f488ac7b1fe9ede7c9b",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "938502bd08b5d7cc3a0fcec588043324a7da5eca7d7212a3019ea2182d62600a"
+    },
+    {
+      "file": "hanger.jpg",
+      "author": "Tess Mattew",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:2020.05.30_Vintage_Embroidered_Hangers_from_Germany.jpg",
+      "title": "File:2020.05.30 Vintage Embroidered Hangers from Germany.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6b/2020.05.30_Vintage_Embroidered_Hangers_from_Germany.jpg",
+      "sourceSha1": "d9944c0f8d4b459459a89a8c8a792def035b9ae9",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "3b0c926e0226acaaa7d0f0c3c9911a5ef58c9cb084fea703a7f3aa78f8d69b14"
+    },
+    {
+      "file": "husband.jpg",
+      "author": "Jothiy13",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_day_they_become_a_Husband_and_Wife.jpg",
+      "title": "File:A day they become a Husband and Wife.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/44/A_day_they_become_a_Husband_and_Wife.jpg",
+      "sourceSha1": "cd48b4db57ee269ac0da285491ef66cd55b89f17",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "1918ad2b79e39c7d75e711738d06f8a63d28b99fc465640a170b2c35d4f52ed2"
+    },
+    {
+      "file": "journalist.jpg",
+      "author": "Håkan Henriksson ( Narking )",
+      "attribution": "",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:1%2B1-reporter-2008.jpg",
+      "title": "File:1+1-reporter-2008.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/74/1%2B1-reporter-2008.jpg",
+      "sourceSha1": "79ac79f29f5039226054013b28ad7498c250b3de",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "e8dcb186e76417ad5624f5cefd44e3ddb1e812b0322fb7d612e4c72a5b68a7e6"
+    },
+    {
+      "file": "judge.jpg",
+      "author": "onaeg news agency",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:7y3m67h9ae8g9pr5y5-5bre-11.jpg",
+      "title": "File:7y3m67h9ae8g9pr5y5-5bre-11.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e0/7y3m67h9ae8g9pr5y5-5bre-11.jpg",
+      "sourceSha1": "91f79d7e0cc5e72893f30c171ccfe1f77363c42e",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "b3b54ae1b79338dc71e4bfcae40ec851ffb57ed678f6eab6d33f177aa1ed9222"
+    },
+    {
+      "file": "knife.jpg",
+      "author": "Friedrich Haag",
+      "attribution": "Friedrich Haag",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:001_2011_09_28_Klingen.jpg",
+      "title": "File:001 2011 09 28 Klingen.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/34/001_2011_09_28_Klingen.jpg",
+      "sourceSha1": "b8b9a27105a9097dd74711063cfc70036939067a",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "721e970998fca059f416be8440e2f25442d6ab128297ce7737b3fd1c1cce7b8d"
+    },
+    {
+      "file": "laundry-basket.jpg",
+      "author": "Santeri Viinamäki",
+      "attribution": "Santeri Viinamäki",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Clothes_in_green_laundry_basket.jpg",
+      "title": "File:Clothes in green laundry basket.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7b/Clothes_in_green_laundry_basket.jpg",
+      "sourceSha1": "57ca0450758a76cf31e51bd78fcba8ad98a9f0e5",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "bf60c12e1b2871616a6e1200938e21c0cd8ce3eba1b965a345f0a541cf458248"
+    },
+    {
+      "file": "lawyer.jpg",
+      "author": "PULIMAMIDI SHASHIDHAR REDDY",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lawyer_shasidhar.jpg",
+      "title": "File:Lawyer shasidhar.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Lawyer_shasidhar.jpg",
+      "sourceSha1": "4623975e96495d9b098cd47611364cd53d854465",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "50863ba538ee04591d6ce8b9fcf99ac513a5c553d8dc3e8313358d8a542a5926"
+    },
+    {
+      "file": "librarian.jpg",
+      "author": "JyotiPN",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Librarian_of_Jorhat_Govt_Boys%27_School,_Jorhat,_Assam.jpg",
+      "title": "File:Librarian.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0c/Librarian_of_Jorhat_Govt_Boys%27_School%2C_Jorhat%2C_Assam.jpg",
+      "sourceSha1": "d3eb6bb44b47227dc8f7c40fa840dda57b27fc46",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "fd8f8bd429e6e123c398abdd8b7210437e66d9616a3881b8a3a15a793f3de639"
+    },
+    {
+      "file": "mechanic.jpg",
+      "author": "User Interiot on en.wikipedia",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Auto_Mechanic.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Auto_Mechanic.jpg",
+      "title": "File:Auto Mechanic.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/68/Auto_Mechanic.jpg",
+      "sourceSha1": "9528e21981a1b5d4d2262c46b6295556e48b28b4",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "796b9a4c8dbbad44137f4072bc2cd81cbce059f03d4d417d30b420f6b74319fd"
+    },
+    {
+      "file": "mirror.jpg",
+      "author": "Wolfmann",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bathroom_in_hotel_in_Bergen,_Norway._2016-03-16._Hand_wash_basin_sink,_mirror,_toilet,_etc._Also_wall_and_floor_tiles.jpg",
+      "title": "File:Bathroom in hotel in Bergen, Norway. 2016-03-16. Hand wash basin sink, mirror, toilet, etc. Also wall and floor tiles.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4d/Bathroom_in_hotel_in_Bergen%2C_Norway._2016-03-16._Hand_wash_basin_sink%2C_mirror%2C_toilet%2C_etc._Also_wall_and_floor_tiles.jpg",
+      "sourceSha1": "9cd548f85511c548f89b5f8693847c780a15cf7b",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "b6b8c8320b2ae3f3744f8cee43522bfa0db88d271c5fb74da4e5b9aed26bb447"
+    },
+    {
+      "file": "mom.jpg",
+      "author": "No machine-readable author provided. Wobble assumed (based on copyright claims).",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Motherandbaby.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Motherandbaby.jpg",
+      "title": "File:Motherandbaby.jpg",
+      "restrictions": "personality",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Motherandbaby.jpg",
+      "sourceSha1": "3234496408b63999a651d351e3fbfb57accec078",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "db22bef6e6e2108b5562a08317ce946e7292c43ff1a3f3e3c4e02db29a358ae8"
+    },
+    {
+      "file": "mop.jpg",
+      "author": "Bjornwireen",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Mop,_three_different_mop_handles.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Mop,_three_different_mop_handles.jpg",
+      "title": "File:Mop, three different mop handles.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4c/Mop%2C_three_different_mop_handles.jpg",
+      "sourceSha1": "7b49514608b61edfa811b1c37af6255e297f1c51",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "227e38575c00126b733cfe7d14451b7ecb43738e50a77addfe9b5ee070abdb1a"
+    },
+    {
+      "file": "mother.jpg",
+      "author": "No machine-readable author provided. Wobble assumed (based on copyright claims).",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Motherandbaby.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Motherandbaby.jpg",
+      "title": "File:Motherandbaby.jpg",
+      "restrictions": "personality",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cf/Motherandbaby.jpg",
+      "sourceSha1": "3234496408b63999a651d351e3fbfb57accec078",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "db22bef6e6e2108b5562a08317ce946e7292c43ff1a3f3e3c4e02db29a358ae8"
+    },
+    {
+      "file": "musician.jpg",
+      "author": "Uprising Man",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_Ghanaian_musician_playing_kolog_instrument.jpg",
+      "title": "File:A Ghanaian musician playing kolog instrument.jpg",
+      "restrictions": "personality",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/87/A_Ghanaian_musician_playing_kolog_instrument.jpg",
+      "sourceSha1": "c53f8e1b3df0e8a8338217e7d4f74367f2ed6f62",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "146c6aba8809f1f6dc456199105f173d4a6cfcdfa93a4916e337a9a3fac7ba4b"
+    },
+    {
+      "file": "network-engineer.jpg",
+      "author": "Rubin Observatory/ NSF /AURA",
+      "attribution": "NOIRLab",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Summit_Computer_Room_Installation_(rubin-2018-05-02-110524).jpg",
+      "title": "File:Summit Computer Room Installation (rubin-2018-05-02-110524).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/0/0b/Summit_Computer_Room_Installation_%28rubin-2018-05-02-110524%29.jpg",
+      "sourceSha1": "89bcd46b09cd94c2f555adb69b467bf739fa5c7f",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "0519528a15dfaf450a02a2a5a2b08940e408f8e636df0efe0bba4c5ac3d11c85"
+    },
+    {
+      "file": "nurse.jpg",
+      "author": "Countvictor",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Nurse.jpg",
+      "title": "File:Nurse.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/db/Nurse.jpg",
+      "sourceSha1": "9692b187f18eedea68094ffba9988bb2aad61ca9",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "4fdc11cc4f78db58149afe3ff94469da2c63fb9bbe5e49eba5d81ae493c51b01"
+    },
+    {
+      "file": "painter-job.jpg",
+      "author": "Adrian Pingstone ( Arpingstone )",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Painter_paints_a_room_arp.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Painter_paints_a_room_arp.jpg",
+      "title": "File:Painter paints a room arp.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/7c/Painter_paints_a_room_arp.jpg",
+      "sourceSha1": "86666582650c2bf32ac2a53ada560098f5e9cc75",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "4a3cdf086200bfdd373291d7e72e74ca90d283ef776be4410b2eb986a35a70e2"
+    },
+    {
+      "file": "pan.jpg",
+      "author": "Hans Herrington",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cooking_frying_pan.jpg",
+      "title": "File:Cooking frying pan.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Cooking_frying_pan.jpg",
+      "sourceSha1": "08fcd959b81f344bc590423a3d9652053dde81f8",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "efc73855a114befdb098f5a0f6ca1b01e5b1c56e14aaf8c616421baf076bd16a"
+    },
+    {
+      "file": "parents.jpg",
+      "author": "Edward S. Curtis",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Inupiat_Family_from_Noatak,_Alaska,_1929,_Edward_S._Curtis_(restored).jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Inupiat_Family_from_Noatak,_Alaska,_1929,_Edward_S._Curtis_(restored).jpg",
+      "title": "File:Inupiat Family from Noatak, Alaska, 1929, Edward S. Curtis (restored).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8c/Inupiat_Family_from_Noatak%2C_Alaska%2C_1929%2C_Edward_S._Curtis_%28restored%29.jpg",
+      "sourceSha1": "c914db7ad03d765d8f16ca8a99e0981d7a8748c3",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "93e827ca764cf638851ec9f1db760778495db4b513dfba4ad800d7cbc675f47a"
+    },
+    {
+      "file": "pharmacist.jpg",
+      "author": "Bill Branson (Photographer)",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Pharmacist.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Pharmacist.jpg",
+      "title": "File:Pharmacist.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/c/cc/Pharmacist.jpg",
+      "sourceSha1": "363490574b736eac27553ae35666352eded92918",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "a9fa3642e64cd39ec99305aed669c07319ce29d74bab00d4130f44fa78f67c2f"
+    },
+    {
+      "file": "photographer.jpg",
+      "author": "El Golli Mohamed",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bird_photographer_in_El_Guenine_dam_(Tunisia).jpg",
+      "title": "File:Bird photographer in El Guenine dam (Tunisia).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/d/d3/Bird_photographer_in_El_Guenine_dam_%28Tunisia%29.jpg",
+      "sourceSha1": "c1e122d1e381eb9bb11d16c89b6b550f2d815d92",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "1f1a2a669cd257ea76d75e8107c4f86eac23aeb39a0b7e84530100050cee3e50"
+    },
+    {
+      "file": "pillow.jpg",
+      "author": "Scrumshus",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Throw_Pillow.JPG#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Throw_Pillow.JPG",
+      "title": "File:Throw Pillow.JPG",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/8f/Throw_Pillow.JPG",
+      "sourceSha1": "596e948e01f7fc4c669ce9c789ea44cb4a2c4c03",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "e605ff01c4d4835f44146935fa8c04fa686096000de99606ffb87de4404d6723"
+    },
+    {
+      "file": "pilot.jpg",
+      "author": "San Diego Air & Space Museum Archives",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:23_0067987_Convair_Negative_Image_-_Pilot_in_cockpit_window_of_Convair_990_American_Airlines_01-12-1962_(54182196992).jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:23_0067987_Convair_Negative_Image_-_Pilot_in_cockpit_window_of_Convair_990_American_Airlines_01-12-1962_(54182196992).jpg",
+      "title": "File:23 0067987 Convair Negative Image - Pilot in cockpit window of Convair 990 American Airlines 01-12-1962 (54182196992).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/52/23_0067987_Convair_Negative_Image_-_Pilot_in_cockpit_window_of_Convair_990_American_Airlines_01-12-1962_%2854182196992%29.jpg",
+      "sourceSha1": "6639c8c65b8a2821c3b6a4ce1a0262e182879047",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "cd8894e9d80d6b9ab9ac9db994696d535bdc2ec14b4bf820ccb539b4485e5494"
+    },
+    {
+      "file": "plant.jpg",
+      "author": "Gerda Arendt",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Residencia_Franciscana,_Teresina,_potted_plant.jpg",
+      "title": "File:Residencia Franciscana, Teresina, potted plant.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/64/Residencia_Franciscana%2C_Teresina%2C_potted_plant.jpg",
+      "sourceSha1": "bf6a46596bfb674f1569d4ea2693ebe305b05456",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "8d413e3a20aaeb74ba0f756e63d171ae310778bc6656dcedd8d9b387f58af929"
+    },
+    {
+      "file": "plate.jpg",
+      "author": "E4024",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_plate_with_crab_substitute.jpg",
+      "title": "File:A plate with crab substitute.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9f/A_plate_with_crab_substitute.jpg",
+      "sourceSha1": "549c76935cb336d6c7cf02c0eedbcca6b3ada434",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "f4bd63de8a1c1081525885e34be5a01bcc2fe92cd74edbb0265b34ebba6869e0"
+    },
+    {
+      "file": "plumber.jpg",
+      "author": "Aubry Arihona",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Plumber.jpg",
+      "title": "File:Plumber.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9a/Plumber.jpg",
+      "sourceSha1": "ee0584942c29adb0ab330aded5b8992404e25b19",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "bd8db9bc12868146a355ae019e3a041ffb3ea24b15d6224fb3be98251fad4dce"
+    },
+    {
+      "file": "police-officer.jpg",
+      "author": "سندباد",
+      "attribution": "",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Female_Israeli_Border_Police_officer_chit-chats_on_the_cell_phone,_old_uniform_type.jpg",
+      "title": "File:Female Israeli Border Police officer chit-chats on the cell phone, old uniform type.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/77/Female_Israeli_Border_Police_officer_chit-chats_on_the_cell_phone%2C_old_uniform_type.jpg",
+      "sourceSha1": "5bcbc40c2c88ea2e27db734f105fa153e39b65c6",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "b3833d8cb48dcdc39addc8ee867fad38a95fa7c31ed86365fec98d7384c6a564"
+    },
+    {
+      "file": "postman.jpg",
+      "author": "Unknown Publisher",
+      "attribution": "",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Postman.jpg",
+      "title": "File:Postman.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/bb/Postman.jpg",
+      "sourceSha1": "952c9f685eba67159d9a79f6fb63a2e25c99f0a0",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "b8c4f6e9064fd5487a5838a64d1f31079b0ba4dd4307ad991ed2433679955017"
+    },
+    {
+      "file": "pot.jpg",
+      "author": "Rajani Gairshail",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Brass_cooking_pot_(Himachal_Pradesh),1.jpg",
+      "title": "File:Brass cooking pot (Himachal Pradesh),1.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/ba/Brass_cooking_pot_%28Himachal_Pradesh%29%2C1.jpg",
+      "sourceSha1": "cf958e10b92c9791b191feddc7efd65929297539",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "ba982de8acd005f50224407fa3eee2d14ef0a492be699181026d6cd63dc0479a"
+    },
+    {
+      "file": "professor.jpg",
+      "author": "SOAS University of London",
+      "attribution": "SOAS University of London",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Matthew_Kane_Agarwala_in_the_video_%27SOAS_Inaugural_Lecture_Series_Professor_Thomas_Tanner_and_Professor_Ulrich_Volz%27.png",
+      "title": "File:Matthew Kane Agarwala in the video 'SOAS Inaugural Lecture Series Professor Thomas Tanner and Professor Ulrich Volz'.png",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/73/Matthew_Kane_Agarwala_in_the_video_%27SOAS_Inaugural_Lecture_Series_Professor_Thomas_Tanner_and_Professor_Ulrich_Volz%27.png",
+      "sourceSha1": "f71d2990ff3c5f75a69f82cd06021ead80a147d7",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "d7b394899933815c9d1abe8c6e0c27fc6576b9167ec42adec302eb98e9072950"
+    },
+    {
+      "file": "razor.jpg",
+      "author": "Jacek Halicki",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:2023_Golarka_Philips.jpg",
+      "title": "File:2023 Golarka Philips.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3f/2023_Golarka_Philips.jpg",
+      "sourceSha1": "ad6498bc8289f1d1ea51db71ad88c9a8d8e1cc06",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "bbe3ed8cf500727c151b78fe1b7b3e452a9b8f68a62db4039847f863f04586da"
+    },
+    {
+      "file": "remote.jpg",
+      "author": "Taken by the uploader, w:es:Usuario:Barcex",
+      "attribution": "",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "http://creativecommons.org/licenses/by-sa/3.0/",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:AverMedia_RM-RH_Remote_control_(white_background)_edit.jpg",
+      "title": "File:AverMedia RM-RH Remote control (white background) edit.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/31/AverMedia_RM-RH_Remote_control_%28white_background%29_edit.jpg",
+      "sourceSha1": "9492a9da646dc051ddbb8b7592a7ada89f7f681b",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "3df4909f9016f1e1526c75f1e62f6481c2fb5301ad0cc9961ac8232293cf82c4"
+    },
+    {
+      "file": "scientist.jpg",
+      "author": "Stanford ENERGY, Video by Mark Shwartz",
+      "attribution": "",
+      "license": "CC BY 2.5",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.5",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_scientist_working_in_a_laboratory.jpg",
+      "title": "File:A scientist working in a laboratory.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3f/A_scientist_working_in_a_laboratory.jpg",
+      "sourceSha1": "dd055b3ab5ccafd2fb97d6c1cac6f453c868fea5",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "17d02476ff2913ee4932a681466979cc10deeb3c3c387440cda32ef155ce525b"
+    },
+    {
+      "file": "shampoo.jpg",
+      "author": "Donald Trung Quoc Don (Chữ Hán: 徵國單) - Wikimedia Commons . ( Want to use this image? )",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Care_peach_shampoo_(2019)_02.jpg",
+      "title": "File:Care peach shampoo (2019) 02.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a9/Care_peach_shampoo_%282019%29_02.jpg",
+      "sourceSha1": "8accbaac904b60c6ab6c35444efec1f23d818247",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "b04007564d185fceecaed697a0832f29bef15399ebf8195ce15cbdf7f364e0b7"
+    },
+    {
+      "file": "shower.jpg",
+      "author": "Robertosplumbing",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:After_shower_install.jpg",
+      "title": "File:After shower install.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f7/After_shower_install.jpg",
+      "sourceSha1": "5e4f28d8f87293d401cf9972ec8713fec2c259bd",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "0b5cdbe64c32a721c52c6274f5493f8e43d5cb8814679c74ff91cb0d3a7bbf8d"
+    },
+    {
+      "file": "singer.jpg",
+      "author": "Diana Farroukh",
+      "attribution": "",
+      "license": "CC BY-SA 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Lebanese_singer_Shiraz_on_Platea_Stage_of_Juniyah.jpg",
+      "title": "File:Lebanese singer Shiraz on Platea Stage of Juniyah.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/88/Lebanese_singer_Shiraz_on_Platea_Stage_of_Juniyah.jpg",
+      "sourceSha1": "801795d4bb03ca50a030f90ff5c07693bb4cf6fe",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "fbe562794c3a036c6d2189f85f12a22a6e8613a5961884cac5242c9e913b6103"
+    },
+    {
+      "file": "sink.jpg",
+      "author": "Maksym Kozlenko",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:2022-06-05_Wash_basin_in_public_toilet_on_ferry.jpg",
+      "title": "File:2022-06-05 Wash basin in public toilet on ferry.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/61/2022-06-05_Wash_basin_in_public_toilet_on_ferry.jpg",
+      "sourceSha1": "e830c14a97258c15c585100434a95d2aa8ceeb3a",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "339a8f7af0790f019c0dc3d9068f0a29a634c13e8102cbc8d3472fa90218f31b"
+    },
+    {
+      "file": "sister.jpg",
+      "author": "Obaro4real",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_child_with_her_sister.jpg",
+      "title": "File:A child with her sister.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/82/A_child_with_her_sister.jpg",
+      "sourceSha1": "4dbfbe4eaf38dd6aa3af341abd8ee6dd5f20f1c0",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "2dbd5782ccce8f2962ab90ff5a25e55185df383768fa288fe8de3e70afeb8210"
+    },
+    {
+      "file": "soap.jpg",
+      "author": "No machine-readable author provided. Lacrimosus assumed (based on copyright claims).",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:A_bar_of_soap.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_bar_of_soap.jpg",
+      "title": "File:A bar of soap.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/53/A_bar_of_soap.jpg",
+      "sourceSha1": "aef0c4cea22a0647ed218036f146efdb3ffbb854",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "6ce74c2298ed247773c8b34d2de454a2cb3108e8f608908282e7ab8a83aced81"
+    },
+    {
+      "file": "socket.jpg",
+      "author": "Ranjithkumar Murugesan",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:ELECTRICAL_SOCKET.jpg",
+      "title": "File:ELECTRICAL SOCKET.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/9a/ELECTRICAL_SOCKET.jpg",
+      "sourceSha1": "688e2c39fe174554f0b0aa8f44ad7d0c174df2bd",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "appliances"
+      ],
+      "sha256": "cde4c696171878b1bcd72e92ebb1b35e9b6d013ff82c9f2387d5195610ceae82"
+    },
+    {
+      "file": "sofa.jpg",
+      "author": "Jorge Royan",
+      "attribution": "© Jorge Royan / http://www.royan.com.ar",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:19th_century_Victorian_living_room,_Auckland_-_0843.jpg",
+      "title": "File:19th century Victorian living room, Auckland - 0843.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/35/19th_century_Victorian_living_room%2C_Auckland_-_0843.jpg",
+      "sourceSha1": "71bf9d38e82be9e30fe94ab96caded5d6c54f936",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "f2fa8c554b4b77e264d7aab5aa8b52de702670614fc8898ea510118690c8546d"
+    },
+    {
+      "file": "software-engineer.jpg",
+      "author": "Free-Photos from Pixabay",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:ComputerProgrammer.jpg",
+      "title": "File:ComputerProgrammer.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/15/ComputerProgrammer.jpg",
+      "sourceSha1": "0221bab4d8d66dc46be8707ce974581bea4988bd",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "61172499a8d9d4cc9261bb4db28c2e2333d93aa031e5fb37a6e26c4d8f4c570c"
+    },
+    {
+      "file": "soldier.jpg",
+      "author": "MC1 Chad J. McNeeley, U.S. Navy",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Russian_honor_guard_at_Tomb_of_the_Unknown_Soldier,_Alexander_Garden_welcomes_Michael_G._Mullen_2009-06-26_2.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Russian_honor_guard_at_Tomb_of_the_Unknown_Soldier,_Alexander_Garden_welcomes_Michael_G._Mullen_2009-06-26_2.jpg",
+      "title": "File:Russian honor guard at Tomb of the Unknown Soldier, Alexander Garden welcomes Michael G. Mullen 2009-06-26 2.jpg",
+      "restrictions": "personality",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/f2/Russian_honor_guard_at_Tomb_of_the_Unknown_Soldier%2C_Alexander_Garden_welcomes_Michael_G._Mullen_2009-06-26_2.jpg",
+      "sourceSha1": "04fc8a4729977489e21d4d4d983c1bbb9863ffae",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "503eeaab515c7224cc6ad22e3222a59b9ddba23e9f3cd8da815b2a277d417f0d"
+    },
+    {
+      "file": "son.jpg",
+      "author": "Geneviève Chézy-Quévanne",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:CHEZY_QUEVANNE_Portrait_of_a_mother_and_her_son,_1805.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:CHEZY_QUEVANNE_Portrait_of_a_mother_and_her_son,_1805.jpg",
+      "title": "File:CHEZY QUEVANNE Portrait of a mother and her son, 1805.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/1f/CHEZY_QUEVANNE_Portrait_of_a_mother_and_her_son%2C_1805.jpg",
+      "sourceSha1": "7e43dd8faeb59239fa631dd87824d5d1f2c49400",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "b63805354be57fdef04d4c4bd1cce17efdd6c76e3034735c751241101de4eef0"
+    },
+    {
+      "file": "spoon.jpg",
+      "author": "RG72",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ekspozicio_pri_la_Dua_Mondmilito_en_la_muzeo_Urba_Dumao_(Tjumeno)_16.jpg",
+      "title": "File:Ekspozicio pri la Dua Mondmilito en la muzeo Urba Dumao (Tjumeno) 16.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/9/97/Ekspozicio_pri_la_Dua_Mondmilito_en_la_muzeo_Urba_Dumao_%28Tjumeno%29_16.jpg",
+      "sourceSha1": "580b8d6359cc852a88c160707c5d3203a81e7862",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "0e236e7fe072c215fb0afc0cb9416441fd72366098217d793e54fe99778aeea8"
+    },
+    {
+      "file": "stove.jpg",
+      "author": "Mr.ちゅらさん",
+      "attribution": "",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Built-in_Gas_Stove_at_Bic_Camera_Namba.jpg",
+      "title": "File:Built-in Gas Stove at Bic Camera Namba.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/6a/Built-in_Gas_Stove_at_Bic_Camera_Namba.jpg",
+      "sourceSha1": "687b441a486152bde86178d5710e0b41a2d7604c",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "e372255762ea8d806e006a50f45ae01ea8ba381e8046f01b263a75ae3fbfa5a7"
+    },
+    {
+      "file": "switch.jpg",
+      "author": "PumpkinSky",
+      "attribution": "",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Double_Light_Switch.jpg",
+      "title": "File:Double Light Switch.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/44/Double_Light_Switch.jpg",
+      "sourceSha1": "18777077174527625d1213d31ffbc5909a5da9f4",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "appliances"
+      ],
+      "sha256": "8c9f219118dca97872f2929a1611a0085962ca05194f468def1641b996c40d85"
+    },
+    {
+      "file": "table.jpg",
+      "author": "Vaibhavratnaparkhi",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dining_table_brown.jpg",
+      "title": "File:Dining table brown.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Dining_table_brown.jpg",
+      "sourceSha1": "db9c708de5c4f0ce2efa0d7897172106bc4633db",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "cf4a2a7a2bf2b117904d3bce7ebeb7ef328595a354d70531ba69af282baa38ff"
+    },
+    {
+      "file": "teacher.jpg",
+      "author": "Harrison Keely",
+      "attribution": "",
+      "license": "CC BY 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_public_high_school_teacher_in_a_classroom_in_the_United_States_02.jpg",
+      "title": "File:A public high school teacher in a classroom in the United States 02.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/8/81/A_public_high_school_teacher_in_a_classroom_in_the_United_States_02.jpg",
+      "sourceSha1": "02255bea1a23f3b25a35263089b73b00af2f6b26",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "3fbcb0ae1f7ff184b479fafa03aa22a62753917dbcac48d7465a4cf82433f081"
+    },
+    {
+      "file": "tile.jpg",
+      "author": "Stilfehler",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:California_Kitchen_Floor_Tiles_03.jpg",
+      "title": "File:California Kitchen Floor Tiles 03.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/6/66/California_Kitchen_Floor_Tiles_03.jpg",
+      "sourceSha1": "90fd99922514266a8b8c988cce3115bff9291a5d",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "617642cfc8f972b12fffdde4bf6e0546883efd3367b1ce6873153828fefb6a5b"
+    },
+    {
+      "file": "tissue.jpg",
+      "author": "Captain MarcusL",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_tissue_box.jpg",
+      "title": "File:A tissue box.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/79/A_tissue_box.jpg",
+      "sourceSha1": "be04a2a632c0928dcc32009cccb69562baa5fe4a",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "5f8f719871222680fdfab5f5027497c73eb55864b35b45a309430cd8dc6842af"
+    },
+    {
+      "file": "toilet-paper.jpg",
+      "author": "Tony Webster from Minneapolis, Minnesota, United States",
+      "attribution": "",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hotel_Room_Toilet_Paper_Roll_Folded_(42016671980).jpg",
+      "title": "File:Hotel Room Toilet Paper Roll Folded (42016671980).jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/af/Hotel_Room_Toilet_Paper_Roll_Folded_%2842016671980%29.jpg",
+      "sourceSha1": "d1c2036c15b52158328105838073ffaeb60dce17",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "000fd18d96ff207895ca03fe56aafa3a5885641cdd0bb09beaf988a93dfbff52"
+    },
+    {
+      "file": "toilet.jpg",
+      "author": "Sarang",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:Flush_toilet_bowl_6.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Flush_toilet_bowl_6.jpg",
+      "title": "File:Flush toilet bowl 6.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/50/Flush_toilet_bowl_6.jpg",
+      "sourceSha1": "3776b7d63095a0bd81a9e46bf3ceb62b1b781f16",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "d59514fad884bff5ae7039b1df6c25e5eea0ae26474541b3476b3479396c863a"
+    },
+    {
+      "file": "toothbrush.jpg",
+      "author": "PierreSelim",
+      "attribution": "",
+      "license": "CC BY 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Toothbrush_toothbrush.JPG",
+      "title": "File:Toothbrush toothbrush.JPG",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/1/16/Toothbrush_toothbrush.JPG",
+      "sourceSha1": "1df19924934be0299ea5a7c3feaeebbcf435149d",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "069a94715a81c2f95c45dbee4319b95099b87351d4fd6dedfbb48f72cd61b069"
+    },
+    {
+      "file": "toothpaste.jpg",
+      "author": "NotTheDefault",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Charcoal_Toothpaste.jpg",
+      "title": "File:Charcoal Toothpaste.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/3/34/Charcoal_Toothpaste.jpg",
+      "sourceSha1": "a98c501558b19a3ef43138992b8f6da89c188959",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "345354f903f2e66f93324382d6b9bfbe9da0fd92443eefa382878f01fb9afb12"
+    },
+    {
+      "file": "trash-can.jpg",
+      "author": "Chuck Marean",
+      "attribution": "",
+      "license": "CC BY-SA 3.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Trash_can_and_recycle_bin.png",
+      "title": "File:Trash can and recycle bin.png",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/b/b5/Trash_can_and_recycle_bin.png",
+      "sourceSha1": "ab50becad255d377c8385f3cc69ca5f5b89c2c90",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "12299a1e655004e295e3b3e5f92ba2b1bb3e7752bfcf136ff27bdf72b1d65823"
+    },
+    {
+      "file": "twins.jpg",
+      "author": "KAG1LP2MDIAKITE",
+      "attribution": "KAG1LP2MDIAKITE",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:00000ECOLE_SANGAREBOUGOU_WIKI_2021_03.jpg",
+      "title": "File:00000ECOLE SANGAREBOUGOU WIKI 2021 03.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/a/a7/00000ECOLE_SANGAREBOUGOU_WIKI_2021_03.jpg",
+      "sourceSha1": "a34f3e8c305923d5769eab37602395949305cf54",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "36c2cd11823be3e9e94d2b475691df285d2accbd973f2b247c68e6bde6163f1d"
+    },
+    {
+      "file": "vet.jpg",
+      "author": "Master Sgt. Brian Boisvert",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:ADT_Hosts_Animal_Clinic_DVIDS240132.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:ADT_Hosts_Animal_Clinic_DVIDS240132.jpg",
+      "title": "File:ADT Hosts Animal Clinic DVIDS240132.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/5/51/ADT_Hosts_Animal_Clinic_DVIDS240132.jpg",
+      "sourceSha1": "dff62f021404d6a7da8660aa59b484fa71dc53c1",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "bea4d0042b411f6b85e60944daecf98365f01779128d7481e44c602c2e6503b8"
+    },
+    {
+      "file": "waiter.jpg",
+      "author": "Unknown photographer",
+      "attribution": "",
+      "license": "Public domain",
+      "licenseUrl": "https://commons.wikimedia.org/wiki/File:A-waiter-serving-the-food-in-the-restaurant-142438919456.jpg#Licensing",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A-waiter-serving-the-food-in-the-restaurant-142438919456.jpg",
+      "title": "File:A-waiter-serving-the-food-in-the-restaurant-142438919456.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/4f/A-waiter-serving-the-food-in-the-restaurant-142438919456.jpg",
+      "sourceSha1": "f624ecaedbf32d0e9949557bb83e0dea230105d1",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "d1b7f7ae2b21186843224ab325f44d928fa4237d531079c4d766f06e0c7a7d59"
+    },
+    {
+      "file": "wardrobe.jpg",
+      "author": "Hsjejehj",
+      "attribution": "",
+      "license": "CC0",
+      "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Napoleon%27s_Wardrobe.jpg",
+      "title": "File:Napoleon's Wardrobe.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/7/73/Napoleon%27s_Wardrobe.jpg",
+      "sourceSha1": "613e869b3d3e9407b42f98786302a27408e5b924",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "home"
+      ],
+      "sha256": "6c9a9c75b69b5f06d3366db2cebcb148af8ca592da0618c03879a7ac0d936891"
+    },
+    {
+      "file": "wife.jpg",
+      "author": "Jothiy13",
+      "attribution": "",
+      "license": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:A_day_they_become_a_Husband_and_Wife.jpg",
+      "title": "File:A day they become a Husband and Wife.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/4/44/A_day_they_become_a_Husband_and_Wife.jpg",
+      "sourceSha1": "cd48b4db57ee269ac0da285491ef66cd55b89f17",
+      "verifiedAt": "2026-10-31",
+      "changes": "Centre-cropped/resized to 640 × 640 and re-encoded as JPEG.",
+      "decks": [
+        "family"
+      ],
+      "sha256": "1918ad2b79e39c7d75e711738d06f8a63d28b99fc465640a170b2c35d4f52ed2"
+    },
+    {
+      "file": "writer.jpg",
+      "author": "Shixart1985",
+      "attribution": "",
+      "license": "CC BY 2.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+      "sourceUrl": "https://commons.wikimedia.org/wiki/File:Senior_man_writer_with_glasses_writing_on_an_old_typewriter.jpg",
+      "title": "File:Senior man writer with glasses writing on an old typewriter.jpg",
+      "restrictions": "",
+      "sourceOriginalUrl": "https://upload.wikimedia.org/wikipedia/commons/f/ff/Senior_man_writer_with_glasses_writing_on_an_old_typewriter.jpg",
+      "sourceSha1": "affcf5207e5b55228f1270dbf4b608037553bed5",
+      "verifiedAt": "2026-10-31",
+      "changes": "Resized to fit 640 × 640, padded with an off-white background and re-encoded as JPEG; no crop.",
+      "decks": [
+        "jobs"
+      ],
+      "sha256": "3f0bb0f5caa84c2a164a2f03d7a08264777a915b5d84a298cc63438e246d7179"
+    }
+  ],
+  "emojiFallbacks": [
+    {
+      "deck": "home",
+      "lemma": "blanket",
+      "removedFile": "blanket.jpg",
+      "reason": "Use native emoji; no licensed photograph selected."
+    },
+    {
+      "deck": "jobs",
+      "lemma": "accountant",
+      "removedFile": "accountant.jpg",
+      "reason": "Use native emoji; no licensed photograph selected."
+    },
+    {
+      "deck": "jobs",
+      "lemma": "salesperson",
+      "removedFile": "salesperson.jpg",
+      "reason": "Use native emoji; no licensed photograph selected."
+    },
+    {
+      "deck": "family",
+      "lemma": "grandparents",
+      "removedFile": "grandparents.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "brother",
+      "removedFile": "brother.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "older brother",
+      "removedFile": "older-brother.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "older sister",
+      "removedFile": "older-sister.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "younger brother",
+      "removedFile": "younger-brother.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "younger sister",
+      "removedFile": "younger-sister.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "uncle",
+      "removedFile": "uncle.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "aunt",
+      "removedFile": "aunt.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "cousin",
+      "removedFile": "cousin.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "nephew",
+      "removedFile": "nephew.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "niece",
+      "removedFile": "niece.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "relative",
+      "removedFile": "relative.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "stepfather",
+      "removedFile": "stepfather.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    },
+    {
+      "deck": "family",
+      "lemma": "stepmother",
+      "removedFile": "stepmother.jpg",
+      "reason": "Kinship cannot be inferred from an unrelated portrait or book cover; use native emoji."
+    }
+  ]
+}

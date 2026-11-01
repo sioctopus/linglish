@@ -244,6 +244,8 @@
     function clearLocalCredentials() {
         clearStoredTokens();
         clearRefresh();
+        try { localStorage.removeItem('linglish_stage_type_scale'); } catch (_) { }
+        try { sessionStorage.removeItem('linglish_stage_type_scale'); } catch (_) { }
     }
 
     console.log(`[AuthManager] Storage Status: LS=${useLocalStorage}, SS=${useSessionStorage}, Cookies=${useCookies}`);

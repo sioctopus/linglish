@@ -35,6 +35,12 @@
     return Boolean(context && context.videoId === current.videoId && context.generation === current.generation && (!requireSegments || context.segments === current.segments));
   }
 
+  function captureHoldContext() {
+    const arena = root.LinglishArenaDialogue;
+    const arenaRunToken = arena && typeof arena.getRunToken === 'function' ? arena.getRunToken() : null;
+    return { ...recordingContext(), arena, arenaRunToken };
+  }
+
   function readerState() {
     try {
       if (root.__vrdPro && root.__vrdPro.state) return root.__vrdPro.state;
@@ -529,7 +535,7 @@
       },
       // Player Hold and X DM Hold share one session — keep both UIs in sync.
       onHoldStart: ({ index } = {}) => {
-        holdContext = recordingContext();
+        holdContext = captureHoldContext();
         document.body.classList.add('voice-chat-holding');
         try {
           if (typeof root.syncMobilePlayButtonVoiceHold === 'function') {
@@ -590,8 +596,16 @@
           markHearEnabled(true);
           await persistShadowRecording(blob, index, context);
         } catch (_) {}
+        if (!isRecordingContextCurrent(context, true)) return null;
         // Hold only records — do not auto-open the DM sheet. User opens via @linglish.
         if (sessionIsOpen()) seedChatWindow();
+        try {
+          const arena = root.LinglishArenaDialogue;
+          if (arena && arena === context.arena && context.arenaRunToken != null
+            && typeof arena.onHoldComplete === 'function') {
+            arena.onHoldComplete({ index, runToken: context.arenaRunToken });
+          }
+        } catch (_) {}
         return null;
       },
       onTurnComplete: () => {
@@ -630,9 +644,14 @@
   }
 
   function beginHold(event) {
+    try {
+      const arena = root.LinglishArenaDialogue;
+      if (arena && typeof arena.canBeginHold === 'function' && !arena.canBeginHold()) {
+        return Promise.resolve(false);
+      }
+    } catch (_) {}
     if (!chat) mount();
     if (!chat || typeof chat.beginHold !== 'function') return Promise.resolve(false);
-    holdContext = recordingContext();
     // Lock the cue currently on the player so player Hold == X DM Hold target.
     try {
       const idx = currentSegmentIndex();

@@ -17,13 +17,38 @@
   };
 
   function apiBase() {
-    return root.API_BASE || '';
+    try {
+      if (typeof root.API_BASE === 'string' && root.API_BASE) return root.API_BASE;
+      if (typeof root.LINGLISH_API_BASE === 'string' && root.LINGLISH_API_BASE) return root.LINGLISH_API_BASE;
+      const { protocol, hostname, port } = root.location || {};
+      if (protocol === 'file:') return 'http://localhost:4000';
+      if (hostname === 'localhost' || hostname === '127.0.0.1') {
+        // Prefer same-origin when frontend is already served by the Node backend.
+        if (port === '4000' || port === '8000' || !port) return '';
+        return `${protocol}//${hostname}:4000`;
+      }
+    } catch (_) {}
+    return '';
   }
 
   function authHeaders() {
-    const token = root.localStorage && root.localStorage.getItem('linglish_token');
-    const headers = { 'Content-Type': 'application/json' };
-    if (token) headers.Authorization = 'Bearer ' + token;
+    let token = '';
+    try {
+      token = (root.AuthManager && root.AuthManager.getToken && root.AuthManager.getToken())
+        || (root.localStorage && (
+          root.localStorage.getItem('linglish_token')
+          || root.localStorage.getItem('authToken')
+        ))
+        || (root.sessionStorage && (
+          root.sessionStorage.getItem('linglish_token')
+          || root.sessionStorage.getItem('authToken')
+        ))
+        || '';
+    } catch (_) {}
+    const headers = { 'Content-Type': 'application/json', Accept: 'application/json' };
+    if (token && token !== 'null' && token !== 'undefined') {
+      headers.Authorization = 'Bearer ' + token;
+    }
     return headers;
   }
 
@@ -85,8 +110,9 @@
       ? root.setTimeout(() => controller.abort(), 45000)
       : null;
     let res;
+    const url = `${apiBase()}/media/${path}`.replace(/([^:]\/)\/+/g, '$1');
     try {
-      res = await fetch(`${apiBase()}/media/${path}`, {
+      res = await fetch(url, {
         method: 'POST',
         headers: authHeaders(),
         body: JSON.stringify(body || {}),
@@ -98,8 +124,19 @@
     } finally {
       if (timer) root.clearTimeout(timer);
     }
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) throw new Error(data.message || data.error || '请求失败');
+    const raw = await res.text();
+    let data = {};
+    try {
+      data = raw ? JSON.parse(raw) : {};
+    } catch (_) {
+      if (/^\s*</.test(raw || '')) {
+        throw new Error('接口返回了网页而不是数据，请确认后端 /media 路由可用');
+      }
+      throw new Error('接口返回无法解析');
+    }
+    if (!res.ok || data.success === false) {
+      throw new Error(data.message || data.error || `请求失败 (${res.status})`);
+    }
     return data;
   }
 
@@ -174,31 +211,52 @@
     };
   }
 
-  function renderBackRow(label, onBack) {
+  const shelfActions = new Map();
+
+  function renderBackRow(label, actionKey, onBack) {
+    const key = actionKey || `back:${label}`;
+    shelfActions.set(key, onBack);
     const li = document.createElement('li');
     li.className = 'media-shelf-back';
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.className = 'media-shelf-back-btn';
-    btn.textContent = '‹ ' + label;
-    btn.addEventListener('click', onBack);
-    li.appendChild(btn);
+    li.innerHTML = `<button type="button" class="media-shelf-back-btn" data-shelf-key="${escapeHtml(key)}">‹ ${escapeHtml(label)}</button>`;
     return li;
   }
 
-  function renderShelfItem({ title, meta, thumb }, onClick) {
+  function renderShelfItem({ title, meta, thumb, actionKey }, onClick) {
+    const key = actionKey || `item:${title}:${meta || ''}`;
+    shelfActions.set(key, onClick);
     const li = document.createElement('li');
     li.className = 'media-shelf-item';
     li.innerHTML = `
-      <button type="button" class="media-shelf-card">
+      <button type="button" class="media-shelf-card" data-shelf-key="${escapeHtml(key)}">
         <span class="media-shelf-thumb" aria-hidden="true">${thumb ? `<img alt="" src="${escapeHtml(thumb)}">` : (escapeHtml(String(title || 'V').charAt(0).toUpperCase()))}</span>
         <span class="media-shelf-copy">
           <strong>${escapeHtml(title || '未命名')}</strong>
           ${meta ? `<em>${escapeHtml(meta)}</em>` : ''}
         </span>
       </button>`;
-    li.querySelector('button').addEventListener('click', onClick);
     return li;
+  }
+
+  function wireShelfClicks() {
+    const shelf = document.getElementById('media-shelf');
+    if (!shelf || shelf.dataset.shelfWired === '1') return;
+    shelf.dataset.shelfWired = '1';
+    shelf.addEventListener('click', (event) => {
+      const btn = event.target && event.target.closest
+        ? event.target.closest('[data-shelf-key]')
+        : null;
+      if (!btn || !shelf.contains(btn)) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const key = btn.getAttribute('data-shelf-key');
+      const action = shelfActions.get(key);
+      if (typeof action === 'function') {
+        try { action(); } catch (err) {
+          setBusy((err && err.message) || '打开失败，请重试');
+        }
+      }
+    });
   }
 
   async function hydrateChannel(channel) {
@@ -339,6 +397,8 @@
   }
 
   async function openChannelFeed(channel) {
+    if (state.busy) return;
+    state.busy = true;
     state.channelKey = `import:${channel.channelId}`;
     showVideosList(false);
     setBusy('正在读取频道…');
@@ -346,8 +406,9 @@
       const live = await hydrateChannel(channel);
       const shelf = document.getElementById('media-shelf');
       if (!shelf) return;
+      shelfActions.clear();
       shelf.innerHTML = '';
-      shelf.appendChild(renderBackRow('全部频道', () => {
+      shelf.appendChild(renderBackRow('全部频道', 'back:channels', () => {
         state.channelKey = '';
         renderChannels();
       }));
@@ -359,26 +420,46 @@
         }));
         return;
       }
-      videos.forEach((video) => {
+      videos.forEach((video, index) => {
         shelf.appendChild(renderShelfItem({
           title: video.title,
           meta: live.title || '频道视频',
           thumb: video.thumbnail_path,
+          actionKey: `yt:${video.youtube_video_id || video.id || index}`,
         }, () => pickVideo(video)));
       });
     } catch (err) {
       const msg = err && err.message ? String(err.message) : '频道读取失败';
+      let tip = msg;
       if (/没有可导入|没有可用|没有内容/.test(msg)) {
-        setBusy('这个频道暂时没有可学视频，换一个频道试试，或先用「我的视频」。');
-      } else if (/网络|超时|代理|proxy|读不到 YouTube/i.test(msg)) {
-        setBusy('暂时读不到这个频道的视频列表。请检查网络或代理后重试，也可先用「我的视频」里已有内容。');
-      } else {
-        setBusy(msg);
+        tip = '这个频道暂时没有可学视频，换一个频道试试，或先用「我的视频」。';
+      } else if (/网络|超时|代理|proxy|读不到 YouTube|网页而不是数据/i.test(msg)) {
+        tip = '暂时读不到这个频道的视频列表。请检查网络或代理后重试，也可先用「我的视频」里已有内容。';
       }
+      setBusy(tip);
+      try {
+        const shelf = document.getElementById('media-shelf');
+        if (shelf) {
+          shelf.appendChild(renderBackRow('返回频道列表', 'back:channels-err', () => {
+            state.channelKey = '';
+            renderChannels();
+          }));
+          shelf.appendChild(renderShelfItem({
+            title: '重试打开',
+            meta: channel.title || '再试一次',
+            thumb: '',
+            actionKey: `retry:channel:${channel.channelId || channel.defaultId || channel.title}`,
+          }, () => openChannelFeed(channel)));
+        }
+      } catch (_) {}
+    } finally {
+      state.busy = false;
     }
   }
 
   async function openPodcastEpisodes(show) {
+    if (state.busy) return;
+    state.busy = true;
     state.feedUrl = show.feedUrl;
     showVideosList(false);
     setBusy('正在读取播客…');
@@ -387,8 +468,9 @@
       state.feedUrl = live.feedUrl;
       const shelf = document.getElementById('media-shelf');
       if (!shelf) return;
+      shelfActions.clear();
       shelf.innerHTML = '';
-      shelf.appendChild(renderBackRow('全部播客', () => {
+      shelf.appendChild(renderBackRow('全部播客', 'back:podcasts', () => {
         state.feedUrl = '';
         renderPodcasts();
       }));
@@ -400,11 +482,12 @@
         }));
         return;
       }
-      episodes.slice(0, 40).forEach((episode) => {
+      episodes.slice(0, 40).forEach((episode, index) => {
         shelf.appendChild(renderShelfItem({
           title: episode.title,
           meta: live.title || live.author || '播客',
           thumb: episode.image || live.image,
+          actionKey: `pod:${episode.id || episode.audioUrl || index}`,
         }, () => {
           const id = `pod:${episode.id || episode.audioUrl}`;
           pickVideo({
@@ -424,6 +507,23 @@
       });
     } catch (err) {
       setBusy(err.message || '播客读取失败');
+      try {
+        const shelf = document.getElementById('media-shelf');
+        if (shelf) {
+          shelf.appendChild(renderBackRow('返回播客列表', 'back:podcasts-err', () => {
+            state.feedUrl = '';
+            renderPodcasts();
+          }));
+          shelf.appendChild(renderShelfItem({
+            title: '重试打开',
+            meta: show.title || '再试一次',
+            thumb: '',
+            actionKey: `retry:podcast:${show.feedUrl || show.defaultId || show.title}`,
+          }, () => openPodcastEpisodes(show)));
+        }
+      } catch (_) {}
+    } finally {
+      state.busy = false;
     }
   }
 
@@ -431,8 +531,10 @@
     showVideosList(false);
     const shelf = document.getElementById('media-shelf');
     if (!shelf) return;
+    wireShelfClicks();
     const channels = ensureChannelDefaults();
     shelf.hidden = false;
+    shelfActions.clear();
     shelf.innerHTML = '';
     if (!channels.length) {
       shelf.innerHTML = '<li class="media-shelf-empty">还没有频道</li>';
@@ -443,6 +545,7 @@
         title: channel.title,
         meta: channel.handle ? `@${channel.handle}` : (channel.description || 'YouTube 频道'),
         thumb: (channel.videos && channel.videos[0] && channel.videos[0].thumbnail) || '',
+        actionKey: `channel:${channel.channelId || channel.defaultId || channel.handle || channel.title}`,
       }, () => openChannelFeed(channel)));
     });
   }
@@ -451,8 +554,10 @@
     showVideosList(false);
     const shelf = document.getElementById('media-shelf');
     if (!shelf) return;
+    wireShelfClicks();
     const shows = ensurePodcastDefaults();
     shelf.hidden = false;
+    shelfActions.clear();
     shelf.innerHTML = '';
     if (!shows.length) {
       shelf.innerHTML = '<li class="media-shelf-empty">还没有播客</li>';
@@ -463,6 +568,7 @@
         title: show.title,
         meta: show.author || '播客节目',
         thumb: show.image || '',
+        actionKey: `podcast:${show.feedUrl || show.defaultId || show.title}`,
       }, () => openPodcastEpisodes(show)));
     });
   }
@@ -479,6 +585,7 @@
   }
 
   function init() {
+    wireShelfClicks();
     const params = new URLSearchParams(root.location.search || '');
     const library = params.get('library');
     const tabs = document.querySelector('.library-source-tabs');

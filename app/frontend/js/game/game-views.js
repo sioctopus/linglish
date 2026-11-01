@@ -61,6 +61,9 @@
     shapes: true,
     body: true,
     appliances: true,
+    home: true,
+    jobs: true,
+    family: true,
     nature: true,
   };
 
@@ -95,6 +98,9 @@
     shapes: 'Trace it with your finger.',
     body: 'Point to yours!',
     appliances: 'We use it at home.',
+    home: 'We use it at home.',
+    jobs: 'What do they do?',
+    family: 'Who is in your family?',
     nature: 'Look outside for it.',
   };
 
@@ -125,6 +131,9 @@
     shapes: { place: '积木/饼干/路标', play: '用手指在空中描一遍外形' },
     body: { place: '照镜子/洗手时', play: '指自己身体的同一部位' },
     appliances: { place: '厨房/客厅', play: '走到真机器旁再说一次英文名' },
+    home: { place: '客厅/卫生间/厨房', play: '走到家里真物品旁再说一次' },
+    jobs: { place: '绘本/出门看到的人', play: '说说这个人每天做什么' },
+    family: { place: '相册/家里人', play: '指一指家里对应的人' },
     nature: { place: '公园/阳台', play: '出门再指一次真的那个' },
   };
 
@@ -218,8 +227,8 @@
     const tag = event.target && event.target.tagName;
     if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return null;
     if (event.altKey || event.ctrlKey || event.metaKey) return null;
-    if (event.key === 'ArrowUp') return 'prev';
-    if (event.key === 'ArrowDown') return 'next';
+    if (event.key === 'ArrowUp' || event.key === 'ArrowLeft') return 'prev';
+    if (event.key === 'ArrowDown' || event.key === 'ArrowRight') return 'next';
     if (event.key === ' ' || event.code === 'Space') {
       if (tag === 'BUTTON' || tag === 'A' || tag === 'SUMMARY') return null;
       return 'toggle';
@@ -387,21 +396,59 @@
     return img;
   }
 
+  // 词卡照片预热：翻卡只预热语音时，大图会停在青绿底上半天。
+  const photoWarmCache = typeof Map === 'function' ? new Map() : null;
+
+  function warmPhoto(src) {
+    if (!src || typeof Image === 'undefined') return;
+    if (photoWarmCache) {
+      if (photoWarmCache.has(src)) return photoWarmCache.get(src);
+    }
+    const job = new Promise(function (resolve) {
+      const img = new Image();
+      try { img.crossOrigin = 'anonymous'; } catch (_) {}
+      img.decoding = 'async';
+      img.onload = function () { resolve(true); };
+      img.onerror = function () { resolve(false); };
+      img.src = src;
+    });
+    if (photoWarmCache) {
+      photoWarmCache.set(src, job);
+      if (photoWarmCache.size > 120) {
+        const first = photoWarmCache.keys().next().value;
+        photoWarmCache.delete(first);
+      }
+    }
+    return job;
+  }
+
+  function warmWordPhotos(list) {
+    (list || []).forEach(function (word) {
+      if (word && word.photo) warmPhoto(word.photo);
+    });
+  }
+
   // 真实照片词图(languageguide 式):有 photo 用照片,加载失败降级到 emoji 插图。
   // 最终必须留下可见节点,禁止空图区(主题卡空白就是这里删光了节点)。
   function photoArt(word, className) {
     if (digitFace(word)) return art(word, className.replace('photo', 'art'));
     if (!word || !word.photo) return art(word, className.replace('photo', 'art'));
+    warmPhoto(word.photo);
     const img = document.createElement('img');
-    img.className = className;
+    img.className = className + ' is-loading';
     img.src = word.photo;
     img.alt = word.zh || word.lemma || '';
     img.width = 640;
     img.height = 640;
     img.decoding = 'async';
+    img.fetchPriority = 'high';
+    img.loading = 'eager';
     // 同源可画进 canvas；禁止长按只存裸图（字幕是浮层）
     try { img.crossOrigin = 'anonymous'; } catch (_) {}
     img.draggable = false;
+    const markReady = function () { img.classList.remove('is-loading'); };
+    if (img.complete && img.naturalWidth) markReady();
+    else img.addEventListener('load', markReady, { once: true });
     img.addEventListener('error', function () {
       const fallback = art(word, className.replace('photo', 'art'))
         || h('span', className.replace('photo', 'art') + ' game-word-fallback', (word && word.emoji) || 'Aa');
@@ -1091,7 +1138,8 @@
         return word.lemma;
       }
 
-      // 进卡组预热：单词 + 扩展句，翻卡/扩展都更快
+      // 进卡组预热：单词 + 扩展句 + 照片，翻卡/扩展都更快，避免青绿底空等图
+      warmWordPhotos(words.slice(0, SESSION_SIZE + 4));
       if (ctx.api && typeof ctx.api.prefetchSpeak === 'function') {
         const warm = [];
         words.slice(0, SESSION_SIZE + 2).forEach(function (word) {
@@ -1207,16 +1255,23 @@
       }
 
       function prefetchNearby(fromIndex) {
-        if (!words.length || !ctx.api || typeof ctx.api.prefetchSpeak !== 'function') return;
-        const nearby = [];
-        for (let offset = 0; offset < SESSION_SIZE; offset += 1) {
-          const word = words[(fromIndex + offset) % words.length];
+        if (!words.length) return;
+        const nearbyWords = [];
+        const nearbySpeak = [];
+        // 前后各几张一起预热，上一张/下一张不会再卡在空底图
+        for (let offset = -1; offset <= SESSION_SIZE; offset += 1) {
+          const word = words[(fromIndex + offset + words.length) % words.length];
+          if (!word) continue;
+          nearbyWords.push(word);
           const lemma = wordTextFor(word);
           const intro = introTextFor(word);
-          if (lemma) nearby.push(lemma);
-          if (intro && intro !== lemma) nearby.push(intro);
+          if (lemma) nearbySpeak.push(lemma);
+          if (intro && intro !== lemma) nearbySpeak.push(intro);
         }
-        ctx.api.prefetchSpeak(nearby);
+        warmWordPhotos(nearbyWords);
+        if (ctx.api && typeof ctx.api.prefetchSpeak === 'function') {
+          ctx.api.prefetchSpeak(nearbySpeak);
+        }
       }
 
       function repeatIntro() {
@@ -1370,9 +1425,11 @@
       play.setAttribute('aria-keyshortcuts', 'Space');
       play.title = introDeck ? '慢速：This is… + 一点描述（扩展孩子的话）' : '慢速再听一遍';
       const next = button('game-btn', '下一张', function () { go(1); });
-      next.setAttribute('aria-keyshortcuts', 'ArrowDown');
+      next.setAttribute('aria-keyshortcuts', 'ArrowRight ArrowDown');
+      next.title = '下一张（→）';
       const prev = button('game-btn game-btn--quiet', '上一张', function () { go(-1); });
-      prev.setAttribute('aria-keyshortcuts', 'ArrowUp');
+      prev.setAttribute('aria-keyshortcuts', 'ArrowLeft ArrowUp');
+      prev.title = '上一张（←）';
       const actions = h('div', 'game-duo game-card-nav');
       actions.appendChild(prev);
       actions.appendChild(play);
@@ -1396,7 +1453,7 @@
         amountBar.setAttribute('role', 'group');
         amountBar.setAttribute('aria-label', '选择面值');
         layout.push(currencyBar, amountBar);
-        status.textContent = '先选币种，再点面值听金额。↑↓ 翻面值，空格慢速重复。';
+        status.textContent = '先选币种，再点面值听金额。←→ 翻面值，空格慢速重复。';
       }
       if (numberDeck) {
         placeBar = h('div', 'game-number-places');

@@ -8327,3 +8327,37 @@ body.practice-focus-active.dialogue-focus-layout .practice-right > #asr-comparis
   overflow: auto !important;
   margin: 0 !important;
 }
+
+/* 实战场 / AI陪练：播放窗与视频学习 focus 同宽同高（16:9） */
+body.mode-dialogue .practice-left .video-card,
+body.mode-shadowing .practice-left .video-card,
+body .practice-left .video-card {
+  width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9))) !important;
+  max-width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9))) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+body.mode-dialogue .practice-left .video-player-container,
+body.mode-shadowing .practice-left .video-player-container,
+body .practice-left .video-player-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+  max-height: var(--lx-focus-player-max-h, min(68dvh, 680px, calc(100dvh - 210px))) !important;
+  aspect-ratio: 16 / 9 !important;
+}
+
+body.mode-dialogue .practice-transport,
+body.mode-shadowing .practice-transport,
+body.mode-dialogue #desktop-controls-container,
+body.mode-shadowing #desktop-controls-container,
+body.mode-dialogue #voice-chat-coach,
+body.mode-shadowing #voice-chat-coach,
+body.mode-dialogue #subtitle-study-host,
+body.mode-shadowing #subtitle-study-host {
+  width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9))) !important;
+  max-width: var(--lx-focus-player-width, min(100%, calc(min(68dvh, 680px, calc(100dvh - 210px)) * 16 / 9))) !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}

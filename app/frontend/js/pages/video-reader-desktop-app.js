@@ -1041,6 +1041,90 @@
       ensureDesktopBilingualTranslations().catch(() => { });
     });
 
+    (function wireReadThemePanel() {
+      const READ_THEME_KEY = 'linglish_read_theme_v1';
+      const themes = [
+        { id: 'original', name: '原始', page: '', stage: '', active: '', ink: '', muted: '' },
+        { id: 'paper', name: '纸张', page: '#f3f1ec', stage: '#ebe7df', active: '#e2ddd2', ink: '#2f3338', muted: '#6b7280' },
+        { id: 'focus', name: '专注', page: '#ffffff', stage: '#f8fafc', active: '#eef2ff', ink: '#111827', muted: '#64748b' },
+        { id: 'calm', name: '平静', page: '#f4eee4', stage: '#efe6d8', active: '#e7dcc8', ink: '#3b2f2a', muted: '#8b7355' },
+        { id: 'retro', name: '复古', page: '#f7f0d8', stage: '#f1e6c4', active: '#ead9a8', ink: '#4a3b22', muted: '#8a7346' },
+        { id: 'quiet', name: '静谧', page: '#1f2428', stage: '#2a3036', active: '#364049', ink: '#f3f4f6', muted: '#a8b0b8' },
+      ];
+      const btn = document.getElementById('read-theme-btn');
+      const pop = document.getElementById('read-theme-pop');
+      const swatches = document.getElementById('read-theme-swatches');
+      const closeBtn = document.getElementById('read-theme-close');
+      const resetBtn = document.getElementById('read-theme-reset');
+      if (!btn || !pop || !swatches) return;
+
+      function applyReadTheme(id) {
+        const theme = themes.find((item) => item.id === id) || themes[0];
+        const rootEl = document.documentElement;
+        const bodyEl = document.body;
+        if (!theme || theme.id === 'original' || !theme.page) {
+          rootEl.removeAttribute('data-read-theme');
+          bodyEl.removeAttribute('data-read-theme');
+          ['--read-page-bg', '--read-stage-bg', '--read-active-bg', '--read-ink', '--read-muted'].forEach((k) => {
+            rootEl.style.removeProperty(k);
+            bodyEl.style.removeProperty(k);
+          });
+        } else {
+          rootEl.setAttribute('data-read-theme', theme.id);
+          bodyEl.setAttribute('data-read-theme', theme.id);
+          rootEl.style.setProperty('--read-page-bg', theme.page);
+          rootEl.style.setProperty('--read-stage-bg', theme.stage);
+          rootEl.style.setProperty('--read-active-bg', theme.active);
+          rootEl.style.setProperty('--read-ink', theme.ink);
+          rootEl.style.setProperty('--read-muted', theme.muted);
+          bodyEl.style.setProperty('--read-page-bg', theme.page);
+          bodyEl.style.setProperty('--read-stage-bg', theme.stage);
+          bodyEl.style.setProperty('--read-active-bg', theme.active);
+          bodyEl.style.setProperty('--read-ink', theme.ink);
+          bodyEl.style.setProperty('--read-muted', theme.muted);
+        }
+        try { localStorage.setItem(READ_THEME_KEY, theme.id); } catch (_) {}
+        swatches.querySelectorAll('.read-theme-swatch').forEach((el) => {
+          el.classList.toggle('is-active', el.dataset.theme === theme.id);
+        });
+      }
+
+      swatches.innerHTML = themes.map((theme) => {
+        const bg = theme.page || '#ffffff';
+        const fg = theme.ink || '#111827';
+        return `<button type="button" class="read-theme-swatch" role="option" data-theme="${theme.id}" aria-label="${theme.name}">
+          <span style="background:${bg};color:${fg}">Aa</span><em>${theme.name}</em>
+        </button>`;
+      }).join('');
+
+      const setOpen = (open) => {
+        pop.hidden = !open;
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      };
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setOpen(pop.hidden);
+      });
+      closeBtn?.addEventListener('click', () => setOpen(false));
+      resetBtn?.addEventListener('click', () => {
+        applyReadTheme('original');
+        setOpen(false);
+      });
+      swatches.addEventListener('click', (e) => {
+        const item = e.target.closest('[data-theme]');
+        if (!item) return;
+        applyReadTheme(item.dataset.theme);
+      });
+      document.addEventListener('click', (e) => {
+        if (pop.hidden) return;
+        if (pop.contains(e.target) || btn.contains(e.target)) return;
+        setOpen(false);
+      });
+      let saved = 'original';
+      try { saved = localStorage.getItem(READ_THEME_KEY) || 'original'; } catch (_) {}
+      applyReadTheme(saved);
+    })();
+
     // ===== Helpers =====
     // Helper function to dynamically get current token
     const getToken = () => {
@@ -8605,16 +8689,17 @@
     (async function init() {
       function openCoachLibraryIfRequested() {
         const coachParams = new URLSearchParams(location.search);
-        if (coachParams.get('returnTo') !== 'coach') return;
-        coachPickReady = true;
         const library = coachParams.get('library');
+        const returnToCoach = coachParams.get('returnTo') === 'coach';
+        if (!library && !returnToCoach) return;
+        coachPickReady = returnToCoach;
         const label = coachParams.get('mode') === 'dialogue' ? '实战场' : 'AI陪练';
         const hint = document.getElementById('vb-hint');
         if (hint) hint.textContent = `选中一条内容后，会直接进入${label}。`;
         if (library === 'podcasts') openPodcastBrowser();
         else if (library === 'channels') openChannelBrowser();
-        else openVideoBrowser();
-        showToast(`选好内容后回到${label}`, 'info');
+        else if (library === 'videos' || returnToCoach) openVideoBrowser();
+        if (returnToCoach) showToast(`选好内容后回到${label}`, 'info');
       }
 
       function normalizeLevel(raw) {

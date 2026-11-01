@@ -132,6 +132,45 @@
       return `?${params.toString()}`;
     }
 
+    function readCanonicalStudyMedia() {
+      try {
+        const media = window.LinglishStudySelection?.read?.();
+        if (media && media.id != null && String(media.id) !== '') return media;
+      } catch (_) { }
+      try {
+        const media = JSON.parse(localStorage.getItem('linglish.last_study_media.v1') || 'null');
+        if (media && media.id != null && String(media.id) !== '') return media;
+      } catch (_) { }
+      if (window.LinglishStudyMedia?.id != null) return window.LinglishStudyMedia;
+      if (/^\d+$/.test(String(window.LinglishStudyVideoId || ''))) {
+        return { id: String(window.LinglishStudyVideoId) };
+      }
+      return null;
+    }
+
+    function getPracticeBootSelection() {
+      const requestedId = pageParams.get('videoId');
+      const canonical = readCanonicalStudyMedia();
+      // Explicit lesson, assessment and share links must keep their requested content.
+      if (requestedId) {
+        return canonical && String(canonical.id) === requestedId ? canonical : {
+          id: requestedId,
+          youtube_video_id: pageParams.get('yt') || '',
+        };
+      }
+      if (isShareMode() || isQuickFirstLesson()) return null;
+      return canonical;
+    }
+
+    function buildPracticeLibraryHref(library) {
+      const next = library === 'channels' || library === 'podcasts' ? library : 'videos';
+      const params = new URLSearchParams({ library: next });
+      const canonical = readCanonicalStudyMedia();
+      const id = state.videoId || pageParams.get('videoId') || canonical?.id;
+      if (id != null && String(id) !== '') params.set('videoId', String(id));
+      return `./video-reader-desktop.html?${params.toString()}`;
+    }
+
     function loadThemePreference() {
       try {
         const saved = localStorage.getItem(THEME_STORAGE_KEY);
@@ -517,6 +556,7 @@
           if (modeSelector) {
             modeSelector.classList.toggle('collapsed', !isCollapsed);
             modeExplainToggle.textContent = isCollapsed ? '收起' : '展开';
+            modeExplainToggle.setAttribute('aria-expanded', String(isCollapsed));
           }
         });
       }
@@ -10262,20 +10302,52 @@
     }
 
     async function loadExternalCoachMedia(media) {
+      const normalizeCues = (source) => (Array.isArray(source) ? source : []).map((cue, index) => ({
+        index: cue?.index ?? index,
+        text: String(cue?.text ?? cue?.transcript ?? '').trim(),
+        start: Number(cue?.start_sec ?? cue?.start ?? cue?.startTime),
+        end: Number(cue?.end_sec ?? cue?.end ?? cue?.endTime),
+      })).filter((cue) => cue.text && Number.isFinite(cue.start) && Number.isFinite(cue.end) && cue.end >= cue.start);
+      const transcriptUnavailable = () => {
+        const error = new Error('这段内容的字幕暂不可用。请重试，或到「视频学习」选一段带字幕的内容。');
+        error.code = 'external_transcript_unavailable';
+        return error;
+      };
+      let cues = normalizeCues(media.cues);
+      if (!cues.length) cues = normalizeCues(media.transcript_segments);
+      if (!cues.length && media.transcriptUrl) {
+        try {
+          const authToken = refreshAuthToken();
+          const response = await fetch(`${API_BASE}/media/cues`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              ...(authToken ? { Authorization: `Bearer ${authToken}` } : {}),
+            },
+            body: JSON.stringify({ url: media.transcriptUrl }),
+          });
+          const data = await response.json();
+          if (!response.ok || data.success === false) throw transcriptUnavailable();
+          cues = normalizeCues(data.cues);
+        } catch (_) {
+          throw transcriptUnavailable();
+        }
+      }
+      if (!cues.length) throw transcriptUnavailable();
+      media = { ...media, cues };
       const modal = document.getElementById('video-select-modal');
       if (modal) modal.style.display = 'none';
+      const startButton = document.getElementById('start-practice-btn');
+      if (startButton) startButton.disabled = false;
       state.videoId = media.id || 'external';
       window.LinglishStudyVideoId = '';
       window.LinglishStudyMedia = media;
       document.querySelector('.video-player-container')?.classList.remove('is-empty');
-      state.currentSegments = Array.isArray(media.cues) ? media.cues.map((cue, index) => ({
-        index: cue.index != null ? cue.index : index,
-        text: cue.text || '',
-        start: Number(cue.start) || 0,
-        end: Number(cue.end) || 0,
-      })).filter((cue) => cue.text && cue.end >= cue.start) : [];
+      state.currentSegments = cues;
       state.videoData = { id: state.videoId, title: media.title || '播客' };
-      if (videoPlayer && media.audioUrl) {
+      if (media.youtube_video_id) {
+        await loadVideoPlayer(`https://www.youtube.com/watch?v=${encodeURIComponent(media.youtube_video_id)}`);
+      } else if (videoPlayer && media.audioUrl) {
         videoPlayer.poster = media.image || '';
         videoPlayer.src = media.audioUrl;
         videoPlayer.load();
@@ -10289,20 +10361,27 @@
     }
 
     async function loadVideoData() {
-      if (pageParams.get('source') === 'external') {
-        let media = null;
-        try { media = JSON.parse(sessionStorage.getItem('linglish.coach.media') || 'null'); } catch (_) { media = null; }
-        if (!media || !media.audioUrl) {
-          throw new Error('没有找到刚选的内容，请重新从视频库、频道库或播客里选一条。');
-        }
-        await loadExternalCoachMedia(media);
-        return;
-      }
       if (isShareMode()) {
         await loadShareVideoData(getShareToken());
         return;
       }
-      const requestedId = pageParams.get('videoId');
+      const selection = getPracticeBootSelection();
+      const externalSelection = selection && !/^\d+$/.test(String(selection.id))
+        && (selection.audioUrl || selection.youtube_video_id);
+      if (pageParams.get('source') === 'external' || externalSelection) {
+        let media = null;
+        try { media = JSON.parse(sessionStorage.getItem('linglish.coach.media') || 'null'); } catch (_) { media = null; }
+        const expectedId = pageParams.get('videoId')
+          || (pageParams.get('source') !== 'external' && selection?.id);
+        if (expectedId && media && String(media.id) !== String(expectedId)) media = null;
+        if (!media) media = selection;
+        if (!media || (!media.audioUrl && !media.youtube_video_id)) {
+          throw new Error('请先到「视频学习」选视频或播客，再回来练。');
+        }
+        await loadExternalCoachMedia(media);
+        return;
+      }
+      const requestedId = selection && selection.id != null ? String(selection.id) : pageParams.get('videoId');
       const token = refreshAuthToken();
       // 获取用户默认难度级别（URL参数 > localStorage > null）
       let defaultLevel = null;
@@ -11459,14 +11538,7 @@
           const choice = event.target.closest('[data-library]');
           if (!choice) return;
           event.preventDefault();
-          const library = choice.dataset.library;
-          if (library === 'saved') {
-            showVideoSelectModal(practiceCatalog.length ? practiceCatalog : allVideoList, null);
-            return;
-          }
-          const mode = currentPracticeMode === 'dialogue' ? 'dialogue' : 'shadowing';
-          const next = new URLSearchParams({ library, returnTo: 'coach', mode });
-          window.location.href = `./video-reader-desktop.html?${next.toString()}`;
+          window.location.href = buildPracticeLibraryHref(choice.dataset.library);
         });
 
         function renderCoachMembership(user) {
@@ -11648,8 +11720,13 @@
     // 加载失败：在台词区域展示错误 + 重试按钮
     function showPracticeLoadError(err) {
       const empty = err && (err.code === 'empty' || err.message === '还没有可练习的视频');
+      const needsTranscript = err && err.code === 'external_transcript_unavailable';
       updatePracticeFeedback(err.message || '加载练习页面失败，请稍后再试。', empty ? '#64748b' : '#dc2626');
       if (practiceArmBtn) practiceArmBtn.disabled = true;
+      if (needsTranscript) {
+        const startButton = document.getElementById('start-practice-btn');
+        if (startButton) startButton.disabled = true;
+      }
       if (empty) {
         document.querySelector('.video-player-container')?.classList.add('is-empty');
         const caption = document.querySelector('#play-overlay > div > div:last-child');
@@ -11680,6 +11757,15 @@
       });
       li.appendChild(msg);
       li.appendChild(btn);
+      if (needsTranscript) {
+        const chooseButton = document.createElement('button');
+        chooseButton.type = 'button';
+        chooseButton.textContent = '去视频学习选片';
+        chooseButton.addEventListener('click', () => {
+          window.location.href = buildPracticeLibraryHref('videos');
+        });
+        li.appendChild(chooseButton);
+      }
       lineList.appendChild(li);
     }
 

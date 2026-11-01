@@ -43,7 +43,9 @@
   const note = document.getElementById('coach-brand-note');
   if (title && note && onPractice) {
     title.textContent = dialogue ? '实战场' : 'AI陪练';
-    note.textContent = dialogue ? '选一段内容，扮演着说' : '选一段内容，听一句跟着说';
+    note.textContent = dialogue
+      ? '沿用视频学习里选中的内容，扮演着说'
+      : '沿用视频学习里选中的内容，听一句跟着说';
   }
 
   function setMenuOpen(open) {
@@ -100,59 +102,119 @@
 
   warmTopbar();
 
+  // 视频学习选中内容 = AI陪练 / 实战场的唯一片源（不用 StudyRecent 另起炉灶）
+  const LAST_STUDY_MEDIA_KEY = 'linglish.last_study_media.v1';
+
+  function normalizeStudyCues(source) {
+    if (typeof source === 'string') {
+      try { source = JSON.parse(source); } catch (_) { return []; }
+    }
+    if (!Array.isArray(source)) return [];
+    return source.map((cue, index) => {
+      const text = String(cue?.text ?? cue?.transcript ?? cue?.line ?? '').trim();
+      const start = Number(cue?.start_sec ?? cue?.start ?? cue?.startTime);
+      const end = Number(cue?.end_sec ?? cue?.end ?? cue?.endTime);
+      return { index: cue?.index ?? index, text, start, end };
+    }).filter((cue) => cue.text && Number.isFinite(cue.start) && Number.isFinite(cue.end) && cue.end >= cue.start);
+  }
+
+  function studyMediaSnapshot(current) {
+    const id = String(current.id);
+    const previous = window.LinglishStudyMedia && String(window.LinglishStudyMedia.id) === id
+      ? window.LinglishStudyMedia : null;
+    // Reader transcript data is freshest; retain hydration only for this same content ID.
+    let cues = [];
+    for (const source of [current.transcript_segments, current.cues, previous?.transcript_segments, previous?.cues]) {
+      cues = normalizeStudyCues(source);
+      if (cues.length) break;
+    }
+    return {
+      id,
+      title: current.title || current.original_filename || previous?.title || '',
+      youtube_video_id: current.youtube_video_id || previous?.youtube_video_id || '',
+      audioUrl: current.audioUrl || previous?.audioUrl || '',
+      videoUrl: current.videoUrl || previous?.videoUrl || '',
+      url: current.url || previous?.url || '',
+      transcriptUrl: current.transcriptUrl || previous?.transcriptUrl || '',
+      external_podcast: Boolean(current.external_podcast || previous?.external_podcast),
+      external_youtube: Boolean(current.external_youtube || current.youtube_video_id || previous?.external_youtube),
+      thumbnail_path: current.thumbnail_path || previous?.thumbnail_path || '',
+      collection_name: current.collection_name || previous?.collection_name || '',
+      image: current.image || previous?.image || '',
+      notes: current.notes || previous?.notes || '',
+      cues,
+    };
+  }
+
+  function readCanonicalStudyMedia() {
+    try {
+      const reader = window.LinglishVideoReaderState;
+      if (reader && reader.currentVideo && reader.currentVideo.id != null) {
+        return studyMediaSnapshot(reader.currentVideo);
+      }
+      if (reader && reader.selectedVideoId != null && String(reader.selectedVideoId) !== '') {
+        return studyMediaSnapshot({ id: reader.selectedVideoId });
+      }
+    } catch (_) {}
+    try {
+      if (window.LinglishStudyMedia && window.LinglishStudyMedia.id) return studyMediaSnapshot(window.LinglishStudyMedia);
+    } catch (_) {}
+    try {
+      if (window.LinglishStudyVideoId && /^\d+$/.test(String(window.LinglishStudyVideoId))) {
+        return { id: String(window.LinglishStudyVideoId) };
+      }
+    } catch (_) {}
+    try {
+      const raw = localStorage.getItem(LAST_STUDY_MEDIA_KEY);
+      const data = raw ? JSON.parse(raw) : null;
+      if (data && data.id != null) return studyMediaSnapshot(data);
+    } catch (_) {}
+    const fromUrl = params.get('videoId') || '';
+    if (fromUrl) return { id: String(fromUrl), youtube_video_id: params.get('yt') || '' };
+    return null;
+  }
+
   function numericVideoId() {
-    const value = window.LinglishStudyVideoId || params.get('videoId') || '';
-    if (/^\d+$/.test(String(value))) return String(value);
-    try {
-      const selected = window.LinglishVideoReaderState && window.LinglishVideoReaderState.selectedVideoId;
-      if (/^\d+$/.test(String(selected || ''))) return String(selected);
-    } catch (_) {}
-    try {
-      const recent = window.LinglishStudyRecent && window.LinglishStudyRecent.latest();
-      if (recent && /^\d+$/.test(String(recent.id))) return String(recent.id);
-    } catch (_) {}
-    try {
-      const last = localStorage.getItem('last_video_id') || '';
-      if (/^\d+$/.test(last)) return last;
-    } catch (_) {}
+    const media = readCanonicalStudyMedia();
+    if (media && /^\d+$/.test(String(media.id || ''))) return String(media.id);
     return '';
   }
 
   function studyContentId() {
-    const numeric = numericVideoId();
-    if (numeric) return numeric;
-    try {
-      const selected = window.LinglishVideoReaderState && window.LinglishVideoReaderState.selectedVideoId;
-      if (selected != null && String(selected) !== '') return String(selected);
-    } catch (_) {}
-    try {
-      const media = window.LinglishStudyMedia;
-      if (media && media.id) return String(media.id);
-    } catch (_) {}
-    const fromUrl = params.get('videoId') || '';
-    if (fromUrl) return String(fromUrl);
-    try {
-      const recent = window.LinglishStudyRecent && window.LinglishStudyRecent.latest();
-      if (recent && recent.id) return String(recent.id);
-    } catch (_) {}
-    return '';
+    const media = readCanonicalStudyMedia();
+    return media && media.id != null ? String(media.id) : '';
   }
 
   function hasSelectedStudyContent() {
-    // Live selection only — recent history must not block opening the library.
-    if (window.LinglishStudyVideoId) return true;
-    try {
-      const media = window.LinglishStudyMedia;
-      if (media && (media.audioUrl || media.youtube_video_id || media.id)) return true;
-    } catch (_) {}
-    try {
-      const reader = window.LinglishVideoReaderState;
-      if (reader && reader.selectedVideoId != null && String(reader.selectedVideoId) !== '') return true;
-      if (reader && reader.currentVideo && reader.currentVideo.id != null) return true;
-    } catch (_) {}
-    const fromUrl = params.get('videoId') || '';
-    return Boolean(fromUrl);
+    const media = readCanonicalStudyMedia();
+    if (!media) return false;
+    if (media.id != null && String(media.id) !== '') return true;
+    return Boolean(media.audioUrl || media.youtube_video_id);
   }
+
+  function openVideoLearningPicker(libSrc) {
+    ensureStudyModeApi();
+    markCurrent('video');
+    if (typeof window.switchVideoStudyMode === 'function') {
+      window.switchVideoStudyMode('video');
+    }
+    showVideoLearning();
+    const src = libSrc || 'videos';
+    if (mobileSurface && typeof window.openMobileVideoLibrary === 'function') {
+      window.openMobileVideoLibrary(src);
+      return;
+    }
+    if (typeof window.openVideoBrowser === 'function') {
+      window.openVideoBrowser(src);
+    }
+  }
+
+  window.LinglishStudySelection = {
+    read: readCanonicalStudyMedia,
+    contentId: studyContentId,
+    hasContent: hasSelectedStudyContent,
+    openPicker: openVideoLearningPicker,
+  };
 
   function closeStudyLibraryIfOpen() {
     try {
@@ -194,26 +256,29 @@
   }
 
   function practiceHref(mode) {
+    const canonical = readCanonicalStudyMedia();
     const videoId = numericVideoId();
-    let media = window.LinglishStudyMedia;
+    let media = canonical;
     const page = practicePage(mode);
     if (videoId) {
       return page + '?mode=' + mode + '&videoId=' + encodeURIComponent(videoId);
     }
-    // Channel YouTube / podcast stubs — carry playable snapshot into practice desk.
+    // Channel YouTube / podcast stubs — carry 视频学习 snapshot into practice desk.
     const anyId = studyContentId();
     if ((!media || !(media.audioUrl || media.youtube_video_id || media.videoUrl || media.url)) && anyId) {
       const yt = (String(anyId).match(/^yt:([A-Za-z0-9_-]{6,})$/) || [])[1]
+        || (canonical && canonical.youtube_video_id)
         || (params.get('yt') || '');
       const current = window.LinglishVideoReaderState && window.LinglishVideoReaderState.currentVideo;
-      if (yt || (current && (current.youtube_video_id || current.audioUrl))) {
+      if (yt || (current && (current.youtube_video_id || current.audioUrl)) || (canonical && (canonical.audioUrl || canonical.youtube_video_id))) {
         media = {
           id: String(anyId),
-          title: (current && (current.title || current.original_filename)) || '',
-          youtube_video_id: yt || (current && current.youtube_video_id) || '',
-          audioUrl: (current && current.audioUrl) || '',
-          transcriptUrl: (current && current.transcriptUrl) || '',
-          thumbnail_path: (current && current.thumbnail_path) || '',
+          title: (current && (current.title || current.original_filename)) || (canonical && canonical.title) || '',
+          youtube_video_id: yt || (current && current.youtube_video_id) || (canonical && canonical.youtube_video_id) || '',
+          audioUrl: (current && current.audioUrl) || (canonical && canonical.audioUrl) || '',
+          transcriptUrl: (current && current.transcriptUrl) || (canonical && canonical.transcriptUrl) || '',
+          thumbnail_path: (current && current.thumbnail_path) || (canonical && canonical.thumbnail_path) || '',
+          cues: normalizeStudyCues(canonical && canonical.cues),
         };
       }
     }
@@ -235,24 +300,23 @@
     // Same content across modes: keep videoId / external media; never force a re-pick.
     const id = studyContentId();
     if (target === 'video') return videoPageHref(id);
-    // Desktop AI陪练 / 实战场 → practice desk (mic + 跟读/对话).
-    // Mobile 实战场 → practice-session dialogue (real role-play).
-    // Mobile AI陪练 stays on video-reader so Hold / X DM sheet stay in-page.
+    // Mobile AI陪练 / 实战场: stay on video-reader so player size + Hold / 字幕操作
+    // match 视频学习. Desktop still uses practice desk (角色对话 / 跟读台).
+    if (mobileSurface && (target === 'coach' || target === 'arena')) {
+      const page = './video-reader.html';
+      const next = new URLSearchParams();
+      next.set('study', target);
+      if (id) next.set('videoId', id);
+      try {
+        const media = window.LinglishStudyMedia;
+        if (media && media.youtube_video_id) next.set('yt', String(media.youtube_video_id));
+      } catch (_) {}
+      return page + '?' + next.toString();
+    }
     if (!mobileSurface) {
       return practiceHref(target === 'arena' ? 'dialogue' : 'shadowing');
     }
-    if (target === 'arena') {
-      return practiceHref('dialogue');
-    }
-    const page = './video-reader.html';
-    const next = new URLSearchParams();
-    next.set('study', 'coach');
-    if (id) next.set('videoId', id);
-    try {
-      const media = window.LinglishStudyMedia;
-      if (media && media.youtube_video_id) next.set('yt', String(media.youtube_video_id));
-    } catch (_) {}
-    return page + '?' + next.toString();
+    return practiceHref(target === 'arena' ? 'dialogue' : 'shadowing');
   }
 
   function goPracticeDesk(target) {
@@ -282,24 +346,14 @@
 
   function syncStudyMediaFromReader() {
     try {
-      if (window.LinglishStudyVideoId || (window.LinglishStudyMedia && window.LinglishStudyMedia.id)) return;
       const current = window.LinglishVideoReaderState && window.LinglishVideoReaderState.currentVideo;
       if (!current || current.id == null) return;
       if (/^\d+$/.test(String(current.id))) {
         window.LinglishStudyVideoId = String(current.id);
+        window.LinglishStudyMedia = null;
         return;
       }
-      window.LinglishStudyMedia = {
-        id: String(current.id),
-        title: current.title || current.original_filename || '',
-        youtube_video_id: current.youtube_video_id || '',
-        audioUrl: current.audioUrl || '',
-        transcriptUrl: current.transcriptUrl || '',
-        external_podcast: Boolean(current.external_podcast),
-        external_youtube: Boolean(current.external_youtube || current.youtube_video_id),
-        thumbnail_path: current.thumbnail_path || '',
-        collection_name: current.collection_name || '',
-      };
+      window.LinglishStudyMedia = studyMediaSnapshot(current);
     } catch (_) {}
   }
 
@@ -307,20 +361,19 @@
     const mode = target === 'arena' ? 'arena' : 'coach';
     syncStudyMediaFromReader();
     ensureStudyModeApi();
+    // 没有片源：先回视频学习选内容，再进 AI陪练 / 实战场
+    if (!hasSelectedStudyContent()) {
+      openVideoLearningPicker('videos');
+      return;
+    }
     markCurrent(mode);
     window.switchVideoStudyMode(mode);
-    // Already have a video/podcast: stay on it and switch modes freely.
-    if (hasSelectedStudyContent()) {
-      closeStudyLibraryIfOpen();
-      return;
-    }
-    if (mobileSurface && typeof window.openMobileVideoLibrary === 'function') {
-      window.openMobileVideoLibrary('videos');
-      return;
-    }
-    if (typeof window.openVideoBrowser === 'function') {
-      window.openVideoBrowser('videos');
-    }
+    try {
+      if (window.LinglishArenaDialogue && typeof window.LinglishArenaDialogue.sync === 'function') {
+        window.LinglishArenaDialogue.sync();
+      }
+    } catch (_) {}
+    closeStudyLibraryIfOpen();
   }
 
   function refreshStudyHrefs() {
@@ -395,8 +448,8 @@
     }
 
     if (onVideoReader) {
-      // Mobile AI陪练: same-page Hold / X DM. Mobile 实战场 + desktop both → practice desk.
-      if (mobileSurface && target === 'coach') {
+      // Mobile AI陪练 / 实战场: same-page player + Hold / 字幕, same as 视频学习.
+      if (mobileSurface && (target === 'coach' || target === 'arena')) {
         enterStudyMode(target);
         return;
       }

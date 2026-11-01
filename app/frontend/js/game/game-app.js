@@ -2,7 +2,7 @@
   'use strict';
 
   const PACK_URL = '/js/game/word-packs/pack-max.json?v=11';
-  const CARD_DECKS_URL = '/js/game/word-packs/card-decks.json?v=21';
+  const CARD_DECKS_URL = '/js/game/word-packs/card-decks.json?v=2026103101';
   // 按屏宽选登录页:PC 落到 mobile-auth 会是被拉宽变形的手机版式。
   function requestedDeckId() {
     try {

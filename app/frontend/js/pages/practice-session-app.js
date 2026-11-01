@@ -797,8 +797,8 @@
       };
 
       const modeHints = {
-        shadowing: '跟读：跟随视频朗读，提升语音语调',
-        dialogue: '对话：扮演角色，系统在你的台词前停顿'
+        shadowing: '听一句，停一下，再跟着说',
+        dialogue: '选角色后对方自动播，轮到你就按住说'
       };
 
       function setModeSelectorCollapsed(collapsed) {
@@ -806,7 +806,10 @@
         const toggleBtn = document.getElementById('mode-toggle-btn');
         if (!modeSelector) return;
         modeSelector.classList.toggle('collapsed', collapsed);
-        if (toggleBtn) toggleBtn.textContent = collapsed ? '展开' : '收起';
+        if (toggleBtn) {
+          toggleBtn.textContent = collapsed ? '展开' : '收起';
+          toggleBtn.setAttribute('aria-expanded', String(!collapsed));
+        }
       }
 
       // Switch practice mode
@@ -823,6 +826,7 @@
         const modeSelector = document.getElementById('practice-mode-selector');
         if (modeSelector) {
           modeSelector.classList.remove('shadowing-practicing', 'dialogue-practicing');
+          setModeSelectorCollapsed(modeSelector.classList.contains('collapsed'));
         }
 
         // Update tab active state
@@ -963,7 +967,7 @@
             if (isDialoguePracticing) {
               // When clicking expand during dialogue practice, restore mode selector and go back to role selection
               modeSelector.classList.remove('dialogue-practicing');
-              modeToggleBtn.textContent = '收起';
+              setModeSelectorCollapsed(false);
 
               // Stop video playback
               if (videoPlayer && !videoPlayer.paused) {
@@ -980,7 +984,7 @@
             } else if (isShadowingPracticing) {
               // When clicking expand during shadowing practice, restore mode selector
               modeSelector.classList.remove('shadowing-practicing');
-              modeToggleBtn.textContent = '收起';
+              setModeSelectorCollapsed(false);
 
               // Stop video playback
               if (videoPlayer && !videoPlayer.paused) {
@@ -1085,7 +1089,10 @@
                 if (modeSelector) {
                   modeSelector.classList.add('shadowing-practicing');
                   const toggleBtn = document.getElementById('mode-toggle-btn');
-                  if (toggleBtn) toggleBtn.textContent = '展开';
+                  if (toggleBtn) {
+                    toggleBtn.textContent = '展开';
+                    toggleBtn.setAttribute('aria-expanded', 'false');
+                  }
                 }
 
                 // Normalization Helper
@@ -2561,7 +2568,10 @@
         if (modeSelector) {
           modeSelector.classList.add('dialogue-practicing');
           const toggleBtn = document.getElementById('mode-toggle-btn');
-          if (toggleBtn) toggleBtn.textContent = '展开';
+          if (toggleBtn) {
+            toggleBtn.textContent = '展开';
+            toggleBtn.setAttribute('aria-expanded', 'false');
+          }
         }
 
         // Start auto dialogue flow

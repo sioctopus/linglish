@@ -496,13 +496,108 @@
       return tappableCueHtml(turn.text || '');
     }
 
+    let vcWordLookupSeq = 0;
+
     function hideVcWordCard() {
       const card = host.querySelector('[data-vc-word-card]');
       if (card) card.hidden = true;
+      vcWordLookupSeq += 1;
+    }
+
+    function bindVcWordCardActions(card) {
+      if (!card) return;
+      const closeBtn = card.querySelector('[data-assist="close"]');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          hideVcWordCard();
+        });
+      }
+      const sayBtn = card.querySelector('[data-assist="say"]');
+      if (sayBtn) {
+        sayBtn.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          hideVcWordCard();
+          if (holdBtn && typeof holdBtn.focus === 'function') {
+            try { holdBtn.focus(); } catch (_) {}
+          }
+        });
+      }
+    }
+
+    function paintVcWordCard(card, model) {
+      const assist = root.LinglishSentenceAssist;
+      if (assist && typeof assist.cardHTML === 'function') {
+        card.innerHTML = assist.cardHTML(model);
+      } else {
+        card.innerHTML = '<strong>' + esc(model.word || '') + '</strong>'
+          + '<p>' + esc(model.gloss || '') + '</p>'
+          + '<button type="button" data-assist="close">收起</button>';
+      }
+      bindVcWordCardActions(card);
+    }
+
+    function dictAuthHeaders() {
+      const headers = {};
+      let token = null;
+      try {
+        if (root.DictionaryUtil && typeof root.DictionaryUtil.resolveToken === 'function') {
+          token = root.DictionaryUtil.resolveToken();
+        } else {
+          token = localStorage.getItem('linglish_token')
+            || localStorage.getItem('authToken')
+            || sessionStorage.getItem('linglish_token')
+            || sessionStorage.getItem('authToken');
+        }
+      } catch (_) {}
+      if (token) headers.Authorization = 'Bearer ' + token;
+      return headers;
+    }
+
+    async function fetchVcDictionary(lemma) {
+      const dict = root.DictionaryLookup;
+      if (dict && typeof dict.lookupWord === 'function') {
+        const lookupPromise = dict.lookupWord(lemma);
+        // Swallow late rejection after timeout so it does not surface as unhandled.
+        lookupPromise.catch(() => {});
+        const result = await Promise.race([
+          lookupPromise,
+          new Promise((_, reject) => {
+            setTimeout(() => reject(new Error('DICT_TIMEOUT')), 2500);
+          }),
+        ]);
+        return {
+          entry: result && result.entry ? result.entry : null,
+          zh: result && result.wordTranslation ? String(result.wordTranslation) : '',
+        };
+      }
+      const controller = typeof AbortController === 'function' ? new AbortController() : null;
+      const timer = setTimeout(() => {
+        try { if (controller) controller.abort(); } catch (_) {}
+      }, 2500);
+      try {
+        const response = await fetch('/dictionary/' + encodeURIComponent(lemma), {
+          credentials: 'same-origin',
+          headers: dictAuthHeaders(),
+          signal: controller ? controller.signal : undefined,
+        });
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok && response.status !== 404) {
+          throw new Error('DICT_HTTP_' + response.status);
+        }
+        return {
+          entry: payload.entry || null,
+          zh: String(payload.zh || payload.wordTranslation || ''),
+        };
+      } finally {
+        clearTimeout(timer);
+      }
     }
 
     async function showVcWordCard(word, sentence) {
-      const lemma = String(word || '').trim().toLowerCase();
+      const lemma = String(word || '').trim().toLowerCase().replace(/^[^a-z0-9']+|[^a-z0-9']+$/g, '');
       if (!lemma) return;
       let card = host.querySelector('[data-vc-word-card]');
       if (!card) {
@@ -511,50 +606,39 @@
         card.setAttribute('data-vc-word-card', '');
         host.appendChild(card);
       }
-      card.hidden = false;
       const assist = root.LinglishSentenceAssist;
-      card.innerHTML = assist && typeof assist.cardHTML === 'function'
-        ? assist.cardHTML({ word: lemma, gloss: '正在查这个词…', sentence: sentence || '' })
-        : ('<strong>' + esc(lemma) + '</strong><p>正在查这个词…</p>');
-      const closeBtn = card.querySelector('[data-assist="close"]');
-      if (closeBtn) closeBtn.addEventListener('click', (event) => {
-        event.preventDefault();
-        event.stopPropagation();
-        hideVcWordCard();
-      });
+      const sentenceText = String(sentence || '').trim();
+      const seq = ++vcWordLookupSeq;
+      card.hidden = false;
+      paintVcWordCard(card, { word: lemma, gloss: '正在查这个词…', sentence: sentenceText });
       // Prefer shared desktop subtitle card when present.
       if (typeof root.linglishShowSubtitleWordCard === 'function') {
         try {
-          root.linglishShowSubtitleWordCard(lemma, { sentence: sentence || '' });
+          root.linglishShowSubtitleWordCard(lemma, { sentence: sentenceText });
           card.hidden = true;
           return;
         } catch (_) {}
       }
       try {
-        const response = await fetch('/dictionary/' + encodeURIComponent(lemma), { credentials: 'same-origin' });
-        const payload = await response.json().catch(() => ({}));
-        if (card.hidden) return;
+        const payload = await fetchVcDictionary(lemma);
+        if (seq !== vcWordLookupSeq || card.hidden) return;
         const entry = payload.entry || null;
-        const gloss = assist && typeof assist.shortGloss === 'function'
-          ? (assist.shortGloss(entry) || payload.wordTranslation || '')
-          : (payload.wordTranslation || '');
+        const fromEntry = assist && typeof assist.shortGloss === 'function' ? assist.shortGloss(entry) : '';
+        const gloss = fromEntry || payload.zh || '';
         const phonetic = assist && typeof assist.phoneticOf === 'function' ? assist.phoneticOf(entry) : '';
-        card.innerHTML = assist && typeof assist.cardHTML === 'function'
-          ? assist.cardHTML({ word: lemma, phonetic, gloss: gloss || '词典里暂时没有这词的简短释义。', sentence: sentence || '' })
-          : ('<strong>' + esc(lemma) + '</strong><p>' + esc(gloss || '暂无释义') + '</p>');
-        const close2 = card.querySelector('[data-assist="close"]');
-        if (close2) close2.addEventListener('click', (event) => {
-          event.preventDefault();
-          event.stopPropagation();
-          hideVcWordCard();
+        paintVcWordCard(card, {
+          word: lemma,
+          phonetic,
+          gloss: gloss || '词典里暂时没有这词的简短释义。',
+          sentence: sentenceText,
         });
       } catch (_) {
-        if (!card.hidden) {
-          card.innerHTML = '<strong>' + esc(lemma) + '</strong><p>查词失败，请再试一次</p>'
-            + '<button type="button" data-assist="close">收起</button>';
-          const close3 = card.querySelector('[data-assist="close"]');
-          if (close3) close3.addEventListener('click', () => { hideVcWordCard(); });
-        }
+        if (seq !== vcWordLookupSeq || card.hidden) return;
+        paintVcWordCard(card, {
+          word: lemma,
+          gloss: '查词失败，请再试一次',
+          sentence: sentenceText,
+        });
       }
     }
 
@@ -1405,7 +1489,10 @@
         event.preventDefault();
         event.stopPropagation();
         const bubble = tapWord.closest('.voice-chat-bubble');
-        const sentence = bubble ? String(bubble.textContent || '').trim() : '';
+        const enEl = bubble && bubble.querySelector('.voice-chat-en');
+        const sentence = enEl
+          ? String(enEl.textContent || '').trim()
+          : (bubble ? String(bubble.textContent || '').trim() : '');
         showVcWordCard(tapWord.getAttribute('data-vc-word') || tapWord.textContent, sentence);
         return;
       }

@@ -226,15 +226,15 @@ test('game shell invalidates the immutable pre-tracking API client cache', async
 test('game shell publishes interaction fixes under fresh immutable cache keys', async () => {
   const response = await serveFrontend('game.html', '/game.html');
 
-  assert.match(response.body(), /href="\/styles\/mobile\/pages\/game\.css\?v=2026103001"/);
+  assert.match(response.body(), /href="\/styles\/mobile\/pages\/game\.css\?v=2026103101"/);
   assert.match(response.body(), /src="\/js\/tts-voice\.js\?v=2026103001"/);
-  assert.match(response.body(), /src="\/js\/game\/number-words\.js\?v=1"><\/script>\s*<script src="\/js\/game\/game-views\.js\?v=2026103001">/);
+  assert.match(response.body(), /src="\/js\/game\/number-words\.js\?v=1"><\/script>\s*<script src="\/js\/game\/game-views\.js\?v=2026103101">/);
   assert.match(response.body(), /src="\/js\/game\/games\/quiz\.js\?v=2"/);
   assert.match(response.body(), /src="\/js\/game\/games\/speaking\.js\?v=1"/);
   assert.match(response.body(), /src="\/js\/game\/daily-challenge\.js\?v=1"/);
   assert.match(response.body(), /src="\/js\/game\/word-dex\.js\?v=1"/);
-  assert.match(response.body(), /src="\/js\/game\/game-app\.js\?v=2026103001"/);
-  assert.match(response.body(), /card-decks\.json\?v=2026103001/);
+  assert.match(response.body(), /src="\/js\/game\/game-app\.js\?v=2026103101"/);
+  assert.match(response.body(), /card-decks\.json\?v=2026103101/);
 });
 
 test('installed app home link is not the bare start url', () => {
