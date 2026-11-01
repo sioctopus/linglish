@@ -360,65 +360,112 @@
       cursor: pointer;
     }
 
-    /* 优化移动端布局，减少间距让表单在一屏内完成 */
+    /* 移动端首屏：紧凑品牌栏 + 免注册入口 + 登录卡片，登录框落在首屏下方 */
+    .auth-body {
+      background:
+        radial-gradient(120% 60% at 0% 0%, rgba(45, 212, 191, 0.16), transparent 60%),
+        radial-gradient(90% 50% at 100% 10%, rgba(14, 165, 233, 0.12), transparent 60%),
+        #f4f8f8;
+    }
+
     .auth-hero {
-      padding: 20px 16px 16px !important;
-      margin-bottom: 12px !important;
+      padding: 14px 18px 10px !important;
+      margin: 0 !important;
+      background: transparent !important;
+      border-bottom: 0 !important;
+      text-align: left !important;
+    }
+
+    .auth-hero .auth-logo {
+      display: grid !important;
+      grid-template-columns: auto 1fr;
+      grid-template-rows: auto auto;
+      column-gap: 12px;
+      align-items: center !important;
     }
 
     .auth-hero .logo-circle {
-      width: 50px !important;
-      height: 50px !important;
+      grid-row: 1 / span 2;
+      width: 44px !important;
+      height: 44px !important;
       font-size: 24px !important;
-      margin-bottom: 8px !important;
+      margin: 0 !important;
+      border-radius: 14px !important;
     }
 
     .auth-hero h1 {
-      font-size: 28px !important;
-      margin-bottom: 4px !important;
+      font-size: 22px !important;
+      line-height: 1.15 !important;
+      margin: 0 !important;
     }
 
     .auth-hero .app-tagline {
       font-size: 13px !important;
-      margin-bottom: 0 !important;
+      margin: 2px 0 0 !important;
     }
 
     .first-lesson-card {
-      margin: 0 16px 16px;
-      padding: 16px;
-      border-radius: 16px;
-      background: #f0fdfa;
-      border: 1px solid #99f6e4;
-      color: #134e4a;
+      position: relative;
+      overflow: hidden;
+      margin: 4px 16px 10px;
+      padding: 16px 16px 14px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, #115e59 0%, #0f766e 55%, #0e7490 100%);
+      color: #ecfeff;
+      box-shadow: 0 14px 30px rgba(15, 118, 110, 0.28);
+    }
+
+    .first-lesson-card::after {
+      content: '';
+      position: absolute;
+      right: -40px;
+      top: -50px;
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(94, 234, 212, 0.35), transparent 70%);
+      pointer-events: none;
     }
 
     .first-lesson-card h2 {
-      margin: 0 0 6px;
-      font-size: 19px;
-      line-height: 1.4;
+      margin: 0 0 4px;
+      font-size: 18px;
+      line-height: 1.35;
+      color: #fff;
     }
 
     .first-lesson-card p {
       margin: 0 0 12px;
       font-size: 13px;
-      line-height: 1.6;
+      line-height: 1.5;
+      color: rgba(236, 254, 255, 0.82);
     }
 
     .first-lesson-btn {
+      position: relative;
+      z-index: 1;
       width: 100%;
-      min-height: 48px;
-      padding: 12px;
+      min-height: 46px;
+      padding: 11px;
       border: 0;
-      border-radius: 12px;
-      background: #115e59;
-      color: white;
+      border-radius: 14px;
+      background: #fff;
+      color: #115e59;
       font: inherit;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 800;
       cursor: pointer;
+      box-shadow: 0 6px 16px rgba(4, 47, 46, 0.22);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .first-lesson-btn:active {
+      transform: scale(0.98);
+      box-shadow: 0 3px 10px rgba(4, 47, 46, 0.22);
     }
 
     .first-lesson-btn:focus-visible {
-      outline: 3px solid #0f766e;
+      outline: 3px solid #5eead4;
       outline-offset: 3px;
     }
 
@@ -430,7 +477,7 @@
     .quick-start {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 10px;
+      gap: 8px;
       padding: 0 16px 12px;
       margin-top: 0;
     }
@@ -439,134 +486,150 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 4px;
-      padding: 10px 8px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, #0ea5e9, #5eead4);
-      color: #fff;
+      gap: 6px;
+      min-height: 40px;
+      padding: 8px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.8);
+      color: #0f766e;
       font-weight: 700;
       font-size: 13px;
       text-decoration: none;
-      border: 1px solid rgba(255,255,255,0.25);
-      box-shadow: 0 6px 18px rgba(14, 165, 233, 0.3);
+      border: 1px solid rgba(15, 118, 110, 0.16);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+      transition: transform 0.15s ease, background 0.15s ease;
     }
 
+    .quick-btn:active {
+      transform: scale(0.97);
+      background: #ecfeff;
+    }
+
+    /* 去向说明合并进登录卡顶部的意图条；节点保留给脚本按来源更新文案 */
     .auth-context-card {
-      margin: 0 16px 12px;
-      padding: 14px;
-      border: 1px solid rgba(14, 165, 233, 0.18);
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.88);
-      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      display: none;
     }
 
-    .auth-context-top {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
+    .auth-main {
+      position: relative;
+      margin: 0 10px;
+      padding: 18px 16px 24px !important;
+      border-radius: 24px 24px 0 0 !important;
+      background: #fff;
+      box-shadow: 0 -8px 30px rgba(15, 23, 42, 0.08);
+      min-height: auto !important;
     }
 
-    .auth-context-top strong {
+    .auth-main::before {
+      content: '';
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      width: 36px;
+      height: 4px;
+      margin-left: -18px;
+      border-radius: 2px;
+      background: #e2e8f0;
+    }
+
+    .form-intent {
+      display: grid;
+      grid-template-columns: 4px 1fr;
+      column-gap: 10px;
+      margin: 4px 0 12px;
+      padding: 0;
+      border: 0;
+      background: transparent;
+    }
+
+    .form-intent::before {
+      content: '';
+      grid-row: 1 / span 2;
+      align-self: stretch;
+      border-radius: 2px;
+      background: linear-gradient(180deg, #14b8a6, #0ea5e9);
+    }
+
+    .form-intent strong {
+      grid-column: 2;
       display: block;
       color: #0f172a;
-      font-size: 15px;
+      font-size: 17px;
       line-height: 1.3;
     }
 
-    .auth-context-top span {
+    .form-intent span {
+      grid-column: 2;
       display: block;
-      margin-top: 5px;
+      margin-top: 2px;
       color: #64748b;
       font-size: 12px;
       line-height: 1.45;
     }
 
-    .auth-context-badge {
-      flex: 0 0 auto;
-      padding: 5px 8px;
-      border-radius: 999px;
-      color: #0369a1;
-      background: rgba(14, 165, 233, 0.12);
-      font-size: 11px;
-      font-weight: 800;
-    }
-
-    .auth-context-steps {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 6px;
-      margin-top: 12px;
-    }
-
-    .auth-context-step {
-      min-height: 52px;
-      padding: 8px;
-      border-radius: 10px;
-      background: #f8fafc;
-      color: #475569;
-      font-size: 11px;
-      line-height: 1.35;
-    }
-
-    .auth-context-step b {
-      display: block;
-      margin-bottom: 3px;
-      color: #0f766e;
-      font-size: 12px;
-    }
-
-    .auth-main {
-      padding: 16px !important;
-    }
-
-    .form-intent {
-      margin-bottom: 14px;
-      padding: 12px;
-      border: 1px solid rgba(15, 118, 110, 0.18);
-      border-radius: 12px;
-      background: rgba(240, 253, 250, 0.9);
-    }
-
-    .form-intent strong {
-      display: block;
-      color: #0f766e;
-      font-size: 14px;
-    }
-
-    .form-intent span {
-      display: block;
-      margin-top: 5px;
-      color: #475569;
-      font-size: 12px;
-      line-height: 1.45;
-    }
-
     .auth-tabs {
-      margin-bottom: 16px !important;
+      margin-bottom: 14px !important;
+      gap: 4px !important;
+      border-radius: 14px !important;
+      background: #f1f5f9 !important;
+    }
+
+    .auth-tab {
+      padding: 10px !important;
+      border-radius: 11px !important;
+      font-size: 15px !important;
+    }
+
+    .auth-tab.active {
+      color: #0f766e !important;
+      box-shadow: 0 2px 10px rgba(15, 23, 42, 0.08) !important;
     }
 
     .form-group {
-      margin-bottom: 14px !important;
+      margin-bottom: 12px !important;
     }
 
     .form-label {
       font-size: 13px !important;
       margin-bottom: 6px !important;
+      color: #334155 !important;
+      font-weight: 600 !important;
     }
 
     .form-input {
-      padding: 10px 14px !important;
-      font-size: 15px !important;
+      min-height: 46px;
+      padding: 11px 14px !important;
+      font-size: 16px !important;
+      border-radius: 12px !important;
+      border: 1.5px solid #e2e8f0 !important;
+      background: #f8fafc !important;
+      transition: border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #14b8a6 !important;
+      background: #fff !important;
+      box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.14) !important;
     }
 
     .form-options {
-      margin: 12px 0 !important;
+      margin: 10px 0 !important;
     }
 
     .auth-btn {
+      min-height: 48px;
       padding: 12px !important;
-      margin-top: 8px !important;
+      margin-top: 6px !important;
+      border-radius: 14px !important;
+      background: linear-gradient(135deg, #0f766e, #0e7490) !important;
+      box-shadow: 0 8px 20px rgba(15, 118, 110, 0.25) !important;
+      font-size: 16px !important;
+      font-weight: 800 !important;
+    }
+
+    .auth-btn:active {
+      transform: scale(0.98);
     }
 
     .auth-divider {
@@ -574,7 +637,8 @@
     }
 
     .guest-btn {
-      padding: 10px !important;
+      padding: 11px !important;
+      border-radius: 14px !important;
     }
 
     .form-note {
@@ -582,6 +646,37 @@
       color: #64748b;
       font-size: 12px;
       line-height: 1.5;
+      text-align: center;
+    }
+
+    .auth-features {
+      margin-top: 22px !important;
+      padding: 14px 8px !important;
+      border-top: 0 !important;
+      border-radius: 16px;
+      background: #f8fafc;
+      gap: 6px !important;
+    }
+
+    .feature-icon {
+      width: 40px;
+      height: 40px;
+      display: grid;
+      place-items: center;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+      font-size: 20px !important;
+    }
+
+    @media (min-width: 600px) {
+      .auth-hero, .first-lesson-card, .quick-start, .auth-main {
+        max-width: 520px;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      .first-lesson-card, .quick-start { box-sizing: border-box; }
+      .auth-main { border-radius: 24px !important; margin-bottom: 24px !important; }
     }
 
     /* Level Selector */
@@ -638,7 +733,7 @@
 
     /* Google OAuth Button */
     .social-login-section {
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
     .btn-google {
@@ -647,9 +742,10 @@
       align-items: center;
       justify-content: center;
       gap: 10px;
-      padding: 12px 16px;
-      border: 2px solid #e2e8f0;
-      border-radius: 12px;
+      min-height: 48px;
+      padding: 11px 16px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 14px;
       background: white;
       font-size: 15px;
       font-weight: 600;
@@ -674,9 +770,9 @@
     .social-divider {
       display: flex;
       align-items: center;
-      margin: 16px 0;
+      margin: 12px 0;
       color: #94a3b8;
-      font-size: 13px;
+      font-size: 12px;
     }
 
     .social-divider::before,
