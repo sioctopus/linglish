@@ -71,7 +71,7 @@
     return `./video-reader${mobile ? '' : '-desktop'}.html?focus=first_lesson&from=${from}&videoId=${record.videoId}`;
   }
   function createCard(container, options) {
-    if (!container) return { update() {}, hide() {}, setState() {}, feedback() {}, settle() {}, setSentence() {}, setRecording() {}, getSentenceIndex: () => null };
+    if (!container) return { update() {}, hide() {}, setState() {}, feedback() {}, settle() {}, setSentence() {}, setRecording() {}, recordSentence() {}, getSentenceIndex: () => null };
     const config = options || {};
     const doc = container.ownerDocument;
     const objectUrls = doc.defaultView && doc.defaultView.URL;
@@ -118,6 +118,7 @@
       translationToggle.textContent = translation.hidden ? '查看中文' : '收起中文';
     });
     sentencePanel.append(sentenceLabel, sentenceText, translationToggle, translation);
+    if (config.lookupCard) sentencePanel.append(config.lookupCard);
     const feedback = element('p', 'goal-feedback');
     feedback.setAttribute('role', 'status');
     feedback.setAttribute('aria-live', 'polite');
@@ -155,6 +156,7 @@
     let settled = false;
     let outcome = null;
     let recordingUrl = null;
+    let sentenceWords = [];
 
     function pauseRecording() {
       try { audio.pause(); } catch (_) { }
@@ -178,6 +180,7 @@
       if (!current) return;
       const locked = busy !== 'idle';
       const complete = current.complete === true;
+      sentenceWords.forEach(button => { button.disabled = locked; });
       container.setAttribute('data-phase', phase);
       container.setAttribute('data-status', settled ? (outcome && outcome.success === false ? 'retry' : 'review') : busy);
       title.textContent = complete ? '今天，已经开口说出来了。' : '把这一句，说成自己的。';
@@ -210,12 +213,39 @@
       const next = { index: Number(value.index), text: String(value.text || ''), translation: String(value.translation || '') };
       const key = `${current && current.videoId}:${next.index}:${next.text}`;
       if (key === sentenceKey) return false;
+      if (config.lookupCard) config.lookupCard.hidden = true;
       releaseRecording();
       sentence = next; sentenceKey = key;
       position = Math.max(1, Number(current && current.completedCount) + 1 || 1);
       settled = false; outcome = null; phase = 'listen';
       feedback.textContent = ''; recognized.textContent = ''; focus.textContent = '';
-      sentenceText.textContent = next.text;
+      sentenceText.replaceChildren();
+      sentenceWords = [];
+      if (typeof config.lookupWord === 'function') {
+        const parts = next.text.match(/[A-Za-z]+(?:['’][A-Za-z]+)*|[^A-Za-z]+/g) || [];
+        parts.forEach(part => {
+          const word = part.replace(/’/g, "'");
+          if (!/^[A-Za-z]/.test(word) || word.replace(/'/g, '').length < 2) {
+            sentenceText.append(element('span', '', part));
+            return;
+          }
+          const button = element('button', 'goal-word', part);
+          button.type = 'button';
+          button.setAttribute('aria-label', `查词：${part}`);
+          button.addEventListener('click', event => {
+            if (!current || busy !== 'idle') return;
+            const selection = typeof doc.getSelection === 'function' ? doc.getSelection() : null;
+            // A drag or long press selects text; native button keyboard activation has detail 0.
+            if (event.detail !== 0 && selection && !selection.isCollapsed && String(selection).trim()) return;
+            event.preventDefault();
+            event.stopPropagation();
+            pauseRecording();
+            config.lookupWord(word, { ...next });
+          });
+          sentenceWords.push(button);
+          sentenceText.append(button);
+        });
+      } else sentenceText.textContent = next.text;
       sentencePanel.hidden = !next.text;
       translation.textContent = next.translation;
       translation.hidden = true;
@@ -234,6 +264,7 @@
     function setState(value) {
       const previous = busy;
       busy = ['requesting', 'recording', 'evaluating'].includes(value) ? value : 'idle';
+      if (busy !== 'idle' && config.lookupCard) config.lookupCard.hidden = true;
       if (busy !== 'idle') pauseRecording();
       if (busy !== 'idle') phase = 'speak';
       if (busy === 'requesting') { settled = false; outcome = null; response.hidden = true; feedback.textContent = '准备好后，按自己的节奏说。'; }
@@ -247,10 +278,12 @@
       current = goal;
       container.hidden = !goal;
       if (!goal) {
+        if (config.lookupCard) config.lookupCard.hidden = true;
         releaseRecording(); sentence = null; sentenceKey = ''; settled = false; outcome = null; busy = 'idle';
         return;
       }
       if (previousVideo !== goal.videoId) {
+        if (config.lookupCard) config.lookupCard.hidden = true;
         releaseRecording();
         sentence = null; sentenceKey = ''; settled = false; outcome = null; busy = 'idle'; phase = 'listen';
         sentenceText.textContent = ''; translation.textContent = ''; sentencePanel.hidden = true;
@@ -270,19 +303,20 @@
       paint();
       if (typeof config.listen === 'function') config.listen(sentenceIndex());
     });
-    record.addEventListener('click', () => {
-      if (!current || record.disabled || sentenceIndex() < 0) return;
+    function recordSentence() {
+      if (!current || record.hidden || record.disabled || sentenceIndex() < 0) return;
       pauseRecording();
       phase = 'speak';
       if (typeof config.record === 'function') config.record(sentenceIndex());
-    });
+    }
+    record.addEventListener('click', recordSentence);
     again.addEventListener('click', () => {
       if (!current || again.hidden || busy !== 'idle') return;
       settled = false; outcome = null; phase = 'listen';
       if (typeof config.next === 'function') config.next(current);
     });
     return {
-      update, setSentence, setRecording, setState,
+      update, setSentence, setRecording, setState, recordSentence,
       getSentenceIndex: () => sentence ? sentence.index : null,
       hide: () => update(null),
       feedback: text => { if (!settled) feedback.textContent = text || ''; },

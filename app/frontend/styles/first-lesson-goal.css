@@ -68,6 +68,9 @@
 .goal-studio .goal-sentence { padding: clamp(16px, 3vw, 24px); border: 1px solid #e0eaf0; border-radius: 18px; background: #f7fafc; }
 .goal-studio .goal-sentence-label { display: block; color: #718397; font-size: 10px; font-weight: 800; letter-spacing: .11em; }
 .goal-studio .goal-sentence-text { margin: 12px 0 8px; color: #182e4b; font-family: Georgia, "Times New Roman", serif; font-size: clamp(24px, 3.3vw, 34px); font-weight: 500; line-height: 1.35; letter-spacing: -.02em; overflow-wrap: anywhere; }
+.goal-studio .goal-word { display: inline; min-height: 0; padding: 0; border: 0; border-radius: 3px; color: inherit; background: transparent; font: inherit; letter-spacing: inherit; text-decoration: underline; text-decoration-color: #b5d5df; text-decoration-thickness: 1px; text-underline-offset: 4px; user-select: text; -webkit-user-select: text; }
+.goal-studio .goal-word:hover, .goal-studio .goal-word:active { color: #147e99; background: #e6f2f6; }
+.goal-studio .goal-word:disabled { opacity: 1; cursor: default; text-decoration: none; }
 .goal-studio .goal-translation-toggle { justify-content: flex-start; min-height: 44px; padding: 6px 0; border: 0; border-radius: 4px; color: #247c98; background: transparent; font-size: 12px; }
 .goal-studio .goal-translation { margin: 4px 0 0; padding-top: 12px; border-top: 1px solid #e0eaf0; color: #566b80; font-size: 14px; }
 .goal-studio .goal-feedback { margin: 16px 0 0; padding: 13px 15px; border: 1px solid #cce8df; border-radius: 12px; color: #276756; background: #f0faf5; font-size: 14px; font-weight: 600; line-height: 1.6; }
