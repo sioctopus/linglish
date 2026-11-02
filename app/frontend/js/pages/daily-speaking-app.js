@@ -2209,7 +2209,7 @@
       if (window.CORE_850 && window.CORE_850.length) return Promise.resolve(true);
       return new Promise((resolve) => {
         const script = document.createElement('script');
-        script.src = './data/core-850.js?v=2026110101';
+        script.src = './data/core-850.js?v=2026110201';
         script.onload = () => resolve(Boolean(window.CORE_850 && window.CORE_850.length));
         script.onerror = () => resolve(false);
         document.body.appendChild(script);
