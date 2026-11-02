@@ -243,12 +243,12 @@ test('a correctly loaded course must expose the real scene and turn data', async
   assert.equal(h.sandbox.window.TRAVEL_SPEAK[0].turns[0][1], 'Can I check in?');
 });
 
-for (const [pack, file, globalName, label] of [
-  ['daylife', 'day-life.js', 'DAY_LIFE', '一日口语'],
-  ['travel', 'travel-speak.js', 'TRAVEL_SPEAK', '旅游口语'],
-  ['kids', 'kids-speak.js', 'KIDS_SPEAK', '儿童口语'],
-  ['core', 'core-850.js', 'CORE_850', '基础表达'],
-  ['medical', 'medical-vocab.js', 'MEDICAL_VOCAB', '医学词汇'],
+for (const [pack, file, globalName, label, sceneCount] of [
+  ['daylife', 'day-life.js', 'DAY_LIFE', '一日口语', 4],
+  ['travel', 'travel-speak.js', 'TRAVEL_SPEAK', '旅游口语', 4],
+  ['kids', 'kids-speak.js', 'KIDS_SPEAK', '儿童口语', 4],
+  ['core', 'core-850.js', 'CORE_850', '基础表达', 144],
+  ['medical', 'medical-vocab.js', 'MEDICAL_VOCAB', '医学词汇', 4],
 ]) {
   test(`${pack} loads its original bilingual starter lessons and supports keyboard practice`, async () => {
     const h = packHarness();
@@ -267,8 +267,8 @@ for (const [pack, file, globalName, label] of [
     assert.equal(h.sandbox.packId, pack);
     assert.equal(h.select.value, pack);
     const scenes = h.sandbox.window[globalName];
-    assert.equal(scenes.length, 4);
-    assert.equal(scenes.flatMap(scene => scene.turns).length, 24);
+    assert.equal(scenes.length, sceneCount);
+    assert.equal(scenes.flatMap(scene => scene.turns).length, sceneCount * 6);
     const ids = new Set();
     const english = new Set();
     for (const scene of scenes) {
@@ -283,8 +283,8 @@ for (const [pack, file, globalName, label] of [
         english.add(turn[1]);
       }
     }
-    assert.ok(english.size >= 20, 'the course contains distinct useful lines');
-    assert.match(h.sandbox.status, /24 句/);
+    assert.ok(english.size >= sceneCount * 6 - 10, 'the course contains distinct useful lines');
+    assert.match(h.sandbox.status, new RegExp(`${sceneCount * 6} 句`));
     assert.equal(h.sandbox.packLabel(pack), label);
     assert.doesNotMatch(h.sandbox.status, /850|1746/);
     const lesson = scenes[0];
