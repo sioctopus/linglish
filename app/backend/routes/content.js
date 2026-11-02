@@ -12,6 +12,7 @@ const { authenticate, optionalAuth } = require('../middleware/auth');
 const { handleFileUpload, cleanupFile } = require('../upload-handler');
 const sentenceSegments = require('../../frontend/js/video-reader/sentence-segments');
 const firstLessonProgress = require('../../frontend/js/video-reader/first-lesson-progress');
+const { canAccessVideoResource } = require('../services/video-access-policy');
 
 // Constants for speaker resolution
 const FALLBACK_SPEAKER_NAMES = ['Speaker 1', 'Speaker 2', 'Speaker 3', 'Speaker 4'];
@@ -242,12 +243,15 @@ function deriveSpeakerLabel(rawSpeaker, fallbackIndex) {
 /**
  * Resolve speakers from video transcript segments
  */
-async function resolveSpeakersForVideo(videoId) {
+async function resolveSpeakersForVideo(videoId, user) {
   const video = await dataStore.getVideoResourceById(videoId);
   if (!video) {
     const err = new Error('Video not found');
     err.statusCode = 404;
     throw err;
+  }
+  if (!canAccessVideoResource(video, user)) {
+    throw Object.assign(new Error('FORBIDDEN'), { statusCode: 403 });
   }
 
   let segmentsRaw = video.transcript_segments;
@@ -404,13 +408,14 @@ async function registerContentRoutes(pathname, req, res) {
   // GET /practice/speakers
   if (pathname === '/practice/speakers' && req.method === 'GET') {
     try {
-      await authenticate(req);
+      res.setHeader('Cache-Control', 'private, no-store');
+      const user = await authenticate(req);
       const videoId = Number(url.searchParams.get('videoId'));
       if (!Number.isFinite(videoId)) {
         return sendError(res, 400, 'videoId is required');
       }
 
-      const { speakers } = await resolveSpeakersForVideo(videoId);
+      const { speakers } = await resolveSpeakersForVideo(videoId, user);
       return sendJson(res, 200, { speakers });
     } catch (err) {
       const status = err.statusCode || (err.message === 'UNAUTHORIZED' ? 401 : 500);
@@ -423,6 +428,7 @@ async function registerContentRoutes(pathname, req, res) {
     let uploadedPath = null;
     let wavPath = null;
     try {
+      res.setHeader('Cache-Control', 'private, no-store');
       const user = await authenticate(req);
       const { files, fields } = await handleFileUpload(req);
 
@@ -445,6 +451,7 @@ async function registerContentRoutes(pathname, req, res) {
       if (!video) {
         return sendError(res, 404, 'Video not found');
       }
+      if (!canAccessVideoResource(video, user)) return sendError(res, 403, 'FORBIDDEN');
 
       let segmentsRaw = video.transcript_segments;
       if (typeof segmentsRaw === 'string') {

@@ -19,6 +19,8 @@ const VIDEO_ID = 424_242;
 const OWNER_ID = 7;
 const VIDEO_NAME = 'task-1-media-auth.mp4';
 const EMPTY_VIDEO_NAME = 'task-1-empty-media-auth.mp4';
+const PUBLIC_VIDEO_NAME = 'task-1-public-media-auth.mp4';
+const LOCAL_VIDEO_NAME = 'task-1-variants/local-media-auth.mp4';
 const VIDEO_PATH = `/videos/${VIDEO_NAME}`;
 const EMPTY_VIDEO_PATH = `/videos/${EMPTY_VIDEO_NAME}`;
 const RECORDING_REL = `video-${VIDEO_ID}/user-${OWNER_ID}/seg-1-task-1.mp3`;
@@ -31,6 +33,10 @@ const VIDEO_BODY = Buffer.from('0123456789abcdef');
 const RECORDING_BODY = Buffer.from('abcdefghijklmnop');
 const PDF_BODY = Buffer.from('%PDF-1.4 task-2 clean auth');
 const PUBLIC_DIR = path.join(__dirname, '../public');
+const THUMBNAIL_PATH = '/static/thumbnails/task-1-private-media-auth.jpg';
+const THUMBNAIL_FILE = path.join(PUBLIC_DIR, 'thumbnails/task-1-private-media-auth.jpg');
+const PUBLIC_THUMBNAIL_PATH = '/static/thumbnails/task-1-public-media-auth.jpg';
+const PUBLIC_THUMBNAIL_FILE = path.join(PUBLIC_DIR, 'thumbnails/task-1-public-media-auth.jpg');
 const VIDEO_FILE = path.join(PUBLIC_DIR, 'videos', VIDEO_NAME);
 const EMPTY_VIDEO_FILE = path.join(PUBLIC_DIR, 'videos', EMPTY_VIDEO_NAME);
 const RECORDING_FILE = path.join(PUBLIC_DIR, 'recordings', RECORDING_REL);
@@ -59,10 +65,16 @@ function request(pathname, { method = 'GET', headers = {} } = {}) {
 
 test.before(async () => {
   await fsp.mkdir(path.dirname(VIDEO_FILE), { recursive: true });
+  await fsp.mkdir(path.join(PUBLIC_DIR, 'videos', path.dirname(LOCAL_VIDEO_NAME)), { recursive: true });
   await fsp.mkdir(path.dirname(RECORDING_FILE), { recursive: true });
   await fsp.mkdir(path.dirname(PDF_FILE), { recursive: true });
+  await fsp.mkdir(path.dirname(THUMBNAIL_FILE), { recursive: true });
   await fsp.writeFile(VIDEO_FILE, VIDEO_BODY);
   await fsp.writeFile(EMPTY_VIDEO_FILE, Buffer.alloc(0));
+  await fsp.writeFile(path.join(PUBLIC_DIR, 'videos', PUBLIC_VIDEO_NAME), VIDEO_BODY);
+  await fsp.writeFile(path.join(PUBLIC_DIR, 'videos', LOCAL_VIDEO_NAME), VIDEO_BODY);
+  await fsp.writeFile(THUMBNAIL_FILE, VIDEO_BODY);
+  await fsp.writeFile(PUBLIC_THUMBNAIL_FILE, VIDEO_BODY);
   await fsp.writeFile(RECORDING_FILE, RECORDING_BODY);
   await fsp.writeFile(EMPTY_RECORDING_FILE, Buffer.alloc(0));
   await fsp.writeFile(PDF_FILE, PDF_BODY);
@@ -72,8 +84,16 @@ test.before(async () => {
     ? { id: Number(id), email: 'owner@example.test', status: 'active', password_hash: 'hidden' }
     : null;
   dataStore.getVideoResourceById = async id => Number(id) === VIDEO_ID
-    ? { id: VIDEO_ID, video_path: VIDEO_PATH, local_video_path: null }
+    ? { id: VIDEO_ID, uploader_id: OWNER_ID, is_public: false, video_path: VIDEO_PATH, local_video_path: `/videos/${LOCAL_VIDEO_NAME}`, thumbnail_path: THUMBNAIL_PATH }
+    : Number(id) === VIDEO_ID + 10 ? { id: VIDEO_ID + 10, uploader_id: OWNER_ID, is_public: false, video_path: '/videos/unrelated.mp4', thumbnail_path: VIDEO_PATH }
     : null;
+  dataStore.getVideoResourcesForMediaPath = async pathname => {
+    if ([`/videos/${PUBLIC_VIDEO_NAME}`, PUBLIC_THUMBNAIL_PATH].includes(pathname)) return [{ id: VIDEO_ID + 1, is_public: true }];
+    if ([VIDEO_PATH, EMPTY_VIDEO_PATH, `/videos/${LOCAL_VIDEO_NAME}`, THUMBNAIL_PATH].includes(pathname)) {
+      return [{ id: VIDEO_ID, uploader_id: OWNER_ID, is_public: false }];
+    }
+    return [];
+  };
   dataStore.getPracticeRecordingShareByToken = async token => {
     const common = {
       token,
@@ -83,6 +103,7 @@ test.before(async () => {
       expires_at: new Date(Date.now() + 60_000).toISOString(),
     };
     if (token === 'valid-share') return common;
+    if (token === 'thumbnail-only-share') return { ...common, video_resource_id: VIDEO_ID + 10 };
     if (token === 'expired-share') return { ...common, expires_at: new Date(Date.now() - 60_000).toISOString() };
     if (token === 'wrong-video') return { ...common, video_resource_id: VIDEO_ID + 1 };
     if (token === 'wrong-owner') return { ...common, user_id: 8 };
@@ -124,16 +145,21 @@ test.after(async () => {
   await Promise.allSettled([
     fsp.unlink(VIDEO_FILE),
     fsp.unlink(EMPTY_VIDEO_FILE),
+    fsp.unlink(path.join(PUBLIC_DIR, 'videos', PUBLIC_VIDEO_NAME)),
+    fsp.unlink(path.join(PUBLIC_DIR, 'videos', LOCAL_VIDEO_NAME)),
+    fsp.unlink(THUMBNAIL_FILE),
+    fsp.unlink(PUBLIC_THUMBNAIL_FILE),
     fsp.unlink(RECORDING_FILE),
     fsp.unlink(EMPTY_RECORDING_FILE),
     fsp.unlink(PDF_FILE),
     fsp.unlink(path.join(__dirname, '../pdfs', '试卷-auth.pdf')),
   ]);
+  await fsp.rmdir(path.join(PUBLIC_DIR, 'videos', path.dirname(LOCAL_VIDEO_NAME)));
   try { await dataStore.pool.end(); } catch (_) { /* already closed */ }
 });
 
-function mediaCookie() {
-  const token = mediaSession.createMediaSessionToken({ id: OWNER_ID });
+function mediaCookie(userId = OWNER_ID) {
+  const token = mediaSession.createMediaSessionToken({ id: userId });
   return mediaSession.serializeMediaSessionCookie(token, { production: false }).split(';')[0];
 }
 
@@ -149,6 +175,42 @@ test('protected media rejects requests without a valid share or credential', asy
   const recording = await request(RECORDING_PATH, { method: 'HEAD' });
   assert.equal(recording.status, 401);
   assert.equal(recording.headers['cache-control'], 'private, no-store');
+});
+
+test('private video bytes deny another account and media cookie even when the path is known', async () => {
+  for (const headers of [{ authorization: `Bearer ${accountToken(8)}` }, { cookie: mediaCookie(8) }]) {
+    const response = await request(VIDEO_PATH, { headers });
+    assert.equal(response.status, 403);
+    assert.equal(response.headers['cache-control'], 'private, no-store');
+    assert.notDeepEqual(response.body, VIDEO_BODY);
+  }
+});
+
+test('public media and recorded local variants remain accessible in their authorized scopes', async () => {
+  assert.equal((await request(`/videos/${PUBLIC_VIDEO_NAME}`)).status, 200);
+  assert.equal((await request(`/videos/${LOCAL_VIDEO_NAME}`, { headers: { cookie: mediaCookie() } })).status, 200);
+  assert.equal((await request(`/videos/${LOCAL_VIDEO_NAME}?share=valid-share`)).status, 200);
+  assert.equal((await request(`/videos/${LOCAL_VIDEO_NAME}`, { headers: { cookie: mediaCookie(8) } })).status, 403);
+  assert.equal((await request('/videos/not-bound-to-a-resource.mp4', { headers: { cookie: mediaCookie() } })).status, 403);
+});
+
+test('private thumbnail derivatives enforce the same resource scopes as video bytes', async () => {
+  assert.equal((await request(THUMBNAIL_PATH)).status, 401);
+  assert.equal((await request(THUMBNAIL_PATH, { headers: { cookie: mediaCookie(8) } })).status, 403);
+  assert.equal((await request(THUMBNAIL_PATH, { headers: { cookie: mediaCookie() } })).status, 200);
+  assert.equal((await request(`${THUMBNAIL_PATH}?share=valid-share`)).status, 200);
+});
+
+test('a thumbnail field on a shared resource cannot authorize a video file', async () => {
+  const denied = await request(`${VIDEO_PATH}?share=thumbnail-only-share`);
+  assert.equal(denied.status, 403);
+  assert.notDeepEqual(denied.body, VIDEO_BODY);
+});
+
+test('a public resource’s real server thumbnail remains available without credentials', async () => {
+  const response = await request(PUBLIC_THUMBNAIL_PATH);
+  assert.equal(response.status, 200);
+  assert.deepEqual(response.body, VIDEO_BODY);
 });
 
 test('clean media URLs accept the short-lived cookie but media Bearer tokens do not', async () => {

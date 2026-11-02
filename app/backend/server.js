@@ -159,6 +159,7 @@ const { registerVocabularyV2Routes } = require('./routes/vocabulary-v2');  // �
 const { registerAiVocabRoutes } = require('./routes/ai-vocab');
 const { shouldBypassExpensiveRateLimit } = require('./middleware/ai-auth');
 const { registerVideoRoutes } = require('./routes/videos');
+const { registerCreatorRoutes } = require('./routes/creators');
 const { registerYouTubeRoutes } = require('./routes/youtube');
 const { registerMediaLibraryRoutes } = require('./routes/media-library');
 const { registerYouTubeProxyRoutes } = require('./routes/youtube-proxy');
@@ -300,6 +301,7 @@ async function handleRequest(req, res) {
     if (await registerVocabularyV2Routes(pathname, req, res, url)) return;  // 新增：V2词汇路由（优先级高）
     if (await registerVocabularyRoutes(pathname, req, res, url)) return;
     if (await registerAiVocabRoutes(pathname, req, res, url)) return;
+    if (await registerCreatorRoutes(pathname, req, res, url)) return;
     if (await registerVideoRoutes(pathname, req, res, url)) return;
     if (await registerMediaLibraryRoutes(pathname, req, res, url)) return;
     if (await registerYouTubeRoutes(pathname, req, res, url)) return;

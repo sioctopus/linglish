@@ -6678,6 +6678,11 @@ body > .topbar {
   box-shadow: 0 10px 30px rgba(23, 25, 31, 0.08);
 }
 
+body > .topbar .brand .learning-compact-brand {
+  display: inline-block;
+  text-decoration: none;
+}
+
 body > .topbar .brand h1 {
   margin: 0;
   color: #0f172a;

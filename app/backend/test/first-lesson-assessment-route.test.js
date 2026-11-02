@@ -15,6 +15,7 @@ function response() {
   return {
     headersSent: false,
     writableEnded: false,
+    setHeader() {},
     writeHead(statusCode) { this.statusCode = statusCode; this.headersSent = true; },
     end(payload) { this.payload = JSON.parse(payload); this.writableEnded = true; },
   };
@@ -76,7 +77,7 @@ test('practice route reconstructs and evaluates the exact merged displayed sente
     stableSegmentId,
     sourceIndices: JSON.stringify([0, 1]),
   });
-  dataStore.getVideoResourceById = async () => ({ id: 374, transcript_segments: raw });
+  dataStore.getVideoResourceById = async () => ({ id: 374, uploader_id: 7, is_public: false, transcript_segments: raw });
   transcription.transcribeVideoFile = async () => ({ text: 'Please open the window.' });
   const req = { method: 'POST', url: '/practice/evaluate', headers: { host: 'localhost' } };
   const res = response();
@@ -107,7 +108,7 @@ test('practice route rejects a stale stable ID instead of trusting source indice
     targetText: 'Client text must not be trusted.',
   });
   let transcribeCalls = 0;
-  dataStore.getVideoResourceById = async () => ({ id: 374, transcript_segments: raw });
+  dataStore.getVideoResourceById = async () => ({ id: 374, uploader_id: 7, is_public: false, transcript_segments: raw });
   transcription.transcribeVideoFile = async () => { transcribeCalls += 1; return { text: 'ignored' }; };
   const req = { method: 'POST', url: '/practice/evaluate', headers: { host: 'localhost' } };
   const res = response();
@@ -135,7 +136,7 @@ test('practice route reconstructs the exact explicit-ID split sentence and rejec
     stableSegmentId: secondStableId,
     sourceIndices: JSON.stringify([0]),
   });
-  dataStore.getVideoResourceById = async () => ({ id: 374, transcript_segments: raw });
+  dataStore.getVideoResourceById = async () => ({ id: 374, uploader_id: 7, is_public: false, transcript_segments: raw });
   transcription.transcribeVideoFile = async () => ({ text: 'Take a breath.' });
   const exactResponse = response();
   try {

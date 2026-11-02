@@ -1,10 +1,86 @@
 const { parseBody } = require('../utils/parsers');
 const { sendJson, sendError, mapErrorToStatus } = require('../middleware/error-handler');
-const { authenticate } = require('../middleware/auth');
+const { authenticate, authenticateBearer } = require('../middleware/auth');
 const dataStore = require('../data-store');
+const { canAccessVideoResource, isSameUserId } = require('../services/video-access-policy');
+const { publicationError, VIDEO_REVIEW_LOCK_MESSAGE, VIDEO_PROCESSING_LOCK_MESSAGE } = require('../services/video-publication-policy');
+
+function normalizeTagIds(values) {
+  return Array.from(new Set(values.map(value => {
+    const number = Number(String(value ?? '').trim().replace(/^u:/, ''));
+    return Number.isInteger(number) && number > 0 ? number : null;
+  }).filter(value => value !== null)));
+}
+
+async function setVideoTags(videoId, user, body) {
+  const wantsSetGlobals = Object.hasOwn(body, 'global_tag_ids');
+  if ((wantsSetGlobals && !Array.isArray(body.global_tag_ids))
+      || (Object.hasOwn(body, 'user_tag_ids') && !Array.isArray(body.user_tag_ids))) {
+    throw publicationError(400, '标签ID必须为数组');
+  }
+  const globalIds = normalizeTagIds(body.global_tag_ids || []);
+  const userIds = normalizeTagIds(body.user_tag_ids || []);
+  const client = await dataStore.pool.connect();
+  try {
+    await client.query('BEGIN');
+    // Match submit/review/edit lock order, then recheck the current publication state.
+    const { rows: videos } = await client.query('SELECT * FROM video_resources WHERE id = $1 FOR UPDATE', [videoId]);
+    const video = videos[0];
+    if (!video) throw publicationError(404, '视频不存在');
+    if (!canAccessVideoResource(video, user)) throw publicationError(403, 'FORBIDDEN');
+    const allowGlobal = Boolean(user.is_admin) || isSameUserId(video.uploader_id, user.id);
+    const convertedToPersonal = [];
+
+    if (userIds.length) {
+      const { rows } = await client.query('SELECT id FROM user_tags WHERE user_id = $1 AND id = ANY($2::bigint[])', [user.id, userIds]);
+      if (rows.length !== userIds.length) throw publicationError(403, '包含无权限的个人标签');
+    }
+    if (globalIds.length) {
+      const { rows } = await client.query('SELECT id FROM tags WHERE scope = $1 AND id = ANY($2::bigint[])', ['global', globalIds]);
+      if (rows.length !== globalIds.length) throw publicationError(400, '包含不存在的全局标签');
+    }
+
+    if (allowGlobal && wantsSetGlobals) {
+      const { rows: current } = await client.query('SELECT tag_id FROM video_tags WHERE video_id = $1', [videoId]);
+      const currentIds = new Set(current.map(row => String(row.tag_id)));
+      const changed = currentIds.size !== globalIds.length || globalIds.some(id => !currentIds.has(String(id)));
+      // An unchanged global selection may accompany an independent personal edit.
+      if (changed) {
+        if (video.status === 'processing') throw publicationError(409, VIDEO_PROCESSING_LOCK_MESSAGE);
+        if (!user.is_admin) {
+          const { rows: pending } = await client.query("SELECT id FROM video_share_requests WHERE video_resource_id = $1 AND status = 'pending' LIMIT 1", [videoId]);
+          if (video.is_public === true || pending.length) throw publicationError(409, VIDEO_REVIEW_LOCK_MESSAGE);
+        }
+        await client.query('DELETE FROM video_tags WHERE video_id = $1', [videoId]);
+        for (const id of globalIds) {
+          await client.query('INSERT INTO video_tags(video_id, tag_id, user_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [videoId, id, user.id]);
+        }
+      }
+    } else if (!allowGlobal && globalIds.length) {
+      const { rows: metadata } = await client.query('SELECT id, name, icon, color FROM tags WHERE id = ANY($1::bigint[])', [globalIds]);
+      for (const tag of metadata) {
+        const { rows } = await client.query(
+          `INSERT INTO user_tags (user_id, name, icon, color) VALUES ($1, $2, $3, $4)
+           ON CONFLICT (user_id, name) DO UPDATE SET icon = EXCLUDED.icon, color = EXCLUDED.color, updated_at = NOW()
+           RETURNING id`, [user.id, tag.name, tag.icon, tag.color]);
+        if (rows[0]) convertedToPersonal.push(Number(rows[0].id));
+      }
+    }
+
+    await client.query('DELETE FROM video_user_tags WHERE video_id = $1 AND user_id = $2', [videoId, user.id]);
+    for (const id of new Set([...userIds, ...convertedToPersonal])) {
+      await client.query('INSERT INTO video_user_tags(video_id, user_tag_id, user_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING', [videoId, id, user.id]);
+    }
+    await client.query('COMMIT');
+    return convertedToPersonal;
+  } catch (error) {
+    try { await client.query('ROLLBACK'); } catch (_) {}
+    throw error;
+  } finally { client.release(); }
+}
 
 async function requireAdmin(req) {
-  const u = await authenticate(req);
+  const u = await authenticateBearer(req);
   if (!u?.is_admin) {
     const err = new Error('FORBIDDEN');
     err.status = 403;
@@ -27,10 +103,15 @@ async function registerTagRoutes(pathname, req, res, url) {
         if (!Number.isInteger(num) || num <= 0) return null;
         return num;
       };
-      const safeVideoIds = Array.from(new Set(videoIds.map(normalizeVideoId).filter(v => v !== null)));
+      let safeVideoIds = Array.from(new Set(videoIds.map(normalizeVideoId).filter(v => v !== null)));
       if (safeVideoIds.length === 0) {
         return sendJson(res, 200, { success: true, items: [] });
       }
+      res.setHeader('Cache-Control', 'private, no-store');
+      const { rows: videos } = await dataStore.pool.query('SELECT id, uploader_id, is_public, is_vip_only FROM video_resources WHERE id = ANY($1::bigint[])', [safeVideoIds]);
+      const accessible = new Set(videos.filter(video => canAccessVideoResource(video, user)).map(video => String(video.id)));
+      safeVideoIds = safeVideoIds.filter(id => accessible.has(String(id)));
+      if (!safeVideoIds.length) return sendJson(res, 200, { success: true, items: [] });
 
       const { rows: globalRows } = await dataStore.pool.query(
         `SELECT video_id, array_agg(tag_id ORDER BY tag_id) AS global_tag_ids
@@ -241,7 +322,7 @@ async function registerTagRoutes(pathname, req, res, url) {
   // POST /user-tags - 创建个人标签
   if (pathname === '/user-tags' && req.method === 'POST') {
     try {
-      const user = await authenticate(req);
+      const user = await authenticateBearer(req);
       const { name, icon = '🏷️', color = '#64748b' } = await parseBody(req);
       if (!name) return sendError(res, 400, '缺少 name');
       const { rows } = await dataStore.pool.query(
@@ -262,7 +343,7 @@ async function registerTagRoutes(pathname, req, res, url) {
   // PATCH /user-tags/:id - 更新个人标签
   if (pathname.startsWith('/user-tags/') && req.method === 'PATCH') {
     try {
-      const user = await authenticate(req);
+      const user = await authenticateBearer(req);
       const tagId = Number(pathname.split('/')[2]);
       if (!tagId) return sendError(res, 400, '缺少标签ID');
       const { name, icon, color } = await parseBody(req);
@@ -287,7 +368,7 @@ async function registerTagRoutes(pathname, req, res, url) {
   // DELETE /user-tags/:id - 删除个人标签
   if (pathname.startsWith('/user-tags/') && req.method === 'DELETE') {
     try {
-      const user = await authenticate(req);
+      const user = await authenticateBearer(req);
       const tagId = Number(pathname.split('/')[2]);
       if (!tagId) return sendError(res, 400, '缺少标签ID');
       await dataStore.pool.query('DELETE FROM video_user_tags WHERE user_tag_id = $1 AND user_id = $2', [tagId, user.id]);
@@ -306,7 +387,7 @@ async function registerTagRoutes(pathname, req, res, url) {
   // POST /tag-preferences - 设置全局标签偏好
   if (pathname === '/tag-preferences' && req.method === 'POST') {
     try {
-      const user = await authenticate(req);
+      const user = await authenticateBearer(req);
       const body = await parseBody(req);
       const prefs = Array.isArray(body.preferences) ? body.preferences : [];
       for (const p of prefs) {
@@ -332,125 +413,11 @@ async function registerTagRoutes(pathname, req, res, url) {
   // POST /videos/:id/tags - 设置视频标签（全局+个人）
   if (pathname.startsWith('/videos/') && pathname.endsWith('/tags') && req.method === 'POST') {
     try {
-      const user = await authenticate(req);
+      const user = await authenticateBearer(req);
       const videoId = Number(pathname.split('/')[2]);
       if (!videoId) return sendError(res, 400, '缺少视频ID');
-      const { global_tag_ids = [], user_tag_ids = [] } = await parseBody(req);
-      const wantsSetGlobals = Array.isArray(global_tag_ids);
-      // 仅接受数字ID，过滤掉前端传来的字符串ID（如 custom_xxx 或 u:123）
-      const normalizeNum = (val) => {
-        if (val == null) return null;
-        const str = String(val).trim();
-        const cleaned = str.startsWith('u:') ? str.slice(2) : str;
-        const num = Number(cleaned);
-        if (Number.isInteger(num) && num > 0) return num;
-        return null;
-      };
-      const safeGlobalIds = Array.from(
-        new Set(
-          (global_tag_ids || [])
-            .map(normalizeNum)
-            .filter(id => id !== null)
-        )
-      );
-      const safeUserIds = Array.from(
-        new Set(
-          (user_tag_ids || [])
-            .map(normalizeNum)
-            .filter(id => id !== null)
-        )
-      );
-      console.log('[Admin Tags] Set tags payload', {
-        user_id: user.id,
-        video_id: videoId,
-        global_tag_ids_raw: global_tag_ids,
-        user_tag_ids_raw: user_tag_ids,
-        global_tag_ids: safeGlobalIds,
-        user_tag_ids: safeUserIds
-      });
-
-      // 视频存在性 & 上传者校验
-      const { rows: videoRows } = await dataStore.pool.query(
-        'SELECT uploader_id FROM video_resources WHERE id = $1',
-        [videoId]
-      );
-      if (!videoRows.length) return sendError(res, 404, '视频不存在');
-      const uploaderId = videoRows[0].uploader_id;
-      const isAdmin = !!user.is_admin;
-      const isUploader = uploaderId === user.id;
-      const allowGlobal = isAdmin || isUploader;
-      let convertedToPersonal = [];
-
-      // 校验个人标签归属
-      if (safeUserIds.length) {
-        const { rows } = await dataStore.pool.query(
-          'SELECT id FROM user_tags WHERE user_id = $1 AND id = ANY($2::bigint[])',
-          [user.id, safeUserIds]
-        );
-        if (rows.length !== safeUserIds.length) return sendError(res, 403, '包含无权限的个人标签');
-      }
-
-      // 校验全局标签存在且 scope = global
-      if (safeGlobalIds.length) {
-        const { rows } = await dataStore.pool.query(
-          'SELECT id FROM tags WHERE scope = $1 AND id = ANY($2::bigint[])',
-          ['global', safeGlobalIds]
-        );
-        if (rows.length !== safeGlobalIds.length) return sendError(res, 400, '包含不存在的全局标签');
-      }
-
-      // 权限：全局标签只有上传者或管理员可设置
-      // 如果是普通用户，则将全局标签转换为“个人标签”并只作用于自己
-      if (!allowGlobal && safeGlobalIds.length) {
-        const { rows: globalMeta } = await dataStore.pool.query(
-          'SELECT id, name, icon, color FROM tags WHERE id = ANY($1::bigint[])',
-          [safeGlobalIds]
-        );
-        for (const g of globalMeta) {
-          const { rows: upserted } = await dataStore.pool.query(
-            `INSERT INTO user_tags (user_id, name, icon, color)
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT (user_id, name) DO UPDATE SET icon = EXCLUDED.icon, color = EXCLUDED.color, updated_at = NOW()
-             RETURNING id`,
-            [user.id, g.name, g.icon, g.color]
-          );
-          if (upserted.length) {
-            const pid = Number(upserted[0].id);
-            if (Number.isInteger(pid)) convertedToPersonal.push(pid);
-          }
-        }
-        // 清空全局，转为个人标签
-        safeGlobalIds.length = 0;
-        safeUserIds.push(...convertedToPersonal);
-      }
-
-      // 替换视频的全局标签（仅在有权限且请求包含全局标签时才更新）
-      if (allowGlobal && wantsSetGlobals) {
-        await dataStore.pool.query('DELETE FROM video_tags WHERE video_id = $1', [videoId]);
-        for (const tagId of safeGlobalIds) {
-          await dataStore.pool.query(
-            'INSERT INTO video_tags(video_id, tag_id, user_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-            [videoId, tagId, user.id]
-          );
-        }
-      }
-
-      // 替换视频的个人标签
-      await dataStore.pool.query('DELETE FROM video_user_tags WHERE video_id = $1 AND user_id = $2', [videoId, user.id]);
-      for (const utId of safeUserIds) {
-        await dataStore.pool.query(
-          'INSERT INTO video_user_tags(video_id, user_tag_id, user_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING',
-          [videoId, utId, user.id]
-        );
-      }
-
-      console.log('[Admin Tags] Set tags success', {
-        video_id: videoId,
-        global_tag_ids: safeGlobalIds,
-        user_tag_ids: safeUserIds,
-        converted_to_user_tags: convertedToPersonal,
-        operator: user.id
-      });
+      const body = await parseBody(req);
+      const convertedToPersonal = await setVideoTags(videoId, user, body);
       return sendJson(res, 200, { success: true, converted_to_user_tags: convertedToPersonal });
     } catch (err) {
       console.error('[Admin Tags] Set tags failed', err);
@@ -462,9 +429,13 @@ async function registerTagRoutes(pathname, req, res, url) {
   // GET /videos/:id/tags - 获取视频的标签（全局 + 当前用户的个人标签）
   if (pathname.startsWith('/videos/') && pathname.endsWith('/tags') && req.method === 'GET') {
     try {
+      res.setHeader('Cache-Control', 'private, no-store');
       const user = await authenticate(req);
       const videoId = Number(pathname.split('/')[2]);
       if (!videoId) return sendError(res, 400, '缺少视频ID');
+      const video = await dataStore.getVideoResourceById(videoId);
+      if (!video) return sendError(res, 404, '视频不存在');
+      if (!canAccessVideoResource(video, user)) return sendError(res, 403, 'FORBIDDEN');
 
       const { rows: globalRows } = await dataStore.pool.query(
         'SELECT tag_id FROM video_tags WHERE video_id = $1',

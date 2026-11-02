@@ -1402,6 +1402,11 @@ async function ensureEnglishTranscript(transcript, options = {}) {
 
 async function transcribeAndStore(resource, options = {}) {
   const { id, video_path: videoPath, youtube_video_id: youtubeVideoId, local_video_path: localVideoPath } = resource;
+  const { editingUser, ...transcriptionOptions } = options;
+  // The actor comes from the authenticated route, never the submitted request body.
+  const saveUpdates = updates => editingUser
+    ? dataStore.updateVideoResourceForOwner(id, updates, editingUser, { allowProcessingCompletion: true })
+    : dataStore.updateVideoResource(id, updates);
 
   // For YouTube videos, prefer local_video_path (downloaded file)
   let effectivePath = videoPath;
@@ -1432,7 +1437,7 @@ async function transcribeAndStore(resource, options = {}) {
 
     // 视频上传场景 - 需要时间戳segments
     const transcribeOptions = {
-      ...options,
+      ...transcriptionOptions,
       scenario: 'video-upload'
     };
 
@@ -1474,7 +1479,7 @@ async function transcribeAndStore(resource, options = {}) {
     }
 
     console.log(`[transcribeAndStore] Calling dataStore.updateVideoResource for video ${id}...`);
-    const result = await dataStore.updateVideoResource(id, updates);
+    const result = await saveUpdates(updates);
     console.log(`[transcribeAndStore] Update successful for video ${id}:`, {
       returned: !!result,
       resultId: result?.id,
@@ -1484,10 +1489,11 @@ async function transcribeAndStore(resource, options = {}) {
 
     return transcript;
   } catch (err) {
+    if (err.status === 403 || err.status === 404 || err.status === 409) throw err;
     const label = err.apiModel || options.provider || getPrimaryProvider();
     const friendlyMessage = err.userMessage || buildUserMessage(err, label);
 
-    await dataStore.updateVideoResource(id, {
+    await saveUpdates({
       status: 'failed',
       failure_reason: friendlyMessage,
     });

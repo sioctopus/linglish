@@ -183,8 +183,7 @@ async function parseBody(req) {
  */
 async function authenticate(req) {
   const authService = require('../services/auth');
-  const authHeader = req.headers['authorization'] || '';
-  const [, token] = authHeader.split(' ');
+  const token = String(req.headers.authorization || '').match(/^Bearer\s+(\S+)$/i)?.[1];
   if (!token) {
     throw new Error('UNAUTHORIZED');
   }
@@ -362,7 +361,7 @@ async function importVideo(req, res) {
       video_type: 'youtube',
       youtube_video_id: videoId,
       subtitle_language: language,
-      is_public: mode === 'permanent', // Temporary videos are private
+      is_public: Boolean(user.is_admin) && mode === 'permanent',
       collection_name: collectionName,
       difficulty_level: null,
       transcript: null,
@@ -413,15 +412,15 @@ async function importVideo(req, res) {
 
         console.log('[YouTube] (BG) Transcript fetched successfully:', transcriptData.segments.length, 'segments');
 
-        await dataStore.updateVideoResource(resource.id, {
+        await dataStore.updateVideoResourceForOwner(resource.id, {
           transcript: transcriptData.transcript,
           transcript_segments: transcriptData.segments,
           has_subtitles: hasSubtitles,
           word_count: wordCount,
           unique_word_count: uniqueWordCount,
-          status: 'completed',
+          status: 'ready',
           failure_reason: null,
-        });
+        }, user, { allowProcessingCompletion: true });
 
         try {
           const cacheService = require('../services/cache');
@@ -441,11 +440,11 @@ async function importVideo(req, res) {
         failureReason = `No subtitles: ${error.message}`;
         console.error('[YouTube] (BG) Failed to fetch transcript for video', resource.id, ':', error.message);
         try {
-          await dataStore.updateVideoResource(resource.id, {
+          await dataStore.updateVideoResourceForOwner(resource.id, {
             status: 'completed_no_subtitles',
             failure_reason: failureReason,
             has_subtitles: false,
-          });
+          }, user, { allowProcessingCompletion: true });
         } catch (updateErr) {
           console.warn('[YouTube] (BG) Failed to update video status:', updateErr.message);
         }

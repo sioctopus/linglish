@@ -2209,7 +2209,7 @@
       if (window.CORE_850 && window.CORE_850.length) return Promise.resolve(true);
       return new Promise((resolve) => {
         const script = document.createElement('script');
-        script.src = './data/core-850.js?v=2';
+        script.src = './data/core-850.js?v=2026110101';
         script.onload = () => resolve(Boolean(window.CORE_850 && window.CORE_850.length));
         script.onerror = () => resolve(false);
         document.body.appendChild(script);
@@ -2220,7 +2220,7 @@
       const button = event.target.closest('[data-pack]');
       if (!button) return;
       if (recording) {
-        setStatus('正在录音。先结束跟读，再打开 850 词。');
+        setStatus('正在录音。先结束跟读，再打开基础表达。');
         return;
       }
       const nextPack = button.dataset.pack;
@@ -2228,10 +2228,10 @@
       if (nextPack === packId && (nextPack !== 'core' || coreReady)) return;
       releasePlayback();
       if (nextPack === 'core' && !coreReady) {
-        setStatus('正在打开 850 词…');
+        setStatus('正在打开基础表达…');
         const loaded = await loadCorePack();
         if (!loaded) {
-          setStatus('850 词没有加载成功。请刷新页面后再点一次「850词」。');
+          setStatus('基础表达没有加载成功。请刷新页面后再点一次。');
           return;
         }
       }
@@ -2249,7 +2249,8 @@
       const sceneList = document.getElementById('scenes');
       sceneList.scrollTop = 0;
       const count = activeScenes().length;
-      setStatus(packId === 'core' ? `已经打开 850 词：${count} 个场景，1746 句。左边从「01 我是谁」开始。` : '回到日常场景。选一段开始。');
+      const turns = activeScenes().reduce((sum, item) => sum + item.turns.length, 0);
+      setStatus(packId === 'core' ? `已打开基础表达 · Linglish 原创入门：${count} 个场景，${turns} 句。` : '回到日常场景。选一段开始。');
     });
 
     document.getElementById('exam-sheet').addEventListener('click', (event) => {
