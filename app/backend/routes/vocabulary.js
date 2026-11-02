@@ -9,6 +9,7 @@ const authService = require('../services/auth');
 const cacheService = require('../services/cache');
 const srsBridge = require('../services/srs-bridge');
 const { addToSchedule } = require('../services/spaced-repetition');
+const { canAccessVideoResource } = require('../services/video-access-policy');
 
 // SRS engine switch: SM-2 (services/srs-bridge.js) is the default; set
 // SRS_ENGINE=legacy to roll back to the original heuristic implementation.
@@ -24,13 +25,13 @@ function containsWord(sentence, word) {
 }
 
 // Helper: Find lemma contexts across videos (fallback)
-async function findLemmaContextsAcrossVideos(lemma, limit = 3) {
+async function findLemmaContextsAcrossVideos(lemma, user, limit = 3) {
   try {
     const all = await dataStore.listVideoResources();
     const results = [];
     if (!Array.isArray(all) || !lemma) return results;
-    const needle = String(lemma).toLowerCase();
     for (const res of all) {
+      if (!canAccessVideoResource(res, user)) continue;
       const resource = serializeVideoResource(res);
       const segments = Array.isArray(resource.transcript_segments) ? resource.transcript_segments : [];
       for (let i = 0; i < segments.length; i++) {
@@ -55,6 +56,24 @@ async function findLemmaContextsAcrossVideos(lemma, limit = 3) {
     console.warn('findLemmaContextsAcrossVideos failed:', err?.message || err);
     return [];
   }
+}
+
+async function filterAccessibleContexts(contexts, user) {
+  const resources = new Map();
+  const visible = [];
+  for (const context of Array.isArray(contexts) ? contexts : []) {
+    if (!context) continue;
+    const videoId = context.video_resource_id;
+    // Personal sentences without a linked video remain the user's own data.
+    if (videoId === null || videoId === undefined) {
+      visible.push(context);
+      continue;
+    }
+    const key = String(videoId);
+    if (!resources.has(key)) resources.set(key, await dataStore.getVideoResourceById(videoId));
+    if (canAccessVideoResource(resources.get(key), user)) visible.push(context);
+  }
+  return visible;
 }
 
 // Helper: Serialize video resource
@@ -262,6 +281,7 @@ function sendJson(res, status, payload) {
   }
   const JSON_HEADERS = {
     'Content-Type': 'application/json',
+    'Cache-Control': 'private, no-store',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     'Access-Control-Allow-Methods': 'GET,POST,PUT,PATCH,OPTIONS',
   };
@@ -338,7 +358,7 @@ async function registerVocabularyRoutes(pathname, req, res, url) {
       const cacheKey = buildUserCacheKey(user.id, `item:${lemma}`);
       const cached = await cacheService.get(cacheKey);
       if (cached) {
-        return sendJson(res, 200, cached);
+        return sendJson(res, 200, { ...cached, contexts: await filterAccessibleContexts(cached.contexts, user) });
       }
       let item = await dataStore.getVocabItem(user.id, lemma);
       // 如果没有翻译，尝试自动补全翻译并保存
@@ -352,10 +372,10 @@ async function registerVocabularyRoutes(pathname, req, res, url) {
           }
         }
       } catch (_) {}
-      let contexts = await dataStore.listRecentContexts(user.id, lemma, 5);
+      let contexts = await filterAccessibleContexts(await dataStore.listRecentContexts(user.id, lemma, 5), user);
       if (!contexts || contexts.length === 0) {
         // Try to auto-populate from transcripts for better review UX
-        const fallback = await findLemmaContextsAcrossVideos(lemma, 3);
+        const fallback = await findLemmaContextsAcrossVideos(lemma, user, 3);
         if (fallback.length) {
           // persist for future quick access
           try {
@@ -498,7 +518,7 @@ async function registerVocabularyRoutes(pathname, req, res, url) {
         });
       }
 
-      const contexts = await dataStore.listRecentContexts(user.id, lemma, 5);
+      const contexts = await filterAccessibleContexts(await dataStore.listRecentContexts(user.id, lemma, 5), user);
       await invalidateUserVocabCache(user.id);
 
       if (isSm2Enabled() && item && item.id && desiredState === 'learning') {

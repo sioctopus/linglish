@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>创作者资格审核 · Linglish Admin</title>
+  <link rel="stylesheet" href="./admin-styles.css">
+  <link rel="stylesheet" href="./styles/creator-center.css?v=2026110101">
+  <link rel="stylesheet" href="./styles/admin-creators.css?v=2026110101">
+  <script src="./js/auth-manager.js?v=2026103101"></script>
+  <script src="./admin-common.js?v=2026110103"></script>
+  <script src="./js/pages/creator-center.js?v=2026110101" defer></script>
+  <script src="./js/pages/admin-creators.js?v=2026110101" defer></script>
+</head>
+<body class="admin-creators">
+  <main class="admin-content" id="admin-creators">
+    <div class="creators-admin-heading"><div><p class="eyebrow">CREATOR APPLICATIONS</p><h1>创作者资格审核</h1><p>审核分享者的创作方向与授权承诺。每条视频仍须单独通过内容审核。</p></div><a class="button secondary" href="./admin-video-reviews.html">前往视频内容审核 →</a></div>
+    <div id="creator-admin-summary" class="creators-admin-summary" aria-label="申请统计"><div><span>待审核</span><strong id="summary-pending">—</strong></div><div><span>已通过</span><strong id="summary-approved">—</strong></div><div><span>未通过</span><strong id="summary-rejected">—</strong></div></div>
+    <div class="creators-admin-toolbar"><label for="creator-review-filter">申请状态<select id="creator-review-filter" class="admin-form-input"><option value="pending">待审核</option><option value="approved">已通过</option><option value="rejected">未通过</option><option value="all">全部</option></select></label><button id="creator-admin-refresh" class="button secondary" type="button">刷新队列</button></div>
+    <div id="creator-admin-message" class="creator-message" role="status" aria-live="polite" hidden></div>
+    <div id="creator-review-list" class="creator-review-list" aria-live="polite"></div>
+    <div class="creators-admin-pagination"><button class="button secondary" id="creator-review-prev" type="button" disabled>上一页</button><span id="creator-review-page">第 1 页</span><button class="button secondary" id="creator-review-next" type="button" disabled>下一页</button></div>
+  </main>
+</body>
+</html>

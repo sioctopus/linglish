@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>创作者中心 · Linglish</title>
+  <link rel="icon" href="./linglish-favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles/creator-center.css?v=2026110101">
+  <script src="./js/auth-manager.js?v=2026103101"></script>
+  <script src="./js/pages/creator-center.js?v=2026110101" defer></script>
+</head>
+<body class="creator-page">
+  <a class="skip-link" href="#creator-center">跳到主要内容</a>
+  <header class="creator-topbar">
+    <a class="creator-brand" href="./index.html" aria-label="Linglish 首页"><span aria-hidden="true">L</span> Linglish</a>
+    <nav aria-label="创作者导航"><a href="./video-reader.html">视频学习</a><span aria-current="page">创作者中心</span></nav>
+  </header>
+  <main id="creator-center" class="creator-shell">
+    <section class="creator-hero" aria-labelledby="creator-title">
+      <div><p class="eyebrow">LINGLISH · CREATOR STUDIO</p><h1 id="creator-title">把好内容，<br>带给更多学习者。</h1><p class="creator-lede">从一段原创或已获授权的视频开始。先保存为私人草稿，内容审核通过后，再加入公共视频库。</p><a class="creator-jump" id="creator-primary" href="#application-section">开始申请 <span aria-hidden="true">↗</span></a></div>
+      <ol class="creator-steps" aria-label="发布步骤"><li><span>01</span><div><strong>申请创作者</strong><p>介绍你想分享的内容，等待资格审核。</p></div></li><li><span>02</span><div><strong>整理私人草稿</strong><p>上传视频，检查标题、分类和字幕。</p></div></li><li><span>03</span><div><strong>提交内容审核</strong><p>审核通过后，学习者可在公共视频库找到它。</p></div></li></ol>
+    </section>
+    <div id="creator-message" class="creator-message" role="status" aria-live="polite" hidden></div>
+    <button class="button secondary" id="creator-retry" type="button" hidden>重新加载</button>
+    <section id="login-panel" class="creator-panel login-panel" hidden><p class="eyebrow">YOUR NEXT CHAPTER</p><h2>登录后，开始你的创作。</h2><p>申请资料只对你和审核管理员可见。创作者资格与视频内容分别审核。</p><a id="creator-login" class="button primary" href="./mobile-auth.html?next=creator-center.html">登录 / 注册</a></section>
+    <section class="creator-panel" id="application-section" aria-labelledby="application-title" hidden>
+      <div class="section-heading"><div><p class="eyebrow">01 · CREATOR APPLICATION</p><h2 id="application-title">先认识一下你</h2></div><span id="application-status" class="status-chip">待申请</span></div>
+      <p id="application-note" class="section-note">告诉我们你擅长的主题。申请资料不会成为公开个人主页。</p>
+      <form id="application-form"><fieldset id="application-fields"><div class="form-grid"><label>创作者名称<input id="creator-display-name" name="display_name" maxlength="80" autocomplete="nickname" required></label><label>内容主题<input id="creator-topic" name="topic" maxlength="80" placeholder="例如：旅行口语、生活英语" required></label><label class="full-width">创作介绍<textarea id="creator-bio" name="bio" maxlength="1200" rows="4" placeholder="你想帮助谁？准备分享什么样的内容？" required></textarea></label><label class="full-width">作品链接 <span class="optional">选填</span><input id="creator-sample-url" name="sample_url" type="url" maxlength="2000" placeholder="https://" aria-describedby="sample-help"><span id="sample-help" class="field-help">填写公开的 http 或 https 链接；不会自动抓取链接内容。</span></label></div><label class="check-label"><input id="creator-rights" name="rights_confirmed" type="checkbox" required><span>我确认将分享原创或已获得使用与公开传播授权的内容。</span></label><button class="button primary" id="application-submit" type="submit">提交创作者申请</button></fieldset></form>
+    </section>
+    <section class="creator-panel" id="upload-section" aria-labelledby="upload-title" hidden>
+      <div class="section-heading"><div><p class="eyebrow">02 · PRIVATE DRAFT</p><h2 id="upload-title">给下一段好内容留个位置</h2></div><span class="quiet-label">仅你可见</span></div>
+      <p class="section-note">当前支持视频文件。上传大小、次数和处理额度沿用你的会员权益；上传成功后，视频会在后台处理。请仅上传你有权使用的内容。</p>
+      <form id="upload-form"><fieldset><div class="upload-layout"><label class="file-zone">选择视频文件<input id="creator-video-file" type="file" accept="video/*" aria-describedby="selected-video-file"><span id="selected-video-file">MP4、MOV 等视频格式；不支持单独上传音频。</span></label><div class="form-grid"><label class="full-width">视频标题<input id="upload-title-input" maxlength="200" required></label><label class="full-width">内容简介 <span class="optional">选填</span><textarea id="upload-description" maxlength="4000" rows="3"></textarea></label><label class="full-width">分类 <span class="optional">选填</span><input id="upload-category" maxlength="80" placeholder="例如：旅行、生活、职场"></label></div></div><div class="form-footer"><span id="upload-status" class="field-help" role="status"></span><button id="upload-submit" class="button primary" type="submit">上传为私人草稿</button></div></fieldset></form>
+    </section>
+    <section id="resources-section" class="creator-resources" aria-labelledby="resources-title" hidden>
+      <div class="section-heading"><div><p class="eyebrow">YOUR RESOURCE SHELF</p><h2 id="resources-title">我的内容 <span id="resource-count" class="resource-count">0</span></h2></div><button id="resources-refresh" class="button secondary" type="button">刷新状态</button></div>
+      <p class="section-note">创作者资格通过后，可提交已处理完成且有可用字幕的视频。公开或正在审核的内容会锁定编辑；需要修改时，请创建新草稿。</p>
+      <div id="resource-list" class="resource-list" aria-live="polite"></div>
+    </section>
+  </main>
+  <footer class="creator-footer">每一段值得分享的内容，都有一个小小的开始。<span>Linglish</span></footer>
+  <dialog id="resource-editor" class="creator-dialog" aria-labelledby="editor-title"><form id="editor-form"><h2 id="editor-title">整理草稿</h2><p class="section-note">保存后仍是私人内容。</p><label>视频标题<input id="edit-title" maxlength="200" required></label><label>简介<textarea id="edit-description" maxlength="4000" rows="4"></textarea></label><div class="form-grid"><label>分类<input id="edit-category" maxlength="80"></label><label>难度<select id="edit-difficulty"><option value="">自动 / 未设置</option><option value="beginner">入门</option><option value="intermediate">中级</option><option value="advanced">高级</option><option value="a1">A1</option><option value="a2">A2</option><option value="b1">B1</option><option value="b2">B2</option><option value="c1">C1</option><option value="c2">C2</option></select></label></div><p id="editor-error" class="inline-error" role="alert" hidden></p><div class="dialog-actions"><button class="button secondary" type="button" data-close="resource-editor">取消</button><button class="button primary" type="submit">保存草稿</button></div></form></dialog>
+  <dialog id="publish-dialog" class="creator-dialog" aria-labelledby="publish-title"><form id="publish-form"><p class="eyebrow">03 · CONTENT REVIEW</p><h2 id="publish-title">提交公开审核</h2><p id="publish-video-title" class="publish-video-title"></p><p class="section-note">管理员会审核这段视频。通过后，它会进入现有公共视频库；审核期间暂不能编辑。</p><label>给审核员的说明 <span class="optional">选填</span><textarea id="publish-note" maxlength="500" rows="3"></textarea></label><p id="publish-error" class="inline-error" role="alert" hidden></p><div class="dialog-actions"><button class="button secondary" type="button" data-close="publish-dialog">暂不提交</button><button class="button primary" type="submit">确认提交审核</button></div></form></dialog>
+</body>
+</html>

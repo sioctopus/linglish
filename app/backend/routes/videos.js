@@ -18,6 +18,8 @@ const { getUploadLimits, hasActivePaidEntitlement, isGuestAccount } = require('.
 const { mergeIncompleteSegments, normalizeSegmentsTiming } = require('../utils/segment-merger');
 const { convertAudioToWav, ffmpegAvailable: audioFfmpegAvailable } = require('../utils/audio-utils');
 const { downloadVideo: downloadYouTubeAudio, extractVideoId } = require('../services/youtube');
+const { publicationError, isVideoReadyForPublication, CREATOR_APPROVAL_MESSAGE, VIDEO_REVIEW_LOCK_MESSAGE, VIDEO_PROCESSING_LOCK_MESSAGE } = require('../services/video-publication-policy');
+const { canAccessVideoResource, isSameUserId } = require('../services/video-access-policy');
 
 // Get ffmpeg if available
 let ffmpeg;
@@ -408,7 +410,10 @@ function extractAuthToken(req) {
 async function authenticate(req) {
   // Import here to avoid circular dependencies
   const authService = require('../services/auth');
-  const token = extractAuthToken(req);
+  const changesResource = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method);
+  const token = changesResource
+    ? String(req.headers.authorization || '').match(/^Bearer\s+(\S+)$/i)?.[1]
+    : extractAuthToken(req);
   if (!token) {
     throw new Error('UNAUTHORIZED');
   }
@@ -454,18 +459,14 @@ function errorWithUser(prefix, userCtx, message, err) {
   }
 }
 
-function isSameUserId(a, b) {
-  return a !== null && a !== undefined && b !== null && b !== undefined && String(a) === String(b);
-}
-
-function canAccessVideoResource(resource, user) {
-  if (!resource) return false;
-  const isOwnerOrAdmin = Boolean(user?.is_admin) || isSameUserId(resource.uploader_id, user?.id);
-  if (resource.is_public === false) return isOwnerOrAdmin;
-  if (resource.is_vip_only === true && !isOwnerOrAdmin) {
-    return hasActivePaidEntitlement(user);
-  }
-  return true;
+async function ensureVideoEditable(resource, user) {
+  if (!resource) throw publicationError(404, 'Video not found');
+  if (!user?.is_admin && !isSameUserId(resource.uploader_id, user?.id)) throw publicationError(403, 'Only the owner can edit this video');
+  if (resource.status === 'processing') throw publicationError(409, VIDEO_PROCESSING_LOCK_MESSAGE);
+  if (user?.is_admin) return;
+  if (resource.is_public === true) throw publicationError(409, VIDEO_REVIEW_LOCK_MESSAGE);
+  const pending = await dataStore.listVideoShareRequests({ status: 'pending', videoResourceId: resource.id, limit: 1 });
+  if (pending.length) throw publicationError(409, VIDEO_REVIEW_LOCK_MESSAGE);
 }
 
 function normalizeShareRequestType(value) {
@@ -487,7 +488,7 @@ function serializeVideoShareRequest(item) {
     video_id: item.video_resource_id,
     video_title: item.video_title || null,
     requester_id: item.requester_id,
-    requester_username: item.requester_username || item.requester_email || null,
+    requester_username: item.requester_username || null,
     request_type: item.request_type,
     note: item.note || null,
     status: item.status,
@@ -1035,6 +1036,7 @@ function transcodeToMp4Audio(inputPath, outputPath) {
 }
 
 function mapErrorToStatus(err, defaultStatus = 500) {
+  if (Number.isInteger(err?.status) && err.status >= 400 && err.status <= 599) return err.status;
   if (!err || !err.message) return defaultStatus;
   if (err.message === 'UNAUTHORIZED' || err.message === 'TOKEN_EXPIRED') {
     return 401;
@@ -1242,8 +1244,8 @@ function assignFallbackSpeakers(segments) {
   return assignments;
 }
 
-async function resolveSpeakersForVideo(videoId) {
-  const video = await dataStore.getVideoResourceById(videoId);
+async function resolveSpeakersForVideo(videoId, suppliedVideo = null) {
+  const video = suppliedVideo || await dataStore.getVideoResourceById(videoId);
   if (!video) {
     const err = new Error('Video not found');
     err.statusCode = 404;
@@ -1361,6 +1363,13 @@ async function registerVideoRoutes(pathname, req, res) {
       }
       if (!isSameUserId(video.uploader_id, user.id) && !user.is_admin) {
         return sendError(res, 403, 'Only the owner can submit this video for review');
+      }
+
+      if (!user.is_admin && (await dataStore.getCreatorApplication(user.id))?.status !== 'approved') {
+        return sendError(res, 403, CREATOR_APPROVAL_MESSAGE);
+      }
+      if (!isVideoReadyForPublication(video)) {
+        return sendError(res, 409, 'Video must be ready with usable subtitles before review');
       }
 
       if (requestType === 'public' && video.is_public !== false) {
@@ -1489,34 +1498,17 @@ async function registerVideoRoutes(pathname, req, res) {
         return sendError(res, 400, 'status must be approved or rejected');
       }
 
-      const request = await dataStore.getVideoShareRequestById(requestId);
-      if (!request) {
-        return sendError(res, 404, 'Review request not found');
-      }
-      if (request.status !== 'pending') {
-        return sendError(res, 409, 'Review request is no longer pending');
-      }
-
-      let updatedVideo = null;
-      if (status === 'approved') {
-        const updates = request.request_type === 'featured'
-          ? { is_public: true, is_featured: true }
-          : { is_public: true };
-        updatedVideo = await dataStore.updateVideoResource(request.video_resource_id, updates);
-        await clearVideoResourceCaches(request.video_resource_id);
-      }
-
-      await dataStore.updateVideoShareRequestReview(requestId, {
+      const { request: reviewed, video: updatedVideo } = await dataStore.reviewVideoShareRequest(requestId, {
         status,
         reviewerId: admin.id,
         reviewNote,
       });
-      const reviewed = await dataStore.getVideoShareRequestById(requestId);
+      if (updatedVideo) await clearVideoResourceCaches(updatedVideo.id);
       try {
-        await dataStore.logAdminAction(admin.id, request.requester_id, 'review_video_share_request', {
+        await dataStore.logAdminAction(admin.id, reviewed.requester_id, 'review_video_share_request', {
           request_id: requestId,
-          video_resource_id: request.video_resource_id,
-          request_type: request.request_type,
+          video_resource_id: reviewed.video_resource_id,
+          request_type: reviewed.request_type,
           status,
           review_note: reviewNote,
         });
@@ -1753,11 +1745,11 @@ async function registerVideoRoutes(pathname, req, res) {
         const dup = await dataStore.getVideoResourceByFileHash(precomputedHash);
         if (dup) {
           await cleanupFile(videoFile.path);
+          const canReveal = canAccessVideoResource(dup, user);
           return sendJson(res, 409, {
             code: 'DUPLICATE_UPLOAD',
-            message: '该视频已被上传，请直接观看',
-            existing_video_id: dup.id,
-            existing_title: dup.title || dup.original_filename || '已存在视频',
+            message: canReveal ? '该视频已被上传，请直接观看' : '无法保存重复视频，请上传其他视频。',
+            ...(canReveal ? { existing_video_id: dup.id, existing_title: dup.title || dup.original_filename || '已存在视频' } : {}),
           });
         }
       } catch (e) {
@@ -1936,6 +1928,7 @@ async function registerVideoRoutes(pathname, req, res) {
 
             const result = await videoTranscriptionService.transcribeAndStore(resource, {
               language,
+              editingUser: { id: user.id, is_admin: Boolean(user.is_admin) },
             });
 
             const duration = ((Date.now() - startTime) / 1000).toFixed(2);
@@ -2010,10 +2003,10 @@ async function registerVideoRoutes(pathname, req, res) {
             try {
               const current = await dataStore.getVideoResourceById(resource.id);
               if (current && current.status === 'processing') {
-                await dataStore.updateVideoResource(resource.id, {
+                await dataStore.updateVideoResourceForOwner(resource.id, {
                   status: 'failed',
                   failure_reason: err.userMessage || err.message || 'Transcription failed',
-                });
+                }, user, { allowProcessingCompletion: true });
                 console.log('[Transcription] Updated video status to failed');
               }
             } catch (updateErr) {
@@ -2165,7 +2158,8 @@ async function registerVideoRoutes(pathname, req, res) {
         return sendError(res, 400, 'YouTube video ID is required');
       }
 
-      const youtubeVideoId = body.youtube_video_id;
+      const youtubeVideoId = typeof body.youtube_video_id === 'string' ? body.youtube_video_id.trim() : '';
+      if (!/^[A-Za-z0-9_-]{11}$/.test(youtubeVideoId)) return sendError(res, 400, 'Invalid YouTube video ID');
       const title = body.title || 'YouTube Video';
       const description = body.description || null;
       const language = body.language || 'en';
@@ -2190,6 +2184,9 @@ async function registerVideoRoutes(pathname, req, res) {
       // Check if video already exists (by video_path to handle duplicates)
       const existingVideo = await dataStore.getVideoResourceByPath(youtubeUrl);
       if (existingVideo) {
+        if (!canAccessVideoResource(existingVideo, user)) {
+          return sendError(res, 409, '无法保存重复视频，请使用其他视频。');
+        }
         // If video exists but has no segments, update it with new segments
         const hasSegments = existingVideo.transcript_segments &&
                            (Array.isArray(existingVideo.transcript_segments) ?
@@ -2200,6 +2197,7 @@ async function registerVideoRoutes(pathname, req, res) {
 
         // If video has no segments but we have segments to add, update it
         if (!hasSegments && body.segments && Array.isArray(body.segments) && body.segments.length > 0) {
+          await ensureVideoEditable(existingVideo, user);
           console.log('[YouTube] Updating existing video with', body.segments.length, 'segments');
 
           // Continue with saving segments (fall through to segment saving code below)
@@ -2221,7 +2219,6 @@ async function registerVideoRoutes(pathname, req, res) {
             // Build transcript_segments array and transcript text
             const transcriptSegments = [];
             const transcriptParts = [];
-            let saveErrors = 0;
 
             for (let i = 0; i < mergedSegments.length; i++) {
               const seg = mergedSegments[i];
@@ -2230,21 +2227,6 @@ async function registerVideoRoutes(pathname, req, res) {
               // Log progress every 50 segments
               if (i % 50 === 0 || i === mergedSegments.length - 1) {
                 console.log(`[YouTube Update] Processing segment ${i + 1}/${mergedSegments.length}...`);
-              }
-
-              // Save to video_sentences table
-              try {
-                await dataStore.createVideoSentence({
-                  video_id: resource.id,
-                  sentence_index: i,
-                  text: text,
-                  start_time_sec: seg.start || seg.start_sec || 0,
-                  end_time_sec: seg.end || seg.end_sec || 0,
-                  speaker: seg.speaker || null,
-                });
-              } catch (err) {
-                console.error(`[YouTube Update] Failed to save segment ${i} to video_sentences:`, err.message);
-                saveErrors++;
               }
 
               // Build segment for transcript_segments field
@@ -2264,9 +2246,6 @@ async function registerVideoRoutes(pathname, req, res) {
             }
 
             console.log('[YouTube Update] ✓ Finished processing segments');
-            if (saveErrors > 0) {
-              console.warn(`[YouTube Update] ⚠️  ${saveErrors} errors occurred during segment save`);
-            }
 
             const fullTranscript = transcriptParts.join(' ').trim();
             console.log('[YouTube Update] Full transcript length:', fullTranscript.length, 'chars');
@@ -2311,7 +2290,7 @@ async function registerVideoRoutes(pathname, req, res) {
             };
             console.log('[YouTube Update] Update payload keys:', Object.keys(updateData).join(', '));
 
-            await dataStore.updateVideoResource(resource.id, updateData);
+            await dataStore.updateVideoResourceForOwner(resource.id, updateData, user, { sentences: transcriptSegments });
             await clearVideoResourceCaches(resource.id);
 
             console.log('[YouTube Update] ✓ Successfully updated video resource');
@@ -2333,7 +2312,7 @@ async function registerVideoRoutes(pathname, req, res) {
             });
           } catch (err) {
             console.error('[YouTube] Failed to update with transcript segments:', err);
-            return sendError(res, 500, 'Failed to update video with subtitles');
+            return sendError(res, mapErrorToStatus(err), err.message);
           }
         }
 
@@ -2349,10 +2328,10 @@ async function registerVideoRoutes(pathname, req, res) {
         video_path: youtubeUrl,
         // hqdefault 对任何 YouTube 视频都存在；maxresdefault 只有源片 ≥720p 才有，
         // 否则直接 404，前端只能落到"暂无封面"占位图。
-        thumbnail_path: body.thumbnail_path || `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`,
+        thumbnail_path: `https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`,
         original_filename: null,
         duration_sec: durationSec,
-        status: 'ready',
+        status: 'processing',
         // File information (not applicable for YouTube)
         file_size: null,
         mime_type: 'video/youtube',
@@ -2459,7 +2438,6 @@ async function registerVideoRoutes(pathname, req, res) {
           // Build transcript_segments array and transcript text
           const transcriptSegments = [];
           const transcriptParts = [];
-          let saveErrors = 0;
 
           for (let i = 0; i < mergedSegments.length; i++) {
             const seg = mergedSegments[i];
@@ -2468,21 +2446,6 @@ async function registerVideoRoutes(pathname, req, res) {
             // Log progress every 50 segments
             if (i % 50 === 0 || i === mergedSegments.length - 1) {
               console.log(`[YouTube New] Processing segment ${i + 1}/${mergedSegments.length}...`);
-            }
-
-            // Save to video_sentences table
-            try {
-              await dataStore.createVideoSentence({
-                video_id: resource.id,
-                sentence_index: i,
-                text: text,
-                start_time_sec: seg.start || seg.start_sec || 0,
-                end_time_sec: seg.end || seg.end_sec || 0,
-                speaker: seg.speaker || null,
-              });
-            } catch (err) {
-              console.error(`[YouTube New] Failed to save segment ${i} to video_sentences:`, err.message);
-              saveErrors++;
             }
 
             // Build segment for transcript_segments field
@@ -2502,9 +2465,6 @@ async function registerVideoRoutes(pathname, req, res) {
           }
 
           console.log('[YouTube New] ✓ Finished processing segments');
-          if (saveErrors > 0) {
-            console.warn(`[YouTube New] ⚠️  ${saveErrors} errors occurred during segment save`);
-          }
 
           const fullTranscript = transcriptParts.join(' ').trim();
           console.log('[YouTube New] Full transcript length:', fullTranscript.length, 'chars');
@@ -2545,12 +2505,16 @@ async function registerVideoRoutes(pathname, req, res) {
             characters: characters,
             is_roleplay_enabled: isRoleplayEnabled,
             default_user_character: defaultUserCharacter,
-            total_segments: totalSegments
+            total_segments: totalSegments,
+            status: 'ready',
+            failure_reason: null,
           };
           console.log('[YouTube New] Update payload keys:', Object.keys(updateData).join(', '));
           console.log('[YouTube New] transcript_segments type:', typeof updateData.transcript_segments, 'isArray:', Array.isArray(updateData.transcript_segments), 'length:', updateData.transcript_segments.length);
 
-          await dataStore.updateVideoResource(resource.id, updateData);
+          await dataStore.updateVideoResourceForOwner(resource.id, updateData, user, {
+            sentences: transcriptSegments, allowProcessingCompletion: true,
+          });
           await clearVideoResourceCaches(resource.id);
 
           console.log('[YouTube New] ✓ Successfully saved transcript segments');
@@ -2568,11 +2532,20 @@ async function registerVideoRoutes(pathname, req, res) {
           console.error('[YouTube New] Error:', err.message);
           console.error('[YouTube New] Stack:', err.stack);
           console.error('═'.repeat(80));
+          try {
+            await dataStore.updateVideoResourceForOwner(resource.id, {
+              status: 'failed', failure_reason: 'Subtitle save failed; please import the transcript again.',
+            }, user, { allowProcessingCompletion: true });
+          } catch (_) { /* a changed authorization or review state must remain untouched */ }
+          return sendError(res, mapErrorToStatus(err), err.message);
         }
       } else {
         console.log('[YouTube New] ⚠️  Skipping segment save - no valid segments provided');
         console.log('─'.repeat(80));
         console.log('');
+        await dataStore.updateVideoResourceForOwner(resource.id, {
+          status: 'skipped', failure_reason: 'No subtitles supplied; import a transcript before submitting for review.',
+        }, user, { allowProcessingCompletion: true });
       }
 
       // Fetch updated video data from database to include transcript_segments
@@ -2815,7 +2788,8 @@ async function registerVideoRoutes(pathname, req, res) {
         return sendError(res, 403, 'You do not have permission to edit this video');
       }
 
-      const updated = await dataStore.updateVideoResource(id, updates);
+      await ensureVideoEditable(existing, user);
+      const updated = await dataStore.updateVideoResourceForOwner(id, updates, user);
       await clearVideoResourceCaches(id);
       return sendJson(res, 200, { video: serializeVideoResource(updated) });
     } catch (err) {
@@ -2896,7 +2870,7 @@ async function registerVideoRoutes(pathname, req, res) {
       // Use lightweight query - only fetch transcript and access-control fields
       const { pool } = require('../data-store/core');
       const { rows } = await pool.query(
-        `SELECT id, uploader_id, is_public, transcript, transcript_segments, language
+        `SELECT id, uploader_id, is_public, is_vip_only, transcript, transcript_segments, language
          FROM video_resources
          WHERE id = $1
          LIMIT 1`,
@@ -2939,7 +2913,7 @@ async function registerVideoRoutes(pathname, req, res) {
   // PUT /video-resources/:id/transcript/:index - Update transcript segment
   if (pathname.match(/^\/video-resources\/\d+\/transcript\/\d+$/) && req.method === 'PUT') {
     try {
-      await authenticate(req);
+      const user = await authenticate(req);
       const parts = pathname.split('/');
       const videoId = Number(parts[2]);
       const segmentIndex = Number(parts[4]);
@@ -2980,6 +2954,7 @@ async function registerVideoRoutes(pathname, req, res) {
         return sendError(res, 404, 'Video not found');
       }
 
+      await ensureVideoEditable(video, user);
       if (!video.transcript_segments || !Array.isArray(video.transcript_segments)) {
         return sendError(res, 400, 'Video has no transcript segments');
       }
@@ -2988,7 +2963,8 @@ async function registerVideoRoutes(pathname, req, res) {
         return sendError(res, 400, 'Segment index out of range');
       }
 
-      const segment = video.transcript_segments[segmentIndex];
+      const updatedSegments = video.transcript_segments.map(segment => ({ ...segment }));
+      const segment = updatedSegments[segmentIndex];
       if (hasText) {
         segment.text = nextText;
       }
@@ -2996,17 +2972,17 @@ async function registerVideoRoutes(pathname, req, res) {
         segment.speaker = nextSpeaker;
       }
 
-      const updatedSegments = video.transcript_segments;
       const transcriptText = updatedSegments
         .map((seg) => (seg && seg.text ? seg.text : ''))
         .join(' ')
         .trim();
 
       // Save to database
-      await dataStore.updateVideoResource(videoId, {
+      await dataStore.updateVideoResourceForOwner(videoId, {
         transcript_segments: updatedSegments,
         transcript: transcriptText,
-      });
+      }, user);
+      await clearVideoResourceCaches(videoId);
 
       return sendJson(res, 200, {
         success: true,
@@ -3024,7 +3000,7 @@ async function registerVideoRoutes(pathname, req, res) {
   // PATCH /video-resources/:id/speakers - Update speakers (replace speaker names)
   if (pathname.match(/^\/video-resources\/\d+\/speakers$/) && req.method === 'PATCH') {
     try {
-      await authenticate(req);
+      const user = await authenticate(req);
       const videoId = Number(pathname.split('/')[2]);
       if (!videoId) {
         return sendError(res, 400, 'Invalid video ID');
@@ -3051,6 +3027,7 @@ async function registerVideoRoutes(pathname, req, res) {
         return sendError(res, 404, 'Video not found');
       }
 
+      await ensureVideoEditable(video, user);
       let segments = video.transcript_segments;
       if (typeof segments === 'string') {
         try {
@@ -3062,6 +3039,7 @@ async function registerVideoRoutes(pathname, req, res) {
       if (!Array.isArray(segments) || !segments.length) {
         return sendError(res, 400, 'No transcript segments found');
       }
+      segments = segments.map(segment => ({ ...segment }));
 
       // Replace speaker name in segments
       let updated = 0;
@@ -3089,10 +3067,11 @@ async function registerVideoRoutes(pathname, req, res) {
         .trim();
 
       // Save to database
-      await dataStore.updateVideoResource(videoId, {
+      await dataStore.updateVideoResourceForOwner(videoId, {
         transcript_segments: segments,
         transcript: transcriptText,
-      });
+      }, user);
+      await clearVideoResourceCaches(videoId);
 
       return sendJson(res, 200, {
         success: true,
@@ -3111,13 +3090,15 @@ async function registerVideoRoutes(pathname, req, res) {
   // GET /video-resources/:id/speakers - Get speakers for video
   if (pathname.match(/^\/video-resources\/\d+\/speakers$/) && req.method === 'GET') {
     try {
-      await authenticate(req);
+      const user = await authenticate(req);
       const videoId = Number(pathname.split('/')[2]);
       if (!Number.isFinite(videoId)) {
         return sendError(res, 400, 'Invalid video id');
       }
 
-      const { speakers } = await resolveSpeakersForVideo(videoId);
+      const video = await dataStore.getVideoResourceById(videoId);
+      if (!video || !canAccessVideoResource(video, user)) return sendError(res, 404, 'Video not found');
+      const { speakers } = await resolveSpeakersForVideo(videoId, video);
       return sendJson(res, 200, { speakers });
     } catch (err) {
       const status = err.statusCode || (err.message === 'UNAUTHORIZED' ? 401 : 500);
@@ -3162,6 +3143,9 @@ async function registerVideoRoutes(pathname, req, res) {
       if (!speaker) {
         return sendError(res, 400, 'speaker is required');
       }
+
+      const video = await dataStore.getVideoResourceById(videoId);
+      if (!video || !canAccessVideoResource(video, user)) return sendError(res, 404, 'Video not found');
 
       const recordings = await dataStore.listPracticeRecordingsForUser(videoId, user.id, speaker);
       if (!recordings.length) {
@@ -3602,16 +3586,18 @@ async function registerVideoRoutes(pathname, req, res) {
       const resource = await dataStore.getVideoResourceById(videoId);
       if (!resource) return sendError(res, 404, 'Video not found');
 
-      const isOwner = resource.uploaded_by && Number(resource.uploaded_by) === Number(user.id);
+      const isOwner = isSameUserId(resource.uploader_id, user.id);
       const isAdmin = user.role === 'admin' || user.is_admin;
       if (!isOwner && !isAdmin) {
         return sendError(res, 403, 'FORBIDDEN');
       }
 
+      await ensureVideoEditable(resource, user);
+
       const body = await parseBody(req);
       const language = body?.language || resource.language || 'en';
 
-      await dataStore.updateVideoResource(videoId, {
+      await dataStore.updateVideoResourceForOwner(videoId, {
         status: 'processing',
         failure_reason: null,
         transcript: null,
@@ -3620,23 +3606,26 @@ async function registerVideoRoutes(pathname, req, res) {
         unique_word_count: null,
         total_segments: null,
         has_subtitles: false,
-      });
+      }, user);
+      await clearVideoResourceCaches(videoId);
 
       setImmediate(async () => {
         const startTime = Date.now();
         try {
           const fresh = await dataStore.getVideoResourceById(videoId);
-          const result = await videoTranscriptionService.transcribeAndStore(fresh, { language });
+          const result = await videoTranscriptionService.transcribeAndStore(fresh, {
+            language, editingUser: { id: user.id, is_admin: Boolean(user.is_admin) },
+          });
           const duration = ((Date.now() - startTime) / 1000).toFixed(2);
           console.log('[Retranscribe] Completed for video:', videoId, 'duration(s):', duration, 'text len:', result?.text?.length || 0);
         } catch (err) {
           const duration = ((Date.now() - startTime) / 1000).toFixed(2);
           console.error('[Retranscribe] Failed for video:', videoId, 'after', duration, 's', err?.message || err);
           try {
-            await dataStore.updateVideoResource(videoId, {
+            await dataStore.updateVideoResourceForOwner(videoId, {
               status: 'failed',
               failure_reason: err?.userMessage || err?.message || 'Transcription failed',
-            });
+            }, user, { allowProcessingCompletion: true });
           } catch (e) {
             console.error('[Retranscribe] Failed to update status:', e?.message || e);
           }
@@ -3664,11 +3653,13 @@ async function registerVideoRoutes(pathname, req, res) {
       const resource = await dataStore.getVideoResourceById(videoId);
       if (!resource) return sendError(res, 404, 'Video not found');
 
-      const isOwner = resource.uploaded_by && Number(resource.uploaded_by) === Number(user.id);
+      const isOwner = isSameUserId(resource.uploader_id, user.id);
       const isAdmin = user.role === 'admin' || user.is_admin;
       if (!isOwner && !isAdmin) {
         return sendError(res, 403, 'FORBIDDEN');
       }
+
+      await ensureVideoEditable(resource, user);
 
       // 获取现有 segments
       let existingSegments = resource.transcript_segments;
@@ -3710,11 +3701,12 @@ async function registerVideoRoutes(pathname, req, res) {
 
       // 更新数据库
       const fullTranscript = mergedSegments.map(seg => seg.text).join(' ');
-      await dataStore.updateVideoResource(videoId, {
+      await dataStore.updateVideoResourceForOwner(videoId, {
         transcript: fullTranscript,
         transcript_segments: mergedSegments,
         total_segments: mergedSegments.length,
-      });
+      }, user);
+      await clearVideoResourceCaches(videoId);
 
       return sendJson(res, 200, {
         success: true,
@@ -3740,11 +3732,13 @@ async function registerVideoRoutes(pathname, req, res) {
       const resource = await dataStore.getVideoResourceById(videoId);
       if (!resource) return sendError(res, 404, 'Video not found');
 
-      const isOwner = resource.uploaded_by && Number(resource.uploaded_by) === Number(user.id);
+      const isOwner = isSameUserId(resource.uploader_id, user.id);
       const isAdmin = user.role === 'admin' || user.is_admin;
       if (!isOwner && !isAdmin) {
         return sendError(res, 403, 'FORBIDDEN');
       }
+
+      await ensureVideoEditable(resource, user);
 
       const body = await parseBody(req);
       const transcriptTextRaw = (body?.transcript || '').trim();
@@ -3804,31 +3798,8 @@ async function registerVideoRoutes(pathname, req, res) {
         defaultUserCharacter = sorted[1].name;
       }
 
-      // Replace video_sentences with new segments
-      try {
-        await dataStore.deleteVideoSentences(videoId);
-      } catch (e) {
-        console.warn('[Import Transcript] Failed to clear old sentences:', e?.message || e);
-      }
-      let saveErrors = 0;
-      for (let i = 0; i < segments.length; i++) {
-        const seg = segments[i];
-        try {
-          await dataStore.createVideoSentence({
-            video_id: videoId,
-            sentence_index: i,
-            text: seg.text,
-            start_time_sec: seg.start || 0,
-            end_time_sec: seg.end || 0,
-            speaker: seg.speaker || null,
-          });
-        } catch (err) {
-          saveErrors += 1;
-          console.error('[Import Transcript] Failed to save segment', i, err?.message || err);
-        }
-      }
-
-      await dataStore.updateVideoResource(videoId, {
+      // Replace both subtitle representations in the same owner/moderation lock.
+      await dataStore.updateVideoResourceForOwner(videoId, {
         transcript: transcriptText,
         transcript_segments: segments,
         has_subtitles: true,
@@ -3841,14 +3812,15 @@ async function registerVideoRoutes(pathname, req, res) {
         status: 'ready',
         failure_reason: null,
         language,
-      });
+      }, user, { sentences: segments });
+      await clearVideoResourceCaches(videoId);
 
       // Auto-calculate video difficulty based on transcript vocabulary
       await updateVideoDifficultyFromTranscript(videoId, segments);
 
       return sendJson(res, 200, {
         success: true,
-        message: saveErrors ? `字幕导入完成，但有 ${saveErrors} 条保存失败` : '字幕导入成功',
+        message: '字幕导入成功',
         totalSegments,
       });
     } catch (err) {

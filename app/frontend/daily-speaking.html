@@ -833,6 +833,10 @@
       border-bottom-color: #0f766e;
       color: #0f766e;
     }
+    .gloss-word .hear-slot.incorrect {
+      border-bottom-color: #dc2626;
+      color: #dc2626;
+    }
     .gloss-pop {
       position: fixed;
       z-index: 80;
@@ -2209,7 +2213,7 @@
         <option value="daylife">一日口语</option>
         <option value="travel">旅游口语</option>
         <option value="kids">儿童口语</option>
-        <option value="core">850句</option>
+        <option value="core">基础表达</option>
         <option value="medical">医学词汇</option>
       </select>
     </div>
@@ -2364,11 +2368,6 @@
   <script src="./js/icons.js?v=2026103001"></script>
   <script src="./js/workbench/import-bridge.js?v=2026103001"></script>
   <script src="./js/tts-voice.js?v=2026103001"></script>
-  <script src="./data/core-850.js?v=1"></script>
-  <script src="./data/day-life.js?v=1"></script>
-  <script src="./data/travel-speak.js?v=4"></script>
-  <script src="./data/kids-speak.js?v=1"></script>
-  <script src="./data/medical-vocab.js?v=5"></script>
   <script>
     const SCENES = [
       {
@@ -3173,6 +3172,7 @@
     const FIELD_TITLES = ['机场值机', '酒店入住', '餐厅点餐', '房间报修', '打车'];
     const SPEAKING_PROGRESS_KEY = 'linglish_speaking_continue_v1';
     let packId = 'daily';
+    let packSwitchRun = 0;
     let materialScenes = null;
     let currentMaterialId = '';
     let materialTitle = '';
@@ -3209,6 +3209,7 @@
     let lineIndex = 0;
     const revealed = new Set();
     let recording = false;
+    let micStarting = false;
     let playToken = 0;
     let playingLineIndex = -1;
     let recorder = null;
@@ -3292,6 +3293,7 @@
     }
 
     function refreshAccentFromMembership() {
+      if (captureBlocksSelection()) return false;
       const next = savedAccent();
       if (next === accentId) return false;
       const previousTitle = scene() ? scene().title : '';
@@ -4065,6 +4067,7 @@
     function slotClass(index) {
       if (!splitActive() || !splitState.done) return '';
       if (splitState.done[index]) return 'done';
+      if (splitState.incorrect === index) return 'incorrect';
       if (splitState.queue[0] === index) return 'current';
       const next = splitState.done.findIndex((flag) => !flag);
       return index === next ? 'current' : '';
@@ -4157,7 +4160,9 @@
 
     function confirmHearLine() {
       if (!splitActive() || !splitListen) return false;
-      applyHearText(true);
+      if (!hearFromMic) return confirmTypedWord();
+      syncHearLine(document.getElementById('hear-input')?.value || '');
+      if (!splitActive()) return true;
       if (splitState && splitState.done.every(Boolean)) {
         finishTypedLine();
         return true;
@@ -4165,6 +4170,87 @@
       const left = splitState ? splitState.done.filter((flag) => !flag).length : 0;
       setStatus(left ? `还有 ${left} 个词没对上。词之间空格，打完按回车确认。` : '打完这句后按回车确认。');
       return false;
+    }
+
+    function syncKeyboardDraft(value) {
+      if (!splitActive() || splitState.completed) return;
+      stopTyper();
+      splitState.queue = [];
+      splitState.done.forEach((done, index) => {
+        if (!done) splitState.slots[index] = '';
+      });
+      splitState.draft = String(value || '').trim();
+      splitState.incorrect = -1;
+      paintHearLine();
+    }
+
+    function confirmTypedWord() {
+      if (!splitActive() || !splitListen || splitState.completed) return false;
+      const input = document.getElementById('hear-input');
+      const tokens = String(input?.value || '').trim().split(/\s+/).filter(Boolean);
+      if (!tokens.length) return false;
+      const state = splitState;
+      state.attempts = state.attempts || 0;
+      state.correctAttempts = state.correctAttempts || 0;
+      while (tokens.length) {
+        const index = state.done.findIndex((done) => !done);
+        if (index < 0) break;
+        const token = tokens[0];
+        state.attempts += 1;
+        if (normalizeSpoken(token) !== normalizeSpoken(spokenLabel(state.targets[index]))) {
+          state.incorrect = index;
+          state.draft = token;
+          input.value = tokens.join(' ');
+          hearSeen = input.value;
+          paintHearLine();
+          setStatus(`「${token}」未对上 ${spokenLabel(state.targets[index])}，改好后按空格或回车再试。已完成 ${filledCount()}/${state.targets.length} 个词。`);
+          return false;
+        }
+        state.correctAttempts += 1;
+        state.done[index] = true;
+        state.slots[index] = state.targets[index];
+        state.incorrect = -1;
+        tokens.shift();
+      }
+      input.value = tokens.join(' ');
+      hearSeen = input.value;
+      state.draft = input.value;
+      paintHearLine();
+      if (state.done.every(Boolean)) {
+        finishKeyboardLine();
+        return true;
+      }
+      setStatus(`已对上 ${filledCount()}/${state.targets.length} 个词。继续打下一个词，空格或回车确认。`);
+      return true;
+    }
+
+    function finishKeyboardLine() {
+      if (!splitActive() || splitState.completed || splitState.done.some((done) => !done)) return;
+      const completed = splitState;
+      completed.completed = true;
+      revealed.add(completed.key);
+      stopTyper();
+      stopSplitListen();
+      const accuracy = Math.round(100 * completed.correctAttempts / Math.max(1, completed.attempts));
+      const result = `本句 ${completed.targets.length}/${completed.targets.length} 词已完成，正确率 ${accuracy}%。`;
+      render();
+      const hasNext = lineIndex + 1 < scene().turns.length;
+      setStatus(result + (hasNext ? ' 正在进入下一句…' : ' 这段练完了。'));
+      if (!hasNext) return;
+      const completedMethod = methodId;
+      setTimeout(() => {
+        if (splitState !== completed || completed.key !== lineKey(lineIndex)
+          || methodId !== completedMethod || splitListen || busy || captureBlocksSelection()) return;
+        beginSpeakingSelection();
+        lineIndex += 1;
+        splitState = null;
+        if (isDictation()) dictationStep = 2;
+        render();
+        syncSpeakingUrl();
+        saveSpeakingProgressNow();
+        openKeyboardHear();
+        setStatus(result + ' 下一句：空格或回车确认每个词。');
+      }, 900);
     }
 
     function pumpType() {
@@ -4361,18 +4447,14 @@
         hearTypedAt = Date.now();
       }
       hearSeen = value;
-      // 打字时也并入已识别词，避免把语音刚填上的词清掉
-      const merged = fromUser ? (mergeHearTranscript(value) || value) : value;
-      if (fromUser && merged && merged !== normalizeSpoken(value) && input) {
-        const typing = document.activeElement === input;
-        if (!typing) input.value = merged;
+      if (!hearFromMic) {
+        syncKeyboardDraft(value);
+        return;
       }
-      syncHearLine(merged || value);
+      syncHearLine(value);
+      if (!splitActive()) return;
       if (value.trim() && /[\u4e00-\u9fff]/.test(value) && !filledCount() && !splitState.draft) {
         setStatus('识别成了中文。请说英文，再说一次。');
-      } else if (fromUser && filledCount()) {
-        const left = splitState.done.filter((flag) => !flag).length;
-        if (left) setStatus(`已对上 ${filledCount()} 个词，还差 ${left} 个。可继续打字或说话。`);
       }
     }
 
@@ -4905,9 +4987,11 @@
     }
 
     function selectScene(index, line) {
+      beginSpeakingSelection();
       const list = activeScenes();
       if (!list.length) return;
-      if (recording) {
+      if (captureBlocksSelection()) {
+        syncSceneSelect();
         setStatus('正在录音。先结束跟读，再换一段。');
         return;
       }
@@ -5705,86 +5789,92 @@
     async function startMicSession(options) {
       const opts = options || {};
       const fromSpaceHold = Boolean(opts.fromSpaceHold);
-      if (recording || hearRecordBusy) {
+      if (recording || hearRecordBusy || micStarting) {
         setStatus('正在处理录音。请稍等。');
         return false;
       }
-      if (busy) {
-        try { stopPlaybackOnly(); } catch (_) {}
-      }
-      const parts = sentenceWords(current()[1]);
-      if (!parts.length) return false;
-      if (captionOn) {
-        captionOn = false;
-        try { localStorage.setItem('linglish_caption', '0'); } catch (_) {}
-      }
-      const useRecordAsr = shouldUseRecordAsr();
-
-      const keep = splitActive() && splitState.targets.join('\n') === parts.join('\n');
-      const input = document.getElementById('hear-input');
-      if (!keep) {
-        stopTyper();
-        splitState = blankSlots(parts);
-        hearFinalBuffer = '';
-        if (input) input.value = '';
-      }
-      // 话筒开启时强制一词一横线（跟读格嵌在每个单词下）
-      paintGloss(parts, true);
-      paintHearLine();
-
-      // 手机 / 微信：录音 → 服务端 ASR → 填横线（不依赖 Web Speech）
-      if (useRecordAsr) {
-        if (useRecordAsr && !readToken() && !(window.SpeechRecognition || window.webkitSpeechRecognition)) {
-          setStatus('语音填空需要先登录。登录后再点话筒。');
+      packSwitchRun += 1;
+      micStarting = true;
+      try {
+        if (busy) {
+          try { stopPlaybackOnly(); } catch (_) {}
         }
-        try {
-          const ok = await startHearRecordAsr(parts);
-          if (!ok) {
+        const parts = sentenceWords(current()[1]);
+        if (!parts.length) return false;
+        if (captionOn) {
+          captionOn = false;
+          try { localStorage.setItem('linglish_caption', '0'); } catch (_) {}
+        }
+        const useRecordAsr = shouldUseRecordAsr();
+
+        const keep = splitActive() && !splitState.completed && splitState.targets.join('\n') === parts.join('\n');
+        const input = document.getElementById('hear-input');
+        if (!keep) {
+          stopTyper();
+          splitState = blankSlots(parts);
+          hearFinalBuffer = '';
+          if (input) input.value = '';
+        }
+        // 话筒开启时强制一词一横线（跟读格嵌在每个单词下）
+        paintGloss(parts, true);
+        paintHearLine();
+
+        // 手机 / 微信：录音 → 服务端 ASR → 填横线（不依赖 Web Speech）
+        if (useRecordAsr) {
+          if (useRecordAsr && !readToken() && !(window.SpeechRecognition || window.webkitSpeechRecognition)) {
+            setStatus('语音填空需要先登录。登录后再点话筒。');
+          }
+          try {
+            const ok = await startHearRecordAsr(parts);
+            if (!ok) {
+              splitListen = null;
+              render();
+              return false;
+            }
+            return true;
+          } catch (error) {
+            console.warn('[daily-speaking] startHearRecordAsr failed', error);
+            stopHearRecorder(true);
             splitListen = null;
             render();
+            setStatus(isWeChatBrowser()
+              ? '微信无法开始录音。请点右上角 ···，选择“在浏览器打开”。'
+              : '无法开始录音。请检查麦克风权限后重试。');
             return false;
           }
-          return true;
-        } catch (error) {
-          console.warn('[daily-speaking] startHearRecordAsr failed', error);
-          stopHearRecorder(true);
-          splitListen = null;
-          render();
-          setStatus(isWeChatBrowser()
-            ? '微信无法开始录音。请点右上角 ···，选择“在浏览器打开”。'
-            : '无法开始录音。请检查麦克风权限后重试。');
+        }
+
+        // 标准浏览器：实时 Web Speech
+        const allowed = await ensureMicPermission();
+        if (!allowed) {
+          setStatus('需要麦克风权限才能语音输入。请允许麦克风后重试。');
           return false;
         }
+        try { stopPlaybackOnly(); } catch (_) {}
+        splitListen = true;
+        hearFromMic = true;
+        hearTypedAt = 0;
+        hearFinalBuffer = keep ? hearFinalBuffer : '';
+        render();
+        setStatus(fromSpaceHold
+          ? '按住空格说话，松开结束。也可打字。'
+          : '正在听…可语音也可打字，两边一起填词。');
+        setTimeout(() => {
+          const field = document.getElementById('hear-input');
+          if (field) {
+            field.readOnly = false;
+            // 空格按住说话时不要抢焦点，否则空格会被输入框吃掉
+            if (!fromSpaceHold) focusHearInput();
+            else field.blur();
+          }
+          startHearWatch();
+          startComputerMic(parts);
+          showPractice();
+        }, 0);
+        return true;
+      } finally {
+        micStarting = false;
       }
-
-      // 标准浏览器：实时 Web Speech
-      const allowed = await ensureMicPermission();
-      if (!allowed) {
-        setStatus('需要麦克风权限才能语音输入。请允许麦克风后重试。');
-        return false;
-      }
-      try { stopPlaybackOnly(); } catch (_) {}
-      splitListen = true;
-      hearFromMic = true;
-      hearTypedAt = 0;
-      hearFinalBuffer = keep ? hearFinalBuffer : '';
-      render();
-      setStatus(fromSpaceHold
-        ? '按住空格说话，松开结束。也可打字。'
-        : '正在听…可语音也可打字，两边一起填词。');
-      setTimeout(() => {
-        const field = document.getElementById('hear-input');
-        if (field) {
-          field.readOnly = false;
-          // 空格按住说话时不要抢焦点，否则空格会被输入框吃掉
-          if (!fromSpaceHold) focusHearInput();
-          else field.blur();
-        }
-        startHearWatch();
-        startComputerMic(parts);
-        showPractice();
-      }, 0);
-      return true;
     }
 
     async function toggleMic() {
@@ -6061,10 +6151,11 @@
     }
 
     async function playLineNow(index, statusText) {
+      beginSpeakingSelection();
       const turns = scene().turns || [];
       const turn = turns[index];
       if (!turn) return false;
-      if (recording) {
+      if (captureBlocksSelection()) {
         setStatus('正在录音。先结束跟读，再播放。');
         return false;
       }
@@ -6165,7 +6256,8 @@
     }
 
     async function readAloud() {
-      if (busy || recording) return;
+      beginSpeakingSelection();
+      if (busy || captureBlocksSelection()) return;
       const token = ++playToken;
       busy = true;
       setSpeakButtons(true);
@@ -6203,6 +6295,7 @@
     }
 
     async function openMic(button, playAfter) {
+      if (micStarting) return;
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         setStatus('这台设备不能录音。可以点「看英文」，或切回「先听再跟」。');
         button.disabled = false;
@@ -6210,6 +6303,8 @@
         busy = false;
         return;
       }
+      packSwitchRun += 1;
+      micStarting = true;
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const spoken = current();
@@ -6281,6 +6376,8 @@
         button.disabled = false;
         setSpeakButtons(false);
         busy = false;
+      } finally {
+        micStarting = false;
       }
     }
 
@@ -6323,6 +6420,7 @@
     }
 
     function onSpeakPress() {
+      if (micStarting) return;
       const button = document.getElementById('shadow-btn');
       if (recording) {
         speakHold = true;
@@ -6346,11 +6444,13 @@
     }
 
     async function startShadow() {
+      if (captureBlocksSelection()) return;
       splitRun += 1;
       stopSplitListen();
       const button = document.getElementById('shadow-btn');
       const generation = ++speakGeneration;
       if (recording || busy) return;
+      packSwitchRun += 1;
       const hearFirst = methodId !== 'speak' || englishShown(lineIndex);
       if (hearFirst) {
         const token = ++playToken;
@@ -6380,29 +6480,31 @@
     }
 
     function loadCorePack() {
-      if (window.CORE_850 && window.CORE_850.length) return Promise.resolve(true);
-      return new Promise((resolve) => {
-        const script = document.createElement('script');
-        script.src = './data/core-850.js?v=2';
-        script.onload = () => resolve(Boolean(window.CORE_850 && window.CORE_850.length));
-        script.onerror = () => resolve(false);
-        document.body.appendChild(script);
-      });
+      return loadScriptPack('CORE_850', './data/core-850.js?v=2026110101');
+    }
+
+    function validScenePack(value) {
+      return Array.isArray(value) && value.length > 0 && value.every((item) => (
+        item && typeof item.title === 'string' && item.title.trim()
+        && Array.isArray(item.turns) && item.turns.length > 0
+        && item.turns.every((turn) => Array.isArray(turn)
+          && typeof turn[0] === 'string' && typeof turn[1] === 'string' && turn[1].trim())
+      ));
     }
 
     function loadScriptPack(globalName, src) {
-      if (window[globalName] && window[globalName].length) return Promise.resolve(true);
+      if (validScenePack(window[globalName])) return Promise.resolve(true);
       return new Promise((resolve) => {
         const script = document.createElement('script');
         script.src = src;
-        script.onload = () => resolve(Boolean(window[globalName] && window[globalName].length));
+        script.onload = () => resolve(validScenePack(window[globalName]));
         script.onerror = () => resolve(false);
         document.body.appendChild(script);
       });
     }
 
     function packLabel(id) {
-      if (id === 'core') return '850句';
+      if (id === 'core') return '基础表达';
       if (id === 'medical') return '医学词汇';
       if (id === 'daylife') return '一日口语';
       if (id === 'travel') return '旅游口语';
@@ -6416,21 +6518,40 @@
       const select = document.getElementById('pack-select');
       if (!select) return;
       const known = ['daily', 'daylife', 'travel', 'kids', 'core', 'medical'];
-      if (known.includes(packId)) select.value = packId;
+      if (packId === 'field') select.value = 'daily';
+      else if (known.includes(packId)) select.value = packId;
+    }
+
+    function captureBlocksSelection() {
+      return recording || micStarting || isMicSessionLive() || Boolean(splitListen && hearFromMic);
+    }
+
+    function beginSpeakingSelection() {
+      return {
+        generation: ++packSwitchRun,
+        pack: packId, scene: sceneIndex, line: lineIndex, method: methodId,
+      };
+    }
+
+    function canCommitSpeakingSelection(request) {
+      return request.generation === packSwitchRun && !captureBlocksSelection()
+        && request.pack === packId && request.scene === sceneIndex
+        && request.line === lineIndex && request.method === methodId;
     }
 
     async function switchPack(nextPack, options = {}) {
       if (!nextPack) return false;
-      if (recording && !options.force) {
+      const request = beginSpeakingSelection();
+      if (captureBlocksSelection()) {
         setStatus('正在录音。先结束跟读，再换词库。');
         return false;
       }
       const ready = {
-        core: Boolean(window.CORE_850 && window.CORE_850.length),
-        medical: Boolean(window.MEDICAL_VOCAB && window.MEDICAL_VOCAB.length),
-        daylife: Boolean(window.DAY_LIFE && window.DAY_LIFE.length),
-        travel: Boolean(window.TRAVEL_SPEAK && window.TRAVEL_SPEAK.length),
-        kids: Boolean(window.KIDS_SPEAK && window.KIDS_SPEAK.length),
+        core: validScenePack(window.CORE_850),
+        medical: validScenePack(window.MEDICAL_VOCAB),
+        daylife: validScenePack(window.DAY_LIFE),
+        travel: validScenePack(window.TRAVEL_SPEAK),
+        kids: validScenePack(window.KIDS_SPEAK),
       };
       if (nextPack === packId && !options.force) {
         if ((nextPack === 'core' && !ready.core)
@@ -6440,45 +6561,58 @@
           || (nextPack === 'kids' && !ready.kids)) {
           /* continue to load */
         } else {
+          syncPackSelect();
+          if (!options.quiet) setStatus(`继续学习「${packLabel(packId)}」。`);
           return true;
         }
       }
       releasePlayback();
       if (nextPack === 'core' && !ready.core) {
-        setStatus('正在打开 850 词…');
-        if (!(await loadCorePack())) {
-          setStatus('850 词没有加载成功。请刷新页面后再点一次「850句」。');
+        setStatus('正在打开基础表达…');
+        const loaded = await loadCorePack();
+        if (!canCommitSpeakingSelection(request)) return false;
+        if (!loaded) {
+          setStatus('基础表达没有加载成功，已保留当前课程。请稍后重试。');
           return false;
         }
       }
       if (nextPack === 'medical' && !ready.medical) {
         setStatus('正在打开医学词汇…');
-        if (!(await loadScriptPack('MEDICAL_VOCAB', './data/medical-vocab.js?v=5'))) {
-          setStatus('医学词汇没有加载成功。请刷新后再点一次。');
+        const loaded = await loadScriptPack('MEDICAL_VOCAB', './data/medical-vocab.js?v=2026110101');
+        if (!canCommitSpeakingSelection(request)) return false;
+        if (!loaded) {
+          setStatus('医学词汇没有加载成功，已保留当前课程。请稍后重试。');
           return false;
         }
       }
       if (nextPack === 'daylife' && !ready.daylife) {
         setStatus('正在打开一日口语…');
-        if (!(await loadScriptPack('DAY_LIFE', './data/day-life.js?v=1'))) {
-          setStatus('一日口语没有加载成功。请刷新后再点一次。');
+        const loaded = await loadScriptPack('DAY_LIFE', './data/day-life.js?v=2026110101');
+        if (!canCommitSpeakingSelection(request)) return false;
+        if (!loaded) {
+          setStatus('一日口语没有加载成功，已保留当前课程。请稍后重试。');
           return false;
         }
       }
       if (nextPack === 'travel' && !ready.travel) {
         setStatus('正在打开旅游口语…');
-        if (!(await loadScriptPack('TRAVEL_SPEAK', './data/travel-speak.js?v=4'))) {
-          setStatus('旅游口语没有加载成功。请刷新后再点一次。');
+        const loaded = await loadScriptPack('TRAVEL_SPEAK', './data/travel-speak.js?v=2026110101');
+        if (!canCommitSpeakingSelection(request)) return false;
+        if (!loaded) {
+          setStatus('旅游口语没有加载成功，已保留当前课程。请稍后重试。');
           return false;
         }
       }
       if (nextPack === 'kids' && !ready.kids) {
         setStatus('正在打开儿童口语…');
-        if (!(await loadScriptPack('KIDS_SPEAK', './data/kids-speak.js?v=1'))) {
-          setStatus('儿童口语没有加载成功。请刷新后再点一次。');
+        const loaded = await loadScriptPack('KIDS_SPEAK', './data/kids-speak.js?v=2026110101');
+        if (!canCommitSpeakingSelection(request)) return false;
+        if (!loaded) {
+          setStatus('儿童口语没有加载成功，已保留当前课程。请稍后重试。');
           return false;
         }
       }
+      if (!canCommitSpeakingSelection(request)) return false;
       packId = nextPack;
       if (nextPack !== 'material') {
         currentMaterialId = '';
@@ -6512,16 +6646,8 @@
         setStatus(options.resumeNote);
       } else if (isDictation()) {
         setStatus(`已打开「${packLabel(packId)}」。精听听写：先盲听整段。`);
-      } else if (packId === 'core') {
-        setStatus(`已经打开 850 词：${count} 个场景，${turns} 句。左边从「01 我是谁」开始。`);
-      } else if (packId === 'medical') {
-        setStatus(`已经打开医学词汇：${count} 个场景，${turns} 句。`);
-      } else if (packId === 'daylife') {
-        setStatus(`已经打开一日口语：${count} 个场景，${turns} 句。`);
-      } else if (packId === 'travel') {
-        setStatus(`已经打开旅游口语：${count} 个场景，${turns} 句。含美签、美国生活工作旅游，以及欧亚多国。`);
-      } else if (packId === 'kids') {
-        setStatus(`已经打开儿童口语：${count} 个场景，${turns} 句。水果、动物、颜色等词卡主题，亲子自然对话。`);
+      } else if (['core', 'medical', 'daylife', 'travel', 'kids'].includes(packId)) {
+        setStatus(`已打开「${packLabel(packId)}」· Linglish 原创入门：${count} 个场景，${turns} 句。选一段开始。`);
       } else {
         setStatus('回到日常场景。选一段开始。');
       }
@@ -6536,7 +6662,7 @@
         const saved = nextPack !== packId
           ? findSpeakingProgress((item) => item.id === 'pack:' + nextPack)
           : null;
-        const ok = await switchPack(nextPack, saved
+        const switching = switchPack(nextPack, saved
           ? {
             scene: Number(saved.sceneIndex) || 0,
             line: Number(saved.lineIndex) || 0,
@@ -6544,7 +6670,9 @@
             resumeNote: `继续学习「${packLabel(nextPack)}」· ${saved.place || ''}。`,
           }
           : {});
-        if (!ok) syncPackSelect();
+        const request = packSwitchRun;
+        const ok = await switching;
+        if (!ok && request === packSwitchRun) syncPackSelect();
       });
     }
 
@@ -6634,7 +6762,9 @@
         return;
       }
       const button = event.target.closest('[data-line]');
-      if (!button || recording || hearRecordBusy) return;
+      if (!button) return;
+      beginSpeakingSelection();
+      if (captureBlocksSelection()) return;
       if (busy) {
         haltPlayback();
       }
@@ -6700,7 +6830,12 @@
     }
 
     function applyMethodChoice(next) {
-      if (recording || busy) return;
+      beginSpeakingSelection();
+      if (captureBlocksSelection() || busy) {
+        syncMethodButtons();
+        return;
+      }
+      syncPackSelect();
       const value = next || 'listen';
       if (value === 'field') {
         if (packId !== 'field') {
@@ -6822,7 +6957,8 @@
     }
 
     async function reviewThree() {
-      if (busy || recording) return;
+      beginSpeakingSelection();
+      if (busy || captureBlocksSelection()) return;
       const turns = scene().turns;
       const indexes = reviewIndexes(turns);
       const box = document.getElementById('review');
@@ -6874,7 +7010,8 @@
     }
 
     async function nextLine() {
-      if (recording) return;
+      beginSpeakingSelection();
+      if (captureBlocksSelection()) return;
       const total = scene().turns.length;
       if (isDictation()) {
         if (busy) haltPlayback();
@@ -6931,7 +7068,8 @@
     }
 
     async function prevLine() {
-      if (recording) return;
+      beginSpeakingSelection();
+      if (captureBlocksSelection()) return;
       if (lineIndex <= 0) {
         if (busy) haltPlayback();
         setStatus('这已经是第一句。');
@@ -7047,7 +7185,7 @@
       }
       if (!splitListen) {
         // 只开填空打字，不强制开麦；用户仍可再点口语训练开语音
-        const keep = splitActive() && splitState.targets.join('\n') === parts.join('\n');
+        const keep = splitActive() && !splitState.completed && splitState.targets.join('\n') === parts.join('\n');
         const input = document.getElementById('hear-input');
         if (!keep) {
           stopTyper();
@@ -7066,7 +7204,7 @@
           focusHearInput();
         }
         startHearWatch();
-        setStatus('可以打字填词。要语音再说，点「口语训练」或按空格。');
+        setStatus('打一个词，按空格或回车确认。错词改好再试，整句完成后自动下一句。');
         return;
       }
       const field = document.getElementById('hear-input');
@@ -7074,7 +7212,7 @@
         field.readOnly = false;
         focusHearInput();
       }
-      setStatus(filledCount() ? '继续打字或说话。' : '打字填词，或按空格开口说。');
+      setStatus('继续打字，空格或回车确认每个词。要语音再说，点「口语训练」。');
     }
     function openSceneIntensiveNote(mode) {
       if (!window.WorkbenchImport) {
@@ -7111,11 +7249,23 @@
     document.getElementById('mic-btn').addEventListener('click', toggleMic);
     const hearInput = document.getElementById('hear-input');
     if (hearInput) {
-      hearInput.addEventListener('input', () => applyHearText(true));
-      hearInput.addEventListener('compositionend', () => applyHearText(true));
+      let hearComposing = false;
+      hearInput.addEventListener('compositionstart', () => { hearComposing = true; });
+      hearInput.addEventListener('input', (event) => {
+        if (!hearComposing && !event.isComposing) applyHearText(true);
+      });
+      hearInput.addEventListener('compositionend', () => {
+        hearComposing = false;
+        applyHearText(true);
+      });
       hearInput.addEventListener('paste', () => setTimeout(() => applyHearText(true), 0));
       hearInput.addEventListener('keydown', (event) => {
-        if (event.key !== 'Enter' || event.isComposing) return;
+        if (event.isComposing || hearComposing || event.keyCode === 229 || event.repeat
+          || event.altKey || event.ctrlKey || event.metaKey) return;
+        const space = event.key === ' ' || event.key === 'Spacebar';
+        if (event.key !== 'Enter' && !space) return;
+        if (space && (hearFromMic || isMicSessionLive())) return;
+        if (!splitActive() || !splitListen) return;
         event.preventDefault();
         confirmHearLine();
       });
@@ -7362,25 +7512,32 @@
     }
 
     async function openMaterial(id, options = {}) {
-      if (recording) {
+      const request = beginSpeakingSelection();
+      if (captureBlocksSelection()) {
         setStatus('先结束跟读，再打开教材。');
-        return;
+        return false;
       }
-      if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') await window.AuthManager.ensureSession();
-      const token = readAuthToken();
-      closeMaterialsModal();
-      setStatus('正在打开教材…');
+      syncPackSelect();
       try {
+        if (window.AuthManager && typeof window.AuthManager.ensureSession === 'function') {
+          await window.AuthManager.ensureSession();
+          if (!canCommitSpeakingSelection(request)) return false;
+        }
+        const token = readAuthToken();
+        closeMaterialsModal();
+        setStatus('正在打开教材…');
         const response = await fetch('/articles/' + encodeURIComponent(id), {
           headers: token ? { Authorization: 'Bearer ' + token } : {},
           cache: 'no-store',
         });
+        if (!canCommitSpeakingSelection(request)) return false;
         const article = await response.json().catch(() => ({}));
+        if (!canCommitSpeakingSelection(request)) return false;
         if (!response.ok) throw new Error(article.message || '打不开这份教材');
         const scenes = scenesFromArticle(article);
         if (!scenes.length) {
           setStatus('这份教材里没有可跟读的句子。');
-          return;
+          return false;
         }
         releasePlayback();
         materialScenes = scenes;
@@ -7411,8 +7568,11 @@
           : `已打开「${materialTitle}」。${scenes.length} 个章节，${total} 项。左侧按章节选题。短题看选项，长文点开阅读。`);
         syncSpeakingUrl();
         saveSpeakingProgressNow();
+        return true;
       } catch (err) {
+        if (!canCommitSpeakingSelection(request)) return false;
         setStatus(err.message || '教材没有打开。');
+        return false;
       }
     }
 
@@ -7667,6 +7827,8 @@
     loadGlossLexicon();
 
     async function bootSpeaking() {
+      syncPackSelect();
+      render();
       const params = new URLSearchParams(location.search);
       const materialId = params.get('material');
       const packParam = params.get('pack');

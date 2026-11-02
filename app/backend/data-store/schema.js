@@ -1,4 +1,6 @@
 const { pool, dbUnavailable } = require('./core');
+const { ensureCreatorApplicationSchema } = require('./schema-creators');
+const { ensureVideoPublicationSchema } = require('./schema-video-publication');
 
 // Helper: run ALTER TABLE safely (log warning on failure, don't throw)
 async function safeAlter(sql, context = '') {
@@ -851,6 +853,9 @@ async function ensureAuxTables() {
     ON video_share_requests (requester_id, video_resource_id, request_type)
     WHERE status = 'pending'
   `);
+  // Required publication/creator permission data must be ready before content routes run.
+  await ensureVideoPublicationSchema();
+  await ensureCreatorApplicationSchema();
 
   // Ensure analytics events table exists (if migrations not executed)
   await pool.query(`

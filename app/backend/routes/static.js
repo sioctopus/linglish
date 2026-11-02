@@ -7,6 +7,7 @@ const authService = require('../services/auth');
 const mediaSession = require('../services/media-session');
 const { getCorsHeaders, appendVary } = require('../utils/cors');
 const performanceConfig = require('../config/performance');
+const { hasActivePaidEntitlement } = require('../services/entitlements');
 
 const FRONTEND_DIR = path.join(__dirname, '../../frontend');
 const STATIC_DIR = path.join(__dirname, '../public');
@@ -187,6 +188,21 @@ async function authorizeMediaRequest(req, url, validateShare) {
   }
 
   return { mode: null, share: null, user: null, deniedShare: Boolean(shareToken) };
+}
+
+async function authorizeVideoMediaRequest(req, url, mediaPath, mediaKind = 'video') {
+  const resources = await dataStore.getVideoResourcesForMediaPath(mediaPath, mediaKind);
+  const access = await authorizeMediaRequest(req, url, async share => {
+    const resource = await dataStore.getVideoResourceById(share.video_resource_id);
+    const paths = mediaKind === 'thumbnail' ? [resource?.thumbnail_path] : [resource?.video_path, resource?.local_video_path];
+    return Boolean(resource && paths.includes(mediaPath));
+  });
+  const ownerOrAdmin = resource => Boolean(access.user?.is_admin)
+    || (resource.uploader_id != null && access.user?.id != null && String(resource.uploader_id) === String(access.user.id));
+  access.allowed = access.mode === 'share' || resources.some(resource => ownerOrAdmin(resource)
+    || (resource.is_public === true && (resource.is_vip_only !== true || hasActivePaidEntitlement(access.user))));
+  if (access.allowed && !access.mode) access.mode = 'public';
+  return access;
 }
 
 function parseSingleRange(value, size) {
@@ -438,6 +454,18 @@ async function registerStaticRoutes(pathname, req, res, url) {
     // Protected media must use its authenticated route, never an alternate static URL.
     const topDirectory = path.relative(STATIC_DIR, target).split(path.sep)[0];
     if (['videos', 'recordings'].includes(topDirectory)) return sendError(res, 404, 'Not Found');
+    if (topDirectory === 'thumbnails') {
+      try {
+        const mediaPath = `/static/${path.relative(STATIC_DIR, target).split(path.sep).join('/')}`;
+        const access = await authorizeVideoMediaRequest(req, url, mediaPath, 'thumbnail');
+        if (!access.allowed) return sendError(res, access.mode || access.deniedShare ? 403 : 401, 'Unauthorized');
+        if (!await serveStatic(res, target, req, { cacheControl: 'private, no-store' })) return sendError(res, 404, 'Not Found');
+        return true;
+      } catch (error) {
+        const unavailable = error?.status === 503 || error?.message === 'DATASTORE_UNAVAILABLE';
+        return sendError(res, unavailable ? 503 : 401, unavailable ? 'Service unavailable' : 'Unauthorized');
+      }
+    }
     const served = await serveStatic(res, target, req);
     if (!served) {
       return sendError(res, 404, 'Not Found');
@@ -576,17 +604,17 @@ async function registerStaticRoutes(pathname, req, res, url) {
   // GET/HEAD /videos/* (video streaming)
   if (pathname.startsWith('/videos/') && (req.method === 'GET' || req.method === 'HEAD')) {
     try {
-      const filename = pathname.replace('/videos/', '');
-      const filePath = path.join(VIDEO_DIR, filename);
-      const access = await authorizeMediaRequest(req, url, async (share) => {
-        const resource = await dataStore.getVideoResourceById(share.video_resource_id);
-        const relPath = `/videos/${filename}`;
-        const matchesVideoPath = resource?.video_path === relPath;
-        const matchesLocalPath = resource?.local_video_path === relPath;
-        return Boolean(resource && (matchesVideoPath || matchesLocalPath));
-      });
-      if (!access.mode) {
-        return sendError(res, access.deniedShare ? 403 : 401, 'Unauthorized');
+      let filename;
+      try { filename = decodeURIComponent(pathname.slice('/videos/'.length)); } catch (_) { filename = ''; }
+      if (!filename || /[\\\0]/.test(filename) || filename.split('/').some(part => !part || part === '.' || part === '..')) {
+        return sendError(res, 403, 'Access denied');
+      }
+      const filePath = path.resolve(VIDEO_DIR, filename);
+      if (!filePath.startsWith(`${VIDEO_DIR}${path.sep}`)) return sendError(res, 403, 'Access denied');
+      const relPath = `/videos/${filename}`;
+      const access = await authorizeVideoMediaRequest(req, url, relPath);
+      if (!access.allowed) {
+        return sendError(res, access.mode || access.deniedShare ? 403 : 401, 'Unauthorized');
       }
 
       const cacheControl = access.mode === 'share' || access.mode === 'query'
@@ -598,7 +626,7 @@ async function registerStaticRoutes(pathname, req, res, url) {
       }
       return true;
     } catch (err) {
-      if (err?.status === 503) {
+      if (err?.status === 503 || err?.message === 'DATASTORE_UNAVAILABLE') {
         return sendError(res, 503, 'Service unavailable');
       }
       return sendError(res, 401, err.message);

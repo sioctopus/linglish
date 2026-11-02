@@ -436,7 +436,20 @@
       return Number(state.currentVideo?.duration_sec || 0) || 0;
     }
 
+    function renderActiveTranslation(idx, translation) {
+      const seg = idx >= 0 ? state.currentSegments?.[idx] : null;
+      const text = String(translation ?? (seg?.translation || seg?.cn || seg?.zh || seg?.text_cn || '')).trim();
+      const show = Boolean(seg && state.showBilingual && text && /[\u4e00-\u9fa5]/.test(text));
+      [activeTranslationEl, document.getElementById('lyric-translation')].forEach((el) => {
+        if (!el) return;
+        el.textContent = show ? text : '';
+        el.hidden = !show;
+        el.style.display = show ? 'block' : 'none';
+      });
+    }
+
     function renderLyricStage(idx) {
+      renderActiveTranslation(idx);
       const stage = document.getElementById('lyric-stage');
       if (!stage) return;
       const segs = Array.isArray(state.currentSegments) ? state.currentSegments : [];
@@ -482,10 +495,6 @@
         delete activeSubtitleEl.dataset.index;
         delete activeSubtitleEl.dataset.start;
         delete activeSubtitleEl.dataset.end;
-        if (activeTranslationEl) {
-          activeTranslationEl.textContent = '';
-          activeTranslationEl.style.display = 'none';
-        }
         syncSubtitleAssist(null);
         return;
       }
@@ -498,14 +507,6 @@
       if (updateLesson && firstLessonSession.isActive()) {
         firstLessonOriginalController?.stop();
         firstLessonGoalCard.setSentence({ index: idx, text, translation });
-      }
-      if (activeTranslationEl) {
-        if (state.showBilingual && translation) {
-          activeTranslationEl.textContent = translation;
-          activeTranslationEl.style.display = 'block';
-        } else {
-          activeTranslationEl.style.display = 'none';
-        }
       }
       syncSubtitleAssist(idx);
     }
@@ -1724,7 +1725,7 @@
 
     function syncStudySwitch(isVocab) {
       if (!openVocabTabBtn) return;
-      const label = isVocab ? '视频学习' : '查看词汇表';
+      const label = isVocab ? '视频学习' : '查看';
       const labelEl = openVocabTabBtn.querySelector('.open-vocab-tab__label');
       if (labelEl) labelEl.textContent = label;
       else openVocabTabBtn.textContent = label;
@@ -1733,7 +1734,7 @@
       if (vocabIcon) vocabIcon.hidden = !!isVocab;
       if (videoIcon) videoIcon.hidden = !isVocab;
       openVocabTabBtn.title = isVocab ? '返回视频播放' : '查看词汇表';
-      openVocabTabBtn.setAttribute('aria-label', label);
+      openVocabTabBtn.setAttribute('aria-label', openVocabTabBtn.title);
       openVocabTabBtn.dataset.studyTarget = isVocab ? 'video' : 'vocab';
     }
 
@@ -5469,7 +5470,7 @@
       // Require auth for manual import
       const tk = getToken() || '';
       if (!tk || tk === 'null' || tk === 'undefined') { showToast('请先登录后再提取词汇', 'warn'); return; }
-      const importWordsLabel = importWordsBtn.querySelector('[data-i18n="video.extract_words"]');
+      const importWordsLabel = importWordsBtn.querySelector('.import-words__label');
       const oldLabel = importWordsLabel ? importWordsLabel.textContent : importWordsBtn.textContent;
       importWordsBtn.disabled = true;
       if (importWordsLabel) importWordsLabel.textContent = '提取中…';
@@ -7609,7 +7610,7 @@
       const hasZh = text && /[\u4e00-\u9fa5]/.test(text);
       if (segEl) {
         let el = segEl.querySelector('.translation');
-        if (hasZh) {
+        if (state.showBilingual && hasZh) {
           if (!el) {
             el = document.createElement('div');
             el.className = 'translation';
@@ -7621,24 +7622,20 @@
           el.remove();
         }
       }
-      if (activeSubtitleEl && Number(activeSubtitleEl.dataset.index) === Number(index) && activeTranslationEl) {
-        if (hasZh) {
-          activeTranslationEl.textContent = text;
-          activeTranslationEl.style.display = 'block';
-        } else if (state.showBilingual) {
-          activeTranslationEl.textContent = '';
-          activeTranslationEl.style.display = 'none';
-        }
+      if (activeSubtitleEl && Number(activeSubtitleEl.dataset.index) === Number(index)) {
+        renderActiveTranslation(index, text);
       }
     }
 
-    let desktopBilingualToken = 0;
     let desktopBilingualDrainTimer = null;
     async function ensureDesktopBilingualTranslations(indices) {
       if (!state.showBilingual) return;
       const segments = Array.isArray(state.currentSegments) ? state.currentSegments : [];
       if (!segments.length) return;
-      const tokenAtStart = ++desktopBilingualToken;
+      const videoId = state.currentVideo?.id;
+      // Visible rows and background batches may overlap. Keep both results, but
+      // never let a result from replaced cues or another video patch this view.
+      const isCurrentTranscript = () => state.currentSegments === segments && state.currentVideo?.id === videoId;
       let targets = (Array.isArray(indices) ? indices : [])
         .map((n) => Number(n))
         .filter((n) => Number.isFinite(n) && n >= 0 && n < segments.length);
@@ -7658,7 +7655,7 @@
 
       const CONCURRENCY = 4;
       for (let offset = 0; offset < targets.length; offset += CONCURRENCY) {
-        if (tokenAtStart !== desktopBilingualToken) return;
+        if (!isCurrentTranscript()) return;
         const batch = targets.slice(offset, offset + CONCURRENCY);
         await Promise.all(batch.map(async (index) => {
           const seg = segments[index];
@@ -7675,7 +7672,7 @@
           seg._autoTranslatePending = true;
           try {
             const zh = await translateText(en);
-            if (tokenAtStart !== desktopBilingualToken) return;
+            if (!isCurrentTranscript()) return;
             if (zh && /[\u4e00-\u9fa5]/.test(zh)) {
               seg.translation = zh;
               seg.cn = zh;
@@ -7685,14 +7682,14 @@
               patchDesktopTranslationDom(index, '');
             }
           } catch (_) {
-            patchDesktopTranslationDom(index, '');
+            if (isCurrentTranscript()) patchDesktopTranslationDom(index, '');
           } finally {
             seg._autoTranslatePending = false;
           }
         }));
       }
 
-      if (tokenAtStart !== desktopBilingualToken) return;
+      if (!isCurrentTranscript()) return;
       // Keep draining remaining untranslated lines without blocking playback.
       scheduleDesktopBilingualDrain();
     }

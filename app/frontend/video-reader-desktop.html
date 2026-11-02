@@ -368,7 +368,7 @@
 
   <link rel="stylesheet" href="./styles/tokens.css?v=20261018-focus-player">
   <link rel="stylesheet" href="./styles.css?v=1" />
-  <script src="./i18n.js?v=2026103001"></script>
+  <script src="./i18n.js?v=2026110103"></script>
   <script src="./global-ui.js?v=2026103001"></script>
   <script src="./guest-check.js?v=1"></script>
   <script src="./auth-helpers.js?v=2026103001"></script>
@@ -881,11 +881,12 @@
       line-height: 1;
     }
     .read-theme-pop {
-      position: absolute;
-      top: calc(100% + 8px);
-      right: 0;
+      align-self: flex-end;
+      flex: 0 0 auto;
       z-index: 80;
-      width: min(320px, 78vw);
+      width: min(320px, 100%);
+      box-sizing: border-box;
+      margin-top: 8px;
       padding: 0.85rem 0.9rem 0.95rem;
       border: 1px solid rgba(15, 23, 42, 0.1);
       border-radius: 16px;
@@ -1688,7 +1689,7 @@
       display: flex;
       align-items: center;
       justify-content: flex-start;
-      flex-wrap: nowrap;
+      flex-wrap: wrap;
       gap: 0.4rem;
       min-width: 0;
     }
@@ -6481,6 +6482,20 @@
     .lyric-line.is-prev,
     .lyric-line.is-next { font-weight: 500; color: #8b909a; }
     .lyric-line.is-empty { visibility: hidden; }
+    .lyric-translation {
+      grid-row: 3;
+      width: 100%;
+      max-width: 920px;
+      color: var(--read-muted, var(--text-secondary));
+      font-size: clamp(0.95rem, 1.3vw, 1.1rem);
+      line-height: 1.55;
+      text-align: center;
+      overflow-wrap: anywhere;
+    }
+    .lyric-translation[hidden] { display: none; }
+    .lyric-stage:has(.lyric-translation:not([hidden])) {
+      grid-template-rows: 1.5em auto auto 1.5em;
+    }
     .lyric-line .word,
     .lyric-line .word.word-mastered,
     .lyric-line .word.word-learning,
@@ -7025,6 +7040,79 @@
       display: none !important;
     }
 
+    @media (max-width: 1179px) {
+      body > .topbar,
+      body > .topbar .nav {
+        flex-wrap: wrap;
+      }
+
+      body:not(.focus-mode) .shell,
+      body:not(.focus-mode) .shell.sidebar-collapsed {
+        grid-template-columns: minmax(0, 1fr) minmax(320px, 40%);
+        gap: 12px;
+      }
+
+      body:not(.focus-mode) .panel.main {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      body:not(.focus-mode) .panel.transcript {
+        grid-column: 2;
+        grid-row: 1;
+        min-width: 0;
+        max-width: none;
+      }
+
+      body:not(.focus-mode) .sidebar {
+        grid-column: 1 / -1;
+        grid-row: 2;
+      }
+
+      body:not(.focus-mode) .shell.sidebar-collapsed .sidebar {
+        display: none;
+      }
+
+      body.focus-mode .shell {
+        grid-template-columns: minmax(0, 1fr) minmax(360px, 44%);
+      }
+
+      body.focus-mode .transcript {
+        min-width: 0;
+        max-width: none;
+      }
+    }
+
+    @media (max-width: 900px) {
+      body:not(.focus-mode) .shell,
+      body:not(.focus-mode) .shell.sidebar-collapsed,
+      body.focus-mode .shell {
+        grid-template-columns: minmax(0, 1fr);
+        height: auto;
+      }
+
+      body:not(.focus-mode) .panel.transcript,
+      body.focus-mode .transcript {
+        grid-column: 1;
+        grid-row: 2;
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+        height: min(65dvh, 650px);
+      }
+
+      body:not(.focus-mode) .sidebar {
+        grid-row: 3;
+      }
+
+      body.focus-mode .layout,
+      body.focus-mode .panel.main,
+      body.focus-mode .main > .content {
+        height: auto;
+        overflow: visible;
+      }
+    }
+
   @media (max-width: 1280px) {
     body > .topbar {
       width: calc(100% - 12px);
@@ -7441,6 +7529,7 @@
               <div class="lyric-stage" id="lyric-stage" hidden>
                 <button type="button" class="lyric-line is-prev subtitle-text" id="lyric-prev"></button>
                 <button type="button" class="lyric-line is-current subtitle-text" id="lyric-current"></button>
+                <div class="lyric-translation" id="lyric-translation" lang="zh-CN" hidden></div>
                 <button type="button" class="lyric-line is-next subtitle-text" id="lyric-next"></button>
               </div>
               <div id="coach-slot"></div>
@@ -7536,12 +7625,12 @@
             </button>
             <div class="video-controls-actions">
               <button class="btn soft" id="open-source" disabled data-i18n="video.open_new">在新标签打开</button>
-              <button class="btn primary" id="import-words" disabled>
+              <button class="btn primary" id="import-words" title="提取词汇" aria-label="提取词汇" disabled>
                 <svg class="header-action-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M8 7h8M8 11h6"/></svg>
-                <span data-i18n="video.extract_words">提取词汇</span>
+                <span class="import-words__label" data-i18n="video.extract_short">提取</span>
               </button>
-              <button class="pill" id="open-vocab-tab" type="button" data-study-target="vocab">
-                <span class="open-vocab-tab__label">查看词汇表</span>
+              <button class="pill" id="open-vocab-tab" type="button" data-study-target="vocab" title="查看词汇表" aria-label="查看词汇表">
+                <span class="open-vocab-tab__label">查看</span>
               </button>
             </div>
             <button class="btn soft" id="focus-video-entry" type="button" title="打开视频库">视频库</button>
@@ -7551,16 +7640,16 @@
             </div>
             <div class="read-theme-wrap" id="read-theme-wrap">
               <button type="button" class="btn soft read-theme-btn" id="read-theme-btn" title="阅读设置：背景与字幕配色" aria-expanded="false" aria-controls="read-theme-pop">🎨</button>
-              <div class="read-theme-pop" id="read-theme-pop" hidden role="dialog" aria-label="阅读设置">
-                <div class="read-theme-pop-head">
-                  <strong>阅读设置</strong>
-                  <button type="button" class="read-theme-close" id="read-theme-close">关闭</button>
-                </div>
-                <p class="read-theme-label">主题（整页背景 + 字幕区）</p>
-                <div class="read-theme-swatches" id="read-theme-swatches" role="listbox" aria-label="选择主题"></div>
-                <button type="button" class="read-theme-reset" id="read-theme-reset">恢复默认设置</button>
-              </div>
             </div>
+          </div>
+          <div class="read-theme-pop" id="read-theme-pop" hidden role="dialog" aria-label="阅读设置">
+            <div class="read-theme-pop-head">
+              <strong>阅读设置</strong>
+              <button type="button" class="read-theme-close" id="read-theme-close">关闭</button>
+            </div>
+            <p class="read-theme-label">主题（整页背景 + 字幕区）</p>
+            <div class="read-theme-swatches" id="read-theme-swatches" role="listbox" aria-label="选择主题"></div>
+            <button type="button" class="read-theme-reset" id="read-theme-reset">恢复默认设置</button>
           </div>
           <div class="video-controls">
             <div class="video-controls-main">
@@ -7710,7 +7799,7 @@
   </div>
 
   <script src="./js/video-reader/voice-slot.js?v=1"></script>
-  <script src="./js/pages/video-reader-desktop-app.js?v=2026110101"></script>
+  <script src="./js/pages/video-reader-desktop-app.js?v=2026110103"></script>
 
   <!-- Tag Manager Overlay -->
   <div class="tag-manager-overlay" id="tag-manager-overlay">

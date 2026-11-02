@@ -127,6 +127,7 @@ const AdminNav = {
         { icon: '👥', text: '用户管理', href: './admin-users.html', id: 'users' },
         { icon: '📚', text: '内容管理', href: './admin-content.html', id: 'content' },
         { icon: '✅', text: '视频审核', href: './admin-video-reviews.html', id: 'video-reviews' },
+        { icon: '🎙️', text: '达人申请', href: './admin-creators.html', id: 'creators' },
         { icon: '💬', text: '用户反馈', href: './admin-feedback.html', id: 'feedback' },
       ]
     },

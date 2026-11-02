@@ -11,6 +11,7 @@ const {
 const usersQueries = require('./queries/users');
 const trainingQueries = require('./queries/training');
 const videosQueries = require('./queries/videos');
+const creatorsQueries = require('./queries/creators');
 const vocabularyQueries = require('./queries/vocabulary');
 const pronunciationQueries = require('./queries/pronunciation');
 const roleplayQueries = require('./queries/roleplay');
@@ -47,6 +48,7 @@ module.exports = {
 
   // Videos queries
   ...videosQueries,
+  ...creatorsQueries,
 
   // Vocabulary queries
   ...vocabularyQueries,

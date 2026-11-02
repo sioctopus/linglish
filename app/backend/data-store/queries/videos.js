@@ -1,8 +1,19 @@
 const path = require('path');
 const fs = require('fs/promises');
 const { pool, init, dbUnavailable } = require('../core');
+const { publicationError, isVideoReadyForPublication, CREATOR_APPROVAL_MESSAGE, VIDEO_REVIEW_LOCK_MESSAGE, VIDEO_PROCESSING_LOCK_MESSAGE } = require('../../services/video-publication-policy');
 
 const PUBLIC_VIDEO_DIR = path.join(__dirname, '../../public', 'videos');
+// Compare the content reviewed by moderators without invalidating a submission on a preview/view count.
+const RESOURCE_REVISION_SQL = `md5(jsonb_build_object(
+  'resource', to_jsonb(vr) - ARRAY['updated_at', 'created_at', 'view_count', 'practice_count', 'manual_order'],
+  'global_tags', COALESCE((
+    SELECT jsonb_agg(to_jsonb(publication_tag) - ARRAY['created_at', 'updated_at'] ORDER BY publication_tag.id)
+    FROM video_tags publication_assignment
+    JOIN tags publication_tag ON publication_tag.id = publication_assignment.tag_id
+    WHERE publication_assignment.video_id = vr.id AND publication_tag.scope = 'global'
+  ), '[]'::jsonb)
+)::text)`;
 
 let fallbackVideoCache = null;
 
@@ -29,6 +40,7 @@ async function loadFallbackVideos() {
       items.push({
         id: derivedId,
         uploader_id: null,
+        is_public: false,
         title: baseName,
         description: '本地上传视频',
         video_path: `/videos/${entry}`,
@@ -110,41 +122,115 @@ async function createVideoResource(payload) {
 }
 
 async function createVideoShareRequest(payload) {
+  const { requesterId, videoResourceId, requestType = 'public', note = null } = payload;
+  if (!['public', 'featured'].includes(requestType)) throw publicationError(400, 'Invalid request type');
+  return withVideoTransaction(async client => {
+    const { rows: videos } = await client.query('SELECT * FROM video_resources WHERE id = $1 FOR UPDATE', [videoResourceId]);
+    const video = videos[0];
+    if (!video) throw publicationError(404, 'Video not found');
+    const { rows: users } = await client.query('SELECT id, is_admin FROM users WHERE id = $1', [requesterId]);
+    const isAdmin = users[0]?.is_admin === true;
+    if (!isAdmin && String(video.uploader_id) !== String(requesterId)) throw publicationError(403, 'Only the owner can submit this video for review');
+    await requireApprovedCreator(client, requesterId, isAdmin);
+    if (!isVideoReadyForPublication(video)) throw publicationError(409, 'Video must be ready with usable subtitles before review');
+    const { rows } = await client.query(
+      `INSERT INTO video_share_requests
+         (requester_id, video_resource_id, request_type, note, video_updated_at, resource_revision)
+       VALUES ($1, $2, $3, $4, (SELECT updated_at FROM video_resources WHERE id = $2),
+         (SELECT ${RESOURCE_REVISION_SQL} FROM video_resources vr WHERE vr.id = $2))
+       ON CONFLICT (requester_id, video_resource_id, request_type) WHERE status = 'pending'
+       DO UPDATE SET note = video_share_requests.note
+       RETURNING *, (xmax <> 0) AS already_pending`,
+      [requesterId, videoResourceId, requestType, note],
+    );
+    return rows[0] || null;
+  });
+}
+
+async function withVideoTransaction(work) {
   await init();
-  if (dbUnavailable()) {
-    throw new Error('DATASTORE_UNAVAILABLE');
+  if (dbUnavailable()) throw new Error('DATASTORE_UNAVAILABLE');
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    const result = await work(client);
+    await client.query('COMMIT');
+    return result;
+  } catch (error) {
+    try { await client.query('ROLLBACK'); } catch (_) {}
+    throw error;
+  } finally {
+    client.release();
   }
+}
 
-  const {
-    requesterId,
-    videoResourceId,
-    requestType = 'public',
-    note = null,
-  } = payload;
+async function requireApprovedCreator(client, userId, isAdmin) {
+  if (isAdmin) return;
+  const { rows } = await client.query('SELECT status FROM creator_applications WHERE user_id = $1 FOR SHARE', [userId]);
+  if (rows[0]?.status !== 'approved') throw publicationError(403, CREATOR_APPROVAL_MESSAGE);
+}
 
-  const existing = await pool.query(
-    `SELECT *
-     FROM video_share_requests
-     WHERE requester_id = $1
-       AND video_resource_id = $2
-       AND request_type = $3
-       AND status = 'pending'
-     LIMIT 1`,
-    [requesterId, videoResourceId, requestType],
-  );
-  if (existing.rows[0]) {
-    return { ...existing.rows[0], already_pending: true };
-  }
+async function reviewVideoShareRequest(id, { status, reviewerId, reviewNote = null }) {
+  if (!['approved', 'rejected'].includes(status)) throw publicationError(400, 'Invalid review status');
+  return withVideoTransaction(async client => {
+    const { rows: initial } = await client.query('SELECT video_resource_id FROM video_share_requests WHERE id = $1', [id]);
+    if (!initial[0]) throw publicationError(404, 'Review request not found');
+    // Submit, review and owner edits all lock the video first, preventing lock-order races.
+    const { rows: videos } = await client.query('SELECT * FROM video_resources WHERE id = $1 FOR UPDATE', [initial[0].video_resource_id]);
+    const video = videos[0];
+    const { rows: requests } = await client.query(
+      `SELECT vsr.*, (vsr.resource_revision = ${RESOURCE_REVISION_SQL}) AS revision_matches
+       FROM video_share_requests vsr JOIN video_resources vr ON vr.id = vsr.video_resource_id
+       WHERE vsr.id = $1 FOR UPDATE OF vsr`, [id]);
+    const request = requests[0];
+    if (!request || request.status !== 'pending') throw publicationError(409, 'Review request is no longer pending');
+    let updatedVideo = null;
+    if (status === 'approved') {
+      const { rows: users } = await client.query('SELECT id, is_admin FROM users WHERE id = $1', [request.requester_id]);
+      const requesterIsAdmin = users[0]?.is_admin === true;
+      if (!video || (!requesterIsAdmin && String(video.uploader_id) !== String(request.requester_id))) {
+        throw publicationError(409, 'Video ownership changed; a new review request is required');
+      }
+      await requireApprovedCreator(client, request.requester_id, requesterIsAdmin);
+      if (request.revision_matches !== true) throw publicationError(409, 'Video changed after submission; reject this request and submit it again');
+      if (!isVideoReadyForPublication(video)) throw publicationError(409, 'Video must be ready with usable subtitles before approval');
+      updatedVideo = await updateVideoResourceOn(client, video.id, request.request_type === 'featured'
+        ? { is_public: true, is_featured: true } : { is_public: true });
+    }
+    const { rows } = await client.query(
+      `UPDATE video_share_requests SET status = $2, reviewer_id = $3, review_note = $4,
+         reviewed_at = NOW(), updated_at = NOW() WHERE id = $1 AND status = 'pending' RETURNING *`,
+      [id, status, reviewerId, reviewNote]);
+    if (!rows[0]) throw publicationError(409, 'Review request is no longer pending');
+    return { request: rows[0], video: updatedVideo };
+  });
+}
 
-  const { rows } = await pool.query(
-    `INSERT INTO video_share_requests
-       (requester_id, video_resource_id, request_type, note)
-     VALUES ($1, $2, $3, $4)
-     RETURNING *`,
-    [requesterId, videoResourceId, requestType, note],
-  );
-
-  return rows[0] || null;
+async function updateVideoResourceForOwner(id, updates, user, { sentences = null, allowProcessingCompletion = false } = {}) {
+  return withVideoTransaction(async client => {
+    const { rows } = await client.query('SELECT * FROM video_resources WHERE id = $1 FOR UPDATE', [id]);
+    const video = rows[0];
+    if (!video) throw publicationError(404, 'Video not found');
+    if (!user?.is_admin && String(video.uploader_id) !== String(user?.id)) throw publicationError(403, 'Only the owner can edit this video');
+    // Reject duplicate job starts and manual replacements until the active transcription finishes.
+    if (video.status === 'processing' && !allowProcessingCompletion) throw publicationError(409, VIDEO_PROCESSING_LOCK_MESSAGE);
+    if (!user?.is_admin) {
+      const pending = await client.query("SELECT id FROM video_share_requests WHERE video_resource_id = $1 AND status = 'pending' LIMIT 1", [id]);
+      if (video.is_public === true || pending.rows.length) throw publicationError(409, VIDEO_REVIEW_LOCK_MESSAGE);
+    }
+    if (sentences) {
+      await client.query('DELETE FROM video_sentences WHERE video_id = $1', [id]);
+      if (sentences.length) {
+        const values = sentences.map((segment, index) => ({ sentence_index: index, text: segment.text,
+          start_time_sec: segment.start || 0, end_time_sec: segment.end || 0, speaker: segment.speaker || null }));
+        await client.query(`INSERT INTO video_sentences (video_id, sentence_index, text, start_time_sec, end_time_sec, speaker)
+          SELECT $1, sentence_index, text, start_time_sec, end_time_sec, speaker
+          FROM jsonb_to_recordset($2::jsonb) AS segments(sentence_index INTEGER, text TEXT,
+            start_time_sec DOUBLE PRECISION, end_time_sec DOUBLE PRECISION, speaker TEXT)`, [id, JSON.stringify(values)]);
+      }
+    }
+    return updateVideoResourceOn(client, id, updates);
+  });
 }
 
 async function getVideoShareRequestById(id) {
@@ -295,7 +381,10 @@ async function updateVideoShareRequestReview(id, payload) {
 
 async function updateVideoResource(id, updates) {
   await init();
+  return updateVideoResourceOn(pool, id, updates);
+}
 
+async function updateVideoResourceOn(executor, id, updates) {
   const fields = [];
   const values = [];
   let idx = 1;
@@ -326,7 +415,7 @@ async function updateVideoResource(id, updates) {
     RETURNING *
   `;
 
-  const { rows } = await pool.query(sql, values);
+  const { rows } = await executor.query(sql, values);
 
   return rows[0] || null;
 }
@@ -361,6 +450,18 @@ async function getVideoResourceByPath(videoPath) {
     [videoPath],
   );
   return rows[0] || null;
+}
+
+async function getVideoResourcesForMediaPath(mediaPath, mediaKind = 'video') {
+  await init();
+  // Files on disk alone do not establish public visibility or ownership.
+  if (dbUnavailable()) throw new Error('DATASTORE_UNAVAILABLE');
+  if (!['video', 'thumbnail'].includes(mediaKind)) throw publicationError(400, 'Invalid media kind');
+  const binding = mediaKind === 'thumbnail' ? 'thumbnail_path = $1' : '(video_path = $1 OR local_video_path = $1)';
+  const { rows } = await pool.query(
+    `SELECT id, uploader_id, is_public, is_vip_only FROM video_resources
+     WHERE ${binding}`, [mediaPath]);
+  return rows;
 }
 
 async function getVideoResourceByFileHash(fileHash) {
@@ -695,6 +796,9 @@ async function deleteVideoSentences(videoId) {
 module.exports = {
   createVideoResource,
   updateVideoResource,
+  updateVideoResourceForOwner,
+  reviewVideoShareRequest,
+  getVideoResourcesForMediaPath,
   getVideoResourceById,
   getVideoResourceByPath,
   createVideoShareRequest,
