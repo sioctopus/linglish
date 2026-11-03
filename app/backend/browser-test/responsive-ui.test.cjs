@@ -54,6 +54,36 @@ test('home updates its greeting when the account profile arrives later', async (
   assert.match(await page.locator('.lx-home-hello-title').textContent(), /Learner/);
 });
 
+test('home refreshes the saved lesson after history restoration and account changes', async (t) => {
+  const page = await fixture(t, { home: true, recent: { id: '42', title: 'Earlier lesson', seconds: 6 } });
+  await page.evaluate(() => {
+    LinglishStudyRecent.latest = () => ({ id: '42', title: 'Current lesson', seconds: 18, percent: 50 });
+    window.dispatchEvent(new PageTransitionEvent('pageshow', { persisted: true }));
+  });
+  assert.match(await page.locator('.lx-home-continue').getAttribute('href'), /startSec=18$/);
+  assert.match(await page.locator('.lx-home-continue').textContent(), /Current lesson/);
+  await page.evaluate(() => { document.getElementById('user-info').hidden = true; });
+  await page.waitForFunction(() => !document.documentElement.classList.contains('lx-app-home'));
+  await page.evaluate(() => {
+    LinglishStudyRecent.latest = () => ({ id: '43', title: 'Another lesson', seconds: 30 });
+    document.getElementById('user-display-name').textContent = 'Another learner';
+    document.getElementById('user-info').hidden = false;
+  });
+  await page.waitForFunction(() => document.documentElement.classList.contains('lx-app-home'));
+  assert.equal(await page.locator('.lx-home-continue').getAttribute('href'), './video-reader-desktop.html?videoId=43&startSec=30');
+  assert.match(await page.locator('.lx-home-continue').textContent(), /Another lesson/);
+});
+
+test('home reads the latest resume target immediately when its card is activated', async (t) => {
+  const page = await fixture(t, { home: true, recent: { id: '42', title: 'Earlier lesson', seconds: 6 } });
+  await page.evaluate(() => {
+    LinglishStudyRecent.latest = () => ({ id: '44', title: 'Latest lesson', seconds: 21 });
+    document.querySelector('.lx-home-continue').addEventListener('click', event => event.preventDefault());
+  });
+  await page.locator('.lx-home-continue').click();
+  assert.equal(await page.locator('.lx-home-continue').getAttribute('href'), './video-reader-desktop.html?videoId=44&startSec=21');
+});
+
 test('compact home provides four persistent destinations and hides them on desktop', async (t) => {
   const page = await fixture(t, { home: true });
   assert.equal(await page.locator('.lx-home-bottom-nav a, .lx-home-bottom-nav button').count(), 4);

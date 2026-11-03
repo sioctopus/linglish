@@ -33,13 +33,18 @@ reintroduced while resolving the earlier branch's conflicts.
 ## Verification
 
 - Backend `npm test`: **1497 passed, 36 skipped, 0 failed** (1533 total).
-- Browser `npm run test:browser`: **39 passed, 0 failed**.
+- Browser `npm run test:browser`: **43 passed, 0 failed**.
 - Twenty-five real-page scenarios: home, both practice pages, reader and daily
   speaking at 360, 375, 393, 820 and 1180px. Checks include horizontal fit, controls,
   textbook selection and uncaught errors.
 - Regression checks include real homepage logout, first-run setup, hidden dialogs,
   async profile loading, rapid menu reopen, modal keyboard/scroll containment, and
   homepage-to-reader resume using actual media playback time.
+- Actual compact textbook checks at 393 and 820px switch built-in courses, restore
+  the previous choice after a failed download, and show the asynchronously loaded
+  course label. The menu uses the current select options rather than legacy buttons.
+- Home cards refresh the lesson and saved time after history restoration, account
+  updates and card activation, so a retained page does not reuse an earlier target.
 - `git diff --check` passes; code review found no remaining blockers.
 
 Browser checks use Chromium device emulation, production HTML adaptation, local
@@ -49,5 +54,9 @@ backend tests retain their existing environment prerequisites; no production dat
 was used. Browser setup and fixture details are in
 `app/backend/browser-test/README.md`.
 
-This change is prepared for review. No production deployment or native App build is
-part of this interface change.
+Reader rotation across the compact/wide breakpoint remains a pre-existing limitation:
+the already-open reader may need a reload to choose its other layout. No automatic
+resize navigation is introduced here, which would interrupt active practice.
+
+This change affects the website. Native App builds and iOS distribution are separate;
+publication is tracked through the pull request and deployment verification records.

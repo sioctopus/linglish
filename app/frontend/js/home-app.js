@@ -91,6 +91,7 @@
     go.setAttribute('aria-hidden', 'true');
     go.innerHTML = icon('play', 22);
     card.append(copy, go);
+    card.addEventListener('click', function () { refreshContinueCard(wrap); });
 
     const grid = el('nav', 'lx-home-tiles');
     grid.setAttribute('aria-label', '练习入口');
@@ -108,6 +109,16 @@
     const moreTitle = el('h2', 'lx-home-section-title', '社区与计划');
     wrap.append(hello, card, grid);
     return { wrap, moreTitle };
+  }
+
+  function refreshContinueCard(wrap) {
+    const card = wrap.querySelector('.lx-home-continue');
+    if (!card) return;
+    const target = continueTarget();
+    card.href = target.href;
+    card.querySelector('.lx-home-continue-kicker').textContent = target.kicker;
+    card.querySelector('.lx-home-continue-title').textContent = target.title;
+    card.querySelector('.lx-home-continue-meta').textContent = target.meta;
   }
 
   function isSignedIn(doc) {
@@ -179,6 +190,7 @@
       if (built) {
         const title = built.wrap.querySelector('.lx-home-hello-title');
         title.textContent = name ? `${name}，今天练点什么？` : '今天练点什么？';
+        refreshContinueCard(built.wrap);
         return;
       }
       const anchor = doc.getElementById('daily-task');
@@ -197,6 +209,7 @@
       new MutationObserver(apply).observe(info, { attributes: true, attributeFilter: ['hidden'], childList: true, characterData: true, subtree: true });
     }
     if (typeof media.addEventListener === 'function') media.addEventListener('change', apply);
+    root.addEventListener('pageshow', apply);
   }
 
   root.LxHomeApp = { greeting, TILES };

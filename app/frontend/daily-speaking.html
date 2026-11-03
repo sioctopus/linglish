@@ -6525,6 +6525,7 @@
       const known = ['daily', 'daylife', 'travel', 'kids', 'core', 'medical'];
       if (packId === 'field') select.value = 'daily';
       else if (known.includes(packId)) select.value = packId;
+      select.dispatchEvent(new Event('lx:pack-sync'));
     }
 
     function captureBlocksSelection() {
@@ -7902,6 +7903,7 @@
         var nav = window.LxCompactNav;
         if (!bar || !nav) return;
         var packs = document.getElementById('packs');
+        var packSelect = document.getElementById('pack-select');
         var method = document.getElementById('method-select');
         var materials = document.getElementById('materials-btn');
         bar.querySelectorAll('.nav-actions').forEach(function (el) { el.setAttribute('data-compact-dissolve', ''); });
@@ -7923,8 +7925,8 @@
         bar.appendChild(chip);
 
         function currentLabel() {
-          var active = packs && packs.querySelector('.pack.active');
-          var packText = active ? active.textContent.trim() : (materials && materials.classList.contains('active') ? '我的教材' : '选择教材');
+          var active = packSelect && packSelect.selectedOptions[0];
+          var packText = materials && materials.classList.contains('active') ? '我的教材' : (active ? active.textContent.trim() : '选择教材');
           var methodText = method && method.selectedOptions[0] ? method.selectedOptions[0].textContent.trim() : '';
           return methodText ? packText + ' · ' + methodText : packText;
         }
@@ -7940,6 +7942,10 @@
           new MutationObserver(refresh).observe(materials, { attributes: true, attributeFilter: ['class'] });
         }
         if (method) method.addEventListener('change', refresh);
+        if (packSelect) {
+          packSelect.addEventListener('change', refresh);
+          packSelect.addEventListener('lx:pack-sync', refresh);
+        }
 
         chip.addEventListener('click', function () {
           var sections = [];
@@ -7959,11 +7965,16 @@
               })
             });
           }
-          var packRows = Array.prototype.map.call(packs ? packs.querySelectorAll('.pack') : [], function (button) {
+          var packRows = Array.prototype.filter.call(packSelect ? packSelect.options : [], function (option) {
+            return !option.disabled;
+          }).map(function (option) {
             return {
-              label: button.textContent.trim(),
-              current: button.classList.contains('active'),
-              onSelect: function () { button.click(); }
+              label: option.textContent.trim(),
+              current: option.selected && !(materials && materials.classList.contains('active')),
+              onSelect: function () {
+                packSelect.value = option.value;
+                packSelect.dispatchEvent(new Event('change', { bubbles: true }));
+              }
             };
           });
           if (materials) {

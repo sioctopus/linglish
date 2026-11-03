@@ -141,6 +141,38 @@ for (const [width, height] of [[360, 640], [375, 667], [393, 852], [820, 1180], 
   }
 }
 
+for (const [width, height] of [[393, 852], [820, 1180]]) {
+  test(`compact textbook picker switches actual courses and restores failed choices at ${width}px`, { timeout: 15000 }, async (t) => {
+    const context = await contextFor(t, width, height);
+    await context.route('**/data/medical-vocab.js*', route => route.abort());
+    const page = await context.newPage();
+    page.setDefaultTimeout(2500);
+    await page.goto(origin + '/daily-speaking.html?pack=core');
+    await page.waitForFunction(() => document.querySelector('#status').textContent.includes('864'));
+    const chip = page.locator('.lx-compact-chip');
+    assert.match(await chip.textContent(), /基础表达/);
+    await chip.click();
+    for (const label of ['日常用语', '一日口语', '旅游口语', '儿童口语', '基础表达', '医学词汇']) {
+      assert.equal(await page.getByRole('button', { name: label, exact: true }).isVisible(), true);
+    }
+    assert.equal(await page.getByRole('button', { name: '基础表达', exact: true }).getAttribute('aria-pressed'), 'true');
+    await page.getByRole('button', { name: '旅游口语', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('#status').textContent.includes('已打开「旅游口语」'));
+    assert.equal(await page.locator('#pack-select').inputValue(), 'travel');
+    assert.match(await chip.textContent(), /旅游口语/);
+    await chip.click();
+    await page.getByRole('button', { name: '医学词汇', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('#status').textContent.includes('医学词汇没有加载成功'));
+    assert.equal(await page.locator('#pack-select').inputValue(), 'travel');
+    assert.match(await chip.textContent(), /旅游口语/);
+    await chip.click();
+    await page.getByRole('button', { name: '儿童口语', exact: true }).click();
+    await page.waitForFunction(() => document.querySelector('#status').textContent.includes('已打开「儿童口语」'));
+    assert.equal(await page.locator('#scene-select option').count(), 4);
+    assert.match(await chip.textContent(), /儿童口语/);
+  });
+}
+
 test('continue from the real phone homepage restores the saved video position', { timeout: 15000 }, async (t) => {
   const context = await contextFor(t, 393, 852);
   await context.addInitScript(() => {
