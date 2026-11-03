@@ -66,7 +66,7 @@ function injectDeviceAdapt(html, filePath) {
   const source = String(html || '');
   if (source.includes('data-lx-device-adapt')) return source;
   const script = '<script src="/js/device-adapt.js?v=2026103001" data-lx-device-adapt></script>';
-  const style = '<link rel="stylesheet" href="/styles/device-adapt.css?v=2026103001" data-lx-device-adapt>';
+  const style = '<link rel="stylesheet" href="/styles/device-adapt.css?v=2026110301" data-lx-device-adapt>';
   let out = source;
   if (/<head[^>]*>/i.test(out)) out = out.replace(/<head[^>]*>/i, (match) => `${match}\n${script}`);
   else out = `${script}\n${out}`;

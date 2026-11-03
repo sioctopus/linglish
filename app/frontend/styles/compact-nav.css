@@ -1,0 +1,430 @@
+/* Compact app bar + "更多" bottom sheet. Pairs with js/compact-nav.js.
+   Active only when the script adds .lx-compact-bar (≤1023px). */
+
+.lx-compact-more,
+.lx-compact-title {
+  display: none;
+}
+
+.topbar.lx-compact-bar,
+.lx-compact-bar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 60 !important;
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+  width: 100% !important;
+  max-width: none !important;
+  min-height: calc(56px + env(safe-area-inset-top, 0px)) !important;
+  height: auto !important;
+  margin: 0 !important;
+  padding: env(safe-area-inset-top, 0px) max(8px, env(safe-area-inset-right, 0px)) 0 max(8px, env(safe-area-inset-left, 0px)) !important;
+  border: 0 !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9) !important;
+  border-radius: 0 !important;
+  background: rgba(255, 255, 255, 0.92) !important;
+  -webkit-backdrop-filter: saturate(1.6) blur(16px);
+  backdrop-filter: saturate(1.6) blur(16px);
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+/* Wrappers dissolve so kept controls sit directly in the bar. */
+.lx-compact-bar > .nav,
+.lx-compact-bar > .brand,
+.lx-compact-bar .nav-group {
+  display: contents !important;
+}
+
+.lx-compact-bar [data-compact-hide] {
+  display: none !important;
+}
+
+/* Back link: icon-only 44px target. */
+.lx-compact-bar [data-compact-keep][data-nav="back"] {
+  order: 0;
+  flex: 0 0 44px;
+  width: 44px;
+  height: 44px;
+  min-width: 44px !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #0f172a !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  font-size: 0 !important;
+}
+
+.lx-compact-bar [data-compact-keep][data-nav="back"] > span:not([data-lx-icon]) {
+  display: none !important;
+}
+
+.lx-compact-bar [data-compact-keep][data-nav="back"] svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Study switch (视频学习 / AI陪练 / 实战场): one segmented control in the middle. */
+.lx-compact-bar [data-compact-keep].study-switch {
+  order: 1;
+  flex: 0 1 auto;
+  min-width: 0;
+  margin: 0 auto !important;
+  display: inline-flex !important;
+  gap: 2px !important;
+  padding: 3px !important;
+  border-radius: 999px !important;
+  background: #f1f5f9 !important;
+  box-shadow: none !important;
+}
+
+.lx-compact-bar [data-compact-keep].study-switch a {
+  min-height: 36px !important;
+  padding: 0 12px !important;
+  display: inline-flex !important;
+  align-items: center;
+  border-radius: 999px !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  white-space: nowrap;
+  color: #475569 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.lx-compact-bar [data-compact-keep].study-switch a.active,
+.lx-compact-bar [data-compact-keep].study-switch a[aria-current="page"] {
+  color: #0f766e !important;
+  background: #ffffff !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+.lx-compact-bar .lx-compact-title {
+  order: 1;
+  display: block;
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #0f172a;
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.lx-compact-bar [data-compact-keep].study-switch ~ .lx-compact-title {
+  display: none;
+}
+
+.lx-compact-bar .lx-compact-more {
+  order: 2;
+  display: inline-flex;
+  flex: 0 0 44px;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  color: #0f172a;
+  background: transparent;
+  cursor: pointer;
+}
+
+.lx-compact-bar .lx-compact-more:active,
+.lx-compact-bar [data-nav="back"]:active {
+  background: #f1f5f9 !important;
+}
+
+.lx-compact-bar .lx-compact-more:focus-visible,
+.lx-more-item:focus-visible,
+.lx-more-cancel:focus-visible {
+  outline: 3px solid rgba(14, 165, 233, 0.4);
+  outline-offset: 2px;
+}
+
+@media (max-width: 374px) {
+  .lx-compact-bar [data-compact-keep].study-switch a {
+    padding: 0 9px !important;
+    font-size: 13px !important;
+  }
+}
+
+/* Bottom sheet */
+.lx-more-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+}
+
+.lx-more-sheet[hidden] {
+  display: none;
+}
+
+.lx-more-backdrop {
+  position: absolute;
+  inset: 0;
+  border: 0;
+  background: rgba(15, 23, 42, 0.42);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.lx-more-panel {
+  outline: none;
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  box-sizing: border-box;
+  width: min(560px, 100%);
+  max-height: 80dvh;
+  overflow-y: auto;
+  padding: 8px 12px calc(12px + env(safe-area-inset-bottom, 0px));
+  border-radius: 20px 20px 0 0;
+  background: #ffffff;
+  box-shadow: 0 -12px 40px rgba(15, 23, 42, 0.18);
+  transform: translate(-50%, 100%);
+  transition: transform 0.24s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.lx-more-sheet.is-open .lx-more-backdrop {
+  opacity: 1;
+}
+
+.lx-more-sheet.is-open .lx-more-panel {
+  transform: translate(-50%, 0);
+}
+
+.lx-more-grip {
+  width: 36px;
+  height: 5px;
+  margin: 2px auto 10px;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.lx-more-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: 4px;
+}
+
+.lx-more-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 84px;
+  padding: 10px 4px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: #0f172a;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.lx-more-item:active {
+  background: #f1f5f9;
+  transform: scale(0.97);
+}
+
+.lx-more-item.is-current {
+  color: #0f766e;
+}
+
+.lx-more-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.lx-more-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.lx-more-icon:empty::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.lx-more-label {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lx-more-cancel {
+  display: block;
+  width: 100%;
+  min-height: 48px;
+  margin-top: 10px;
+  border: 0;
+  border-radius: 14px;
+  background: #f1f5f9;
+  color: #0f172a;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-more-backdrop,
+  .lx-more-panel {
+    transition: none;
+  }
+}
+
+/* Choice sheet (openPicker) */
+.lx-picker-title {
+  padding: 2px 8px 10px;
+  color: #0f172a;
+  font-size: 17px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.lx-picker-section {
+  padding: 12px 8px 6px;
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.lx-picker-group {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+}
+
+.lx-picker-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+}
+
+.lx-picker-row:active {
+  transform: scale(0.98);
+  background: #f8fafc;
+}
+
+.lx-picker-row.is-current {
+  border-color: #0d9488;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.lx-picker-row.is-current::after {
+  content: "";
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.lx-picker-row:focus-visible {
+  outline: 3px solid rgba(14, 165, 233, 0.4);
+  outline-offset: 2px;
+}
+
+/* Title chip that opens a picker (e.g. current textbook) */
+.lx-compact-bar .lx-compact-chip {
+  order: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  min-height: 40px;
+  margin: 0 auto;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #0f172a;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.lx-compact-bar .lx-compact-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lx-compact-bar .lx-compact-chip svg {
+  flex: 0 0 16px;
+  color: #64748b;
+}
+
+.lx-compact-bar .lx-compact-chip:active {
+  background: #e2e8f0;
+}
+
+.lx-compact-chip {
+  display: none;
+}
+
+.lx-compact-bar [data-compact-dissolve] {
+  display: contents !important;
+}
+
+/* Text-only back links get a drawn chevron. */
+.lx-compact-bar [data-compact-keep][data-nav="back"]:not(:has(svg, [data-lx-icon]))::before {
+  content: "";
+  width: 22px;
+  height: 22px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M15 5l-7 7 7 7'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+/* Brand kept on the left (home): pushes the more button to the right edge. */
+.lx-compact-bar > [data-compact-keep].logo,
+.lx-compact-bar [data-compact-keep].logo {
+  order: 0;
+  margin-right: auto !important;
+  padding-left: 8px;
+}

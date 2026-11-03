@@ -177,11 +177,11 @@ test('a final sentence stays completed without wrapping to the first one', () =>
 });
 
 function packHarness(search = '') {
-  const select = { value: 'daily' };
+  const select = Object.assign(new EventTarget(), { value: 'daily' });
   const window = {};
   let renders = 0;
   const sandbox = {
-    window, Promise, URLSearchParams, Number, Math,
+    window, Promise, URLSearchParams, Number, Math, Event,
     packId: 'daily', sceneIndex: 2, lineIndex: 3, recording: false, packSwitchRun: 0,
     micStarting: false, methodId: 'listen', busy: false, isMicSessionLive: () => false,
     splitListen: null, hearFromMic: false,

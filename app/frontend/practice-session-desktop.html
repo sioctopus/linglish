@@ -163,7 +163,7 @@
   <script src="./js/icons.js?v=2026103001"></script>
   <link rel="stylesheet" href="./styles.css">
   <link rel="stylesheet" href="./shared/dictionary.css?v=20251113">
-  <script defer src="./global-ui.js?v=2026103001"></script>
+  <script defer src="./global-ui.js?v=2026110301"></script>
   <script defer src="./js/auth-manager.js?v=2026103101"></script>
   <script defer src="./js/storage-helper.js"></script>
   <script defer src="./i18n.js?v=2026103001"></script>
@@ -1613,7 +1613,46 @@
   </script>
   <script src="./js/nav-back.js?v=1"></script>
   <link rel="stylesheet" href="./css/learning-navigation.css?v=2026103001">
+  <link rel="stylesheet" href="./styles/compact-nav.css?v=2026110301">
   <script src="./js/learning-navigation.js?v=2026103001" defer></script>
+  <script src="./js/compact-nav.js?v=2026110301"></script>
+  <script>
+    (function () {
+      function mountCompactBar() {
+        var bar = document.querySelector('body > .topbar');
+        if (!bar || !window.LxCompactNav) return;
+        var theme = bar.querySelector('#theme-toggle');
+        if (theme) {
+          theme.setAttribute('data-compact-label', '切换深浅色');
+          theme.setAttribute('data-compact-icon', 'eye');
+        }
+        bar.querySelectorAll('.lang-option').forEach(function (option) {
+          option.setAttribute('data-compact-label', option.dataset.lang === 'en' ? 'English 界面' : '中文界面');
+          option.setAttribute('data-compact-icon', 'explore');
+        });
+        window.LxCompactNav.mount({
+          bar: bar,
+          keep: ['[data-nav="back"][data-learning-primary="back"]', '#study-switch'],
+          hide: ['.brand', '.daily-goal', '.lang-selector > .pill', '#vip-badge'],
+          sheet: [
+            '[data-nav="home"]',
+            '[data-library="videos"]',
+            '[data-library="channels"]',
+            '[data-library="podcasts"]',
+            'a[href^="./youtube-import.html"]',
+            'a[href^="./video-upload.html"]',
+            'a.pill.primary[href*="#vocabulary"]',
+            'a[href^="./feedback.html"]',
+            '#theme-toggle',
+            '.lang-option',
+            '#back-to-onboarding'
+          ]
+        });
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountCompactBar);
+      else mountCompactBar();
+    })();
+  </script>
 </head>
 
 <body>
@@ -2354,7 +2393,7 @@
     })();
   </script>
 
-  <script src="./js/onboarding-tour.js?v=1"></script>
+  <script src="./js/onboarding-tour.js?v=2026110301"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       const steps = [

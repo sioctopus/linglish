@@ -873,7 +873,7 @@
       }
 
       /* PC端：工具栏默认隐藏，鼠标移入时显示 */
-      @media (min-width: 769px) {
+      @media (min-width: 1024px) {
         .video-toolbar {
           position: absolute;
           top: 0;
@@ -2066,8 +2066,8 @@
         }
       }
 
-      /* 移动设备 (max-width: 768px) */
-      @media (max-width: 768px) {
+      /* 移动设备 (max-width: 1023px，含平板竖屏) */
+      @media (max-width: 1023px) {
         .video-lab-container {
           flex-direction: column;
         }
@@ -2898,7 +2898,7 @@
       }
 
       /* 桌面端隐藏底部导航 */
-      @media (min-width: 769px) {
+      @media (min-width: 1024px) {
         .bottom-nav {
           display: none;
         }
@@ -3260,7 +3260,7 @@
         color: white;
       }
 
-      @media (min-width: 769px) {
+      @media (min-width: 1024px) {
         .vocabulary-view {
           bottom: 0;
         }

@@ -24,7 +24,7 @@ test('mobile focus stylesheet protects the viewport and prioritizes learning con
   assert.equal(fs.existsSync(stylePath), true, 'focused mobile stylesheet should exist');
   const css = fs.readFileSync(stylePath, 'utf8');
 
-  assert.match(css, /@media\s*\(\s*max-width:\s*768px\s*\)/);
+  assert.match(css, /@media\s*\(\s*max-width:\s*1023px\s*\)/);
   assert.match(css, /\(max-height:\s*500px\)\s*and\s*\(hover:\s*none\)/);
   assert.match(css, /body\.video-reader-mobile-focus/);
   assert.match(css, /aspect-ratio:\s*16\s*\/\s*9/);

@@ -2192,6 +2192,7 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="./styles/compact-nav.css?v=2026110301">
   <script src="./js/auth-manager.js?v=2026103101"></script>
   <script src="./js/nav-back.js?v=1"></script>
 </head>
@@ -2298,7 +2299,7 @@
           <div class="speak-cta-row">
             <button class="mic speak-cta" id="mic-btn" type="button" aria-label="口语训练" title="口语训练 · 点击或按住空格（M）">
               <span data-lx-icon="mic" data-lx-class="lx-icon--md"></span>
-              <span class="speak-cta-text" id="mic-cta-text">口语训练 · 点击或按住空格</span>
+              <span class="speak-cta-text" id="mic-cta-text">口语训练</span>
             </button>
           </div>
           <p class="mic-hint" id="mic-hint">按住空格说话；打字点底栏键盘</p>
@@ -5078,15 +5079,19 @@
       const listenUi = micLiveUi || (splitListen && hearFromMic);
       mic.classList.toggle('listening', listenUi);
       mic.setAttribute('aria-pressed', listenUi ? 'true' : 'false');
-      mic.setAttribute('aria-label', listenUi ? '点击停止口语训练' : '口语训练 · 点击或按住空格');
-      mic.title = listenUi ? '点击停止；或松开空格结束' : '点击开关；按住空格说话，松开结束（M 也可）';
+      const keyboardUi = !window.matchMedia || window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+      const idleCta = keyboardUi ? '口语训练 · 点击或按住空格' : '点一下，开口说';
+      mic.setAttribute('aria-label', listenUi ? '点击停止口语训练' : idleCta);
+      mic.title = keyboardUi
+        ? (listenUi ? '点击停止；或松开空格结束' : '点击开关；按住空格说话，松开结束（M 也可）')
+        : (listenUi ? '点击停止' : '点击开始说英文');
       const ctaText = document.getElementById('mic-cta-text');
       if (ctaText) {
         if (hearRecordBusy) ctaText.textContent = '识别中…';
         else if (splitListen && hearRecorder && hearRecorder.state !== 'inactive') ctaText.textContent = '说完点这里停止';
         else if (listenUi) ctaText.textContent = filledCount() ? `已填 ${filledCount()} 词 · 点此停止` : '正在听…点此可停止';
         else if (splitListen) ctaText.textContent = filledCount() ? `已填 ${filledCount()} 词 · 可开麦或打字` : '打字中 · 点此开麦';
-        else ctaText.textContent = '口语训练 · 点击或按住空格';
+        else ctaText.textContent = idleCta;
       }
       const typeBtn = document.getElementById('type-btn');
       if (typeBtn) typeBtn.classList.toggle('is-active', Boolean(splitListen));
@@ -5102,8 +5107,8 @@
         } else if (splitListen) {
           micHint.textContent = '可打字；要点语音再点绿色按钮';
         } else {
-          micHint.textContent = isWeChatBrowser()
-            ? '点我说英文；打字点底栏键盘'
+          micHint.textContent = (isWeChatBrowser() || !keyboardUi)
+            ? '说完再点一下结束；打字点底栏键盘'
             : '按住空格说话；打字点底栏键盘';
         }
       }
@@ -6520,6 +6525,7 @@
       const known = ['daily', 'daylife', 'travel', 'kids', 'core', 'medical'];
       if (packId === 'field') select.value = 'daily';
       else if (known.includes(packId)) select.value = packId;
+      select.dispatchEvent(new Event('lx:pack-sync'));
     }
 
     function captureBlocksSelection() {
@@ -7887,6 +7893,104 @@
     }
 
     bootSpeaking();
+  </script>
+  <script src="./js/compact-nav.js?v=2026110301"></script>
+  <script>
+    /* Phones and tablet portrait: back · current textbook ▾ · more. */
+    (function () {
+      function mountCompactBar() {
+        var bar = document.querySelector('body > nav.nav');
+        var nav = window.LxCompactNav;
+        if (!bar || !nav) return;
+        var packs = document.getElementById('packs');
+        var packSelect = document.getElementById('pack-select');
+        var method = document.getElementById('method-select');
+        var materials = document.getElementById('materials-btn');
+        bar.querySelectorAll('.nav-actions').forEach(function (el) { el.setAttribute('data-compact-dissolve', ''); });
+        var home = bar.querySelector('[data-nav="home"]');
+        if (home) home.setAttribute('data-compact-icon', 'home');
+        if (materials) materials.setAttribute('data-compact-icon', 'books');
+        nav.mount({
+          bar: bar,
+          keep: ['#nav-back'],
+          hide: ['.brand', '#packs'],
+          sheet: ['#materials-btn', '[data-nav="home"]']
+        });
+
+        var chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = 'lx-compact-chip';
+        chip.setAttribute('aria-haspopup', 'dialog');
+        chip.innerHTML = '<span></span><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>';
+        bar.appendChild(chip);
+
+        function currentLabel() {
+          var active = packSelect && packSelect.selectedOptions[0];
+          var packText = materials && materials.classList.contains('active') ? '我的教材' : (active ? active.textContent.trim() : '选择教材');
+          var methodText = method && method.selectedOptions[0] ? method.selectedOptions[0].textContent.trim() : '';
+          return methodText ? packText + ' · ' + methodText : packText;
+        }
+        function refresh() {
+          chip.firstChild.textContent = currentLabel();
+          chip.setAttribute('aria-label', '切换教材和练法，当前：' + currentLabel());
+        }
+        refresh();
+        if (packs && window.MutationObserver) {
+          new MutationObserver(refresh).observe(packs, { subtree: true, attributes: true, attributeFilter: ['class'] });
+        }
+        if (materials && window.MutationObserver) {
+          new MutationObserver(refresh).observe(materials, { attributes: true, attributeFilter: ['class'] });
+        }
+        if (method) method.addEventListener('change', refresh);
+        if (packSelect) {
+          packSelect.addEventListener('change', refresh);
+          packSelect.addEventListener('lx:pack-sync', refresh);
+        }
+
+        chip.addEventListener('click', function () {
+          var sections = [];
+          if (method) {
+            sections.push({
+              title: '练法',
+              rows: Array.prototype.map.call(method.options, function (option) {
+                return {
+                  label: option.textContent.trim(),
+                  current: option.selected,
+                  onSelect: function () {
+                    if (method.value === option.value) return;
+                    method.value = option.value;
+                    method.dispatchEvent(new Event('change', { bubbles: true }));
+                  }
+                };
+              })
+            });
+          }
+          var packRows = Array.prototype.filter.call(packSelect ? packSelect.options : [], function (option) {
+            return !option.disabled;
+          }).map(function (option) {
+            return {
+              label: option.textContent.trim(),
+              current: option.selected && !(materials && materials.classList.contains('active')),
+              onSelect: function () {
+                packSelect.value = option.value;
+                packSelect.dispatchEvent(new Event('change', { bubbles: true }));
+              }
+            };
+          });
+          if (materials) {
+            packRows.push({
+              label: '我的教材',
+              current: materials.classList.contains('active'),
+              onSelect: function () { materials.click(); }
+            });
+          }
+          sections.push({ title: '教材', rows: packRows });
+          nav.openPicker({ title: '换个练法或教材', sections: sections });
+        });
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountCompactBar);
+      else mountCompactBar();
+    })();
   </script>
 </body>
 </html>

@@ -29,7 +29,7 @@
     if (info) return info.tier === 'phone' || info.tier === 'tablet-portrait';
     const narrowViewport =
       mediaMatches === true ||
-      (Number.isFinite(Number(viewportWidth)) && Number(viewportWidth) <= 768);
+      (Number.isFinite(Number(viewportWidth)) && Number(viewportWidth) <= 1023);
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini|Mobile|Silk/i.test(String(userAgent))
       || narrowViewport;
   }
@@ -96,7 +96,7 @@
         hash: windowObject.location.hash,
         userAgent: windowObject.navigator && windowObject.navigator.userAgent,
         viewportWidth: windowObject.innerWidth,
-        mediaMatches: matches('(max-width: 768px)'),
+        mediaMatches: matches('(max-width: 1023px)'),
         maxTouchPoints: windowObject.navigator && windowObject.navigator.maxTouchPoints,
         pointer: matches('(pointer: coarse)') ? 'coarse' : 'fine',
         hover: matches('(hover: hover)') ? 'hover' : 'none'

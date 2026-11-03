@@ -1,0 +1,308 @@
+/* Signed-in home on phones / tablet portrait. Active only with html.lx-app-home (js/home-app.js). */
+
+.lx-home-app,
+.lx-home-section-title,
+.lx-home-bottom-nav {
+  display: none;
+}
+
+html.lx-app-home .lx-home-app {
+  display: grid;
+  gap: 16px;
+  width: min(100%, 720px);
+  box-sizing: border-box;
+  margin: 0 auto;
+  padding: 16px max(16px, env(safe-area-inset-left, 0px)) 8px;
+}
+
+/* Marketing and duplicated entry sections: desktop only. */
+html.lx-app-home .announcement-bar,
+html.lx-app-home .hero,
+html.lx-app-home #core-entries,
+html.lx-app-home #section-nav,
+html.lx-app-home #pathways,
+html.lx-app-home #quick-start,
+html.lx-app-home #social-proof,
+html.lx-app-home #features,
+html.lx-app-home #demo-reel,
+html.lx-app-home #faq,
+html.lx-app-home .cta,
+html.lx-app-home .footer,
+html.lx-app-home #daily-task .reminder-card {
+  display: none !important;
+}
+
+html.lx-app-home body {
+  --lx-app-bottom-space: 64px;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+}
+
+html.lx-app-home .lx-home-bottom-nav {
+  position: fixed;
+  inset: auto 0 0;
+  z-index: 70;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  padding: 4px max(8px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(8px, env(safe-area-inset-left, 0px));
+  border-top: 1px solid #e2e8f0;
+  background: #ffffff;
+}
+
+.lx-home-bottom-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  min-height: 52px;
+  padding: 4px;
+  border: 0;
+  background: transparent;
+  color: #475569;
+  font: inherit;
+  font-size: 12px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.lx-home-bottom-icon { display: flex; }
+.lx-home-bottom-item[aria-current="page"] { color: #0f766e; font-weight: 700; }
+.lx-home-bottom-item:focus-visible { outline: 3px solid #0d9488; outline-offset: -3px; border-radius: 12px; }
+.lx-home-bottom-item:active { background: #f0fdfa; }
+
+.lx-home-hello-sub {
+  margin: 0 0 2px;
+  color: #64748b;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.lx-home-hello-title {
+  margin: 0;
+  color: #0f172a;
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+
+.lx-home-continue {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 96px;
+  padding: 18px 18px 18px 20px;
+  border-radius: 20px;
+  background:
+    radial-gradient(120% 140% at 100% 0%, rgba(45, 212, 191, 0.55), transparent 55%),
+    linear-gradient(135deg, #0f766e, #0d9488);
+  color: #ffffff;
+  text-decoration: none;
+  box-shadow: 0 14px 30px rgba(13, 148, 136, 0.28);
+  overflow: hidden;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+
+.lx-home-continue:active {
+  transform: scale(0.985);
+  box-shadow: 0 8px 18px rgba(13, 148, 136, 0.24);
+}
+
+.lx-home-continue:focus-visible,
+.lx-home-tile:focus-visible {
+  outline: 3px solid rgba(14, 165, 233, 0.45);
+  outline-offset: 3px;
+}
+
+.lx-home-continue-copy {
+  display: grid;
+  gap: 4px;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.lx-home-continue-kicker {
+  color: rgba(240, 253, 250, 0.82);
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.lx-home-continue-title {
+  overflow: hidden;
+  font-size: 18px;
+  font-weight: 750;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.lx-home-continue-meta {
+  color: rgba(240, 253, 250, 0.82);
+  font-size: 13px;
+}
+
+.lx-home-continue-go {
+  display: inline-flex;
+  flex: 0 0 52px;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f766e;
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.18);
+}
+
+.lx-home-tiles {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  padding: 10px 6px;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  background: #ffffff;
+}
+
+.lx-home-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-height: 78px;
+  padding: 8px 2px;
+  border-radius: 14px;
+  color: #0f172a;
+  text-decoration: none;
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.lx-home-tile:active {
+  background: #f1f5f9;
+  transform: scale(0.96);
+}
+
+.lx-home-tile-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  background: #f0fdfa;
+  color: #0f766e;
+}
+
+.lx-home-tile-label {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 13px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Today's sentences card follows directly under the tiles. */
+html.lx-app-home #daily-task {
+  width: min(100%, 720px);
+  box-sizing: border-box;
+  margin: 0 auto !important;
+  padding: 8px 16px 0 !important;
+}
+
+html.lx-app-home #daily-task .daily-task-grid {
+  display: block !important;
+}
+
+html.lx-app-home #daily-task .daily-task-title {
+  margin: 0 0 10px;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+html.lx-app-home .lx-home-section-title {
+  display: block;
+  width: min(100%, 720px);
+  box-sizing: border-box;
+  margin: 28px auto 4px;
+  padding: 0 16px;
+  color: #0f172a;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+html.lx-app-home #community,
+html.lx-app-home #personalized,
+html.lx-app-home #gamify {
+  scroll-margin-top: calc(64px + env(safe-area-inset-top, 0px));
+}
+
+@media (min-width: 768px) {
+  .lx-home-hello-title {
+    font-size: 28px;
+  }
+
+  .lx-home-continue {
+    min-height: 120px;
+    padding: 24px 24px 24px 28px;
+  }
+
+  .lx-home-continue-title {
+    font-size: 21px;
+  }
+}
+
+@media (max-width: 359px) {
+  .lx-home-tiles {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2px;
+  }
+
+  .lx-home-tile-label {
+    font-size: 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lx-home-continue,
+  .lx-home-tile {
+    transition: none;
+  }
+  .onboarding-modal .onboarding-panel { animation: none !important; }
+}
+
+/* First-run setup on phones: a bottom sheet instead of a centred desktop dialog. */
+@media (max-width: 640px) {
+  .onboarding-modal.active {
+    align-items: flex-end !important;
+    padding: 0 !important;
+  }
+
+  .onboarding-modal .onboarding-panel {
+    width: 100% !important;
+    max-height: 88dvh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    gap: 16px !important;
+    padding: 20px 20px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 24px 24px 0 0 !important;
+    animation: lx-sheet-up 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  .onboarding-modal .onboarding-title {
+    font-size: 22px !important;
+  }
+
+  .onboarding-modal .onboarding-option {
+    min-height: 48px;
+  }
+}
+
+@keyframes lx-sheet-up {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

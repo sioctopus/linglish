@@ -128,7 +128,7 @@
   </script>
   <script src="/env.js"></script>
   <script src="./js/dialogue-recording-policy.js"></script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>跟读与对话练习 - Linglish</title>
   <script src="./js/practice/original-audio-replay.js?v=20261014"></script>
   <link rel="stylesheet" href="./mobile-styles.css?v=2026103001">
@@ -4410,7 +4410,7 @@
 
   <!-- Practice Banner -->
   <div class="practice-banner">
-    <h2>🎭 实战场练习</h2>
+    <h2>实战场练习</h2>
   </div>
 
   <!-- Practice Mode Selector -->
@@ -4418,20 +4418,19 @@
     <div class="mode-header">
       <div class="mode-title">练习模式</div>
       <div class="mode-header-actions">
-        <button class="theme-toggle" id="theme-toggle" type="button" title="切换主题" aria-label="切换主题">
-          <span class="icon-sun" aria-hidden="true">☀️</span>
-          <span class="icon-moon" aria-hidden="true">🌙</span>
+        <button class="theme-toggle" id="theme-toggle" type="button" title="切换深浅色" aria-label="切换深浅色">
+          <span class="lx-theme-glyph" data-lx-icon="eye" data-lx-size="18" aria-hidden="true"></span>
         </button>
         <button class="mode-toggle-btn" id="mode-toggle-btn" type="button" aria-expanded="true">收起</button>
       </div>
     </div>
     <div class="mode-tabs">
       <button class="mode-tab active" data-mode="shadowing" title="跟读：听原声，再跟着说">
-        <span class="mode-icon">👥</span>
+        <span class="mode-icon" data-lx-icon="headphones" data-lx-size="18"></span>
         <span class="mode-label">跟读</span>
       </button>
       <button class="mode-tab" data-mode="dialogue" title="对话：选角色，对方播完轮到你按住说">
-        <span class="mode-icon">🎭</span>
+        <span class="mode-icon" data-lx-icon="users" data-lx-size="18"></span>
         <span class="mode-label">对话</span>
       </button>
     </div>
@@ -4515,7 +4514,7 @@
     <!-- 跟读模式控件 -->
     <div class="shadowing-controls mode-panel" id="shadowing-controls">
       <div class="shadowing-status" id="shadowing-status">
-        <span class="status-icon">⏸️</span>
+        <span class="status-icon" aria-hidden="true"></span>
         <span class="status-text">准备开始</span>
       </div>
       <div class="speed-selector-group">
@@ -4530,21 +4529,21 @@
       </div>
       <div class="shadowing-control-buttons">
         <button class="shadowing-start-btn" id="shadowing-start-btn">
-          <span class="btn-icon">🚀</span>
+
           <span class="btn-text">开始自动跟读</span>
         </button>
         <button class="shadowing-pause-btn" id="shadowing-pause-btn" style="display: none;">
-          <span class="btn-icon">⏸️</span>
+          <span class="btn-icon" data-lx-icon="pause" data-lx-size="18"></span>
           <span class="btn-text">暂停</span>
         </button>
       </div>
       <div class="shadowing-nav-buttons">
         <button class="shadowing-replay-btn" id="shadowing-replay-btn">
-          <span class="btn-icon">🔄</span>
+          <span class="btn-icon" data-lx-icon="replay" data-lx-size="20"></span>
           <span class="btn-text">重听本句</span>
         </button>
         <button class="shadowing-next-btn" id="shadowing-next-btn">
-          <span class="btn-icon">⏭️</span>
+          <span class="btn-icon" data-lx-icon="next" data-lx-size="20"></span>
           <span class="btn-text">下一句</span>
         </button>
       </div>
@@ -4562,12 +4561,12 @@
         </div>
         <!-- Legacy select for compatibility -->
         <select id="practice-speaker" style="display: none;"></select>
-        <p class="role-hint">💡 提示：选择一个角色后，系统会在你的台词前自动暂停让你录音</p>
+        <p class="role-hint">选好角色后，轮到你的台词会自动停下等你说。</p>
 
         <!-- 开始练习按钮 -->
         <div class="start-dialogue-section" id="start-dialogue-section" style="display: none;">
           <button class="start-dialogue-btn" id="start-dialogue-btn">
-            <span class="btn-icon">🚀</span>
+
             <span class="btn-text">开始对话练习</span>
           </button>
         </div>
@@ -4582,7 +4581,7 @@
               <div
                 style="width: 8px; height: 8px; background: #ef4444; border-radius: 50%; animation: pulse 1s ease-in-out infinite;">
               </div>
-              <span>🎤 正在录音...</span>
+              <span>正在录音…</span>
             </div>
             <button id="stop-recording-btn" style="
               padding: 8px 16px;
@@ -4601,22 +4600,22 @@
         <!-- 操作按钮 -->
         <div class="dialogue-action-buttons" id="dialogue-action-buttons" style="display: none;">
           <button class="dialogue-original-btn" id="dialogue-original-btn">
-            <span>🎵 原声</span>
+            <span>原声</span>
           </button>
           <button class="dialogue-play-btn" id="dialogue-play-btn">
-            <span>🔊 录音</span>
+            <span>我的录音</span>
           </button>
           <button class="dialogue-retry-btn" id="dialogue-retry-btn">
-            <span>🔄 重录</span>
+            <span>重录</span>
           </button>
           <button class="dialogue-perfect-btn" id="dialogue-perfect-btn">
-            <span>✓ 完美</span>
+            <span>就这样</span>
           </button>
         </div>
 
         <!-- ASR对比结果区域 -->
         <div class="asr-comparison-section" id="asr-comparison-section" style="display: none;">
-          <h4 class="asr-title">📝 识别结果</h4>
+          <h4 class="asr-title">识别结果</h4>
           <div class="asr-text-container">
             <div class="original-text">
               <label>原文:</label>
@@ -4631,7 +4630,7 @@
           </div>
           <div class="asr-play-buttons">
             <button id="play-my-recording-btn" style="display: none;">
-              🔊 播放我的录音
+              播放我的录音
             </button>
           </div>
         </div>
@@ -4754,10 +4753,11 @@
       </a>
     </nav>
 
-    <script src="./js/pages/practice-session-app.js?v=2026103101"></script>
+    <script src="./js/pages/practice-session-app.js?v=2026110301"></script>
     <script src="./js/page-tracker.js"></script>
 
   <script src="./js/icons.js?v=2026103001"></script>
+  <link rel="stylesheet" href="./styles/mobile/pages/practice-polish.css?v=2026110301">
 </body>
 
 </html>

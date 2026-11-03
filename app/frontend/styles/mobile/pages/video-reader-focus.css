@@ -38,7 +38,7 @@ html[data-learning-focus="first-lesson"] #first-lesson-progress {
   text-align: center;
 }
 
-@media (max-width: 768px), (max-height: 500px) and (hover: none) and (pointer: coarse) {
+@media (max-width: 1023px), (max-height: 500px) and (hover: none) and (pointer: coarse) {
   :root {
     --vrf-ink: var(--lx-ink-900, #0f172a);
     --vrf-muted: var(--lx-ink-500, #64748b);

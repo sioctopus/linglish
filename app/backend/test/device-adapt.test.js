@@ -128,7 +128,7 @@ test('frontend html is served with the shared device adaptation', async () => {
   const served = await registerStaticRoutes(url.pathname, request, response, url);
   assert.equal(served, true);
   assert.match(response.body(), /\/js\/device-adapt\.js\?v=2026103001/);
-  assert.match(response.body(), /\/styles\/device-adapt\.css\?v=2026103001/);
+  assert.match(response.body(), /\/styles\/device-adapt\.css\?v=2026110301/);
   assert.equal(response.body().split('data-lx-device-adapt').length - 1, 2);
   assert.doesNotMatch(response.body(), /install-desktop\.js/);
 
