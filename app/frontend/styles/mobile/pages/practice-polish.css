@@ -15,9 +15,8 @@
   --pp-press: scale(0.97);
 }
 
-/* Duplicated explainers: the text stepper stays, the emoji flow and repeat hint go. */
+/* Keep the concise mode hint; the duplicated visual flow stays out of the way. */
 body .onboarding-visual,
-body .mode-hint,
 body .status-icon,
 body .status-icon-inline,
 body .start-practice-btn .btn-icon:empty,

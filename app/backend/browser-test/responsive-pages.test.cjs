@@ -75,6 +75,8 @@ async function contextFor(t, width, height) {
     return route.continue();
   });
   await context.addInitScript(() => {
+    // Development pages otherwise default to a separate API server on port 4000.
+    window.LINGLISH_API_BASE = location.origin;
     const payload = btoa(JSON.stringify({ userId: 7, exp: 4102444800 }));
     const token = 'eyJhbGciOiJIUzI1NiJ9.' + payload + '.fixture';
     localStorage.setItem('authToken', token);
@@ -96,13 +98,19 @@ for (const [width, height] of [[360, 640], [375, 667], [393, 852], [820, 1180], 
     test(`${name} at ${width}×${height}: content fits and primary controls remain reachable`, { timeout: 30000 }, async (t) => {
       const context = await contextFor(t, width, height);
       const page = await context.newPage();
+      page.setDefaultTimeout(8000);
       const errors = [];
+      const warnings = [];
       page.on('pageerror', error => errors.push(error.message));
+      page.on('console', message => { if (message.type() === 'error' || message.type() === 'warning') warnings.push(message.text()); });
       await page.goto(origin + '/' + target, { waitUntil: 'load' });
       if (name === 'home') await page.waitForFunction(() => document.querySelector('#user-display-name')?.textContent.includes('Demo Learner'));
       else if (name === 'reader') {
         await page.locator(width <= 1023 ? '.mobile-transcript-item' : '#transcript-list .seg').first().waitFor({ state: 'attached' });
-        await page.waitForFunction(() => Array.from(document.querySelectorAll('video')).some(v => v.duration >= 12));
+        await page.waitForFunction(() => Array.from(document.querySelectorAll('video')).some(v => v.duration >= 12), null, { timeout: 5000 }).catch(async () => {
+          const actual = await page.locator('video').evaluateAll(videos => videos.map(v => ({ src: v.currentSrc, duration: v.duration, error: v.error?.message })));
+          assert.fail('fixture video failed to load: ' + JSON.stringify({ actual, errors, warnings }));
+        });
       }
       await page.waitForTimeout(200);
       const overflow = await page.evaluate(() => document.documentElement.scrollWidth - innerWidth);
@@ -151,4 +159,29 @@ test('continue from the real phone homepage restores the saved video position', 
     assert.fail('saved position was not restored: ' + JSON.stringify(actual));
   });
   assert.equal(new URL(page.url()).searchParams.get('videoId'), '1');
+});
+
+test('real homepage logout restores the login action without reloading', { timeout: 15000 }, async (t) => {
+  const context = await contextFor(t, 393, 852);
+  const page = await context.newPage();
+  page.on('dialog', dialog => dialog.accept());
+  await page.goto(origin + '/index-desktop.html');
+  await page.getByRole('button', { name: '我的', exact: true }).click();
+  await page.getByRole('button', { name: '退出登录', exact: true }).click();
+  await page.locator('#guest-actions').waitFor({ state: 'visible' });
+  assert.equal(await page.locator('#guest-actions').getByRole('button', { name: '登录', exact: true }).isVisible(), true);
+  assert.equal(await page.locator('.lx-home-bottom-nav').isVisible(), false);
+});
+
+test('first-run phone setup fits in a dismissible bottom sheet', { timeout: 15000 }, async (t) => {
+  const context = await contextFor(t, 375, 667);
+  await context.addInitScript(() => localStorage.removeItem('linglish_onboarding_done'));
+  const page = await context.newPage();
+  await page.goto(origin + '/index-desktop.html');
+  await page.locator('#onboardingModal').waitFor({ state: 'visible' });
+  const rect = await page.locator('#onboardingModal .onboarding-panel').boundingBox();
+  assert.ok(rect && rect.y >= 0 && rect.y + rect.height <= 668);
+  assert.ok(Math.abs(rect.y + rect.height - 667) <= 1, 'setup should sit at the bottom');
+  await page.evaluate(() => closeOnboarding());
+  assert.equal(await page.locator('#onboardingModal').isVisible(), false);
 });

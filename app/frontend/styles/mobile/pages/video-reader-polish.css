@@ -34,29 +34,9 @@
     padding: 0 14px;
   }
 
-  body.video-reader-mobile-focus .mobile-view-toggle > .mobile-view-btn[data-mode="prev"] {
-    margin-left: auto;
-  }
-
-  /* 上一句 / 下一句: compact icon buttons, so the row never clips on 375px screens. */
-  body.video-reader-mobile-focus .mobile-view-toggle > .mobile-view-btn.is-icon {
-    flex: 0 0 44px;
-    width: 44px;
-    padding: 0;
-    color: #334155;
-    background: #f1f5f9;
-  }
-
-  body.video-reader-mobile-focus .mobile-view-btn.is-icon svg {
-    display: block;
-    width: 20px;
-    height: 20px;
-    margin: 0 auto;
-  }
-
-  body.video-reader-mobile-focus .mobile-view-btn.is-icon:active {
-    background: #e2e8f0;
-    transform: scale(0.96);
+  /* Sentence navigation stays immediately above the hold-to-record row. */
+  body.video-reader-mobile-focus .mobile-sentence-btn {
+    min-height: 44px !important;
   }
 }
 
