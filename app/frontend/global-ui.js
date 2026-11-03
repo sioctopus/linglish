@@ -1220,21 +1220,51 @@
       #${EMAIL_VERIFY_BANNER_ID} .email-verify-close:hover {
         background: rgba(15, 23, 42, 0.06);
       }
+      #${EMAIL_VERIFY_BANNER_ID}[hidden] {
+        display: none !important;
+      }
       @media (max-width: 640px) {
+        /* Phones: a compact card above the home indicator, out of the way of the app bar. */
         #${EMAIL_VERIFY_BANNER_ID} {
-          top: calc(env(safe-area-inset-top, 0px) + 8px);
-          align-items: flex-start;
-          gap: 10px;
-          padding: 11px;
+          top: auto;
+          bottom: calc(env(safe-area-inset-bottom, 0px) + 12px + var(--lx-app-bottom-space, 0px));
+          width: calc(100vw - 24px);
+          display: grid;
+          grid-template-columns: auto minmax(0, 1fr) auto;
+          grid-template-areas:
+            "mark copy close"
+            "actions actions actions";
+          align-items: center;
+          gap: 8px 10px;
+          padding: 12px 12px 12px 14px;
+          border-radius: 16px;
+        }
+        #${EMAIL_VERIFY_BANNER_ID} .email-verify-mark {
+          grid-area: mark;
+          width: 6px;
+          height: 32px;
+        }
+        #${EMAIL_VERIFY_BANNER_ID} .email-verify-copy { grid-area: copy; }
+        #${EMAIL_VERIFY_BANNER_ID} .email-verify-close {
+          grid-area: close;
+          width: 36px;
+          height: 36px;
+          border-radius: 999px;
         }
         #${EMAIL_VERIFY_BANNER_ID} .email-verify-actions {
-          flex-direction: column;
-          align-items: stretch;
+          grid-area: actions;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 8px;
         }
         #${EMAIL_VERIFY_BANNER_ID} .email-verify-resend,
         #${EMAIL_VERIFY_BANNER_ID} .email-verify-page {
-          padding: 9px 10px;
-          text-align: center;
+          min-height: 40px;
+          padding: 0 10px;
+          border-radius: 999px;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
         }
       }
     `;
@@ -1334,11 +1364,32 @@
 
     actions.appendChild(resendBtn);
     actions.appendChild(pageLink);
-    actions.appendChild(closeBtn);
     banner.appendChild(mark);
     banner.appendChild(copy);
     banner.appendChild(actions);
+    banner.appendChild(closeBtn);
     document.body.appendChild(banner);
+    // aria-modal may live inside a hidden template. Only rendered dialogs own the screen.
+    const modalSelector = '.onboarding-modal, [aria-modal="true"], dialog, .lx-more-sheet';
+    let frame = null;
+    const syncVisibility = () => {
+      frame = null;
+      banner.hidden = Array.from(document.querySelectorAll(modalSelector)).some((modal) => {
+        if (modal.closest('[hidden], [aria-hidden="true"]')) return false;
+        const style = window.getComputedStyle(modal);
+        return style.visibility !== 'hidden' && modal.getClientRects().length > 0;
+      });
+    };
+    const observer = new MutationObserver((records) => {
+      if (!banner.isConnected) { observer.disconnect(); cancelAnimationFrame(frame); return; }
+      const relevant = records.some((record) => {
+        const node = record.target;
+        return node.nodeType === 1 && (node.matches(modalSelector) || node.querySelector(modalSelector));
+      });
+      if (relevant && frame === null) frame = requestAnimationFrame(syncVisibility);
+    });
+    observer.observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style', 'hidden', 'open', 'aria-hidden'] });
+    syncVisibility();
     trackEmailVerifyBanner('auth_email_verify_banner_view', {}, token);
   }
 

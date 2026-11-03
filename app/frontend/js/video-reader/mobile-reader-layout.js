@@ -10,7 +10,7 @@
   'use strict';
 
   function shouldStartSidebarHidden(viewportWidth) {
-    return Number(viewportWidth) <= 768;
+    return Number(viewportWidth) <= 1023;
   }
 
   function closedSidebarState() {

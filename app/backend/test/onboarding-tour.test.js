@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 
-const { computeTourPosition, shouldStartTour } = require('../../frontend/js/onboarding-tour.js');
+const { computeTourPosition, shouldStartTour, isUsableRect } = require('../../frontend/js/onboarding-tour.js');
 
 test('the focus product flag skips the generic video library tour and attribution alone does not', () => {
   assert.equal(shouldStartTour('?from=today_first_lesson&focus=first_lesson&videoId=113'), false);
@@ -36,4 +36,11 @@ test('tour tooltip uses effective geometry within a small viewport near screen e
   assert.ok(pos.tooltipTop + pos.tooltipHeight <= 464);
   assert.ok(pos.tooltipLeft >= 16);
   assert.ok(pos.tooltipLeft + pos.tooltipWidth <= 304);
+});
+
+test('tour skips targets that are hidden or collapsed instead of spotlighting the screen corner', () => {
+  assert.equal(isUsableRect({ width: 0, height: 0 }), false);
+  assert.equal(isUsableRect({ width: 120, height: 2 }), false);
+  assert.equal(isUsableRect(null), false);
+  assert.equal(isUsableRect({ width: 120, height: 40 }), true);
 });

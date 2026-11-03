@@ -28,6 +28,19 @@ body {
   padding-right: var(--lx-safe-right);
 }
 
+/* Pages allow pinch zoom; remove the double-tap zoom delay on controls instead of locking zoom. */
+@media (pointer: coarse) {
+  a,
+  button,
+  [role="button"],
+  input,
+  select,
+  label {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
 @media (hover: hover) and (pointer: fine) {
   html {
     -webkit-font-smoothing: antialiased;

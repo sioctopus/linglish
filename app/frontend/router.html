@@ -108,7 +108,7 @@
       } catch (_) {}
     })();
   </script>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- SEO Meta Tags -->
   <title>Linglish - 沉浸式语言学习 | 主界面</title>
@@ -646,10 +646,8 @@
       // 更新UI显示
       updateDeviceInfo(device);
 
-      // 延迟跳转，让用户看到加载动画
-      setTimeout(() => {
-        redirectToPage(device);
-      }, 1200);
+      // Route immediately: a decorative wait only delays every app launch.
+      redirectToPage(device);
     }
 
     // 页面加载完成后执行

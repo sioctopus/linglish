@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node server.js",
     "test": "node --test --test-force-exit test/*.test.js",
+    "test:browser": "node --test browser-test/*.test.cjs",
     "db:init": "node scripts/init-local-db.js"
   },
   "dependencies": {
@@ -42,6 +43,7 @@
   },
   "license": "MIT",
   "devDependencies": {
-    "@napi-rs/canvas": "0.1.80"
+    "@napi-rs/canvas": "0.1.80",
+    "playwright": "1.58.0"
   }
 }

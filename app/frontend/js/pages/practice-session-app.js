@@ -850,12 +850,12 @@
         }
 
         if (mode === 'shadowing') {
-          if (descEl) descEl.textContent = '1. Listen & Shadow  →  2. Auto Pause  →  3. Speak';
+          if (descEl) descEl.textContent = '听一句 · 自动停顿 · 轮到你说';
           if (shadowVisual) shadowVisual.style.display = 'flex';
           if (dialogueVisual) dialogueVisual.style.display = 'none';
           if (freeTrialLink) freeTrialLink.style.display = 'block';
         } else {
-          if (descEl) descEl.textContent = '1. Choose Role → 2. Original Audio → 3. You Respond';
+          if (descEl) descEl.textContent = '选角色 · 听原声 · 轮到你接话';
           if (shadowVisual) shadowVisual.style.display = 'none';
           if (dialogueVisual) dialogueVisual.style.display = 'flex';
           // Hide free trial in dialogue mode (it's complex)
@@ -1837,7 +1837,7 @@
             return `${mins}:${secs.toString().padStart(2, '0')}`;
           };
           practiceCurrentLine.innerHTML = `
-          <div class="practice-current-meta">Line ${shadowingCurrentIndex + 1} of ${shadowingSentences.length}</div>
+          <div class="practice-current-meta">第 ${shadowingCurrentIndex + 1} / ${shadowingSentences.length} 句</div>
           <div class="practice-current-text">${currentSentence.text}</div>
           <div class="practice-current-time">${formatTime(currentSentence.startTime)} – ${formatTime(currentSentence.endTime)}</div>
         `;
@@ -9299,7 +9299,7 @@
 
           const lineNumber = document.createElement('span');
           lineNumber.className = 'line-number';
-          lineNumber.textContent = `Line ${idx + 1} of ${total}`;
+          lineNumber.textContent = `第 ${idx + 1} / ${total} 句`;
           header.appendChild(lineNumber);
 
           const timeSpan = document.createElement('span');
@@ -9409,7 +9409,7 @@
         practiceCurrentLine.hidden = false;
         practiceCurrentLine.className = `practice-current-line${isSuccessful ? ' practice-successful' : ''}`;
         practiceCurrentLine.innerHTML = `
-        <div class="practice-current-meta">Line ${state.practiceIndex + 1} of ${state.practiceLines.length}</div>
+        <div class="practice-current-meta">第 ${state.practiceIndex + 1} / ${state.practiceLines.length} 句</div>
         <div class="practice-current-text">${highlighted || escapeHtml(line.text || '')}</div>
         <div class="practice-current-time">${formatTime(line.start)} – ${formatTime(line.end)}</div>
       `;

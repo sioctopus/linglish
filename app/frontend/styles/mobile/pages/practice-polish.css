@@ -1,0 +1,383 @@
+/* Mobile practice (practice-session.html) — product polish.
+   One accent (teal), neutral secondary actions, system icons instead of emoji,
+   and a centred column on tablets. Loaded last so it settles the older inline styles. */
+
+:root {
+  --pp-ink: #0f172a;
+  --pp-muted: #64748b;
+  --pp-line: #e2e8f0;
+  --pp-surface: #ffffff;
+  --pp-soft: #f1f5f9;
+  --pp-teal: #0f766e;
+  --pp-teal-2: #0d9488;
+  --pp-mint: #2dd4bf;
+  --pp-radius: 14px;
+  --pp-press: scale(0.97);
+}
+
+/* Duplicated explainers: the text stepper stays, the emoji flow and repeat hint go. */
+body .onboarding-visual,
+body .mode-hint,
+body .status-icon,
+body .status-icon-inline,
+body .start-practice-btn .btn-icon:empty,
+body .shadowing-start-btn .btn-icon:empty,
+body .start-dialogue-btn .btn-icon:empty {
+  display: none !important;
+}
+
+/* Header row of the mode card */
+body .practice-mode-selector {
+  border-radius: 20px 20px 0 0 !important;
+  box-shadow: none !important;
+}
+
+body .mode-header .mode-title {
+  color: var(--pp-ink) !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+
+body .theme-toggle {
+  width: 40px !important;
+  height: 40px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--pp-muted) !important;
+}
+
+body .theme-toggle::after {
+  display: none !important;
+}
+
+body .theme-toggle:active,
+body .mode-toggle-btn:active {
+  background: var(--pp-soft) !important;
+}
+
+body .mode-toggle-btn {
+  min-height: 40px !important;
+  padding: 0 14px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: var(--pp-teal) !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  box-shadow: none !important;
+}
+
+/* 跟读 / 对话: one segmented control */
+body .mode-tabs {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 4px !important;
+  padding: 4px !important;
+  border-radius: 14px !important;
+  background: var(--pp-soft) !important;
+}
+
+body .mode-tab {
+  min-height: 44px !important;
+  margin: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--pp-muted) !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  transition: background-color 0.18s ease, color 0.18s ease !important;
+}
+
+body .mode-tab .mode-icon {
+  display: inline-flex !important;
+  font-size: 0 !important;
+}
+
+body .mode-tab.active {
+  background: var(--pp-surface) !important;
+  color: var(--pp-teal) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+body .mode-description {
+  margin: 12px 0 14px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  color: var(--pp-muted) !important;
+  font-size: 13px !important;
+  letter-spacing: 0.02em;
+  text-align: center !important;
+}
+
+/* Primary action */
+body .start-practice-btn,
+body .shadowing-start-btn,
+body .start-dialogue-btn {
+  min-height: 52px !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: linear-gradient(135deg, var(--pp-teal-2), var(--pp-mint)) !important;
+  color: #ffffff !important;
+  box-shadow: 0 8px 20px rgba(13, 148, 136, 0.28) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  text-shadow: none !important;
+}
+
+body .start-practice-btn .btn-text,
+body .shadowing-start-btn .btn-text,
+body .start-dialogue-btn .btn-text {
+  color: #ffffff !important;
+  font-size: 16px !important;
+  opacity: 1 !important;
+}
+
+body .start-practice-btn:active,
+body .shadowing-start-btn:active,
+body .start-dialogue-btn:active {
+  transform: var(--pp-press) !important;
+}
+
+body .start-practice-btn:disabled,
+body .start-practice-btn[aria-disabled="true"] {
+  background: var(--pp-soft) !important;
+  color: var(--pp-muted) !important;
+  box-shadow: none !important;
+}
+
+body .free-trial-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin: 4px auto 0 !important;
+  color: var(--pp-teal) !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  text-decoration: none !important;
+}
+
+/* Secondary actions: neutral, quiet, still 52px tall */
+body .shadowing-replay-btn,
+body .shadowing-next-btn,
+body .shadowing-pause-btn {
+  min-height: 52px !important;
+  padding: 0 16px !important;
+  border: 1px solid var(--pp-line) !important;
+  border-radius: var(--pp-radius) !important;
+  background: var(--pp-surface) !important;
+  color: var(--pp-ink) !important;
+  box-shadow: none !important;
+  text-shadow: none !important;
+  font-size: 15px !important;
+  font-weight: 650 !important;
+}
+
+body .shadowing-replay-btn::before,
+body .shadowing-next-btn::before {
+  display: none !important;
+}
+
+body .shadowing-replay-btn .btn-text,
+body .shadowing-next-btn .btn-text {
+  color: var(--pp-ink) !important;
+  font-weight: 650 !important;
+  letter-spacing: 0 !important;
+}
+
+body .shadowing-replay-btn .btn-icon,
+body .shadowing-next-btn .btn-icon,
+body .shadowing-pause-btn .btn-icon {
+  display: inline-flex !important;
+  color: var(--pp-teal) !important;
+  filter: none !important;
+  font-size: 0 !important;
+}
+
+body .shadowing-replay-btn:hover,
+body .shadowing-next-btn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: #f8fafc !important;
+}
+
+body .shadowing-replay-btn:active,
+body .shadowing-next-btn:active {
+  transform: var(--pp-press) !important;
+  background: var(--pp-soft) !important;
+}
+
+/* Speed: compact segmented control */
+body .speed-selector-group label {
+  color: var(--pp-muted) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+
+body .speed-buttons {
+  gap: 2px !important;
+  padding: 3px !important;
+  border-radius: 12px !important;
+  background: var(--pp-soft) !important;
+}
+
+body .speed-btn {
+  min-height: 40px !important;
+  padding: 0 4px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: var(--pp-muted) !important;
+  box-shadow: none !important;
+  font-size: 14px !important;
+  font-weight: 650 !important;
+  font-variant-numeric: tabular-nums;
+}
+
+body .speed-btn.active {
+  background: var(--pp-surface) !important;
+  color: var(--pp-teal) !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12) !important;
+}
+
+body .practice-hint,
+body .role-hint {
+  color: var(--pp-muted) !important;
+  font-size: 13px !important;
+  line-height: 1.5 !important;
+}
+
+/* Current line card: calm surface, the sentence is the hero */
+body .practice-controls .practice-current-line,
+body.shadowing-mode .practice-controls .practice-current-line {
+  border: 1px solid var(--pp-line) !important;
+  border-radius: 18px !important;
+  background: var(--pp-surface) !important;
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.06) !important;
+}
+
+body .practice-current-line::before,
+body .practice-current-line::after,
+body .practice-current-meta::before,
+body .practice-current-time::before {
+  content: none !important;
+  display: none !important;
+}
+
+body .practice-current-meta {
+  color: var(--pp-teal) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: none !important;
+}
+
+body .practice-current-text {
+  color: var(--pp-ink) !important;
+  font-size: 22px !important;
+  line-height: 1.4 !important;
+}
+
+body .practice-current-time {
+  color: var(--pp-muted) !important;
+  background: var(--pp-soft) !important;
+  font-variant-numeric: tabular-nums;
+}
+
+body .practice-controls .lines-container {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body .shadowing-replay-btn,
+body .shadowing-next-btn {
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+/* Dialogue action row */
+body .dialogue-action-buttons button {
+  min-height: 48px !important;
+  border: 1px solid var(--pp-line) !important;
+  border-radius: 12px !important;
+  background: var(--pp-surface) !important;
+  color: var(--pp-ink) !important;
+  box-shadow: none !important;
+  font-weight: 650 !important;
+}
+
+body .dialogue-action-buttons .dialogue-perfect-btn {
+  border-color: transparent !important;
+  background: linear-gradient(135deg, var(--pp-teal-2), var(--pp-mint)) !important;
+  color: #ffffff !important;
+}
+
+body .mobile-practice-back {
+  width: 44px !important;
+  height: 44px !important;
+  border: 0 !important;
+  background: rgba(15, 23, 42, 0.45) !important;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+
+/* Dark theme keeps the same structure with dark surfaces. */
+[data-theme="dark"] body .mode-tabs,
+[data-theme="dark"] body .speed-buttons {
+  background: rgba(30, 41, 59, 0.9) !important;
+}
+
+[data-theme="dark"] body .mode-tab.active,
+[data-theme="dark"] body .speed-btn.active,
+[data-theme="dark"] body .shadowing-replay-btn,
+[data-theme="dark"] body .shadowing-next-btn,
+[data-theme="dark"] body .practice-current-line {
+  background: #1e293b !important;
+  border-color: rgba(148, 163, 184, 0.2) !important;
+}
+
+[data-theme="dark"] body .shadowing-replay-btn .btn-text,
+[data-theme="dark"] body .shadowing-next-btn .btn-text,
+[data-theme="dark"] body .practice-current-text,
+[data-theme="dark"] body .mode-header .mode-title {
+  color: #e2e8f0 !important;
+}
+
+/* Tablet portrait: centred column, video stays prominent but capped. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  body .practice-mode-selector,
+  body .practice-controls,
+  body .lines-container {
+    box-sizing: border-box;
+    width: min(100%, 720px) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  body .practice-current-text {
+    font-size: 26px !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body .mode-tab,
+  body .start-practice-btn,
+  body .shadowing-replay-btn,
+  body .shadowing-next-btn {
+    transition: none !important;
+  }
+}
+
+body .shadowing-replay-btn .btn-text,
+body .shadowing-next-btn .btn-text {
+  flex: 0 0 auto !important;
+}

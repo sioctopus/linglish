@@ -1,0 +1,100 @@
+/* Mobile and tablet-portrait reader refinements.
+   Loaded after video-reader-focus.css and coaching-dock.css.
+   Phone ≤767 and tablet portrait 768–1023 share the focus layout; tablets get a centred reading column. */
+
+@media (max-width: 1023px), (max-height: 500px) and (hover: none) and (pointer: coarse) {
+  /* The caption toolbar already owns playback speed; one control is enough. */
+  body.video-reader-mobile-focus .speed-control-overlay {
+    display: none !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-transcript-view > .mobile-view-toggle,
+  body.video-reader-mobile-focus .coach-dock .coach-chrome .mobile-view-toggle {
+    gap: 4px !important;
+    min-height: 44px;
+  }
+
+  /* Shares the row with the 带教 toggle: take the remaining width, not 100%. */
+  body.video-reader-mobile-focus .coach-dock .coach-chrome .mobile-view-toggle {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-view-btn,
+  body.video-reader-mobile-focus .mobile-view-toggle .mobile-speed-trigger {
+    min-height: 44px;
+    font-size: 14px;
+  }
+
+  /* 英文 / 双语 hug their labels instead of stretching across the row. */
+  body.video-reader-mobile-focus .mobile-view-toggle > .mobile-view-btn:not(.is-icon) {
+    flex: 0 0 auto !important;
+    min-width: 56px;
+    padding: 0 14px;
+  }
+
+  body.video-reader-mobile-focus .mobile-view-toggle > .mobile-view-btn[data-mode="prev"] {
+    margin-left: auto;
+  }
+
+  /* 上一句 / 下一句: compact icon buttons, so the row never clips on 375px screens. */
+  body.video-reader-mobile-focus .mobile-view-toggle > .mobile-view-btn.is-icon {
+    flex: 0 0 44px;
+    width: 44px;
+    padding: 0;
+    color: #334155;
+    background: #f1f5f9;
+  }
+
+  body.video-reader-mobile-focus .mobile-view-btn.is-icon svg {
+    display: block;
+    width: 20px;
+    height: 20px;
+    margin: 0 auto;
+  }
+
+  body.video-reader-mobile-focus .mobile-view-btn.is-icon:active {
+    background: #e2e8f0;
+    transform: scale(0.96);
+  }
+}
+
+/* Tablet portrait: keep the full-bleed player, centre everything a thumb or eye has to track. */
+@media (min-width: 768px) and (max-width: 1023px) {
+  body.video-reader-mobile-focus {
+    --vrf-player-height: min(calc(100vw * 9 / 16), 46svh);
+  }
+
+  body.video-reader-mobile-focus .mobile-transcript-view {
+    --vrf-cue-rows: 3;
+    --vrf-cue-row: 5.5rem;
+    padding-left: max(24px, calc((100% - 720px) / 2)) !important;
+    padding-right: max(24px, calc((100% - 720px) / 2)) !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-transcript-item.active {
+    font-size: 24px;
+  }
+
+  body.video-reader-mobile-focus .coach-dock .coach-chrome {
+    width: 100%;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  body.video-reader-mobile-focus .mobile-player-controls {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  body.video-reader-mobile-focus .mobile-player-controls > * {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  body.video-reader-mobile-focus .mobile-reader-header {
+    padding-left: max(24px, env(safe-area-inset-left, 0px));
+    padding-right: max(24px, env(safe-area-inset-right, 0px));
+  }
+}

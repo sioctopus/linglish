@@ -1010,7 +1010,11 @@ async function fetchLibraryVideoById(id) {
 
 async function resolveResumeTarget() {
   const candidates = [];
-  if (initialVideoIdFromURL) candidates.push({ id: initialVideoIdFromURL, seconds: 0, source: 'url' });
+  if (initialVideoIdFromURL) {
+    const params = new URLSearchParams(window.location.search || '');
+    const seconds = Number(params.get('startSec') || params.get('start_sec') || params.get('start') || params.get('t'));
+    candidates.push({ id: initialVideoIdFromURL, seconds: Number.isFinite(seconds) && seconds >= 0 ? seconds : 0, source: 'url' });
+  }
   const lastMedia = readLastStudyMedia();
   if (lastMedia) candidates.push({ ...lastMedia, source: 'media' });
   try {
@@ -2659,13 +2663,13 @@ function syncMobileHoldButton(active, warming) {
     label.setAttribute('data-hold-label', '');
     mobileHoldBtn.appendChild(label);
   }
-  let text = 'Hold to record';
+  let text = '按住跟读';
   let aria = '按住跟读';
   if (warming) {
-    text = 'Opening mic…';
+    text = '正在开麦…';
     aria = '开麦中';
   } else if (active) {
-    text = 'Release to send';
+    text = '松开结束';
     aria = '松开结束跟读';
   }
   label.textContent = text;
@@ -5252,7 +5256,7 @@ async function selectVideo(idOrVideo) {
   }
 
   // 在移动端，点选内容后收起视频库，露出播放区
-  if (window.innerWidth <= 768) {
+  if (window.innerWidth <= 1023) {
     if (typeof closeMobileVideoLibrary === 'function') {
       closeMobileVideoLibrary();
     } else if (videoSidebar) {
@@ -5753,7 +5757,7 @@ async function selectVideo(idOrVideo) {
         console.log('Video ready to play');
         applyPendingResumeSeek();
         // Focused mobile reader: no center play overlay. Legacy mobile still gets one.
-        if (window.innerWidth <= 768 && !isMobileReaderFocus()) {
+        if (window.innerWidth <= 1023 && !isMobileReaderFocus()) {
           const overlay = document.getElementById('play-overlay');
           if (overlay) {
             overlay.hidden = false;
@@ -6689,7 +6693,7 @@ async function lookupWord(rawWord) {
     const stayed = await showSentenceAssist(word);
     if (stayed) return;
   }
-  const useOverlay = window.innerWidth <= 768 && vocabDetailOverlay && vocabDetailDictCard;
+  const useOverlay = window.innerWidth <= 1023 && vocabDetailOverlay && vocabDetailDictCard;
   if (useOverlay) {
     state.lookupUiMode = 'overlay';
     state.lookupUiOpen = true;
@@ -7035,7 +7039,7 @@ async function playWordAudioSmart(word, dictAudioUrl) {
   pauseLearningVideoForWord();
 
   const ua = navigator.userAgent || '';
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || (window.innerWidth && window.innerWidth <= 768);
+  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua) || (window.innerWidth && window.innerWidth <= 1023);
   let fallbackTimer = null;
   let played = false; // ensure we only play once
   function armGestureFallback() {
@@ -10466,7 +10470,7 @@ if (mobileBackBtn) {
         window.location.href = './mobile-explore.html';
       } else {
         // 默认根据视口宽度判断
-        const isMobileViewport = window.innerWidth <= 768;
+        const isMobileViewport = window.innerWidth <= 1023;
         window.location.href = isMobileViewport ? './mobile-explore.html' : './index-desktop.html';
       }
     }
@@ -11242,7 +11246,7 @@ navItems.forEach(item => {
           renderToggleSidebarControl(true, '关闭视频库');
         }
         // 隐藏右侧边栏
-        if (rightSidebar && window.innerWidth <= 768) {
+        if (rightSidebar && window.innerWidth <= 1023) {
           rightSidebar.classList.remove('visible');
           rightSidebar.classList.remove('dict-open');
         }
@@ -11263,11 +11267,11 @@ navItems.forEach(item => {
           loadVocabulary();
         }
         // 隐藏右侧边栏和视频库
-        if (rightSidebar && window.innerWidth <= 768) {
+        if (rightSidebar && window.innerWidth <= 1023) {
           rightSidebar.classList.remove('visible');
           rightSidebar.classList.remove('dict-open');
         }
-        if (videoSidebar && window.innerWidth <= 768) {
+        if (videoSidebar && window.innerWidth <= 1023) {
           videoSidebar.classList.add('hidden');
         }
         break;
@@ -11276,20 +11280,20 @@ navItems.forEach(item => {
         // 没有 videoId 时仍 fallback 为原逻辑
         showPracticeSectionRight();
         if (rightSidebar) {
-          if (window.innerWidth <= 768) {
+          if (window.innerWidth <= 1023) {
             rightSidebar.classList.add('visible');
           } else {
             rightSidebar.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }
         }
-        if (videoSidebar && window.innerWidth <= 768) {
+        if (videoSidebar && window.innerWidth <= 1023) {
           videoSidebar.classList.add('hidden');
         }
         break;
 
       case 'more':
         alert('更多功能开发中...');
-        if (rightSidebar && window.innerWidth <= 768) {
+        if (rightSidebar && window.innerWidth <= 1023) {
           rightSidebar.classList.remove('visible');
           rightSidebar.classList.remove('dict-open');
         }
@@ -11315,7 +11319,7 @@ if (backToVideoBtn) {
     }
 
     // 隐藏右侧边栏（移动端）
-    if (rightSidebar && window.innerWidth <= 768) {
+    if (rightSidebar && window.innerWidth <= 1023) {
       rightSidebar.classList.remove('visible');
       rightSidebar.classList.remove('dict-open');
     }
@@ -11336,12 +11340,12 @@ if (showVocabularyBtn) {
     }
 
     // 隐藏视频库（移动端）
-    if (videoSidebar && window.innerWidth <= 768) {
+    if (videoSidebar && window.innerWidth <= 1023) {
       videoSidebar.classList.add('hidden');
     }
 
     // 隐藏右侧边栏（移动端）
-    if (rightSidebar && window.innerWidth <= 768) {
+    if (rightSidebar && window.innerWidth <= 1023) {
       rightSidebar.classList.remove('visible');
       rightSidebar.classList.remove('dict-open');
     }
